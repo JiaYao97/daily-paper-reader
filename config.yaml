@@ -25,3 +25,125 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: sfc
+      description: 超声速气膜冷却
+      enabled: true
+      paper_sources:
+        - arxiv
+      keywords:
+        - keyword: hypersonic thermal protection
+          keyword_cn: 高超声速热防护
+          query: hypersonic thermal protection
+        - keyword: supersonic film cooling
+          keyword_cn: 超声速气膜冷却
+          query: supersonic film cooling heat transfer
+        - keyword: film cooling effectiveness
+          keyword_cn: 气膜冷却效率
+          query: film cooling effectiveness measurement
+        - keyword: shock wave film cooling
+          keyword_cn: 激波与气膜冷却相互作用
+          query: shock wave interaction with film cooling
+      intent_queries:
+        - query: recent advances in supersonic and hypersonic film cooling for aerospace thermal protection
+          query_cn: 航空航天热防护中超声速和高超声速气膜冷却的最新进展
+          enabled: true
+          source: manual
+          note: ''
+        - query: How does shock wave interaction affect supersonic film cooling performance?
+          query_cn: 激波相互作用如何影响超声速气膜冷却性能
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-07-05T14:23:19.654Z'
+    - tag: flow-pred
+      description: 请帮我查找流场预测和重构的相关论文
+      enabled: true
+      paper_sources:
+        - arxiv
+      keywords:
+        - keyword: neural operators for fluid dynamics
+          keyword_cn: 面向流体力学的神经算子
+          query: neural operators for fluid dynamics
+        - keyword: sparse sensor flow reconstruction
+          keyword_cn: 稀疏传感器流场重建
+          query: sparse sensor flow reconstruction
+        - keyword: flow field prediction
+          keyword_cn: 流场预测
+          query: flow field prediction methods
+        - keyword: flow field reconstruction
+          keyword_cn: 流场重构
+          query: flow field reconstruction from sparse data
+        - keyword: data-driven flow prediction
+          keyword_cn: 数据驱动流场预测
+          query: data-driven approaches for flow field prediction
+      intent_queries:
+        - query: What are the state of the art methods for flow field prediction and reconstruction?
+          query_cn: 流场预测和重构的最新技术有哪些？
+          enabled: true
+          source: manual
+          note: ''
+        - query: How to reconstruct flow fields from limited sensor data using deep learning?
+          query_cn: 如何使用深度学习从有限传感器数据重构流场？
+          enabled: true
+          source: manual
+          note: ''
+        - query: Recent advances in data driven fluid flow modeling and prediction
+          query_cn: 数据驱动流体流动建模与预测的最新进展
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-07-05T14:25:09.365Z'
+    - tag: pc-latent
+      description: 物理约束潜在空间学习与优化
+      enabled: true
+      paper_sources:
+        - arxiv
+      keywords:
+        - keyword: latent dynamics
+          keyword_cn: 潜在动力学
+          query: latent dynamics
+        - keyword: physics constrained learning
+          keyword_cn: 物理约束学习
+          query: physics constrained learning for latent space models
+        - keyword: latent space optimization
+          keyword_cn: 潜在空间优化
+          query: latent space optimization under physical constraints
+        - keyword: physical constraints latent space
+          keyword_cn: 物理约束潜在空间
+          query: latent space methods with physical constraints
+        - keyword: constrained latent variable models
+          keyword_cn: 约束潜变量模型
+          query: latent variable models with constraints from physics
+      intent_queries:
+        - query: learning latent space that satisfies physical laws
+          query_cn: 学习满足物理规律的潜在空间
+          enabled: true
+          source: manual
+          note: ''
+        - query: optimizing latent variables with physics constraints
+          query_cn: 使用物理约束优化潜变量
+          enabled: true
+          source: manual
+          note: ''
+        - query: physics constrained autoencoder training
+          query_cn: 物理约束自编码器训练
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-07-05T14:26:22.065Z'
+source_backends:
+  arxiv:
+    papers_table: arxiv_papers
+    use_vector_rpc: true
+    vector_rpc: match_arxiv_papers
+    vector_rpc_exact: match_arxiv_papers_exact
+    use_bm25_rpc: true
+    bm25_rpc: match_arxiv_papers_bm25
+    sync_table: arxiv_sync_status
+    sync_success_value: success
+    schema: public
+    kind: supabase
+    enabled: true
+    url: https://lyucdwgefyfbmaiopjbk.supabase.co
+    anon_key: sb_publishable_lX-oi64Uxyd7SIVv3_w2Uw_MTOojeKq
