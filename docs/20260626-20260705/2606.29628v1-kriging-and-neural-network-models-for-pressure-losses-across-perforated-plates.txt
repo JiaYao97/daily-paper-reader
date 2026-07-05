@@ -1,0 +1,408 @@
+Title: Kriging and neural network models for pressure losses across perforated plates
+
+URL Source: https://arxiv.org/pdf/2606.29628v1
+
+Published Time: Tue, 30 Jun 2026 01:30:31 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+# Kriging and neural network models for pressure losses across perforated plates 
+
+## Shuai Li a,∗
+
+> a
+
+Division of Fluid Dynamics, Department of Mechanical Engineering, Chalmers University of Technology, SE-412 96 Gothenburg, Sweden 
+
+A R T I C L E I N F O 
+
+Keywords :Perforated plate Pressure loss Data-driven models Channel flow 
+
+A B S T R A C T 
+
+In this paper, two novel data-driven models based on kriging and neural networks (NN) are proposed to predict pressure losses across perforated plates with circular perforations in turbulent flows. The models are developed using two sets of experimental data available in the literature. The predictive performance of the proposed models is assessed and compared against widely used empirical formulae. It is found that the proposed models consistently outperform existing empirical models for most perforated plate configurations contained in the experimental datasets. Besides, the predicted pressure losses generally show good agreement with experimental measurements, demonstrating that data-driven approaches based on kriging and NN provide a feasible framework for modelling pressure losses across perforated plates. Overall, both approaches are promising, despite being trained on a relatively limited amount of experimental data, owing to the scarcity of measurements reported in the literature. To demonstrate the applicability of the proposed models in numerical simulations, two-dimensional channel flows are simulated using the Reynolds-averaged Navier–Stokes (RANS) equations, in which the new pressure-loss models are implemented as a source term in the momentum equations. The RANS predictions are found to be in excellent agreement with the model predictions, confirming the suitability of the proposed approaches for practical computational fluid dynamics applications. 
+
+## 1. Introduction 
+
+Perforated plates are encountered in a wide range of engineering applications, including thermal, mechanical, chemical, civil, nuclear, ocean, and aerospace engineering, due to their ability to control flow distribution, enhance mixing, and regulate pressure losses. To name a few examples, perforated plates are widely used in the design of heat transfer devices [1–11] and flow-conditioning components [12–18], in flame stabilization and control in combustion chambers [19–24], in turbulence manipulation [25–28], and in the reduction of aerodynamic noise [29– 33]. By redistributing momentum and promoting flow uniformity, perforated plates can significantly enhance the performance and reliability of downstream components. The flow through a perforated plate is typically characterized by flow separation at the pore inlet, acceleration and contraction toward a vena contracta, followed by flow expansion downstream of the vena contracta. The dominant contribution to pressure loss arises during this expansion process, where irreversible energy dissipation occurs due to flow separation and mixing [34]. From a design perspective, perforated plates are often required to provide a prescribed pressure loss to ensure adequate flow uniformity or turbulence characteristics. For example, in heat transfer applications, flow maldistribution is a major challenge that degrades the performance of heat transfer devices [17, 35–37]. In practice, perforated plates are commonly employed as flow-conditioning elements to promote a more uniform velocity distribution upstream of heat transfer surfaces. Achieving effective flow uniformity requires the perforated plates to introduce a sufficiently large pressure drop. Consequently, accurate prediction of the pressure loss across a perforated plate is essential for optimal design. Overestimating pressure losses may lead to overly conservative designs and unnecessary energy penalties, whereas underestimating them can result in inadequate flow control and degraded thermal performance. In addition to improving flow uniformity, perforated plates can enhance turbulence homogeneity, thereby further improving overall system performance. However, their use also entails an increase in aerodynamic drag, leading to higher energy consumption. It is therefore of significant practical importance to quantify pressure losses across perforated plates and to develop reliable predictive models that enable a priori estimation of these losses, allowing an optimal compromise between flow conditioning effectiveness and associated drag penalties. 
+
+> ∗
+
+Corresponding author 
+
+Email address: shuai.li@chalmers.se (S. Li) 
+
+S Li et al.: Preprint submitted to Elsevier Page 1 of 15     
+
+> arXiv:2606.29628v1 [physics.flu-dyn] 28 Jun 2026 Kriging and neural network models for pressure losses DT
+> (𝑎 )Walls Pressure tab Perforated plate Air fl ow (𝑏 )
+> Figure 1: Illustrations of (a) a perforated plate with circular perforations and (b) the B2A wind-tunnel test section.
+
+Pressure losses across perforated plates usually depend on several geometric parameters of perforated plates, such as plate thickness, pore diameter, and pore spacing, as well as on flow conditions and regimes. Capturing the combined effects of these parameters in a predictive manner remains a challenging task. Previous research on pressure losses across perforated plates can be broadly classified into experimental and numerical studies. Yavuzkurt & Catchen [38] experimentally investigated the dependence of pressure loss on air speed using wind-tunnel tests conducted on seven perforated plates with varying thicknesses and porosities. Measurements were performed at air speeds of up to 76 m/s. For most plates, the pressure loss was found to scale linearly with the square of the air speed, indicating that inertial effects dominate the pressure loss mechanism. However, for a specific plate configuration, slight deviations from this linear behavior were observed, attributed to wake dynamics characterized by large-scale flow oscillations downstream of the plate. Recently, Méry & Sebbane [39] experimentally examined the pressure-loss characteristics of perforated plates with circular pores, considering a range of pore diameters, spacings, and plate thicknesses, within the framework of the European Union H2020 INVENTOR project. Figure 1(a) illustrates a perforated plate of thickness 𝛿 , with pores of diameter 𝐷 separated by a spacing 𝑇 . Variations in pore diameter and spacing lead to different plate porosities, 
+
+𝜀 , defined as the ratio of the total pore area to the total plate area. Their findings demonstrated that the pressure loss coefficient, defined as the pressure drop normalized by the dynamic pressure, is largely independent of flow velocity but strongly dependent on the relative plate thickness 𝛿 ∕𝐷 . Using numerical simulations, Bayazit et al. [40] studied pressure losses across perforated plates with two relative thicknesses ( 𝛿 ∕𝐷 = 0 .5 and 1.0) and three porosities ( 𝜀 = 0 .2,
+
+0.35 and 0.5) over a wide range of Reynolds numbers spanning laminar to turbulent regimes. For laminar flows, thicker plates and lower porosities resulted in higher pressure losses. In contrast, under turbulent conditions, thinner plates produced larger pressure drops, while reduced porosity continued to increase the pressure loss. These contrasting trends were attributed to differences in flow separation and reattachment mechanisms associated with plate thickness across different flow regimes. Bae & Kim [41] numerically studied the pressure losses of laminar flows through thick perforated plates ( 𝛿 ∕𝐷 ≥ 1) at pore-level Reynolds numbers up to 25 and proposed a simple predictive model for pressure losses in laminar regimes. While their model showed good agreement with experimental data, its applicability is restricted to laminar flows. In addition, several empirical models for pressure loss across perforated plates have been proposed, including those by Idelchik [42, 43], Miller [34], Kast [44], Holt et al. [45], ESDU [46], Malavasi et al. [47], and Li et al. [48], etc. Some of these empirical models are provided in the Appendix for reference. Although these models can generally be applied to turbulent flows through perforated plates with different hole arrangements, such as staggered or in-line configurations [40, 49], they are very complicated including parameters to determine using empirical formulae. The purpose of the present study is to develop data-driven models for accurately predicting pressure losses across perforated plates in turbulent flow regimes, providing a simpler and more general alternative to existing empirical models. In this paper, two data-driven models, a kriging model and a neural network model, are proposed for the first time to predict pressure losses across perforated plates using the experimental data of Yavuzkurt & Catchen [38] and Méry & Sebbane [39]. The proposed models are validated against a test dataset and are compared with several previously published models [34, 41, 43–45]. Furthermore, to demonstrate the applicability of the new models in numerical simulations, two-dimensional channel-flow simulations are performed using RANS with the new models added as pressure-drop source terms to the momentum equations. The RANS-predicted pressure losses are subsequently compared with the model-predicted pressure losses.   
+
+> S Li et al.: Preprint submitted to Elsevier Page 2 of 15 Kriging and neural network models for pressure losses
+
+The remainder of this paper is organized as follows. Section 2 describes the methodology, including the experimental data used for training and validating the proposed data-driven models, as well as the formulation of the kriging and neural network models. Section 3.1 presents the pressure-loss predictions of the kriging and neural network models and compares them with previously published models. Section 3.2 then demonstrates the application of the proposed models in numerical simulations. Finally, concluding remarks are provided in Section 4. A discussion of existing pressure-loss models for perforated plates is included in the Appendix. 
+
+## 2. Methodology 
+
+2.1. Description of the experimental data 
+
+In the present study, experimental data reported by Yavuzkurt & Catchen [38] and by Méry & Sebbane [39] are used to train and validate the proposed data-driven models for predicting pressure losses across perforated plates. The measurements were conducted at the Pennsylvania State University and at the Aero-thermo-Acoustics Bench (B2A) of the Office National d’Etudes et de Recherches Aérospatiales (ONERA), respectively. The measurements of Yavuzkurt & Catchen [38] were performed in a pipe-flow apparatus. The pipe has an internal diameter of 90 .17 mm. Airflow was supplied by a 5 hp blower operating in suction mode, with the flow rate regulated using a bypass line and an inline valve. To minimize the influence of local turbulence generated near the perforated plate, pressure taps were positioned 710 mm upstream and downstream of the plate. The airflow velocity was measured using an anemometer placed near the upstream opening of the entrance pipe, where the velocity distribution across the inlet area was relatively uniform. The pressure losses were measured over a range from 0 to 3500 Pa. Additional details regarding the experimental setup are provided in Ref. [38]. The measurements of Méry & Sebbane [39] were carried out in the B2A wind tunnel, which features a 0.2 m long test section with a square cross section of 50 mm × 50 mm. A schematic of the wind-tunnel test section is shown in Fig. 1(b). The pressure drop across the perforated plate was measured using static pressure taps located on the top wall of the test section, both upstream and downstream of the plate. The positions of the pressure taps are listed in Table 1, with PS1 taken as the reference [39]. The perforated plates were installed midway between PS3 and PS4, corresponding to a location 37.5 mm downstream of the PS1 pressure tap. During the experiments, the airflow velocities at the wind-tunnel entrance were set to 𝑈 0 = 16 .6, 25 , and 35 m/s. These measurements were recently conducted within the framework of the European Union H2020 INVENTOR project. Further details regarding the B2A wind tunnel and the experimental procedures can be found in Refs. [39, 50].               
+
+> Table 1
+> Streamwise positions of the pressure tabs. Pressure tabs PS1 PS2 PS3 PS4 PS5 PS6 PS7 Streamwise position (mm) 015 30 45 60 75 215
+
+Table 2 summarizes the pore diameter 𝐷 , pore spacing 𝑇 , plate thickness 𝛿 , and porosity 𝜀 of the perforated plates used in the experiments conducted by Yavuzkurt & Catchen [38] and by Méry & Sebbane [39]. The porosity, defined as the ratio of the total pore area to the overall area of the perforated plate, can be calculated from the pore diameter and pore spacing. In this study, 70% of the available experimental data (Plates 1–8) are used to train the models, while the remaining 30% (Plates 9–11) are reserved as a test dataset. Given the scarcity of experimental data on pressure losses across perforated plates in the literature and the limited total of only 11 data points in this study, this data partitioning represents a pragmatic compromise between ensuring sufficient information for effective model training and maintaining an independent dataset for an unbiased assessment of predictive performance. 
+
+2.2. Kriging model 
+
+In this study, we want to predict the pressure loss of perforated plates at any given plate porosity 𝜖 and thickness ratio 𝛿 ∕𝐷 . Without loss of generality, assume that we wish to make a prediction at a given point 𝐱 . 𝑌 (𝐱 ) is a realization of a random variable that is normally distributed with mean 𝜇 and variance 𝜎 2. Now consider two points 𝐱 𝑖 and 𝐱 𝑗 .                                                                 
+
+> S Li et al.: Preprint submitted to Elsevier Page 3 of 15 Kriging and neural network models for pressure losses
+> Table 2
+> Parameters of the perforated plates used in the experiments of Yavuzkurt & Catchen [38] (Plates 1-7) and Méry & Sebbane [39] (Plates 8-11). Plate 𝐷 (mm) 𝑇 (mm) 𝛿 (mm) 𝜀 𝛿 ∕𝐷
+> 11.60 3.18 1.02 0.227 0.638 21.91 2.54 0.81 0.510 0.424 32.38 6.88 0.91 0.109 0.382 42.78 4.76 0.81 0.309 0.291 53.18 4.76 0.91 0.403 0.286 64.76 9.53 0.97 0.227 0.204 73.18 4.76 3.18 0.403 1.000 85.00 6.00 1.00 0.623 0.200 94.00 6.00 1.00 0.403 0.250 10 2.00 3.00 2.00 0.403 1.000 11 2.00 3.00 1.00 0.403 0.500
+
+The correlation between the random variables is given by [51] Corr (𝑌 (𝐱 𝑖 ), 𝑌 (𝐱 𝑗 )) = exp 
+
+(
+
+−
+
+> 𝑑
+
+∑
+
+> 𝓁 =1
+
+𝜃 𝓁 |𝑥 𝑖 𝓁 − 𝑥 𝑗 𝓁 |𝑝 𝓁 
+
+)
+
+, (1) where 𝜃 𝓁 controls how quickly the correlation decreases as one moves along the 𝓁 th coordinate direction. The parameter 
+
+𝑝 𝓁 governs the smoothness of the function in that direction: values of 𝑝 𝓁 close to 2 correspond to smoother functions, whereas values near 0 capture rough, non-differentiable behavior. For 𝑛 points, the covariance function is given by [51] 
+
+cov [𝑌 (𝐱 𝑖 
+
+) , 𝑌 (𝐱 𝑗 
+
+)] = 𝜎 2𝑅, (2) where 𝑅 is a 𝑛 × 𝑛 matrix with the (𝑖, 𝑗 ) element given by Eq. (1). The values of 𝜇 , 𝜎 2, 𝜃 𝓁 , and 𝑝 𝓁 (𝓁 = 1 , … , 𝑑 ) are then estimated by maximizing the likelihood of the observed data. The kriging predictor is given by [51] ̂𝑦 (𝐱 ∗) = ̂𝜇 + 𝐫 𝑇 𝐑 −1 (𝐲 − 𝐈 ̂𝜇 ), (3) where 𝐈 is a 𝑛 × 1 vector of ones, and 𝐫 denotes the vector of correlations of 𝑌 (𝐱 ∗) with 𝑌 (𝐱 𝑖 ), for 𝑖 = 1 , … , 𝑛 :
+
+𝐫 =
+
+⎛⎜⎜⎝
+
+Corr (𝑌 (𝐱 ∗), 𝑌 (𝐱 1))
+
+⋮
+
+Corr (𝑌 (𝐱 ∗), 𝑌 (𝐱 𝑛 ))⎞⎟⎟⎠
+
+. (4) The mean-squared error of the kriging predictor is [51] 
+
+𝑠 2(𝐱 ∗) = ̂𝜎 2
+
+[
+
+1 − 𝐫 𝑇 𝐑 −1 𝐫 +
+
+(1 − 𝐫 𝑇 𝐑 −1 𝐫 )2
+
+𝐈 𝑇 𝐑 −1 𝐈 
+
+]
+
+. (5) For convenience, one often uses the square root of the mean squared error, 𝑠 = √𝑠 2(𝐱 ∗). This root mean squared error, also referred to as the “standard error”, provides a natural measure of uncertainty in the predictions. 
+
+2.3. Neural network model 
+
+In this work, a multilayer perceptron (MLP), one of the earliest and most widely adopted neural network architectures, is employed. The MLP architecture used in this study comprises an input layer with two variables, a hidden layer, and an output layer with a single variable. The input vector, consisting of 𝜖 and 𝛿 ∕𝐷 , is successively    
+
+> S Li et al.: Preprint submitted to Elsevier Page 4 of 15 Kriging and neural network models for pressure losses
+> Fig. 2: Comparison of the pressure drop predicted by the present kriging and NN models with experimental pressure-drop data from the training dataset and with predictions from previously published models [34, 41, 43–45]. For Plate 3, the results have been scaled by a factor of 0.1 to improve plot readability. Experimental pressure-drop values represent averages over all measurements corresponding to different pore-scale Reynolds numbers for each plate.
+
+transformed through linear operations followed by the nonlinear Tanh activation function within the hidden layer, ultimately producing the normalized pressure drop Δ𝑝 ∕( 𝜌𝑈 20 ) as the model output. The fully connected MLP is implemented using an available framework [52]. To evaluate the predictive performance and generalizability of the NN model, the Leave-One-Out Cross Validation (LOOCV) is employed during training. Given the constraints of the training data size ( 𝑛 = 8 ), traditional hold-out methods or 𝑘 -fold cross-validation risk under-utilizing available data for training. LOOCV addresses this by iteratively training the model on 𝑛 − 1 training data points and validating it against the single excluded data point. This approach ensures that the model is trained on the maximum possible amount of data in each iteration. In this study, the LOOCV uses Bayesian optimization in Optuna to tune the hyperparameters. The number of hidden layer is restricted to be one due to the small training dataset. The number of neurons in the hidden layer ranges from 2 to 4. The learning rate 𝛼 
+
+ranges from 10 −4 to 10 −1 . The L2 regularization parameter 𝜆 for mitigating overfitting ranges from 10 −4 to 10 −1 . The NN surrogate is trained using full-batch Adam optimization. The number of optimizer iterations per batch ranges from 300 to 1000. During training, a backtracking line search is employed to ensure stable optimization. 
+
+## 3. Results 
+
+3.1. Predictions of the kriging and neural network models 
+
+Figure 2 compares the pressure drops predicted by the present kriging and NN models with experimental pressure-drop data from the training dataset, as well as with predictions from previously published models [34, 41, 43–45]. For the Bae & Kim model [41], only the Forchheimer component of the pressure drop is considered. In turbulent flow regimes, however, the Forchheimer term essentially represents the total pressure drop because it overwhelmingly dominates the Darcy contribution [48]. As shown in Fig. 2, both the kriging and NN models generally provide more accurate predictions of the training data than the previously published models. Moreover, the pressure-drop predictions obtained from the kriging model show better agreement with the experimental training data than those produced by the NN model. This conclusion is further supported by a comparison of the prediction errors of the different pressure-drop models relative to the experimental data, as presented in Fig. 3. The kriging model exhibits no noticeable errors, while the NN model shows only minor deviations for most of the plates. Nevertheless, it should be noted that comparisons based solely on the training data are not fully sufficient to validate the newly developed models, as they were trained using the same dataset. A more convincing assessment of their predictive capability requires evaluating the models against an independent test dataset. Figure 4 compares the pressure drops predicted by the present kriging and NN models with experimental pressure-drop data from the test dataset, as well as with predictions from previously published models [34, 41, 43–45]. When evaluated against the test data, both the kriging and NN models yield reasonable predictions with relatively small     
+
+> S Li et al.: Preprint submitted to Elsevier Page 5 of 15 Kriging and neural network models for pressure losses
+> Fig. 3: Comparison of prediction errors of different pressure-drop models relative to experimental data in the training dataset.
+> Fig. 4: Comparison of the pressure drop predicted by the present kriging and NN models with experimental pressure-drop data from the test dataset and with predictions from previously published models [34, 41, 43–45]. Experimental pressure-drop values represent averages over all measurements corresponding to different pore-scale Reynolds numbers for each plate.
+
+discrepancies for Plates 9 and 10, compared to previously published models. However, a noticeable discrepancy is observed for Plate 11. Although the prediction errors of the kriging and NN models for Plate 11 are larger than those for Plates 9 and 10, they remain smaller than the errors produced by some other models for Plates 9 and 10, as illustrated in Figure 5. In fact, this discrepancy can be attributed to the limited amount of available experimental data used in model training. In the future, as more experimental data become available in the literature, this limitation can be readily alleviated. Furthermore, it is noteworthy that the prediction error of certain individual models (e.g., Holt [45] for Plate 9, and Idelchik [43] and Bae & Kim [41] for Plate 10) can exceed 100%. This highlights the considerable challenge of accurately modelling pressure losses in the complex problem of flow through perforated plates. Figure 6 presents the response surfaces of the present kriging and neural network (NN) models, along with the training data points. For both models, the response surfaces closely follow the trends exhibited by the training data. The pressure drop is highly sensitive to porosity, particularly at low porosity values, where the response surfaces are markedly steeper. As porosity increases, this sensitivity diminishes, resulting in progressively flatter response surfaces. In contrast, the pressure drop exhibits relatively weak sensitivity to the thickness ratio. Figure 7 compares the response surfaces produced by the present kriging and NN models with those from previously published models [34, 41, 43–45]. As expected, all models predict decreasing pressure drops with increasing porosity.      
+
+> S Li et al.: Preprint submitted to Elsevier Page 6 of 15 Kriging and neural network models for pressure losses
+> Fig. 5: Comparison of prediction errors of different pressure-drop models relative to experimental data in the test dataset.
+> (𝑎 )(𝑏 )
+> Fig. 6: Response surfaces of the present (a) kriging model and (b) NN model, shown alongside the training data points.
+
+However, the slopes of the response surfaces at low porosity differ slightly among the models. The influence of the thickness ratio is more pronounced in the models proposed by Miller [34] and Holt [45]. In particular, these models predict higher pressure drops at low thickness ratios compared with high thickness ratios, a trend that becomes increasingly evident at low porosity levels. Figure 8 compares the pressure drops predicted by the present kriging and NN models with those obtained from previously published models [34, 41, 43–45] for different thickness ratios 𝛿 ∕𝐷 . At low porosity levels, the kriging and NN models generally predict lower pressure drops than the previously published models. In contrast, at high porosities, all models yield nearly identical pressure-drop predictions. Overall, the agreement among the models is excellent at high porosity, whereas deviations emerge at low porosity levels. 
+
+3.2. Integration of the present models in numerical simulations 
+
+3.2.1. Numerical modelling of perforated plates in two-dimensional channel flows 
+
+For perforated plates with very fine pores, directly meshing the plate geometry is highly challenging, as it would generate an excessively large number of computational cells. In such cases, it is preferable to use a numerical model that represents the effects of flow through perforated plates. Similar to the modelling of other porous media [53–57], the influence of perforated plates on the flow can be incorporated by introducing a pressure-drop source term into the momentum equations. Specifically, within the perforated-plate region, a volumetric source term 𝑆 is added to the right-hand side (RHS) of the momentum equations, resulting in the RANS momentum equations as formulated in [58]    
+
+> S Li et al.: Preprint submitted to Elsevier Page 7 of 15 Kriging and neural network models for pressure losses
+> Fig. 7: Comparison of response surfaces from the present kriging and NN models and previous models [34, 41, 43–45].
+
+𝜕 (𝜌̄ 𝑢 𝑖 )
+
+𝜕𝑡 + 𝜕 (𝜌̄ 𝑢 𝑖 ̄𝑢 𝑗 )
+
+𝜕𝑥 𝑗 
+
+= − 𝜕̄ 𝑝 𝜕𝑥 𝑖 
+
++ 𝜕̄ 𝜎 𝑖𝑗 
+
+𝜕𝑥 𝑗 
+
++ 𝜕𝜎 𝑖𝑗,𝑅𝐴𝑁𝑆 
+
+𝜕𝑥 𝑗 
+
++ 𝑆 𝑖 , (6) where ̄𝑢 𝑖 represents the velocity components (for two-dimensional flows, 𝑖 =1, 2), ̄𝑝 is the pressure, ̄𝜎 𝑖𝑗 is the viscous stress tensor, and 𝜎 𝑖𝑗,𝑅𝐴𝑁𝑆 denotes the Reynolds-stress tensor. Outside the perforated-plate region, the governing equations reduce to the standard RANS momentum equations, i.e., without the additional source term 𝑆 𝑖 in Eq. (6). Across the entire flow domain, including the perforated-plate region, the continuity equation remains unchanged, since the law of mass conservation continues to hold within the porous region. When the two-dimensional airflow approaches the perforated plate at zero incidence angle, the source term is expressed as 
+
+[𝑆 1
+
+𝑆 2
+
+]
+
+=
+
+[−Δ 𝑝 ∕𝛿 
+
+0
+
+]
+
+. (7) Since the incoming flow is perpendicular to the perforated plate, the second component of the source term, 𝑆 2, is zero. 
+
+3.2.2. Computational meshes and simulation setup 
+
+The computational domain is a rectangle measuring 200×50mm 2. Three different computational meshes, consisting of square cells with varying sizes, are employed in the simulations. The coarse mesh has a cell size of Δ = 0 .5 mm, while the medium and fine meshes have cell sizes of Δ = 0 .25 and 0.125 mm, respectively. The total number of cells for the coarse, medium, and fine meshes is 40k, 160k, and 640k, respectively. Figure 9 presents the coarse computational mesh with boundary conditions. The perforated plate itself is not explicitly meshed. Instead, its effect is modelled by adding a momentum source term (i.e. Eq. (7)) at the location of the dashed line ( 𝑥 = 0 ). Specifically, unless stated otherwise, for Plates 1 and 9, which have a thickness of 1 mm, the momentum source is applied to cells within −0 .5
+
+mm < 𝑥 < 0.5 mm. Steady RANS simulations are performed using the SST k-𝜔 turbulence model within the commercial software Siemens STAR-CCM+ version 2022.1 [59]. The inlet velocity is set to 𝑈 0 = 16 .6 m/s, corresponding to a Reynolds number of 𝑅𝑒 = 27 , 370 , based on the inlet velocity and the channel half-height. At the inlet boundary, the turbulence intensity is 6.2%, and the turbulent viscosity ratio is 10, which determines the dissipation rate 𝜔 .    
+
+> S Li et al.: Preprint submitted to Elsevier Page 8 of 15 Kriging and neural network models for pressure losses
+> Fig. 8: Comparison of pressure drops predicted by the present kriging and NN models with those from previously published models [34, 41, 43–45] for different thickness ratios 𝛿 ∕𝐷 .
+
+3.2.3. RANS-based pressure drop predictions using the present models as source terms 
+
+Figure 10 presents the pressure drops of Plates 1 and 9 predicted by the RANS simulations, in which the perforated plates are modelled using the present kriging and NN models. Good convergence of the solutions is observed for the coarse, medium, and fine meshes. Only minor differences appear at the location of the perforated plate, i.e., at 𝑥 = 0 .Figure 11 further illustrates the influence of the number of streamwise cells used to represent the perforated plate in the simulations. The results clearly indicate that the solutions are insensitive to the number of streamwise cells employed for modeling the perforated plate. The pressure drops predicted by the RANS simulations are also summarized in Table 3 and compared with both the experimentally measured pressure drops and those predicted directly by the present models. Excellent agreement is observed between the RANS predictions and the present model predictions.                
+
+> Table 3
+> Comparison of experimental pressure drops for Plates 1 and 9 with predictions from the present kriging and NN models and RANS simulations using the medium mesh. Plate Exp. Kriging RANS-Kriging NN RANS-NN 16.755 6.755 6.755 6.789 6.7889 91.640 1.813 1.813 1.485 1.4853
+
+## 4. Concluding remarks 
+
+A turbulent flow through a perforated plate is a common problem in a wide variety of practical applications in thermal, mechanical, chemical, civil, nuclear, ocean, and aerospace engineering [60]. Accurate modelling of the pressure loss across a perforated plate is essential for the optimal design and reliable performance assessment of       
+
+> S Li et al.: Preprint submitted to Elsevier Page 9 of 15 Kriging and neural network models for pressure losses Perforated Plate Inlet Outlet Slip Walls
+> Fig. 9: Two-dimensional coarse computational mesh with a uniform cell size of Δ = 0 .5mm used for the RANS simulations. The dashed line indicates the location at which the source term is applied in the momentum equations.
+
+thermal and fluid systems in engineering applications. In this study, two data-driven models based on kriging and neural networks are proposed to predict pressure losses across perforated plates with circular perforations in turbulent flows. The models are developed using two sets of experimental data available in the literature [38, 39]. Here, 70% of the available experimental data are used to train the models, while the remaining 30% are reserved as a test dataset. The predictive performance of the proposed models is assessed and compared against widely used empirical formulae. It is found that the proposed models consistently outperform existing empirical models for most perforated plate configurations contained in the experimental datasets. Besides, the predicted pressure losses generally show good agreement with experimental measurements, demonstrating that data-driven approaches based on kriging and NN provide a feasible framework for modelling pressure losses across perforated plates. Overall, although the kriging model shows slightly better agreement with the experimental data than the NN model, both approaches demonstrate strong predictive capability, despite being trained on a relatively limited amount of experimental data, owing to the scarcity of measurements reported in the literature. The response surfaces of the kriging and NN models show that the predicted pressure losses are highly sensitive to porosity at low porosity values, where the response surfaces are markedly steeper. As porosity increases, this sensitivity diminishes, resulting in progressively flatter response surfaces. In contrast, the pressure drop exhibits relatively weak sensitivity to the thickness ratio. Finally, to demonstrate the applicability of the proposed models in numerical simulations, two-dimensional channel flows are simulated using the RANS equations, in which the new pressure-loss models are implemented as source terms in the momentum equations. The RANS predictions are found to be in excellent agreement with the model predictions, confirming the suitability of the proposed approaches for practical computational fluid dynamics applications. It should also be noted that, although the present models are applicable to turbulent flows over a wide range of Reynolds numbers, they are limited to specific ranges of plate porosity ( 𝜀 ) and plate thickness ratio ( 𝛿 ∕𝐷 ). These limitations arise from the scope of the experimental data used in developing the models. Nevertheless, the considered ranges of porosity and thickness encompass many practical configurations, enabling the application of perforated plates in a wide variety of engineering problems, such as heat transfer in heat exchangers, flame stabilization in combustion chambers, and aerodynamic noise reduction. 
+
+## Appendix: Empirical formulae for pressure loss across perforated plates 
+
+Pressure losses resulting from flow through perforated plates are often characterized by the Darcy-Forchheimer equation, expressed as: 
+
+−∇ 𝑃 = 𝜇 𝐾 𝑈 0 + 𝜌𝛼 |𝑈 0|𝑈 0, (8)      
+
+> S Li et al.: Preprint submitted to Elsevier Page 10 of 15 Kriging and neural network models for pressure losses
+> Fig. 10: RANS-predicted pressure drops obtained using coarse, medium, and fine meshes. Simulation results are shown for (a) Plate 1 with the present kriging model, ( b) Plate 1 with the present NN model, ( c) Plate 9 with the present kriging model, and ( d) Plate 9 predicted by RANS with the present NN model. The source term in the momentum equations is applied at 𝑥 = 0 .
+
+where 𝐾 is the permeability of the porous medium, 𝛼 is the Forchheimer coefficient (also called the non-Darcy coefficient), 𝜌 is the fluid density, 𝑈 0 is the velocity of the incoming flow at the wind-tunnel inlet, and 𝜇 is the dynamic viscosity of the fluid. The first term on the RHS of Eq. (8), known as the Darcy term, accounts for viscous pressure losses, while the second term, the Forchheimer term, represents inertial pressure losses. When the pore-level Reynolds number is sufficiently low, the Darcy term dominates over the Forchheimer term [41, 49, 55, 61]. The pressure gradient (−∇ 𝑃 ) on the left-hand side (LHS) of Eq. (8) may alternatively be expressed using the pressure drop ( Δ𝑝 ) across a perforated plate of thickness 𝛿 , as follows 
+
+−∇ 𝑃 = Δ𝑝 𝛿 . (9) The Darcy-Forchheimer drag from Eq. (8) can then be expressed as [62] 
+
+Δ𝑝𝐷 2
+
+𝜇𝛿𝑈 0
+
+= 𝐷 2
+
+𝐾 + 𝜀𝛼𝐷𝑅𝑒 𝑝 , (10) where 𝑅𝑒 𝑝 = 𝜌𝑈 0𝐷 ∕( 𝜇𝜀 ) is the pore-level Reynolds number. From Eq. (10), the normalized pressure drop across perforated plates can be expressed as 
+
+Δ𝑝 𝜌𝑈 20
+
+= 𝛿𝐷 𝐾𝜀𝑅𝑒 𝑝 
+
++ 𝛼𝛿. (11) The first term on the RHS of Eq. (11) represents the contribution of the Darcy term to the normalized pressure drop. This term depends on both the plate characteristics, such as permeability, porosity, and thickness, and the flow properties, including fluid viscosity and flow velocity (or Reynolds number). The second term on the RHS corresponds to the Forchheimer contribution, which depends solely on the plate characteristics, including porosity and thickness. Although Eq. (11) provides a mathematical framework for describing pressure loss across perforated plates, the permeability 𝐾 and Forchheimer coefficient 𝛼 are yet to be determined. Based on numerical simulations of laminar         
+
+> S Li et al.: Preprint submitted to Elsevier Page 11 of 15 Kriging and neural network models for pressure losses
+> Fig. 11: RANS-predicted pressure drops illustrating the effect of the number of streamwise cells used to represent the perforated plate in the simulations. For the coarse mesh ( Δ = 0 .5mm), simulations are performed using 2 and 4 streamwise cells to model the perforated plate, while for the medium mesh ( Δ = 0 .25 mm), 4 and 8 streamwise cells are used. Simulation results are shown for ( a) Plate 1 with the coarse mesh, ( b) Plate 1 with the medium mesh, ( c) Plate 9 with the coarse mesh, and ( d) Plate 9 with the medium mesh. The source term in the momentum equations is applied at 𝑥 = 0 .
+
+flows ( 𝑅𝑒 𝑝 < 25 ), Bae & Kim [41] developed the following model to estimate 𝐾 and 𝛼 for perforated plates: 
+
+𝐾 = 𝜀𝐷 2𝛿 
+
+32 𝛿 + 15 𝐷 , 𝛼 = 3(1 − 𝜀 )4𝜀 2𝛿 . (12) This model has been validated using the experimental data of Doerffer & Bohning [63]. For a detailed comparison between the model predictions and the measurements, the reader is referred to Ref. [41]. Besides, several models for pressure loss across perforated plates in turbulent flow regimes have been proposed by researchers such as Idelchik [42, 43], Miller [34], Kast [44], Holt et al. [45], and Li et al. [48]. In these regimes, the Forchheimer term strongly dominates over the Darcy term, allowing the Forchheimer coefficient 𝛼 to be used to calculate the Forchheimer contribution, which is approximately equal to the total pressure loss. For perforated plates of finite thickness at high Reynolds numbers, Idelchik [43] proposed a formula of the following form: 
+
+𝛼 = 12𝜀 2𝛿 
+
+(
+
+0.5 + 0 .24 
+
+√
+
+1 − 𝜀 (1 − 𝜀 ) + (1 − 𝜀 )2)
+
+. (13) Similarly, Kast [44] suggested the following formula: 
+
+𝛼 = 12𝜀 2𝛿 
+
+(
+
+( 1
+
+𝐶 − 1) 2 + (1 − 𝜀 )2)
+
+, (14) where 𝐶 is a coefficient that depends on the plate porosity and can be expressed as 
+
+𝐶 = 0 .6 + 0 .4𝜀 2. (15) Miller [34] proposed the following formula: 
+
+𝛼 = 𝐶 0
+
+(1 − 𝐶 𝑐 𝜀 )2
+
+2𝐶 2 
+
+> 𝑐
+
+𝜀 2𝛿 , (16)   
+
+> S Li et al.: Preprint submitted to Elsevier Page 12 of 15 Kriging and neural network models for pressure losses
+
+where 𝐶 0 is a coefficient that depends on the thickness ratio 𝛿 ∕𝐷 , and 𝐶 𝑐 is the jet contraction coefficient, which depends on the porosity 𝜀 . According to Fratino [64], 𝐶 0 can be calculated using the following empirical expression, valid for 0.1 < 𝛿 ∕𝐷 < 3:
+
+𝐶 0 = 0 .5 + 0.178 4( 𝛿 𝐷 )2 + 0 .355 , (17) while 𝐶 𝑐 is given by 
+
+𝐶 𝑐 = 0 .596 + 0 .0031 exp( 
+
+√𝜀 
+
+0.206 ). (18) Holt et al. [45] proposed the following piecewise function for the Forchheimer coefficient: 
+
+𝛼 =
+
+⎧⎪⎨⎪⎩
+
+> 12𝛿
+
+(
+
+2.9 − 3 .79 𝛿 𝐷 𝜀 0.2 + 1 .79 
+
+( 𝛿 𝐷 
+
+)2
+
+𝜀 0.4
+
+)
+
+𝐾 𝐿𝐴 𝛿 𝐷 𝜀 0.2 < 0.9
+
+> 12𝛿
+
+(
+
+0.876 + 0 .069 𝛿 𝐷 𝜀 0.2
+
+)
+
+𝐾 𝐿𝐴 𝛿 𝐷 𝜀 0.2 > 0.9,
+
+(19) where the jet contraction coefficient 𝐶 𝑐 is set to 0.72 [47]. 𝐾 𝐿𝐴 is the pressure-loss coefficient of a single-hole orifice, estimated using a theoretical model for reattached flows, as follows: 
+
+𝐾 𝐿𝐴 = 1 − 2
+
+𝜀 + 2
+
+𝜀 2
+
+(
+
+1 − 1
+
+𝐶 𝑐 
+
++ 12𝐶 2
+
+> 𝑐
+
+)
+
+. (20) Recently, Li et al. [48] proposed a pressure-drop model for perforated plates applicable to both laminar and turbulent flow regimes, as follows: 
+
+𝐾 = 𝜀𝐷 2𝛿 
+
+32 𝛿 + 15 𝐷 , 𝛼 = 940 𝜀 2𝛿 
+
+[
+
+6
+
+( 𝛿 𝐷 
+
+)
+
+− 5 
+
+( 𝛿 𝐷 
+
+)2]
+
+. (21) The model proposed by Li et al. [48] has been validated against existing numerical simulations [61] in the laminar flow regime and experimental measurements [38] in the turbulent regime, demonstrating good agreement. 
+
+## CRediT authorship contribution statement 
+
+Shuai Li: Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing - original draft, Writing - review & editing, Visualization. 
+
+## Declaration of Competing Interest 
+
+The author declares that he has no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. 
+
+## Data Availability 
+
+The data that support the findings of this study are available from the corresponding author upon reasonable request. 
+
+## Funding Source 
+
+This work is supported by the project Innovative Design of Installed Airframe Components for Aircraft Noise Reduction ("INVENTOR", European Union’s Horizon 2020 Research and Innovation Programme, under Grant Agree-ment N ◦ 8605383), and by the Horizon Europe project Scale-resolving Simulations for Innovations in Turbomachinery Design ("Sci-Fi-Turbo") under Grant Agreement No. 101138080.   
+
+> S Li et al.: Preprint submitted to Elsevier Page 13 of 15
+
+Kriging and neural network models for pressure losses 
+
+## Acknowledgments 
+
+The author would like to thank the partners in the European projects for their valuable and helpful discussions. The computations were enabled by the computer resources at the Chalmers Centre for Computational Science and Engineering (C3SE) provided by the Swedish National Infrastructure for Computing (SNIC). 
+
+## References 
+
+[1] Y. Ahmimache, M. Fénot, F. Plourde, L. Descamps, Heat transfer and flow velocity study of a row of jets emerging from a perforated pipe at a low reynolds number, International Journal of Heat and Mass Transfer 183 (2022) 122067. [2] D. H. Lee, Y. M. Lee, Y. T. Kim, S. Y. Won, Y. S. Chung, Heat transfer enhancement by the perforated plate installed between an impinging jet and the target plate, International Journal of Heat and Mass Transfer 45 (1) (2002) 213–217. [3] H. McMahon, R. Bowen, G. Bleyle Jr, A perforated-plate heat exchanger, Transactions of the American Society of Mechanical Engineers 72 (5) (1950) 623–632. [4] S. Shevyakova, V. Orlov, Study of hydraulic resistance and heat transfer in perforated-plate heat exchangers, Inzhenerno-Fizicheskij Zhurnal 45 (1) (1983) 32–36. [5] C. F. Kutscher, Heat exchange effectiveness and pressure drop for air flow through perforated plates with and without crosswind, Journal of Heat Transfer 116 (2) (1994) 391–399. [6] M. White, G. Nellis, S. Klein, W. Zhu, Y. Gianchandani, An experimentally validated numerical modeling technique for perforated plate heat exchangers, Journal of heat transfer 132 (11) (2010). [7] M. Tomić, P. Živković, M. Vukić, S. Ayed, The methodology for determination of perforated plate heat transfer coefficient, in: International Conference Powerplants, 2014. [8] V. K. Arghode, Y. Joshi, Experimental investigation of air flow through a perforated tile in a raised floor data center, Journal of electronic packaging 137 (1) (2015). [9] L. R. Raju, S. S. Kumar, K. Chowdhury, T. Nandi, Heat transfer and flow friction correlations for perforated plate matrix heat exchangers, in: IOP Conference Series: Materials Science and Engineering, Vol. 171, IOP Publishing, 2017, p. 012085. [10] M. A. Tomić, S. K. Ayed, Ž. Ž. Stevanović, P. S. Ðekić, P. M. Živković, M. V. Vukić, Perforated plate convective heat transfer analysis, International Journal of Thermal Sciences 124 (2018) 300–306. [11] H. Husin, M. Faisal, A. Gani, R. Sardjono, R. Mamat, The modification of the perforated plate in the fluidized-bed combustor to analyze heat convection rate and temperature, Journal of Combustion 2021 (2021) 1–8. [12] E. Laws, A. Ouazzane, A further investigation into flow conditioner design yielding compact installations for orifice plate flow metering, Flow Measurement and Instrumentation 6 (3) (1995) 187–199. [13] E. Spearman, J. Sattary, M. Reader-Harris, Comparison of velocity and turbulence profiles downstream of perforated plate flow conditioners, Flow measurement and Instrumentation 7 (3-4) (1996) 181–199. [14] B. Laribi, P. Wauters, M. Aichouni, Comparative study of aerodynamic behaviour of three flow conditioners, European journal of mechanical and environmental engineering 48 (1) (2003) 21–30. [15] W. Xiong, K. Kalkühler, W. Merzkirch, Velocity and turbulence measurements downstream of flow conditioners, Flow Measurement and Instrumentation 14 (6) (2003) 249–260. [16] J. Hoffmann-Vocke, J. Neale, M. Walmsley, The effect of inlet conditions on the air side hydraulic resistance and flow maldistribution in industrial air heaters, International journal of heat and fluid flow 32 (4) (2011) 834–845. [17] W. Yaïci, M. Ghorab, E. Entchev, 3d cfd analysis of the effect of inlet air flow maldistribution on the fluid flow and heat transfer performances of plate-fin-and-tube laminar heat exchangers, International Journal of Heat and Mass Transfer 74 (2014) 490–500. [18] B. Laribi, A. A. Hadj, Discharge coefficient behaviour in presence of four perforated plates flow conditioners-numerical investigation part 1, in: 17th International Congress of Metrology, EDP Sciences, 2015, p. 03005. [19] N. Noiray, D. Durox, T. Schuller, S. Candel, Passive control of combustion instabilities involving premixed flames anchored on perforated plates, Proceedings of the Combustion Institute 31 (1) (2007) 1283–1290. [20] S. Oh, Y. Shin, Y. Kim, Stabilization effects of perforated plates on the combustion instability in a lean premixed combustor, Applied Thermal Engineering 107 (2016) 508–515. [21] S. S. Rashwan, A. H. Ibrahim, T. W. Abou-Arab, M. A. Nemitallah, M. A. Habib, Experimental study of atmospheric partially premixed oxy-combustion flames anchored over a perforated plate burner, Energy 122 (2017) 159–167. [22] J. Kim, A. Satija, R. P. Lucht, J. P. Gore, Effects of turbulent flow regime on perforated plate stabilized piloted lean premixed flames, Combustion and Flame 211 (2020) 158–172. [23] H. Younesian, M. Shahmardan, Experimental study of flame quenching phenomenon of mixed methane and air in the presence of perforated plates and porous barriers in a closed chamber, Fuel and Combustion 14 (2) (2021) 87–100. [24] H. Younesian, M. Nazari, M. M. Shahmardan, Visualization of flame propagation and quenching of methane/air mixture in a cubic enclosure with perforated plates: Experimental study, Combustion Science and Technology (2022) 1–20. [25] D. Naot, F. Kreith, On the penetration of turbulence through perforated flat plates, International Journal of Heat and Mass Transfer 23 (4) (1980) 566–568. [26] R. Liu, D. S. Ting, G. W. Rankin, On the generation of turbulence with a perforated plate, Experimental thermal and fluid science 28 (4) (2004) 307–316. [27] R. Liu, D. S.-K. Ting, Turbulent flow downstream of a perforated plate: sharp-edged orifice versus finite-thickness holes, Journal of Fluids Engineering 129 (9) (2007) 1164–1171. 
+
+S Li et al.: Preprint submitted to Elsevier Page 14 of 15 Kriging and neural network models for pressure losses 
+
+[28] S. Dhineshkumar, B. Prakash, S. Balakrishnan, Large turbulence creation inside a gas turbine combustion chamber using perforated plate, Int. J. Eng. Sci. Res. Technol 2 (2013) 937–942. [29] K. Sakaliyski, J. Hileman, Z. Spakovszky, Aero-acoustics of perforated drag plates for quiet transport aircraft, in: 45th AIAA Aerospace Sciences Meeting and Exhibit, 2007, p. 1032. [30] A. Rubio Carpio, F. Avallone, D. Ragni, M. Snellen, S. Van Der Zwaag, Mechanisms of broadband noise generation on metal foam edges, Physics of Fluids 31 (10) (2019) 105110. [31] P. Laffay, S. Moreau, M. C. Jacob, J. Regnard, Experimental investigation of the noise radiated by a ducted air flow discharge though diaphragms and perforated plates, Journal of Sound and Vibration 472 (2020) 115177. [32] C. Sumesh, T. Jothi, Aerodynamic noise from an asymmetric airfoil with perforated extension plates at the trailing edge, International Journal of Aeroacoustics 20 (1-2) (2021) 88–108. [33] R. Zamponi, A. R. Carpio, F. Avallone, D. Ragni, Noise source analysis of porous fairings in a scaled landing gear model, Aerospace Science and Technology 158 (2025) 109885. [34] D. S. Miller, Internal flow systems, Vol. 5, BHRA (Information services) Bedford, UK, 1990. [35] J. C. Pacio, C. A. Dorao, A study of the effect of flow maldistribution on heat transfer performance in evaporators, Nuclear Engineering and Design 240 (11) (2010) 3868–3877. [36] K. K. Nielsen, K. Engelbrecht, C. R. Bahl, The influence of flow maldistribution on the performance of inhomogeneous parallel plate heat exchangers, International Journal of heat and Mass transfer 60 (2013) 432–439. [37] L. Beckedorff, R. Da Silva, G. Martins, K. de Paiva, J. Oliveira, A. Oliveira, Flow maldistribution and heat transfer characteristics in plate and shell heat exchangers, International Journal of Heat and Mass Transfer 195 (2022) 123182. [38] S. Yavuzkurt, G. L. Catchen, Dependence of pressure losses on angle of attack for flow through perforated plates, in: ASME International Mechanical Engineering Congress and Exposition, Vol. 37165, 2003, pp. 435–440. [39] F. Méry, D. Sebbane, Aerodynamic characterisation of porous fairings: pressure drop and laser doppler velocimetry measurements, Scientific Data 10 (1) (2023) 39. [40] Y. Bayazit, E. M. Sparrow, D. D. Joseph, Perforated plates for fluid management: Plate geometry effects and flow regimes, International Journal of Thermal Sciences 85 (2014) 104–111. [41] Y. Bae, Y. I. Kim, Numerical modeling of anisotropic drag for a perforated plate with cylindrical holes, Chemical Engineering Science 149 (2016) 78–87. [42] I. E. Idelchik, Handbook of hydraulic resistance, Washington (1986). [43] I. E. Idelchik, Handbook of hydraulic resistance, 2nd edn, CRC, Boca Raton, FL (1994). [44] W. Kast, Pressure drop in single phase flow, vdi heat atlas (2010). [45] G. Holt, D. Maynes, J. Blotter, Cavitation at sharp edge multi-hole baffle plates, in: ASME International Mechanical Engineering Congress and Exposition, Vol. 54921, 2011, pp. 401–410. [46] Engineering Sciences Data Unit (ESDU), Flow of liquids. Pressure losses across orifice plates, perforated plates and thick orifice plates in ducts, Tech. rep., London, UK: Internal Flow and Physical Properties Group; Report no. 81039 (1981). [47] S. Malavasi, G. Messa, U. Fratino, A. Pagano, On the pressure losses through perforated plates, Flow measurement and instrumentation 28 (2012) 57–66. [48] S. Li, L. Davidson, S.-H. Peng, A pressure-loss model for flow-through round-hole perforated plates of moderate porosity and thickness in laminar and turbulent flow regimes, International Journal of Heat and Mass Transfer 226 (2024) 125490. [49] P. Tanner, J. Gorman, E. Sparrow, Flow–pressure drop characteristics of perforated plates, International Journal of Numerical Methods for Heat & Fluid Flow 29 (11) (2019) 4310–4333. [50] A. Minotti, F. Simon, F. Gantié, Characterization of an acoustic liner by means of laser doppler velocimetry in a subsonic flow, Aerospace Science and Technology 12 (5) (2008) 398–407. [51] D. R. Jones, A taxonomy of global optimization methods based on response surfaces, Journal of global optimization 21 (4) (2001) 345–383. [52] S. H. Berguin, Jacobian-enhanced neural networks (2024). arXiv:2406.09132 .[53] P. N. Okolo, K. Zhao, J. Kennedy, G. J. Bennett, Numerical modeling of wire screens for flow and noise control, in: 23rd AIAA/CEAS Aeroacoustics Conference, 2017, p. 3700. [54] W. Zhu, Z. Xiao, S. Fu, Numerical modeling screen for flow and noise control around tandem cylinders, AIAA Journal 58 (6) (2020) 2504– 2516. [55] S. Li, L. Davidson, S.-H. Peng, Numerical modeling of a wire mesh for aerodynamic noise reduction, Physics of Fluids 35 (1) (2023) 015103. [56] S. Li, L. Davidson, S.-H. Peng, A. R. Carpio, D. Ragni, F. Avallone, A. Koutsoukos, On the mitigation of landing gear noise using a solid fairing and a dense wire mesh, Aerospace Science and Technology 153 (2024) 109465. [57] S. Li, L. Davidson, S.-H. Peng, A. Rubio Carpio, D. Ragni, F. Avallone, Numerical and experimental investigation of the mitigation of landing gear noise using diamond lattice fairings, in: 30th AIAA/CEAS Aeroacoustics Conference (2024), 2024, p. 3283. [58] Siemens Digital Industries Software, Simcenter STAR-CCM+ User Guide v. 2022.1 (Siemens 2022). [59] Siemens Digital Industries Software, Simcenter STAR-CCM+, version 2022.1 (Siemens 2022). [60] S. Li, L. Davidson, S.-H. Peng, A fluid flow model for the pressure loss through perforated plates, arXiv preprint arXiv:2304.11730 (2023). [61] H. Shahzad, S. Hickel, D. Modesti, Permeability and turbulence over perforated plates, Flow, Turbulence and Combustion 109 (4) (2022) 1241–1254. [62] S. Lee, J. Yang, Modeling of darcy-forchheimer drag for fluid flow across a bank of circular cylinders, International journal of heat and mass transfer 40 (13) (1997) 3149–3155. [63] P. P. Doerffer, R. Bohning, Modelling of perforated plate aerodynamics performance, Aerospace Science and Technology 4 (8) (2000) 525–534. [64] U. Fratino, Hydraulic and cavitation characteristics of multihole orifices, in: Proceedings of the hydraulic machinery and system 20th IAHR symposium, 2000, pp. 6–9. 
+
+S Li et al.: Preprint submitted to Elsevier Page 15 of 15

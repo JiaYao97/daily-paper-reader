@@ -1,0 +1,558 @@
+Title: ScaleAware-JEPA: Latent Representation for Discovery in Multiscale Physical Fields
+
+URL Source: https://arxiv.org/pdf/2606.29723v1
+
+Published Time: Tue, 30 Jun 2026 01:56:36 GMT
+
+Number of Pages: 24
+
+Markdown Content:
+# ScaleAware-JEPA: Latent Representation for Discovery in Multiscale Physical Fields 
+
+## Guang-Xing Li ∗
+
+Abstract 
+
+Continuous physical fields represent a large fraction of data under scientific investigation. Their multiscale structures are central to discovery, yet useful coordinates are not known in advance. Standard self-supervised methods define context and targets in fixed image coordinates, posing a predictive task misaligned with fields organized across a continuous scale hierarchy. We introduce ScaleAware-JEPA, a framework that constructs dense, label-free latent coordinates for continuous scalar fields. Constrained Diffusion Decomposition (CDD) separates each field into pixel-registered scale components and provides the scale coordinates that define the masking geometry. The resulting JEPA objective predicts hidden structure with a context footprint tied to the diffusion scale of each component rather than to an arbitrary patch size. Across MHD turbulence, interstellar molecular gas and urban nighttime-light structure, the learned geometry maps back to coherent morphology, forming dense structural atlases without labels or predefined segmentation rules. By tying latent prediction to the scale hierarchy of a field, ScaleAware-JEPA constructs latent coordinates through which complex physical patterns can be inspected before their relevant structures have been prescribed. Code is available at https://github.com/gxli/SA-JEPA .
+
+# Introduction 
+
+Scientific discovery often begins when the right representation makes hidden structure visible. Continuous physical fields have become central objects of investigation as scientific attention shifts from isolated con-stituents toward patterns, structures and collective organization. Dissipative vortex tubes in high-Reynolds-number turbulence [Douady et al., 1991], magnetic reconnection layers in MHD flows [Biskamp, 2003], and the anisotropic matter distribution of the cosmic web [Bond et al., 1996] are all structures whose scientific meaning lies in the organization of a field across space and scale. Yet the representations used to anal-yse such fields have not kept pace. They either compress fields into global statistics, including spectra, probability distributions and correlation functions, discarding the spatial and organizational structure that carries physical meaning [Frisch, 1995, Pope, 2000, Falkovich et al., 2001], or impose hand-crafted structural definitions—Hessian filaments [Aragón-Calvo et al., 2007, Bond et al., 2010], dendrogram clouds [Rosolowsky et al., 2008] and watershed voids [Platen et al., 2007]—that predetermine what can be found. A represen-tation that organizes the structural complexity of physical fields without compressing it away or prescribing it in advance would provide a new instrument for investigating systems whose relevant organizing variables are not yet known. Learning such representations amounts to discovering useful latent coordinates. In classical physics, the phase space of a system is often specified by theory: the relevant variables are known before the dynamics are analysed. For complex systems far from equilibrium, this assumption can fail. Kauffman framed this as a foundational difficulty: the relevant macroscopic variables, and therefore the effective phase space itself, may not be specifiable in advance [Kauffman and Roli, 2023]. Existing constructions such as Takens delay embeddings [Takens, 1981] and Koopman operator representations [Mezić, 2005] provide principled coordi-nates for dynamical systems, but their practical use requires choices of measurements, delays or observables that may be difficult to specify for complex fields. Self-supervised latent prediction provides a practical route to learning such coordinates from the field itself. A complementary geometric perspective is provided by the manifold hypothesis: physical configura-tions may occupy structured subsets of a much larger ambient space [Bengio et al., 2013, Fefferman et al.,  
+
+> ∗Correspondence: gxli.ai@proton.me
+
+1
+
+> arXiv:2606.29723v1 [cs.LG] 29 Jun 2026
+
+2016]. Joint Embedding Predictive Architectures [JEPAs; LeCun, 2022, Assran et al., 2023] train a model to predict the latent representation of hidden regions from visible context rather than reconstructing pixels. The strength of this principle is illustrated by recent work such as LeWorldModel [Maes et al., 2026], which shows that JEPA-style world models can learn compact latent dynamics directly from raw pixels using next-embedding prediction. The aim here is not to improve representation learning for natural images, but to construct latent coordinates through which physical systems become inspectable. Physical fields are intrinsically multiscale, and this poses a fundamental challenge for standard self-supervised learning. Richardson’s classical picture of turbulence [Richardson, 1922, Kolmogorov, 1941, Frisch, 1995] expresses a broader organizing principle: large-scale structure sets the environment in which smaller structures form, while small structures trace and modify the larger organization. This coupling appears across physical domains, from clouds and filaments to spiral arms and molecular complexes to extended urban networks. Standard masking strategies, inherited from vision models, hide fixed-size patches and pose prediction at a single image scale. For physical fields, however, the context needed to predict a hidden region is distributed across the scale hierarchy. A framework for physical fields must therefore make that hierarchy part of the predictive task itself. ScaleAware-JEPA instantiates this principle through two coupled design choices, both grounded in Con-strained Diffusion Decomposition [CDD; Li, 2022]. First, the field is decomposed into pixel-registered scale components before encoding (Figure 1c), making large-scale correlations directly available rather than leaving them to emerge only through the local inductive bias of a convolutional encoder. Second, the mask footprint is tied to the diffusion scale of each component. The context–target prediction task is thereby posed at fine, intermediate and coarse levels of the field rather than at a single arbitrary patch size (Figure 1a). 
+
+# Method 
+
+ScaleAware-JEPA constructs dense, label-free latent coordinates for continuous scalar fields by reformulating joint-embedding predictive learning [LeCun, 2022, Assran et al., 2023] for multiscale continuous fields. The framework follows the core JEPA paradigm: an online branch receives a masked input and predicts the latent representation produced by an EMA target branch from the corresponding unmasked field. Prediction is evaluated strictly at hidden target locations, while a weak spread regularizer prevents representational collapse (Figure 1). The fundamental departure of ScaleAware-JEPA is that both the representation and the predictive task are explicitly governed by the intrinsic physical scale hierarchy of the field, rather than by arbitrary image patches. We use Constrained Diffusion Decomposition (CDD) [Li, 2022] to extract a pixel-registered pyramid of continuous scale components. A scale-aware, dense ConvNeXt-style encoder [Liu et al., 2022] maps this multiscale input to a full-resolution latent field, assigning a latent coordinate to every spatial location. Crucially, these same CDD scales dictate the masking geometry—forcing the architecture to predict hidden structure using context footprints matched to the fine, intermediate, and coarse scales of the field (Figure 1c). 
+
+## CDD scale coordinates 
+
+Physical fields are observed on discrete grids but are organized across continuous physical scales. ScaleAware-JEPA uses Constrained Diffusion Decomposition [CDD; Li, 2022] to define scale coordinates for this organi-zation. CDD evolves an input scalar field I according to: 
+
+∂I ∂t = −ReLU( −∇ 2I), (1) where diffusion time corresponds to a characteristic scale λ ∝ √t (the reported scales [2 , 4, 8, . . . ] are diffusion-scale indices that parameterize the masking hierarchy consistently across experiments). Differences between diffusion states yield a pixel-registered pyramid of structurally isolated field components. Within the ScaleAware-JEPA framework, CDD serves two coupled roles. First, instead of forcing a network to blindly infer a complex hierarchy from a single flat image, CDD presents the fine, intermediate, and coarse morphology to the encoder as physically aligned scale components. Second, it supplies the explicit coordinate system used to generate the masking task. The representation space and the predictive question are thereby locked to the exact same physical geometry. 2Input x   
+
+> scalar field
+> CDD decomp.
+> Masking
+> Context ( fθ)
+> Predictor ( gθ)
+> ˆzt
+> Target ( f¯θ)
+> zt
+> Loss
+> xc, M
+> EMA ( m)
+> Backprop
+
+(a) Architecture 
+
+> CDD decomp.
+> x(1)
+> fine
+> x(2)
+> mid
+> x(3)
+> coarse
+> x(4)
+> halo
+> scale-aware adapter
+> scale-aware adapter
+> scale-aware adapter
+> scale-aware adapter
+> ⊕
+> delayed scale fusion
+> dense ConvNeXt
+
+(b) Scale-aware encoder CDD Decomposition  Pyramid Masking 
+
+(c) CDD decomposition and pyramid masking 
+
+Figure 1: ScaleAware-JEPA architecture and design. (a) Architecture: the CDD frontend decomposes the raw field into scale-separated components. The context branch applies scale-aware masking and encodes the masked context; the target branch bypasses masking and uses an EMA-updated copy. A lightweight predictor maps context to target latent space. Training combines latent prediction and a weak spread regularizer. (b) Scale-aware ConvNeXt encoder: each CDD component is processed by a per-scale adapter, followed by top-down residual scale fusion with per-scale 1 × 1 projections and dense ConvNeXt processing to produce the latent map zc. (c) CDD decomposition and pyramid masking. We use CDD rather than a generic wavelet basis [Daubechies, 1992, Mallat, 2009] because the decom-position directly defines the prediction task. CDD provides localized, pixel-registered scale components well suited to defining scale-dependent masking. Appendix A provides a matched wavelet control with quantita-3tive diagnostics and a direct decomposition comparison. 
+
+## Scale-aware encoding and masking 
+
+For each scale level, the encoder receives three channels: the masked CDD component x(s) 
+
+> c
+
+, a binary mask-indicator channel M (s) ∈ { 0, 1}H×W , and a scalar scale code identifying the diffusion scale (see Figure 1b for the scale-aware encoder schematic). Here M (s) 
+
+> ij
+
+= 1 denotes a masked pixel and M (s) 
+
+> ij
+
+= 0 a visible pixel. The mask indicator is not a learned parameter. Adapted features are then fused from coarse to fine and processed by a dense ConvNeXt V2-style backbone [Liu et al., 2022] with Global Response Normalization [Woo et al., 2023]. This produces a full-resolution latent map while preserving the spatial correspondence required for back-mapping. Full encoder implementation details are provided in Appendix B. For a component with diffusion scale σs (where σs is the physical scale λs expressed in pixel units), the context mask footprint is defined relative to that scale: 
+
+b = max( ntarget , round( σsfmask + B0)) , B s =
+
+(oddceil( b), b ≤ Bcap ,
+
+oddfloor( Bcap ), b > B cap , (2) where ntarget = 3 is the target-patch width, oddceil( x) is the smallest odd integer not smaller than x,
+
+oddfloor( x) the largest odd integer not larger than x, fmask is the scale multiplier, B0 is a fixed offset in pixels, and Bcap = 48 px (MHD, Chengdu) or 35 px (NGC). Setting fmask = 0 recovers a fixed-box mask; 
+
+B0 = 0 gives a pure scale-tied pyramid mask. When the hard cap is active, the box rounds downward to avoid exceeding Bcap . The MHD masking sweep shows that mask geometry has a direct and measurable effect on latent-use diagnostics. Fixed-box masks and very large pyramid footprints can reach high effective rank while the hinge ratio approaches a plateau, indicating that further increases in occlusion no longer improve latent usage in a controlled way. Scale-aware pyramid masking instead provides a structured progression across scale-dependent context footprints. The selected 1.2 × σs setting lies before the large-mask plateau regime (Figure 2). The full mask-construction procedure is given in Appendix C. 
+
+## Learning and latent-atlas construction 
+
+The online encoder, EMA target encoder and lightweight spatial predictor are trained with a two-term objective: L = λpred Lpred + λspread Lspread . The dominant term Lpred (λpred = 50 ) is a mean-squared-error loss between predicted and target projected representations, evaluated only at masked target locations. A standard-deviation hinge spread regularizer Lspread (λspread = 5 , τ = 1 ) prevents representational collapse by penalizing latent channels whose batch standard deviation falls below the target threshold τ . Full loss definitions and hyperparameter defaults are provided in Appendices D and E. Run sweeps are given in Appendix F. At inference, masking is disabled and the EMA target encoder produces a dense projected latent map for the full field. The latent vectors are projected with PCA and UMAP [McInnes et al., 2018] for visualization and mapped back to their spatial locations, forming a back-mappable atlas: neighborhoods, branches and extremal regions in latent space can be traced to their original coordinates to identify the field morphology represented by the network. 
+
+# Latent Organization of MHD Turbulence 
+
+We evaluate ScaleAware-JEPA on a high-Reynolds-number simulation of compressible magnetohydrodynamic (MHD) turbulence. The model receives only a two-dimensional gas-density slice from the turbulent-cloud state-separation dataset of Collins et al. [2012], accessed through the CATS portal [Burkhart et al., 2020]. These fields contain diffuse material, shear interfaces, filamentary ridges, and shock-compressed structures produced by the turbulent cascade. Previous MHD analyses associate this density morphology spatially with magnetic, transition, and kinetic regimes [Li and Zhao, 2025]. We therefore ask whether a self-supervised representation trained on density alone can organize these structures without labels, hand-crafted diagnostics, or auxiliary velocity and magnetic-field inputs. Figure 2 summarizes the masking-sensitivity analysis for the 4MHD sweep; the selected 1.2 × σs pyramid-mask setting lies before the sharp large-footprint transition and hinge-saturation regime. Figure 3 shows dense latent coordinates from the frozen EMA target branch. A three-dimensional PCA projection provides a linear view of the dominant latent directions, while UMAP [McInnes et al., 2018] resolves local neighborhood structure. Both reveal connected organization rather than a featureless latent cloud. We use these projections as maps for inspecting the learned representation, not as a unique physical phase diagram. To determine what this organization represents, we back-map selected UMAP neighborhoods to the original density field (Figure 4). Localized regions of latent space correspond to coherent spatial morphology, including filamentary interfaces, ridge-like structures, compact high-contrast regions and diffuse material. These neighborhoods are neither supervised classes nor exhaustive segmentations. Instead, they are local regions of a continuous coordinate system whose structure can be inspected directly in the original field. 0.4 0.8 1.2 1.6 2.0 
+
+Footprint multiplier, fmask 
+
+> 1.50
+> 1.75
+> 2.00
+> 2.25
+> 2.50
+> 2.75
+> 3.00
+> 3.25
+> Target effective rank
+> selected
+
+Pyramid masking    
+
+> 711 15 19
+
+Box footprint [pixels] 
+
+> 2.90
+> 2.95
+> 3.00
+> 3.05
+> 3.10
+> Target effective rank
+
+Fixed-box masking 
+
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> 0.9
+> 1.0
+> Hinge ratio
+> 0.94
+> 0.95
+> 0.96
+> 0.97
+> 0.98
+> 0.99
+> 1.00
+> Hinge ratio
+
+# MHD masking-strategy diagnostics  
+
+> Target effective rank Hinge ratio
+
+Figure 2: Masking-strategy diagnostics for the MHD sweep. Left: target effective rank and hinge ratio as functions of the pyramid-mask footprint multiplier. Right: the same diagnostics for fixed-box masks. The pyramid sweep shows a gradual increase in both diagnostics through 1.2 × σs, followed by a sharp rise in target effective rank at 1.6 × σs and near-complete hinge saturation at 2.0 × σs. The selected 1.2 × σs setting therefore retains an intermediate target rank and hinge response before the large-footprint transition. For fixed-box masks, the hinge ratio is already high at 7 px and reaches saturation by 11 px, while the target effective rank decreases slightly and then remains nearly constant. 5Target PCA Target UMAP Figure 3: Dense latent topology learned for MHD turbulence. Target-encoder embeddings are projected to three dimensions using PCA and UMAP and mapped back to their original spatial locations. The PCA projection provides a linear view of the dominant latent directions, while the UMAP projection emphasizes nonlinear neighborhood structure in the learned representation. Both projections reveal spatially coherent organization: extended sheets, filamentary interfaces, and compact high-contrast structures occupy distinct regions of latent space. The inset point clouds show the corresponding three-dimensional projected latent distributions. The physical interpretation is validated by comparison with the known spatial segregation of Alfvénic regimes in compressive MHD turbulence. Li and Zhao [2025] showed that the local Alfvén Mach number, 
+
+MA = pEk/E B , distinguishes magnetically regulated, magnetic–kinetic transition and kinetically domi-nated regimes. The magnetic regime preferentially occupies lower-density gas, whereas the kinetic regime preferentially occupies higher-density gas. In the present back-maps, these trends are compared with void-like and filamentary density morphology, respectively. ScaleAware-JEPA receives only the scalar density field, yet its latent neighborhoods recover morphological distinctions aligned with this independently established organization. The result indicates that density alone retains structural information connected to magnetic regulation, and that the learned latent atlas makes this information inspectable without prescribing diagnostic thresholds or segmentation rules. The detailed physical interpretation of these neighborhoods is developed in a dedicated domain-specific study. 6Figure 4: Back-mapping representative latent neighborhoods in the MHD density field. Left: the input density map with selected latent groups overlaid at their original spatial locations. Right: the corresponding three-dimensional UMAP projection of target-encoder embeddings, with the same groups highlighted in matching colors (rendered with the default perspective projection rather than orthographic, so the 3D point-cloud structure is easier to read). The selected neighborhoods occupy localized regions of latent space and map back to coherent density morphologies, including diffuse void-like areas, filamentary and interface-like structures, and compact dense clumps. These groups are representative latent selections rather than supervised classes or exhaustive segmentations. 
+
+# Latent Atlases Across Distinct Field Regimes 
+
+Figures 5 and 6 examine ScaleAware-JEPA in two further scalar-field regimes: nighttime-light structure in Chengdu and molecular-gas emission in the nearby galaxy NGC 3627. These fields differ from simulated MHD turbulence in origin, dynamics and interpretation, but share the same representational problem: meaningful morphology is distributed across space and scale, without a complete set of predefined labels. The purpose is therefore not to provide exhaustive domain-specific analyses, but to determine whether the learned dense latent coordinates remain spatially interpretable across distinct field-generating systems. 
+
+Nighttime lights in Chengdu. We examine a nighttime-light map of Chengdu derived from the NASA Black Marble VIIRS product [Román et al., 2018] (Figure 5). Unlike the turbulent and astronomical fields considered elsewhere, this field records the spatial organization of urban activity rather than fluid or gravi-tational dynamics. Its inclusion tests whether the latent-atlas construction depends on a particular physical mechanism. The learned embedding organizes compact bright urban regions, elongated light corridors, patchy suburban structure and low-intensity background into distinct local neighborhoods, each of which can be mapped back to coherent morphology in the original field. 7Target PCA Target UMAP Figure 5: Dense latent topology learned for the Chengdu nighttime-light field. Target-encoder embeddings are projected with PCA and UMAP and mapped back to their original spatial locations. The projections reveal coherent latent organization across the urban field, separating compact high-intensity cores, extended road-like structures, diffuse emission, and low-intensity surrounding regions. The inset shows the original nighttime-light image, providing the spatial reference for the latent back-mapping. 8Target PCA  Target UMAP Figure 6: Dense latent topology learned for the NGC 3627 molecular-gas field. Target-encoder embeddings of the PHANGS–ALMA CO field are projected with PCA and UMAP and then mapped back to their original spatial locations. The PCA projection captures large-scale latent variation across the molecular disk, separating the bright central concentration and spiral-arm molecular gas from lower-surface-brightness interarm emission. The UMAP projection further separates nonlinear structural neighborhoods: bright arm clouds, interarm molecular clouds, diffuse extended emission, and narrow elongated interarm or contrail-like molecular features occupy different regions of latent space. Some of the narrow molecular structures are particularly relevant in light of the galactic-scale molecular contrail reported in NGC 3627 by Zhao and Li [2025]. The inset point clouds show that the representation forms a continuous but structured manifold rather than a set of discrete supervised classes. The separation is obtained without cloud labels, arm/interarm masks, or contrail annotations, indicating that the self-supervised latent coordinates organize physically meaningful molecular-gas morphology. 
+
+Molecular gas in NGC 3627. For NGC 3627, we use the PHANGS–ALMA CO(2–1) molecular-gas map [Leroy et al., 2021b,a]. The learned representation organizes the CO field along its dominant environmental structure without labels, arm masks, or intensity thresholds. The PCA back-map captures the broad contrast between the concentrated central and spiral-arm molecular disk and the fainter diffuse interarm component, while the UMAP back-map resolves finer local differences within this continuum. The embedding is thus sensitive to the distinction between concentrated and diffuse molecular morphology. This is relevant to the recently reported molecular contrail in NGC 3627 [Zhao and Li, 2025], a narrow extended CO structure 9distinct from the ordinary bright arm population in the present latent map. Full isolation of the kiloparsec-scale contrail as a single global object is limited by the local ConvNeXt block footprint; what is recovered is the local morphological character that sets it apart from its surroundings (see Appendix F for architecture details). 
+
+# Conclusion 
+
+Scientific fields are intrinsically multiscale, and a representation intended to capture their organization should be governed by that physical hierarchy rather than by the arbitrary geometry of a fixed image grid. ScaleAware-JEPA implements this principle through two coupled choices. CDD supplies a dense encoder with localized, pixel-registered components that expose fine, intermediate, and coarse morphology as aligned input structure, rather than requiring the full scale hierarchy to emerge indirectly from local convolutional processing. The same hierarchy determines the masking footprint, so latent prediction is posed with context matched to the physical scale of the hidden structure. CDD therefore provides the common geometry for both representation and prediction, while reducing the influence of oscillatory responses from conventional multiscale bases that can offer shortcuts to a predictive network. Because its input representation and predictive task are defined by the field’s scale hierarchy rather than by domain-specific object definitions, label sets, catalogues, or segmentation rules, ScaleAware-JEPA is applicable across systems whose organization is nested across scale. MHD turbulence, urban nighttime-light structure, and molecular-gas emission in NGC 3627 serve as deliberately disparate demonstrations. In each setting, the framework produces a dense, spatially back-mappable latent atlas in which diffuse regions, filamentary interfaces, compact clumps, and faint extended structures occupy coherent neighborhoods. These results point to a design principle that is crucial for self-supervised learning on multiscale systems: the representation and the predictive task should be organized by the same physical scale hierarchy. The MHD sweep further shows that scale-aware masking provides a controlled relationship between context foot-print and latent-use diagnostics, whereas fixed-box and excessively large masks approach hinge saturation. Scale-aware encoding makes multiscale structure available to the network; scale-informed masking asks the network to predict that structure at the scale on which it is organized. The method also provides a direct route for domain scientists to incorporate physical knowledge: the number of CDD scales and the mask-footprint multiplier are interpretable parameters that express assumptions about the scale structure of the field under study. This moves JEPA beyond fixed-patch visual learning and toward a general architecture for latent extraction in complex multiscale systems. Code is available at https://github.com/gxli/SA-JEPA .
+
+# Acknowledgments 
+
+The author received no external funding for this work. 
+
+# Data Availability 
+
+The datasets used in this work are publicly available from the sources cited in the manuscript. 
+
+# Resource Acknowledgment 
+
+All experiments in this work were performed on self-funded consumer-grade hardware, primarily an Apple MacBook Pro with an M3 Pro chip and a headless desktop equipped with an NVIDIA RTX 3090 GPU. 
+
+# Author Contributions 
+
+GXL designed the project, wrote the code, performed the experiments and wrote the manuscript. 10 References 
+
+Miguel A. Aragón-Calvo, Bernard J. T. Jones, Rien van de Weygaert, and J. M. van der Hulst. The multiscale morphology filter: Identifying and extracting spatial patterns in the galaxy distribution. Astronomy & Astrophysics , 474(1):315–338, 2007. 10.1051/0004-6361:20077880. Mahmoud Assran, Quentin Duval, Ishan Misra, Piotr Bojanowski, Pascal Vincent, Michael Rabbat, Yann LeCun, and Nicolas Ballas. Self-supervised learning from images with a joint-embedding predictive ar-chitecture. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,pages 15619–15629, 2023. 10.1109/CVPR52729.2023.01499. Yoshua Bengio, Aaron Courville, and Pascal Vincent. Representation learning: A review and new per-spectives. IEEE Transactions on Pattern Analysis and Machine Intelligence , 35(8):1798–1828, 2013. 10.1109/TPAMI.2013.50. Dieter Biskamp. Magnetohydrodynamic Turbulence . Cambridge University Press, 2003. 10.1017/CBO9780511535222. J. Richard Bond, Lev Kofman, and Dmitry Pogosyan. How filaments of galaxies are woven into the cosmic web. Nature , 380(6575):603–606, 1996. 10.1038/380603a0. Nicholas A. Bond, Michael A. Strauss, and Renyue Cen. Crawling the cosmic network: Identifying and quantifying filamentary structure. Monthly Notices of the Royal Astronomical Society , 409(1):156–168, 2010. 10.1111/j.1365-2966.2010.17307.x. B. Burkhart, S. Appel, S. Bialy, J. Cho, A. J. Christensen, D. Collins, C. Federrath, D. Fielding, D. Finkbeiner, A. S. Hill, J. C. Ibanez-Mejia, M. R. Krumholz, A. Lazarian, M. Li, P. Mocz, M.-M. Mac Low, J. Naiman, S. K. N. Portillo, B. Shane, Z. Slepian, and Y. Yuan. The catalogue for astrophysical turbulence simulations (CATS). The Astrophysical Journal , 905(1):14, 2020. 10.3847/1538-4357/abc484. David C. Collins, Alexei G. Kritsuk, Paolo Padoan, Hui Li, Hao Xu, Sergey D. Ustyugov, and Michael L. Norman. The two states of star-forming clouds. The Astrophysical Journal , 750(1):13, 2012. 10.1088/0004-637X/750/1/13. Ingrid Daubechies. Ten Lectures on Wavelets , volume 61 of CBMS-NSF Regional Conference Series in Applied Mathematics . SIAM, Philadelphia, 1992. 10.1137/1.9781611970104. Stéphane Douady, Yves Couder, and Marc Etienne Brachet. Direct observation of the intermittency of intense vorticity filaments in turbulence. Physical Review Letters , 67(8):983–986, 1991. 10.1103/Phys-RevLett.67.983. Gregory Falkovich, Krzysztof Gawędzki, and Massimo Vergassola. Particles and fields in fluid turbulence. 
+
+Reviews of Modern Physics , 73(4):913–975, 2001. 10.1103/RevModPhys.73.913. Charles Fefferman, Sanjoy Mitter, and Hariharan Narayanan. Testing the manifold hypothesis. Journal of the American Mathematical Society , 29(4):983–1049, 2016. 10.1090/jams/852. Uriel Frisch. Turbulence: The Legacy of A. N. Kolmogorov . Cambridge University Press, 1995. 10.1017/CBO9781139170666. Bin Han. Gibbs phenomenon of framelet expansions and quasi-projection approximation. Journal of Fourier Analysis and Applications , 25:2923–2956, 2019. 10.1007/s00041-019-09687-9. Stuart A. Kauffman and Andrea Roli. A third transition in science? Interface Focus , 13(3):20220063, 2023. 10.1098/rsfs.2022.0063. Andrey Nikolaevich Kolmogorov. The local structure of turbulence in incompressible viscous fluid for very large reynolds numbers. Doklady Akademii Nauk SSSR , 30:301–305, 1941. 11 Yann LeCun. A path towards autonomous machine intelligence. Position paper, Courant Institute of Mathematical Sciences, New York University and Meta AI, June 2022. URL https://openreview.n et/forum?id=BZ5a1r-kVsf . Version 0.9.2, 2022-06-27. Adam K. Leroy, Annie Hughes, Daizhong Liu, Jérôme Pety, Erik Rosolowsky, Toshiki Saito, Eva Schinnerer, Andreas Schruba, Antonio Usero, Christopher M. Faesi, et al. PHANGS–ALMA data processing and pipeline. The Astrophysical Journal Supplement Series , 255(1):19, 2021a. 10.3847/1538-4365/abec80. Adam K. Leroy, Eva Schinnerer, Annie Hughes, Erik Rosolowsky, Jérôme Pety, Andreas Schruba, Anto-nio Usero, Guillermo A. Blanc, Mélanie Chevance, Eric Emsellem, Christopher M. Faesi, Cinthya N. Herrera, Daizhong Liu, Sharon E. Meidt, Miguel Querejeta, Toshiki Saito, Karin M. Sandstrom, Jiayi Sun, Thomas G. Williams, et al. PHANGS–ALMA: Arcsecond CO(2–1) imaging of nearby star-forming galaxies. The Astrophysical Journal Supplement Series , 257(2):43, 2021b. 10.3847/1538-4365/ac17f3. Guang-Xing Li. Multiscale decomposition of astronomical maps: A constrained diffusion method. The Astrophysical Journal Supplement Series , 259(2):59, 2022. 10.3847/1538-4365/ac4bc4. Guang-Xing Li and Mengke Zhao. Magnetic, kinetic, and transition regime: Spatially segregated structure of compressive MHD turbulence. Monthly Notices of the Royal Astronomical Society , 542(4):3246–3252, 2025. 10.1093/mnras/staf1320. Zhuang Liu, Hanzi Mao, Chao-Yuan Wu, Christoph Feichtenhofer, Trevor Darrell, and Saining Xie. AConvNet for the 2020s. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 11976–11986, 2022. 10.1109/CVPR52688.2022.01167. Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. In International Conference on Learning Representations , 2019. URL https://openreview.net/forum?id=Bkg6RiCqY7 .Lucas Maes, Quentin Le Lidec, Damien Scieur, Yann LeCun, and Randall Balestriero. LeWorldModel: Stable end-to-end joint-embedding predictive architecture from pixels. arXiv preprint arXiv:2603.19312 , 2026. 10.48550/arXiv.2603.19312. URL https://arxiv.org/abs/2603.19312 .Stéphane Mallat. A Wavelet Tour of Signal Processing: The Sparse Way . Academic Press, Burlington, MA, 3rd edition, 2009. Leland McInnes, John Healy, and James Melville. UMAP: Uniform manifold approximation and projection for dimension reduction. arXiv preprint arXiv:1802.03426 , 2018. 10.48550/arXiv.1802.03426. URL https: //arxiv.org/abs/1802.03426 .Igor Mezić. Spectral properties of dynamical systems, model reduction and decompositions. Nonlinear Dynamics , 41:309–325, 2005. 10.1007/s11071-005-2824-x. Erwin Platen, Rien van de Weygaert, and Bernard J. T. Jones. A cosmic watershed: The WVF void detection technique. Monthly Notices of the Royal Astronomical Society , 380(2):551–570, 2007. 10.1111/j.1365-2966.2007.12125.x. Stephen B. Pope. Turbulent Flows . Cambridge University Press, 2000. 10.1017/CBO9780511840531. Lewis Fry Richardson. Weather Prediction by Numerical Process . Cambridge University Press, Cambridge, 1922. Miguel O. Román, Zhuosen Wang, Qingsong Sun, Virginia Kalb, Steven D. Miller, Andrew Molthan, Lori Schultz, Jacob Bell, Eleanor C. Stokes, Bhartendu Pandey, Karen C. Seto, et al. NASA’s black marble nighttime lights product suite. Remote Sensing of Environment , 210:113–143, 2018. 10.1016/j.rse.2018.03.017. Erik W. Rosolowsky, Jaime E. Pineda, Jens Kauffmann, and Alyssa A. Goodman. Structural analysis of molecular clouds: Dendrograms. The Astrophysical Journal , 679(2):1338–1351, 2008. 10.1086/587685. 12 Floris Takens. Detecting strange attractors in turbulence. In David Rand and Lai-Sang Young, editors, 
+
+Dynamical Systems and Turbulence, Warwick 1980 , volume 898 of Lecture Notes in Mathematics , pages 366–381. Springer, Berlin, Heidelberg, 1981. 10.1007/BFb0091924. Sanghyun Woo, Shoubhik Debnath, Ronghang Hu, Xinlei Chen, Zhuang Liu, In So Kweon, and Sain-ing Xie. ConvNeXt V2: Co-designing and scaling convnets with masked autoencoders. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 16133–16142, 2023. 10.1109/CVPR52729.2023.01548. Mengke Zhao and Guang-Xing Li. Galactic contrail in NGC 3627 caused by dwarf galaxy candidate or massive black hole flyby. arXiv preprint arXiv:2509.20832 , 2025. 10.48550/arXiv.2509.20832. URL https: //arxiv.org/abs/2509.20832 .
+
+# A Detailed CDD coordinates 
+
+Differences between exponentially spaced diffusion times yield a pixel-registered scale pyramid 
+
+P(x) = {x(1) , . . . , x (S)}.
+
+The reported experiments use CDD scale coordinates [2 , 4, 8, 16 , 32] (MHD, Chengdu, and NGC). These scales are used both for CDD extraction and for construction of the scale-dependent masks. The CDD components are supplied to the encoder as a pixel-registered multiscale stack together with a per-channel scale code that preserves scale identity before cross-scale fusion. The same diffusion scales define the masking geometry, so the context footprint for each component is tied to its physical scale rather than to a single fixed image-space resolution. Wavelet decompositions can introduce ringing and sign-changing lobes near sharp structures, produc-ing local, high-contrast and scale-correlated artifacts that a predictor may exploit as shortcuts [Li, 2022, Han, 2019]. CDD’s diffusion-based primitives are localized and pixel-registered, reducing this confound and keeping latent prediction tied to field morphology. 
+
+## Wavelet frontend control 
+
+As a frontend control, we trained matched MHD runs using a log-normal wavelet decomposition in place of the constrained CDD pyramid [Daubechies, 1992, Mallat, 2009]. These runs remained non-collapsed and produced moderate-to-high effective rank, but their hinge dynamics were less well conditioned than the constrained baseline. Across mask scales from 0.8 × σs to 1.6 × σs, the hinge ratio rose from 0.330 to 
+
+0.993 . Thus the wavelet frontend yields a non-collapsed, moderate-rank representation, but the spread hinge saturates at larger mask scales, whereas constrained CDD maintains headroom across the full sweep. The 
+
+1.2 × σs run is selected as the visualization representative (Table 1). Figure 7 compares the CDD and wavelet decompositions directly across six scales on an MHD field. At fine scales, CDD produces near-zero response in smooth inter-filament regions, whereas wavelet coefficients exhibit diffuse oscillatory leakage. At intermediate scales, CDD isolates filamentary structures as sparse, spatially compact features; the wavelet representation smears the same structures into broad, overlapping halos. At coarse scales, both methods recover large-scale topology, but wavelet coefficients retain visible ringing artefacts absent in the CDD primitives (see Figure 7 and Table 1). Figure 8 shows the corresponding wavelet latent map. The UMAP manifold is organized, confirming that the run is not collapsed, but the mapped-back RGB field exhibits broad halo-like bands around high-contrast structures—a shadow pattern reminiscent of the negative oscillatory signal visible in the wavelet side of Figure 7. This behavior, consistent with oscillatory cross-scale leakage and halo-like responses near sharp transitions [Han, 2019], indicates that the wavelet frontend is less localized but not collapsed. 13 Figure 7: CDD versus log-normal wavelet decomposition. Each panel compares the CDD primitive (left half) with the matched log-normal wavelet coefficient (right half) across six scales on an MHD turbulence field. CDD produces sparse, spatially compact features with near-zero response in smooth regions; the wavelet representation exhibits diffuse oscillatory leakage and ringing artefacts that are absent in the CDD primitives. 14 Target UMAP Figure 8: Wavelet-frontend control on the MHD field. A matched JEPA run using a wavelet frontend produces an organized UMAP manifold, but the mapped-back UMAP RGB field shows broad halo-like bands around high-contrast structures. This indicates a non-collapsed but less localized frontend behavior, consistent with oscillatory leakage in the wavelet decomposition and with ringing near sharp transitions. Table 1: Wavelet-frontend MHD diagnostics. Matched MHD runs using a wavelet frontend remain non-collapsed and produce moderate-to-high effective rank, but the hinge ratio rises toward saturation at larger pyramid mask scales, whereas constrained CDD maintains headroom across the sweep. The 1.2 × σs
+
+run is selected for visualization. Mask scale Target rank Pred. rank Hinge ratio 
+
+0.8 × σs 2.199 1.902 0.330 
+
+1.2 × σ∗ 
+
+> s
+
+2.938 4.316 0.609 
+
+1.6 × σs 3.334 2.824 0.993 
+
+# B Scale-Aware Encoder Implementation 
+
+The CDD decomposition is treated as a separate preprocessing step that produces a pixel-registered pyramid of scale components P(x) = {x(1) , . . . , x (S)} (see Figure 1 for the architectural overview). Unlike a conven-tional feature pyramid, these levels are not produced by progressive downsampling inside the network. They are obtained before learning, and all remain registered at the input resolution. For each scale s, the encoder forms a per-scale input by stacking the CDD component x(s), the corre-sponding mask channel m(s), and a scalar scale code c(s). A shared scale-adapter architecture maps this input into a common feature width, 
+
+h(s) = Aθ
+
+
+
+x(s), m (s), c (s)
+
+, s = 1 , . . . , S. 
+
+The adapter therefore sees not only the CDD value but also which pixels were hidden and which diffusion scale the channel represents. This gives each scale local spatial processing before cross-scale fusion and places all CDD components into a comparable feature space. 15 The adapted features are fused across scale, 
+
+h = Fuse 
+
+
+
+h(1) , . . . , h (S)
+
+.
+
+After the shared per-scale adapter, scale features are fused by a top-down residual pathway: coarse features are successively added to finer-scale features, and each fused scale is passed through its own 1 × 1 projection before concatenation and dense ConvNeXt processing. This differs from a standard feature pyramid because the hierarchy is supplied by CDD before learning rather than generated by neural downsampling. The fused multiscale feature map is processed by a dense ConvNeXt backbone [Liu et al., 2022, Woo et al., 2023], 
+
+z = Fθ (h),
+
+which performs spatial mixing without reducing the field resolution. The same encoder architecture serves the online context branch and the EMA target branch. Default implementation details are listed in Table 2. Several normalization layers stabilize training. Per-scale adapter normalization prevents high-amplitude CDD channels from dominating the shared adapter. Stem normalization stabilizes the first ConvNeXt projection after scale fusion. A final LayerNorm after the encoder head places the dense latent vectors on a common scale before prediction and analysis. Table 2: Default scale-aware ConvNeXt encoder settings. Implementation defaults used in the reported experiments, grouped by functional role. Component Default setting 
+
+Input and scale representation 
+
+Input representation CDD pyramid CDD scales [2 , 4, 8, 16 , 32] 
+
+Per-scale adapter input field, mask channel, scale code 
+
+Per-scale adaptation 
+
+Adapter sharing shared architecture across scales Adapter kernel 3 × 3
+
+Adapter feature width 8 channels per scale 
+
+Cross-scale fusion 
+
+Scale fusion top-down residual fusion; per-scale 1 × 1 projection Spatial downsampling none 
+
+Dense ConvNeXt backbone 
+
+Encoder backbone dense ConvNeXt Encoder width 64 channels Encoder depth 4 blocks ConvNeXt spatial kernel 7 × 7 depthwise convolution Global response normalization enabled 
+
+Latent output 
+
+Latent channels 32 
+
+Final normalization LayerNorm Output dense latent map z ∈ R32 ×H×W
+
+# C Mask construction 
+
+For channel s, the mask footprint is 
+
+b = max( ntarget , round( σsfmask + B0)) , B s =
+
+(oddceil( b), b ≤ Bcap ,
+
+oddfloor( Bcap ), b > B cap , (3) 16 where ntarget = 3 , oddceil( x) is the smallest odd integer not smaller than x, oddfloor( x) the largest odd integer not larger than x, fmask is the scale multiplier, B0 is a fixed offset, and Bcap = 48 px (MHD, Chengdu) or 
+
+35 px (NGC). Setting fmask = 0 recovers a fixed-box mask; B0 = 0 gives a pure scale-tied pyramid mask. When the hard cap is active the box is odd-rounded downward to avoid exceeding Bcap . The mask remains centered on the target and always covers the prediction patch. The final CDD channel contains the coarsest scale together with the unresolved residual. For each sampled target center, the corresponding Bs ×Bs region is removed from the context component 
+
+x(s) 
+
+> c
+
+. A separate binary mask-indicator channel marks the removed pixels. The prediction loss is evaluated only on the central 3 × 3 target patch. Increasing Bs therefore changes the spatial context available for prediction without changing the size of the localized target used in the loss. For the MHD sweep, we use effective rank together with the hinge ratio 
+
+rhinge = Llate spread 
+
+Learly spread + ϵ, (4) where the numerator and denominator are averages over late- and early-training windows. Values near zero indicate substantial hinge decay, whereas values near unity indicate a plateau. An excessively large mask can cause context starvation: the model receives insufficient information to reduce the batch-wise variance constraint, and increasing the footprint no longer improves latent use in a controlled way. 
+
+# D Training objective 
+
+Let fθ be the online encoder, f¯θ the EMA target encoder, pθ and p¯θ the corresponding pointwise projectors, and gθ a spatial predictor. For a masked context view xc and unmasked target view xt,
+
+qc = pθ (fθ (xc)) , qt = p¯θ (f¯θ (xt)) , ˆqt = gθ (qc). (5) The target encoder is updated by exponential moving average, 
+
+¯θ ← m¯θ + (1 − m)θ. (6) For valid target patches indexed by (b, k ) ∈ Ω, projected patch tensors ˆQbk , Q bk ∈ RC×P ×P are spatially pooled: 
+
+ˆqbk = 1
+
+P 2
+
+> P
+
+X
+
+> i,j =1
+
+ˆQbk, :,i,j , qbk = 1
+
+P 2
+
+> P
+
+X
+
+> i,j =1
+
+Qbk, :,i,j .
+
+The prediction loss is 
+
+Lpred = 1
+
+|Ω| C
+
+X
+
+> (b,k )∈Ω
+
+ˆqbk − qbk 
+
+> 22
+
+. (7) For 3D patches, pooling is performed over P 3 voxels. To prevent collapse, we apply a weak spread regularizer to projected context tokens ui ∈ RC . After mean centering, 
+
+˜ui = ui − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+uj , (8) the population standard deviation in channel c is 
+
+σc = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+˜u 2 
+
+> i,c
+
++ ϵ
+
+!1/2
+
+, (9) and the spread term is 
+
+Lspread = 1
+
+C
+
+> C
+
+X
+
+> c=1
+
+max(0 , τ − σc). (10) 17 The full objective is 
+
+L = λpred Lpred + λspread Lspread . (11) The selected configuration uses λpred = 50 , λspread = 5 , and τ = 1 . Detailed projector, predictor, optimization and inference settings are tabulated in the appendix. 
+
+# E Training Configuration (repository defaults) 
+
+This section records the configurable repository defaults. All settings listed below can be overridden through the configuration system. The manuscript reports separate selected-run settings where applicable; sweep results and run selection are given in Appendix F. Table 3: Optimization, inference, and diagnostic defaults (repository). All settings are configurable; selected-run overrides are noted in the sweeps appendix. Setting Default 
+
+normalize_loss_l2 disabled 
+
+scaleaware_final_norm LayerNorm, enabled Projector online and EMA; 1×1(32 → 96) → LayerNorm → GELU →
+
+1×1(96 → 32) 
+
+Regularizer input valid context patches after online projector (pooled spatial mode) Prediction target EMA target branch after target projector Predictor 1×1 → LayerNorm → GELU → 3×3(reflect) →
+
+LayerNorm → GELU → 1×1
+
+predictor_hidden 96 
+
+Encoder depth 4
+
+Dilations [1 , 1, 1, 1] (MHD, Chengdu); [1 , 1, 2, 4] (NGC) Epochs 10 
+
+Batch size 4 (MHD); 1 (NGC, Chengdu) Optimizer AdamW, lr 10 −4, min 10 −6, warmup 1.0 epoch Weight decay 10 −5
+
+EMA momentum 0.99 → 0.9999 , warmup fraction 0.25 
+
+Prediction weight 50 
+
+Spread weight 5 (τ = 1 , context, pooled) Inference TTA available ( flip4 ); not used for selected runs Diagnostics effective-rank, scale-response probe 
+
+## Data and Preprocessing 
+
+The input file pattern is dataset-specific. For the MHD experiments, we use a two-dimensional density slice from the selected simulation run. For MHD training, we apply D4 augmentations (rotations and flips that preserve statistical isotropy); for Chengdu and NGC, only flip augmentations are used. During inference, masking is disabled and the frozen target encoder is applied to the full field. Flip-based test-time augmentation (not used for the selected runs) is available for the final dense latent maps. 
+
+## Mask Parameterization and Target Sampling 
+
+The mask footprint is defined by the unified equation in Section C (see also the main text, Section ). Target centers are generated by random sampling with overlap rejection: a proposed target is rejected if it overlaps an already accepted target under the configured non-overlap rule. This produces spatially dispersed target regions while preserving stochastic target placement across batches. In the selected vanilla runs, overlap 18 rejection is enabled through target_nonoverlap=true . Additionally, proposed targets whose centers lie within half the encoder’s local convolutional footprint of the field boundary are rejected, so that masked context regions never extend beyond the field edge and predictions are not contaminated by padding or missing data. The default configuration uses random target sampling with overlap rejection. Table 4: Masking and target-sampling defaults (repository). All settings are configurable. Sweep results are reported separately. Setting Default / role 
+
+mask_size_scaling scale-tied footprint multiplier fmask ; default 1.0
+
+mask_size fixed footprint B0 in pixels; default 0 (scale-based); overrid-den in box sweeps 
+
+mask_box_hardcap configurable; manuscript selected runs use 48 px (MHD, Chengdu), 35 px (NGC) 
+
+target_sampling_mode random , with overlap rejection 
+
+target_nonoverlap true ; proposed targets overlapping accepted targets are re-jected 
+
+## Loss Terms 
+
+The final training objective is dominated by the JEPA prediction loss. Predicted and target embeddings are compared only at masked target locations. For the selected vanilla runs, patch embeddings are compared without L2 normalizing the prediction loss, so latent amplitude remains available to the predictive objective. A weak context spread regularizer prevents collapse by penalizing latent channels whose batch standard deviation falls below the target value τ = 1 . The loss terms are summarized in Table 3. 
+
+## Optimization, Inference, and Diagnostics 
+
+All final runs use AdamW [Loshchilov and Hutter, 2019] with cosine learning-rate decay and EMA target-encoder updates. The online encoder and context projector are optimized by backpropagation, while the target encoder and target projector are updated only by exponential moving average. The encoder produces a dense 32-channel latent map. In the selected configuration, the projector is enabled and maps this represen-tation to a 96-channel projected space before the predictor and before the spread regularizer. The predictor is a compact full-resolution convolutional head with hidden width 96, predictor LayerNorm enabled, and a reflect-padded spatial 3×3 convolution. During inference, masking is disabled and the frozen target branch is applied densely to the full field. Flip-based test-time augmentation (not used for the selected runs) is available for the final latent maps. We compute effective-rank diagnostics as collapse and latent-use checks, and we enable the scale-response probe to measure how strongly the trained encoder depends on each CDD input channel. These diagnostics are used to screen for non-collapse and latent-space usage; final interpretation is based on the dense latent topology and mapped-back spatial structures rather than on any scalar diagnostic alone. 
+
+## Latent Map Visualization and Diagnostics 
+
+After training, masking is disabled and the frozen target encoder is applied to the full field to produce a dense latent map. For large fields, we evaluate overlapping windows and blend the outputs to reduce boundary artifacts. As during training, pixels within half the encoder’s local convolutional footprint of the field boundary have reduced effective context; their latent coordinates may be less reliable than interior pixels and should be interpreted with caution. For visualization, latent vectors are sampled from the dense map and projected with PCA or UMAP [McInnes et al., 2018]. PCA is used as a linear view of the global latent geometry, while UMAP is used as a nonlinear neighborhood-preserving view. The UMAP projection uses standardized input vectors with 19 Euclidean metric, min_dist = 0 .2, n_neighbors = 50 , and no L2 normalization of the input embeddings (l2_normalize = false ). The fitted projection is then evaluated over the full spatial map and normalized for RGB rendering. We use effective rank and participation-style diagnostics only as collapse and latent-use checks. Low values indicate that the embedding has contracted to a small number of directions, while broader spectra indicate greater use of the latent space. These metrics are not treated as a standalone measure of physical quality; final interpretation comes from mapping latent neighborhoods and extremal regions back to the original field. 
+
+## Symmetry consistency (optional) 
+
+A weak symmetry consistency loss is available as an option to encourage invariance under discrete field-preserving transformations. Four flip views are used: identity, horizontal, vertical, and combined horizontal– vertical flip. The context encoder is evaluated on each view of the same input; the resulting feature maps are inverse-aligned, and the population variance across the inverse-aligned views is averaged over batch, channels, and spatial positions: 
+
+Lsym = 1
+
+B G C H W 
+
+> B
+
+X
+
+> b=1
+
+Fb − ¯fb 
+
+> 2
+> F
+
+, (12) where Fb ∈ RG×C×H×W stacks the G = 4 flip views, ¯fb is the view-averaged tensor, ∥ · ∥ F is the Frobenius norm, B is the batch size, C the number of latent channels, and H, W the spatial dimensions of the encoder feature map. The symmetry term is not used for the selected runs reported in the main text but is available as an optional regularizer. 
+
+## Test-time augmentation (optional) 
+
+During inference, masking is disabled and the frozen target branch is applied densely to the full field. Flip-based test-time augmentation blends the same four flip views used for symmetry training to produce the final dense latent map. TTA is not used for the selected runs but is available to reduce asymmetry when needed. 
+
+# F Masking Sweeps and Run Selection 
+
+Compact masking sweeps were used to select representative embeddings for the main visualizations, serving as stability and interpretability checks across masking regimes rather than searches for a universal optimal mask. Each candidate run was required to remain non-collapsed, use more than one latent direction, and produce a dense embedding whose neighborhoods map back to coherent spatial structures. Collapse and latent-space usage were assessed through two diagnostics computed from the covariance spectrum with eigenvalues λi. Defining normalized eigenvalues pi = λi/ P 
+
+> j
+
+λj , the effective rank is 
+
+reff = exp − X
+
+> i
+
+pi log pi
+
+!
+
+, (13) and the participation number is 
+
+rpart = (P 
+
+> i
+
+λi)2
+
+P 
+
+> i
+
+λ2
+
+> i
+
+. (14) A dead channel is flagged when its standard deviation over sampled spatial embeddings falls below a fixed numerical threshold. These diagnostics identify collapse or excessive contraction but are not standalone measures of physical quality; final selection was based on visual inspection of PCA and UMAP maps and their mapped-back spatial structures, because higher effective rank did not always correspond to cleaner or more physically interpretable embeddings. All selected runs use a CDD pyramid with the unresolved residual folded into the last scale channel: 
+
+[2 , 4, 8, 16 , 32] (MHD, Chengdu, NGC). The encoder uses four ConvNeXt blocks; dilations are [1 , 1, 1, 1] for 20 MHD and Chengdu, [1 , 1, 2, 4] for NGC. The encoder’s local convolutional receptive field is 25 px (49 px for NGC with dilated blocks); pixels within half this width of the field boundary lack full context and are therefore excluded from both target placement during training and latent evaluation during inference, with affected inference pixels set to NaN. A hard cap of 48 px (MHD, Chengdu) or 35 px (NGC) is applied to the masked context footprint. For pyramid masks, the footprint is expressed relative to the CDD diffusion scale σs of each input channel; for box masks, it is a fixed image-space size in pixels. For NGC, more than 50% of the field pixels are noise-dominated; target centers are restricted to regions with intensity exceeding 
+
+3.5× the RMS noise, and inference is evaluated only within those valid regions. The selected runs are Chengdu pyramid scale 0.8, MHD pyramid scale 1.2, and NGC pyramid scale 1.6, marked in Table 5. In the MHD sweep, scale 1.2 lies in an intermediate transition regime of the latent-use diagnostics: larger pyramid and fixed-box masks can reach comparable or higher effective rank, but scale 1.2 gives the strongest balance among effective rank, predictor-side usage, and spatial interpretability. For Chengdu, scale 0.8 produces the highest target participation ratio (1.62) and clean structural separation under PCA and UMAP inspection. For NGC, scale 1.6 gives similarly clean separation of compact, extended, and diffuse molecular-gas structures. Training-loss histories for all three runs are shown in Figure 9; in each case the spread regularizer remains stable and the weighted prediction term provides the dominant training signal. Table 5: Final pooled masking sweep and fixed-box MHD control. All runs use unnormalized latent prediction, patch-scale normalization, final latent normalization, and a pooled standard-deviation hinge spread regularizer. Reported values are final sampled diagnostics. Selected visualization runs are marked with an asterisk. Dataset Strategy Footprint Target rank Pred. rank Target part. Hinge ratio 
+
+Chengdu 
+
+pyramid 0.8 × σ∗ 
+
+> s
+
+2.306 1.452 1.62 0.000 pyramid 1.2 × σs 1.568 2.160 1.25 0.004 pyramid 1.6 × σs 1.166 1.163 1.06 0.005 pyramid 2.0 × σs 1.157 1.560 1.05 0.008 
+
+MHD 
+
+pyramid 0.4 × σs 1.468 1.272 1.16 0.244 pyramid 0.8 × σs 1.691 1.803 1.25 0.219 pyramid 1.2 × σ∗ 
+
+> s
+
+2.152 2.044 1.44 0.354 pyramid 1.6 × σs 3.183 4.013 2.01 0.544 pyramid 2.0 × σs 2.980 3.277 1.82 0.999 box 7 px 3.099 3.842 1.86 0.946 box 11 px 2.918 3.076 1.78 1.000 box 15 px 2.913 3.065 1.78 1.000 box 19 px 2.901 3.048 1.77 1.000 
+
+NGC 
+
+pyramid 0.8 × σs 1.088 1.160 1.03 0.000 pyramid 1.2 × σs 1.125 1.164 1.04 0.001 pyramid 1.6 × σ∗ 
+
+> s
+
+1.311 1.417 1.13 0.006 pyramid 2.0 × σs 1.286 1.561 1.11 0.003             
+
+> ∗Selected visualization run from the pooled pyramid sweep. Diagnostics are used to screen for collapse and latent-space usage; final selection also uses global visual topology and mapped-back spatial interpretability. For MHD, the fixed-box rows provide the large-occlusion control; all fixed-box runs reach near-complete hinge saturation. The 2.0×σspyramid MHD endpoint similarly saturates, so the 1.2×σsrun is used for visualization. NGC runs use gradient accumulation with factor 2 (because the limited number of available targets per field makes single-sample batches noisy) and a mask hard cap of 35 px; the selected run is 1.6×σs.
+
+21 Figure 9: Selected-run input fields and training losses. For each selected vanilla run, the left panel shows the scalar input field and the right panel shows the corresponding training-loss history. Rows corre-spond to MHD turbulence, Chengdu nighttime lights, and the NGC molecular-gas field, respectively. MHD uses pyramid masking with footprint 1.2 × σs; Chengdu uses 0.8 × σs; NGC uses 1.6 × σs, where σs is the CDD diffusion scale of the corresponding input channel. These diagnostics show the optimization behavior associated with the dense latent topologies shown in Figures 3, 5, and 6. 
+
+# G Plain ConvNeXt control without scale hierarchy 
+
+To test whether the latent organization recovered by ScaleAware-JEPA can be explained by generic masked-image ConvNeXt capacity alone, we include a plain dense ConvNeXt control that removes the CDD pyramid 22 and all scale-aware processing. The control receives only two input channels: the masked scalar field and a binary mask-indicator map. It uses the same overall ConvNeXt design language as the main model—depth 
+
+4, hidden width 64 , latent width 32 , kernel size 7, GRN, LayerNorm, and reflect padding—but has no CDD channels, no per-scale adapters, and no scale-aware fusion. In other words, it is a matched JEPA backbone that must infer all multiscale organization directly from raw masked pixel intensities. We evaluated this control on MHD across box footprints of 7, 11 , 15 , and 19 px. All runs produce nearly identical diagnostics (Table 6), with saturation behavior observed across all tested footprints. Varying the box footprint therefore yields no meaningful change in latent geometry. This behavior contrasts with the scale-aware MHD sweep, where changing the scale-tied masking footprint produces a structured progression from thin, under-constrained embeddings to richer middle-regime geometry before entering the large-occlusion saturated regime. In the plain ConvNeXt control, by contrast, the hinge simply saturates without revealing comparable scale dependence, and small-scale structures appear over-sharpened (Figure 10). This suggests that the multiscale organization recovered by the main model is not explained by generic masked-image ConvNeXt capacity alone, but depends on providing the encoder and masking operator with explicit physical scale coordinates. Table 6: ConvNeXt ablation MHD diagnostics. Plain ConvNeXt image encoder without CDD frontend, evaluated across fixed-box mask footprints. All runs use pooled standard-deviation hinge regularization and produce near-identical diagnostics with saturated hinge ratios, indicating that without CDD scale channels the encoder cannot use the scale-informed masking hierarchy. The 7 px run is selected for visualization. Mask footprint Target rank Pred. rank Hinge ratio 
+
+7 px ∗ 3.866 5.752 1.000 
+
+11 px 3.914 5.771 1.000 
+
+15 px 3.906 5.920 1.000 
+
+19 px 3.906 5.920 1.000 23 Figure 10: Plain ConvNeXt control versus the scale-aware encoder. Comparison on a matched random-mask example. The dense ConvNeXt control receives only the masked scalar field and a binary mask-indicator channel, whereas ScaleAware-JEPA receives pixel-registered multiscale CDD components. In the control runs, varying the box footprint from 7 to 19 px does not produce a meaningful change in sampled embedding usage and the hinge ratio remains saturated, indicating that generic masked-image ConvNeXt capacity alone does not recover the scale-dependent latent organization seen in the main model, and that small-scale structures are over-sharpened relative to the scale-aware encoder output. 24

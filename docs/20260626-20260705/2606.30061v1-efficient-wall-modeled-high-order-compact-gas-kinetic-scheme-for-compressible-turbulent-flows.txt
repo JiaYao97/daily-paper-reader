@@ -1,0 +1,1092 @@
+Title: Efficient Wall-Modeled High-Order Compact Gas-Kinetic Scheme for Compressible Turbulent Flows
+
+URL Source: https://arxiv.org/pdf/2606.30061v1
+
+Published Time: Tue, 30 Jun 2026 02:02:00 GMT
+
+Number of Pages: 29
+
+Markdown Content:
+# Efficient Wall-Modeled High-Order Compact Gas-Kinetic Scheme for Compressible Turbulent Flows 
+
+Yaqing Yang a, Fengxiang Zhao a, Kun Xu a,b, ∗
+
+> aDepartment of Mathematics, Hong Kong University of Science and Technology, Clear Water Bay, Kowloon, Hong Kong
+> bShenzhen Research Institute, Hong Kong University of Science and Technology, Shenzhen, China
+
+Abstract 
+
+Scale-resolving simulations of wall-bounded turbulent flows remain prohibitively expen-sive at high Reynolds numbers, owing to the stringent near-wall resolution requirements. High-order compact gas-kinetic schemes (CGKS) are accurate, robust, and efficient for com-pressible flows, making them an attractive foundation for reducing this cost. Building on the fifth-order scheme CGKS-5th, we develop a wall-modeled CGKS framework that allevi-ates the near-wall resolution burden through a pressure-gradient-based non-equilibrium wall model while preserving the resolving power of the outer solver. CGKS-5th resolves the outer flow and supplies the wall model with data at the exchange location. On coarse near-wall meshes, the wall model reconstructs the under-resolved viscous wall stress, while CGKS-5th provides the inviscid wall flux directly; the two combine to form the wall momentum flux. To capture non-equilibrium effects in adverse-pressure-gradient and separated regions, the wall model retains a pressure-gradient source term together with a pressure-gradient-corrected near-wall damping function. We assess the framework on two distinct flows: bluff-body separation past a circular cylinder, and a shock-induced separation bubble on the transonic RAE 2822 airfoil, using near-wall meshes far coarser than wall-resolved simulations require. For the RAE 2822 case, this corresponds to a roughly twentyfold coarsening in the wall-normal direction, with comparable coarsening in the streamwise and spanwise directions. In both cases, the wall-modeled CGKS-5th reproduces the separated flow structures and markedly improves near-wall predictions over its wall-model-free counterpart, most notably the skin-friction coefficient. The framework thus delivers accurate predictions of these sep-arated flows at substantially reduced near-wall cost, while its lightweight coupling adds less than 1% runtime overhead in a multi-GPU implementation. 
+
+Keywords: 
+
+Compact gas-kinetic scheme, Non-equilibrium wall model, Turbulent flow, Multi-GPU implementation.       
+
+> ∗Corresponding author
+> Email addresses: yangyq@ust.hk (Yaqing Yang), fzhaoac@connect.ust.hk (Fengxiang Zhao),
+> makxu@ust.hk (Kun Xu )
+> Preprint submitted to Elsevier June 30, 2026
+> arXiv:2606.30061v1 [physics.flu-dyn] 29 Jun 2026
+
+1. Introduction 
+
+Turbulent flows at high Reynolds numbers are ubiquitous in engineering applications such as aerospace and turbomachinery. Among these flows, large-scale separation behind bluff bodies and shock-induced separation caused by shock-wave/boundary-layer interac-tion (SWBLI) represent two common and challenging phenomena, typically characterized by strong unsteadiness, pronounced adverse pressure gradients, and complex separation-reattachment structures. As the Reynolds number increases, the viscous near-wall scales become increasingly small, rendering direct numerical simulation (DNS) and wall-resolved large-eddy simulation (WRLES) prohibitively expensive at conditions of engineering inter-est. Achieving high accuracy at an affordable cost is therefore a central challenge in applying scale-resolving simulation methods to practical engineering flows. Compared with conventional second-order methods, high-order schemes offer lower nu-merical dissipation and higher resolution on a given mesh, and are therefore attractive for reducing the computational cost required to achieve a target accuracy. Considerable effort has been devoted to their development, including high-order finite-difference (FD) methods [1, 2], the essentially non-oscillatory (ENO) scheme [3, 4], the weighted essentially non-oscillatory (WENO) scheme [5, 6], the Hermite WENO (HWENO) scheme [7], the dis-continuous Galerkin (DG) method [8, 9], the flux reconstruction (FR) approach [10], and the correction procedure via reconstruction (CPR) [11], among others. In recent years, high-order compact gas-kinetic schemes (CGKS) have been developed for the high-fidelity simulation of compressible flows [12, 13, 14, 15]. These schemes build upon the gas distribution function of the underlying gas-kinetic scheme (GKS) framework [17, 18, 19], endowing the scheme with several intrinsic advantages: the inviscid and viscous fluxes are evaluated simultaneously within a single unified formulation; the flux transitions naturally between an equilibrium form in smooth regions and a non-equilibrium form near discontinuities; and second-order temporal accuracy can be achieved through a single-step evolution. Building on this framework, we proposed in our previous work a fifth-order compact gas-kinetic scheme (CGKS-5th) and validated it on a series of turbulent benchmark cases, confirming its accuracy and robustness for complex compressible flows [16]. It should be emphasized, however, that although high-order schemes relax the overall mesh-resolution constraints by improving the accuracy attainable on a given mesh, they still impose stringent resolution requirements in the near-wall region. This requirement, together with the cost of long-time simulation, remains the principal obstacle to applying CGKS-5th to realistic engineering flows. A promising route to relieving this near-wall burden is wall modeling. Wall modeling is a general near-wall treatment adopted across a wide range of turbulence simulation frameworks, from wall functions in Reynolds-averaged Navier–Stokes (RANS) methods [20] to hybrid RANS–LES methods such as detached-eddy simulation (DES) [21] and LES-type approaches [22, 23]. According to their underlying assumptions, wall models are commonly classified as equilibrium or non-equilibrium. Equilibrium models neglect the pressure-gradient and convective terms, and are implemented either through an algebraic law-of-the-wall relation [24, 25] or by solving a simplified near-wall ordinary differential equation (ODE) [26, 27]. Their simplicity and low cost make them widely used, but their 2validity hinges on the assumptions of local equilibrium and negligible pressure gradient. These assumptions break down in flows with separation, reattachment, strong adverse pres-sure gradients, or SWBLI, where equilibrium models may lead to substantial errors in the wall shear stress. Non-equilibrium models address this limitation by retaining, to differ-ent extents, pressure-gradient and convective effects [28], thereby accounting for departures from equilibrium. Furthermore, because the friction velocity alone may not characterize the near-wall profile in such flows, introducing a pressure-gradient-corrected velocity scale can further improve the representation of adverse-pressure-gradient and separated boundary layers [29]. Despite the maturity of wall modeling across RANS and LES frameworks, its appli-cation within CGKS remains largely unexplored. Building on CGKS-5th, we develop a wall-modeled CGKS framework equipped with a non-equilibrium wall model. To capture non-equilibrium effects, the wall model retains the pressure-gradient term in the near-wall ODE and adopts a pressure-gradient-corrected velocity scale in the near-wall damping func-tion. The coupling is achieved through a momentum-flux boundary condition, in which the wall model corrects only the viscous part of the wall-cell flux while CGKS-5th provides the inviscid part. Two representative three-dimensional separated flows are selected for validation: subsonic flow over a circular cylinder, featuring laminar separation and turbu-lent wake, and high-Reynolds-number transonic flow over the RAE 2822 airfoil, involving SWBLI accompanied by a separation bubble. The results demonstrate that, on coarsened near-wall meshes, the proposed framework improves the prediction of wall quantities, in particular the skin-friction coefficient, while reliably capturing the main separation features, at substantially reduced near-wall cost and with negligible coupling overhead. The remainder of this paper is organized as follows. Section 2 introduces the gas-kinetic scheme and the finite-volume framework. Section 3 briefly reviews the fifth-order compact gas-kinetic scheme used as the outer solver. Section 4 describes the non-equilibrium wall model and its implementation within CGKS-5th. Numerical examples are provided in Sec-tion 5, and conclusions are drawn in Section 6. 
+
+2. Gas-kinetic scheme and finite volume method 
+
+In the gas-kinetic method, time-dependent numerical fluxes are constructed from a space-time coupled solution of the BGK equation for the gas distribution function [17, 18]. The BGK equation is a simplification of the Boltzmann equation, and the three-dimensional BGK equation [31, 32] can be written as 
+
+ft + u · ∇ f = g − fτ , (1) where u = ( u, v, w ) is the particle velocity, τ is the collision time and f is the gas distribution function. The equilibrium state g is given by Maxwellian distribution 
+
+g = ρ
+
+ λπ
+
+(N +3) /2
+
+e−λ[( u−U )2+ξ2],
+
+3where ρ is the density, U = ( U, V, W ) is the macroscopic fluid velocity, and λ = ρ
+
+2p, p is the pressure. In the BGK equation, the collision operator involves a simple relaxation from f
+
+to the local equilibrium state g. The variable ξ accounts for the internal degree of freedom of molecular motion, ξ2 = ξ21 + · · · + ξ2 
+
+> N
+
+, where N = (5 − 3γ)/(γ − 1) is the number of internal degree of freedom and γ is the specific heat ratio. The collision term satisfies the compatibility condition Z g − fτ ψ dΞ = 0 ,
+
+where ψ =
+
+
+
+1, u, v, w, 12(u2 + v2 + w2 + ξ2)
+
+T
+
+and dΞ = d udvdwdξ1 . . . dξN . The macro-scopic conservative variables Q = ( ρ, ρU, ρV, ρW, ρE ) can be calculated through the gas distribution function f
+
+Q =
+
+Z
+
+f ψ dΞ , (2) and the corresponding fluxes can be given by taking moments of the gas distribution function 
+
+F =
+
+Z
+
+uf ψ dΞ , (3) where F represents either the Euler flux or the Navier-Stokes (NS) flux, depending on the order of approximation of f to g. Based on the integral solution of BGK equation Eq.(1), the gas distribution function f (xG, t, u, ξ) can be given by 
+
+f (xG, t, u, ξ) = 1
+
+τ
+
+Z t
+
+> 0
+
+g(x′, t ′, u, ξ)e−(t−t′)/τ dt′ + e−t/τ f0(−ut, ξ).
+
+By modeling the unknown terms in the integral solution, a second-order explicit gas distri-bution function is obtained as 
+
+f (xG, t, u, ξ) =(1 − e−t/τ )g0 + [( t + τ )e−t/τ − τ ]( a1u + a2v + a3w)g0
+
++( t − τ + τ e −t/τ ) ¯Ag 0
+
++e−t/τ gr[1 − (τ + t)( ar
+
+> 1
+
+u + ar
+
+> 2
+
+v + ar
+
+> 3
+
+w) − τ A r](1 − H(u)) +e−t/τ gl[1 − (τ + t)( al
+
+> 1
+
+u + al
+
+> 2
+
+v + al
+
+> 3
+
+w) − τ A l]H(u), (4) where g0, gl and gr are determined by the conservative variables reconstructed at the inter-face, and the coefficients are determined by the macroscopic variables and their derivatives. The specific formulas can be referred to in [17, 18]. For the second-order evolution solution, the time accurate distribution function f (t) at cell interface can be approximated through a linearization in time [33] ˆf (t) = f n + tf nt ,
+
+4where 
+
+f n =  4 ¯f (∆ t/ 2) − ¯f (∆ t)/∆t, f nt = 4   ¯f (∆ t) − 2 ¯f (∆ t/ 2) /∆t2,
+
+¯f (∆ t) and ¯f (∆ t/ 2) are the time integrations of f (t) over the interval [ tn, t n + ∆ t] and [tn, t n + ∆ t/ 2], respectively. The numerical fluxes and their time derivatives can be obtained by taking moments of ˆf (t) and ˆft(t) at t = tn
+
+F n =
+
+Z
+
+uf nψ dΞ , F nt =
+
+Z
+
+uf nt ψ dΞ .
+
+Simultaneously, the flow variables and their time derivatives can be given by 
+
+Qn =
+
+Z
+
+f nψ dΞ , Qnt =
+
+Z
+
+f nt ψ dΞ .
+
+The obtained conservative variables at interfaces are used to achieve compact reconstructions in high-order compact GKS. Taking moments of Eq. (1) and integrating with respect to space, the semi-discretized finite volume scheme can be obtained as dQi
+
+dt = Li(Q), (5) where Qi is the cell-averaged conservative variables over cell Ω i. The operator Li is defined as 
+
+Li(Q) = − 1
+
+|Ωi|
+
+Z
+
+> ∂Ωi
+
+F (t)n dS, 
+
+where |Ωi| is the volume of Ω i, ∂Ωi represents the cell interfaces of Ω i, and n is the unit direction of the cell interface. To achieve the expected order of accuracy, the Gaussian quadrature is used for the flux integration 
+
+Z
+
+> σj
+
+F (t)n dS =
+
+> K
+
+X
+
+> k=1
+
+ωkF (xk, t )Sj ,
+
+where Sj is the area of σj , σj is one of the cell interfaces, ωk is the Gaussian quadrature weight, xk is the Gaussian quadrature point, K is the total number of Gaussian quadrature points. The numerical flux F (xk, t ) at Gaussian quadrature point can be given by Eq.(3). In this study, each face is a quadrilateral with K = 4 Gaussian points for high-order schemes. 
+
+3. High-order compact gas-kinetic scheme 
+
+The time-dependent gas distribution function in GKS provides not only the numerical fluxes but also the pointwise conservative variables at cell interfaces, offering a natural 5framework for high-order compact extensions. Recently, a new fifth-order compact GKS (CGKS-5th) on three-dimensional structured meshes has been developed [16], achieving high accuracy, efficiency, and resolution. The scheme has been validated on challenging numerical test cases for compressible flows, and its formulation is briefly introduced below. 
+
+3.1. Flow variable update and temporal discretization 
+
+For CGKS-5th, the cell-averaged conservative variable Q(t) within a control volume Ω is updated according to the conservation laws, as given in Eq.(5). The cell-averaged derivatives of Q(t) over Ω are updated using Gauss’s theorem 
+
+∇Q(t) = 1
+
+|Ω|
+
+Z
+
+> Ω
+
+∇Q(t)d V = 1
+
+|Ω|
+
+Z
+
+> ∂Ω
+
+Q(t)ndS, 
+
+where n is the unit normal vector on the cell interface. Additionally, the line-averaged partial derivative along a segment defined by points x1 and x2 is given by (∂lQ)( t) = 1
+
+|lG|
+
+Z x2
+
+> x1
+
+∂Q(t)
+
+∂l dl = 1
+
+|lG| (Q(x2, t ) − Q(x1, t )) ,
+
+where |lG| = |x2 − x1|, Q(x1, t ) and Q(x2, t ) are the values of Q at x1 and x2 inside the cell, respectively. At each time step, Q(x1, t ) and Q(x2, t ) are obtained from the time-accurate solution of the gas distribution function in the GKS. According to Eq.(5), the fully discrete form of the conservation laws over cell Ω i can be represented as 
+
+Qn+1  
+
+> i
+
+= Qni +
+
+Z tn+1 
+
+> tn
+
+L(Qi, t ) d t, 
+
+where Qn+1  
+
+> i
+
+represents the cell-averaged conservative variable over cell Ω i at tn+1 = tn +∆t. In the CGKS-5th, the cell-averaged conservative variables are updated with high-order temporal accuracy based on a two-stage, fourth-order method [35, 36, 12] 
+
+Q∗ 
+
+> i
+
+= Qni + 12∆tL(Qni ) + 18∆t2 ∂∂t L(Qni ),
+
+Qn+1  
+
+> i
+
+= Qni + ∆ tL(Qni ) + 12∆t2 ∂∂t L(Qni ) − 13∆t2 ∂∂t eL(Qni ) + 13
+
+∂∂t eL(Q∗ 
+
+> i
+
+),
+
+where eL is a nonlinear operator [38]. In this work, the nonlinear limiter employed in eL
+
+is determined directly from the spatial reconstruction without introducing any additional computation. Simultaneously, the cell-averaged gradients and line-averaged derivatives are evaluated from the interface conservative variables, with the variables on each side of the interface evolved via a two-stage method for third-order accuracy 
+
+Q∗ = Qn + 12∆t(∂tQ)n,
+
+Qn+1 = Qn + ∆ t(∂tQ)∗.
+
+6Since the conservative variables on each side of an interface may differ near discontinuities [33, 15], the update strategy for Q(t) is formulated as 
+
+Ql(t) = (1 − e−∆t/τ 0 )Qe(t) + e−∆t/τ 0 Ql
+
+> 0
+
+(t),
+
+Qr(t) = (1 − e−∆t/τ 0 )Qe(t) + e−∆t/τ 0 Qr
+
+> 0
+
+(t).
+
+The values and time derivatives of the conservative variables on the left and right sides of the interface are obtained from this formula. Here, Ql
+
+> 0
+
+, Qr
+
+> 0
+
+, and Qe are respectively given by the GKS distribution function at the interface. 
+
+3.2. Fifth-order compact gas-kinetic scheme 
+
+For the target cell Ω 0, its interfaces are denoted by Fm (m = 1 , . . . , 6), and its edges are denoted by En (n = 1 , . . . , 12). The cell adjacent to Ω 0 that shares the face Fm is represented by Ω 1,m , while the cell adjacent to Ω 0 that shares only the edge En is represented by Ω 2,n .To achieve fifth-order accuracy, a compact stencil containing all the face-neighboring and edge-neighboring cells is defined as follows 
+
+Scell −5th = {Ω0, Ω1,m , Ω2,n | m = 1 , . . . , 6, n = 1 , . . . , 12 }.
+
+The fifth-order reconstruction employs the following data 
+
+Sdata −5th = S0 ∪ Sf ace ∪ Sedge ,
+
+where 
+
+S0 = {Q0, (∂lQ)0,G },Sf ace = {Q1,m , (∇Q)1,m | m = 1 , . . . , 6},Sedge = {Q2,n , (∂τ Q)2,n | n = 1 , . . . , 12 }.
+
+Q0, Q1,m and Q2,n represent the cell-averaged conservative values over cells Ω 0, Ω 1,m and Ω2,n , respectively. ( ∂lQ)0,G represents the line-averaged partial derivatives within the target cell Ω 0. ( ∇Q)1,m denotes the cell-averaged gradient over cell Ω 1,m , where ∇ = ( ∂x, ∂ y, ∂ z ). (∂τ Q)2,n denotes the cell-averaged directional derivative over the cell Ω 2,n , with ∂τ =(∂τ1 , ∂ τ2 ), where ∂τ1 and ∂τ2 are linear combinations of ∂x, ∂y and ∂z . Details of computing these quantities are given in [16]. From the stencil Sdata −5th , a quartic polynomial P 4(x) is reconstructed for the target cell Ω0 as 
+
+P 4(x) = Q0 +
+
+> 4
+
+X
+
+> |d|=1
+
+adpd(x),
+
+where Q0 is the cell-averaged variable over cell Ω 0, the multi-index d = ( d1, d 2, d 3), and 
+
+|d| = d1 + d2 + d3, and pd(x) is the zero-mean basis. To determine the polynomial P 4(x), 7the following system is solved using the constrained least-squares method 1
+
+|Ωk|
+
+Z
+
+> Ωk
+
+P 4(x)d V = Qk, Ωk ∈ Scell −5th ,h1
+
+|Ω1,m |
+
+Z
+
+> Ω1,m
+
+∇P 4(x)d V = h1 · (∇Q)1,m , m = 1 , . . . , 6,h2
+
+|Ω2,n |
+
+Z
+
+> Ω2,n
+
+∂∂τ
+
+P 4(x)d V = h2 · (∂τ Q)2,n , n = 1 , . . . , 12 ,h3
+
+|lG|
+
+Z
+
+> lG
+
+∂∂l
+
+P 4(x)d l = h3 · (∂lQ)0,G ,
+
+(6) where the parameters h1, h2, and h3 are scaling factors that improve the conditioning of the reconstruction matrix, whose specific values are given in [16]. 
+
+3.3. Nonlinear fifth-order compact gas-kinetic scheme 
+
+To handle discontinuities, the generalized ENO (GENO) nonlinear reconstruction [34] is adopted, which is dominated by a second-order reconstruction with the ENO property at discontinuities. For this second-order reconstruction, we adopt a more robust sub-stencil strategy than that used in [16]. The sub-stencils are 
+
+Scell −2 
+
+> m
+
+= {Ω0, Ω1,m },
+
+and the linear polynomial on each sub-stencil is constructed from 
+
+Sdata −2 
+
+> m
+
+= {Q0, Q1,m , (∇Q)1,m }, m = 1 , . . . , 6, (7) where Q1,m and ( ∇Q)1,m are the cell-averaged conservative value and gradient over cell Ω1,m . From Sdata −2 
+
+> m
+
+(m = 1 , . . . , 6), linear polynomials P 1
+
+> m
+
+(x) are constructed as 
+
+Pm(x) = Q0 + X
+
+> |d|=1
+
+bm 
+
+> d
+
+pd(x). (8) To determine these linear polynomials, the following system is solved using a constrained least-squares method 1
+
+|Ω1,m |
+
+Z
+
+> Ω1,m
+
+P 1
+
+> m
+
+(x)d V = Q1,m ,
+
+1
+
+|Ω1,m |
+
+Z
+
+> Ω1,m
+
+∇P 1
+
+> m
+
+(x)d V = ( ∇Q)1,m .
+
+(9) With the reconstructed polynomials P 4(x) and P 1
+
+> m
+
+(x), m = 1 , ..., 6, GENO is applied to achieve nonlinear reconstruction, adaptively transitioning from high-order accuracy in smooth regions to second-order near discontinuities to balance resolution and robustness. 8The conservative value Q(xG) and the spatial derivatives ∂x,y,z Q(xG) at Gaussian quadra-ture point are computed as 
+
+Q(xG) = χP 4(xG) + (1 − χ)
+
+> 6
+
+X
+
+> m=1
+
+ωmP 1
+
+> m
+
+(x)
+
+!
+
+,∂x,y,z Q(xG) = χ∂ x,y,z P 4(xG) + (1 − χ)
+
+> 6
+
+X
+
+> m=1
+
+ωm∂x,y,z P 1
+
+> m
+
+(x)
+
+!
+
+,
+
+(10) where 
+
+ωm = ωm
+
+P6 
+
+> m=1
+
+ωm
+
+, ω m = dm
+
+(IS m + ϵ)5 , d 1 = · · · = d6 = 16.
+
+Details of the above computation can be found in [34, 16]. To accommodate non-orthogonal meshes with low memory usage and simple implemen-tation, the CGKS-5th scheme maps each target cell to a single reference cell [16], so that all reconstructions are expressed and stored in a unified polynomial form on the reference cell. Reconstructed values are then mapped back to physical coordinates through the inverse transformation. 
+
+4. Wall-modeled high-order compact gas-kinetic scheme 
+
+While the CGKS-5th achieves high accuracy and efficiency, directly resolving the near-wall turbulent structures of complex wall-bounded flows remains computationally prohibitive, as it requires an excessively fine grid in the near-wall region. To relax this requirement, we develop a wall-modeled CGKS framework in which the near-wall layer is represented by a wall model rather than fully resolved. 
+
+4.1. Non-equilibrium wall-model formulation 
+
+A wide range of wall models, from equilibrium models to those based on the full boundary-layer equations, have been extensively discussed in the literature [23]. The present work employs a non-equilibrium wall model that incorporates the wall-parallel pressure gradient. To implement this model, a one-dimensional embedded mesh is constructed along the wall-normal direction at each wall interface, extending from the wall to an exchange location. A simplified momentum equation is solved on this mesh, with the outer CGKS-5th solution at the exchange location supplying the boundary condition. The resulting wall shear stress is then returned to the outer solver as the wall momentum flux. As a first step toward a non-equilibrium wall-modeled CGKS framework, we focus on flows whose departure from equilibrium is governed primarily by the wall-parallel pressure gradient, for which the convective and unsteady terms play a minor role in the thin near-wall layer. Retaining only the pressure gradient, the simplified wall-normal momentum equation is expressed as 
+
+∂∂n 
+
+
+
+(ν + νt) ∂u i
+
+∂n 
+
+
+
+= 1
+
+ρ∂p ∂τ i
+
+, i = 1 , 2, (11) 9where n is the wall-normal coordinate, τi (i = 1 , 2) are the two orthogonal wall-tangential directions, and ui are the corresponding tangential velocity components to be solved on the embedded mesh. The density ρ and the wall-parallel pressure gradient ∂p/∂τ i are treated as known forcing terms, provided directly by the outer solution at the exchange location. Furthermore, ν is the molecular kinematic viscosity, while the eddy viscosity νt requires an additional turbulence closure, specified below. To close Eq. (11), the eddy viscosity νt is evaluated using the modified mixing-length model of [29], which builds on the pressure-gradient-based velocity scale introduced by [30]. The eddy viscosity is expressed as 
+
+νt = ( κy n)2|S|Dp(yn), (12) where κ = 0 .41 and yn is the wall-normal distance. Here |S| = p(∂u 1/∂n )2 + ( ∂u 2/∂n )2
+
+denotes the magnitude of the wall-normal shear rate. The term Dp(yn) is a modified damping function that incorporates the influence of the pressure gradient. The friction velocity uτ
+
+and the pressure-gradient-based velocity up are defined as 
+
+uτ =
+
+s
+
+|τw|
+
+ρ , up =
+
+νρ
+
+s ∂p ∂τ 1
+
+2
+
++
+
+ ∂p ∂τ 2
+
+2
+
+
+
+> 1/3
+
+,
+
+where up extends the one-dimensional form of [29] to the two wall-tangential directions. A parameter α measures their relative dominance, 
+
+α = u2
+
+> τ
+
+u2 
+
+> τ
+
++ u2
+
+> p
+
+, α∗ = max ( α, 0.5 (tanh(10( α − 0.5)) + 1)) ,
+
+which yields a mixed friction velocity uτ p =
+
+q
+
+u2 
+
+> τ
+
++ (1 − α∗)u2
+
+> p
+
+. The damping function is then 
+
+Dp(yn) = (1 − e−y+  
+
+> p/A +
+> p
+
+)2,
+
+with the modified non-dimensional wall distance and effective damping coefficient 
+
+y+ 
+
+> p
+
+= ynuτ p /ν, A+ 
+
+> p
+
+= 1 + α3
+
+> ∗
+
+(A+ − 1) , A+ = 26 .
+
+This formulation generalizes the standard van Driest damping function, 
+
+D(yn) = 
+
+
+
+1 − e− y+
+
+> A+
+
+2
+
+, y+ = ynuτ
+
+ν ,
+
+by replacing the friction velocity uτ in the wall-distance scaling with the mixed velocity uτ p ,and the constant A+ with the pressure-gradient-dependent effective coefficient A+ 
+
+> p
+
+.In this work, the wall model is used to reconstruct the wall shear stress and to provide the corresponding momentum flux to the outer compressible CGKS-5th solver. The density, 10 molecular viscosity, and pressure-gradient term appearing in Eq. (11) are evaluated from the CGKS-5th solution, while the eddy viscosity νt is determined by the closure model above. This approximation is acceptable for the subsonic and transonic separated flows studied in this work, where the pressure gradient is the dominant non-equilibrium effect. Stronger compressibility brings in effects beyond the present formulation, including significant convec-tive and unsteady terms, a non-negligible wall-normal pressure gradient, and heat transfer. Capturing these calls for a more complete wall model, which we leave to future work. 
+
+4.2. Analysis of pressure-gradient corrections and the choice of exchange location 
+
+A classical equilibrium wall model neglects the wall-parallel pressure gradient, setting the right-hand side of Eq. (11) to zero. This omission is the root of its shortcomings under strong pressure gradients: it cannot let the wall shear stress fall toward zero at separation, nor reproduce the curvature that the pressure gradient imparts to the near-wall velocity profile, leaving an inaccurate wall-stress estimate. A further limitation arises from the van Driest damping function, whose uτ scaling causes it to collapse as τw → 0 near separation and to over-suppress the modeled eddy viscosity. The model formulated in subsection 4.1 accounts for the pressure gradient through the source term in Eq. (11) and the modified damping function. How these act depends on the near-wall state, defining the two regimes analyzed below. The first regime is a turbulent boundary layer under an adverse pressure gradient, where the eddy viscosity is significant and the wall model acts as a turbulence closure for the unresolved inner layer. By retaining the pressure-gradient source term, Eq. (11) enables the modeled wall shear stress to respond to the adverse gradient and, when supported by the exchange-location data, to approach zero or even change sign, allowing the boundary con-dition to represent incipient separation and near-wall backflow; under a vanishing pressure gradient, the source term drops out and the equilibrium balance is recovered. In the same near-separation limit, where τw → 0, the modified damping function prevents the standard van Driest form from collapsing and driving the modeled eddy viscosity to zero. The second regime occurs in a laminar near-wall flow under a pressure gradient. Within the present framework, the mixing-length closure naturally yields a negligible eddy viscos-ity in this laminar region, and Eq. (11) reduces to a balance between wall-normal viscous diffusion and the pressure-gradient source, 
+
+ν ∂2ui
+
+∂n 2 = 1
+
+ρ∂p ∂τ i
+
+.
+
+The near-wall velocity profile is therefore curved, with a curvature proportional to the pres-sure gradient. Under a favorable gradient ( ∂p/∂τ i < 0), as in the accelerated laminar flow ahead of separation, this curvature is negative. A no-model estimate, which assumes a uni-form velocity variation up to the exchange location, then underestimates the wall-normal gradient at the wall, and hence the wall shear stress, with an error that grows on coarser meshes. By retaining the pressure-gradient source term, the wall model reconstructs the curved profile and recovers the correct wall gradient, acting here not as a turbulence closure 11 but as a correction to the near-wall velocity profile. In the present non-equilibrium wall-model formulation, the tangential pressure gradient is assumed to be invariant in the wall-normal direction across the wall-modeled layer. The exchange location is therefore selected according to the local flow configuration so that this approximation remains consistent with the thickness and pressure variation of the modeled layer. For flows in which the turbulent boundary layer remains thin and largely attached, such as the transonic high-Reynolds-number flow over the RAE 2822 airfoil in this work, where separation in the shock region is limited to a small local bubble, the wall-normal variation of the tangential pressure gradient across the modeled layer is expected to be small. The exchange location is placed at the third off-wall cell, kept thin enough for the wall-normal-invariant pressure-gradient assumption to hold, and the model operates in the first regime described above. For flows with laminar separation, such as the subsonic flow over a circular cylinder in this work, the boundary layer remains laminar up to separation, beyond which it detaches into a thick recirculating wake with significant wall-normal pressure variation. Modeling a thick wall-normal layer there would make the assumption of a wall-normal-invariant tangen-tial pressure gradient questionable. The exchange location is therefore set at the first off-wall cell over the whole body, so that the modeled layer remains thin and the pressure-gradient approximation is applied only over a short wall-normal distance. Although matching be-low the logarithmic layer introduces additional sensitivity into the wall-stress prediction, it avoids the potentially larger modeling error of applying the wall-normal-invariant as-sumption across a thick recirculating layer. Near the leading edge ahead of separation, the laminar boundary layer accelerates under a favorable pressure gradient and falls into the second regime described above. 
+
+4.3. Solution of the wall model and coupling to CGKS-5th 
+
+Equation (11) is nonlinear, since its diffusion coefficient ν + νt depends on the unknown velocity field through the shear rate |S| and the damping function Dp, and is therefore solved iteratively. The tangential velocity components ui are discretized on the one-dimensional embedded mesh using a second-order cell-centered finite volume method, with Dirichlet conditions imposed at both the wall and the exchange location. At each nonlinear iteration the eddy viscosity is updated from the previous iterate, giving a tridiagonal system that is solved with the Thomas algorithm, and the iteration continues until the L∞ norm of the velocity update falls below a prescribed tolerance. Upon convergence, the wall shear-stress components are evaluated from the wall-normal velocity gradient, 
+
+τw,i = μ ∂u i
+
+∂n wall 
+
+, i = 1 , 2. (13) With the wall model, this gradient is taken from the near-wall profile reconstructed on the embedded mesh; without the wall model, it is estimated directly from the first off-wall cell. The modeled wall shear stress is coupled back to the outer solver through the wall 12 momentum flux alone. The inviscid part of the wall momentum flux, together with all other fluxes, is provided by the CGKS-5th, which evaluates inviscid and viscous fluxes within a single formulation, so that all of them are produced together in one flux evaluation. The wall momentum flux is then assembled by adding the modeled viscous stress τw,i to the inviscid part. The overall workflow of the proposed wall-modeled CGKS framework is outlined in Algorithm 1. 
+
+5. Numerical verification 
+
+To validate the proposed wall-modeled CGKS framework, this section considers two rep-resentative three-dimensional turbulent flows: subsonic low-Reynolds-number flow past a circular cylinder and transonic high-Reynolds-number flow over an RAE 2822 airfoil. Span-ning several orders of magnitude in Reynolds number and involving distinct separation mechanisms, these two cases enable a systematic assessment of the framework’s accuracy and robustness across different flow regimes. In this study, the embedded one-dimensional wall-normal grid consists of 32 cells, and the wall-model input variables are taken from the cell-averaged values at the exchange location. The nonlinear iteration is initialized differently for the two cases. For the RAE 2822 case, the converged profile from the previous time step is reused. For the cylinder case, the strong temporal variation in the separated region makes this reuse less reliable, and the embedded profile is instead re-initialized at each time step from a linear distribution based on the current exchange-location velocity, which is found to improve robustness. For convenience, the wall-modeled fifth-order compact gas-kinetic scheme is denoted WM CGKS-5th. For the evolution of the flow fields, the time step ∆ t is given by the CFL condition. In all test cases, the CFL number is taken as CFL > 0.5. For viscous flows, the time step is also limited by the viscous term as ∆ t = CFL · h2/(3 ν), where h is the cell size and ν is the kinematic viscosity coefficient. The collision time is related to the viscosity coefficient, 
+
+τ = μp + C|pl − pr
+
+pl + pr
+
+|∆t, 
+
+where μ is the dynamic viscous coefficient, p is the pressure at the cell interface, pl and pr
+
+denote the pressure on the left and right sides of the cell interface, and C = 10 .0. In smooth flow regions, the collision time reduces to 
+
+τ = μp .
+
+In this section, the specific heat ratio γ takes 1.4. All numerical simulations in this section are performed using a multi-GPU implementa-tion of the CGKS-5th and WM CGKS-5th schemes. The solvers are parallelized via CUDA for on-device computation and MPI for inter-process communication. This framework fa-cilitates large-scale simulations, deploying eight NVIDIA GeForce RTX 4090 GPUs with double-precision arithmetic. 13 Algorithm 1: Computational workflow of the wall-modeled CGKS-5th  
+
+> 1
+
+Initialize flow field;  
+
+> 2
+
+Compute reconstruction polynomial coefficients on a standard cell;  
+
+> 3
+
+Select exchange location and embed a 1D wall-normal grid for each wall interface;  
+
+> 4
+
+Initialize the wall-model velocity profile on each embedded grid;  
+
+> 5
+
+while TIME ≤ TSTOP do  
+
+> 6
+
+Compute time step ∆ t; 
+
+> 7
+
+! Stage 1  
+
+> 8
+
+Apply boundary condition at t = tn; 
+
+> 9
+
+for each cell interface do  
+
+> 10
+
+for each side of the interface do  
+
+> 11
+
+Transform variables and gradients to the reference coordinate system;  
+
+> 12
+
+Assemble polynomials P 4(ξ) and P 1
+
+> m
+
+(ξ);  
+
+> 13
+
+Apply GENO for nonlinear combination;  
+
+> 14
+
+Transform reconstructed values back to the physical coordinate system;  
+
+> 15
+
+end  
+
+> 16
+
+Compute flux and pointwise conservative variables using GKS;  
+
+> 17
+
+if the interface lies on the wall then  
+
+> 18
+
+Output the inviscid flux using GKS;  
+
+> 19
+
+end  
+
+> 20
+
+end  
+
+> 21
+
+for each wall interface do  
+
+> 22
+
+Extract flow variables and gradients at the exchange location;  
+
+> 23
+
+Project them onto the tangential directions;  
+
+> 24
+
+Solve wall model Eq. (11) and obtain the wall shear stress;  
+
+> 25
+
+Project the wall shear stress back to global coordinates;  
+
+> 26
+
+Assemble the wall momentum flux from the inviscid flux and the modeled wall shear stress;  
+
+> 27
+
+end  
+
+> 28
+
+Update Q(t∗), ( ∇Q)( t∗), and ( ∂lQ)( t∗);  
+
+> 29
+
+! Stage 2: similar to Stage 1  
+
+> 30
+
+Apply boundary condition at t = t∗; 
+
+> 31
+
+Perform reconstruction and flux calculation;  
+
+> 32
+
+Solve wall model and assemble the wall momentum flux;  
+
+> 33
+
+Update Q(tn+1 ), ( ∇Q)( tn+1 ), and ( ∂lQ)( tn+1 );  
+
+> 34
+
+end 
+
+5.1. Turbulent flow past a cylinder 
+
+A subsonic flow past a circular cylinder at Re D = 3900 is first considered to assess the performance of the WM CGKS-5th. At this subcritical Reynolds number, the boundary layer remains laminar up to separation and the detached shear layers transition to turbulence 14 Figure 1: Turbulent flow past a cylinder: visualization of the computational mesh in the x-y plane with a full view (left) and a detailed view (right).  
+
+> Figure 2: Turbulent flow past a cylinder: the iso-surface of the Q-criterion ( Q= 0 .01) with a front view (left) and an isometric view (right).
+
+in the wake; the configuration thus combines laminar separation with a turbulent wake, providing a bluff-body benchmark for the wall-modeled framework. The cylinder, with a diameter of D = 1, is centered at the origin. The three-dimensional computational domain is discretized using an O-type structured mesh. The outer boundary is concentric with the cylinder at a radial distance of approximately 40 D, and the spanwise extent is Lz = πD with a periodic boundary condition. The free-stream Mach number is 
+
+M a ∞ = 0 .2 and the Reynolds number is Re D = 3900, based on the cylinder diameter. The flow field is initialized with the uniform free-stream condition (ρ, U, V, W, p )∞ = (1 , M a ∞, 0, 0, 1/γ ).
+
+15 θ    
+
+> Cp
+> 060 120 180
+> -1.5
+> -1
+> -0.5
+> 0
+> 0.5
+> 1Exp. (Norberg) WM CGKS-5th h min =0.005D WM CGKS-5th h min =0.01D CGKS-5th h min =0.005D CGKS-5th h min =0.01D
+
+θ    
+
+> Cf
+> 060 120 180
+> 0
+> 0.02
+> 0.04
+> 0.06
+> 0.08 DNS (Ma et al.) LES (Cheng et al.) WM CGKS-5th h min =0.005D WM CGKS-5th h min =0.01D CGKS-5th h min =0.005D CGKS-5th h min =0.01D
+
+Figure 3: Turbulent flow past a cylinder: the pressure coefficient (left) and skin-friction coefficient (right) along the cylinder surface obtained by CGKS-5th and WM CGKS-5th using linear reconstruction. x/D 
+
+> <u>/U ∞
+
+0 2 4 6 8 10 
+
+-0.5 
+
+0
+
+0.5 
+
+1
+
+> Exp. (Molochnikov et al.) LES (Song et al.) WM CGKS-5th h min =0.005D WM CGKS-5th h min =0.01D CGKS-5th h min =0.005D CGKS-5th h min =0.01D
+
+Figure 4: Turbulent flow past a cylinder: the streamwise velocity profiles along the centerline in the cylinder wake obtained by CGKS-5th and WM CGKS-5th using linear reconstruction. 
+
+A no-slip adiabatic wall boundary condition is imposed on the cylinder surface, and a far-field condition is applied at the outer boundary. To evaluate both the coarse-grid performance and the grid convergence, two meshes are employed. The coarse mesh consists of 200 × 160 × 60 cells in the radial, circumferential, and spanwise directions, respectively, with a minimum wall-normal spacing of hmin = 0 .01 D. For the grid convergence study, a refined mesh is generated by increasing the radial resolution, yielding 224 × 160 × 60 cells and a reduced first-layer spacing of hmin = 0 .005 D. In both configurations, the grid points are clustered in the near-wake region to adequately resolve 16 x/D                 
+
+> <u>/U ∞
+> -2 -1 012
+> -1.5
+> -0.75
+> 0
+> 0.75
+> 1.5
+> Exp. (Molochnikov et al.) WM CGKS-5th h min =0.005D WM CGKS-5th h min =0.01D CGKS-5th h min =0.005D CGKS-5th h min =0.01D
+> x/D=0.58 x/D
+> <u>/U ∞
+> -2 -1 012
+> -1.5
+> -0.75
+> 0
+> 0.75
+> 1.5
+> Exp. (Molochnikov et al.) WM CGKS-5th h min =0.005D WM CGKS-5th h min =0.01D CGKS-5th h min =0.005D CGKS-5th h min =0.01D
+> x/D=1.06 x/D
+> <u>/U ∞
+> -2 -1 012
+> -1.5
+> -0.75
+> 0
+> 0.75
+> 1.5
+> Exp. (Molochnikov et al.) WM CGKS-5th h min =0.005D WM CGKS-5th h min =0.01D CGKS-5th h min =0.005D CGKS-5th h min =0.01D
+> x/D=1.54 x/D
+> <u>/U ∞
+> -2 -1 012
+> 0.3
+> 0.6
+> 0.9
+> 1.2
+> Exp. (Molochnikov et al.) WM CGKS-5th h min =0.005D WM CGKS-5th h min =0.01D CGKS-5th h min =0.005D CGKS-5th h min =0.01D
+> x/D=7.0
+
+Figure 5: Turbulent flow past a cylinder: the streamwise velocity profiles at different cylinder wake locations obtained by CGKS-5th and WM CGKS-5th using linear reconstruction. 
+
+the vortex shedding and are gradually stretched toward the far-field boundary, while the spanwise spacing remains uniform. A cross-sectional view of the coarse mesh in the x-y
+
+plane is shown in Figure 1. Both the CGKS-5th and the WM CGKS-5th employ linear reconstruction in this subsection. Figure 2 shows the instantaneous vortex structures generated by the WM CGKS-5th on the coarse mesh ( hmin = 0 .01 D), visualized via Q-criterion isosurfaces ( Q = 0 .01) colored by the Mach number. The intricate small-scale vortices in the wake are clearly resolved, demonstrating the strong resolving capability of the scheme on a relatively coarse mesh. Figure 3 compares the surface distributions of the pressure coefficient Cp and the skin-friction coefficient Cf predicted by the CGKS-5th and the WM CGKS-5th against experi-mental [39], DNS [40], and LES [41] reference data. For the Cp distribution, both schemes reproduce the overall pressure trend around the cylinder, while the WM CGKS-5th yields closer agreement with the experimental data, particularly in the suction-peak magnitude and the base pressure. A similar improvement is observed in the Cf distribution. Both schemes capture the general variation of the wall shear stress, but the WM CGKS-5th predicts the peak near θ ≈ 45 ◦ markedly more accurately. On the coarse mesh with hmin = 0 .01 D, the WM CGKS-5th predicts Cf, max ≈ 0.073 in close agreement with the reference data, whereas the CGKS-5th underestimates it as 0 .058. This peak lies in the strongly accelerated re-gion upstream of separation and corresponds precisely to the regime discussed in Section 4, in which retaining the pressure-gradient source term allows the wall model to recover the correct peak that a no-model linear estimate would underpredict. Furthermore, as the mini-17 y/D      
+
+> <u’u’>/U ∞
+> 2
+> -2 -1 012
+> 0
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> 0.1 Exp. (Molochnikov et al.) WM CGKS-5th h min =0.005D WM CGKS-5th h min =0.01D CGKS-5th h min =0.005D CGKS-5th h min =0.01D
+> x/D=4.0
+
+y/D      
+
+> <u’u’>/U ∞
+> 2
+> -2 -1 012
+> 0
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> 0.1 Exp. (Molochnikov et al.) WM CGKS-5th h min =0.005D WM CGKS-5th h min =0.01D CGKS-5th h min =0.005D CGKS-5th h min =0.01D
+> x/D=7.0
+
+x/D      
+
+> <u’v’>/U ∞
+> 2
+> -2 -1 012
+> -0.06
+> -0.03
+> 0
+> 0.03
+> 0.06 Exp. (Molochnikov et al.) WM CGKS-5th h min =0.005D WM CGKS-5th h min =0.01D CGKS-5th h min =0.005D CGKS-5th h min =0.01D
+> x/D=4.0
+
+x/D      
+
+> <u’v’>/U ∞
+> 2
+> -2 -1 012
+> -0.06
+> -0.03
+> 0
+> 0.03
+> 0.06 Exp. (Molochnikov et al.) WM CGKS-5th h min =0.005D WM CGKS-5th h min =0.01D CGKS-5th h min =0.005D CGKS-5th h min =0.01D
+> x/D=7.0
+
+y/D      
+
+> <v’v’>/U ∞
+> 2
+> -2 -1 012
+> 0
+> 0.1
+> 0.2
+> 0.3
+> 0.4 Exp. (Molochnikov et al.) WM CGKS-5th h min =0.005D WM CGKS-5th h min =0.01D CGKS-5th h min =0.005D CGKS-5th h min =0.01D
+> x/D=4.0
+
+y/D      
+
+> <v’v’>/U ∞
+> 2
+> -2 -1 012
+> 0
+> 0.1
+> 0.2
+> 0.3
+> 0.4 Exp. (Molochnikov et al.) WM CGKS-5th h min =0.005D WM CGKS-5th h min =0.01D CGKS-5th h min =0.005D CGKS-5th h min =0.01D
+> x/D=7.0
+
+Figure 6: Turbulent flow past a cylinder: the Reynolds stress components profiles at different cylinder wake locations obtained by CGKS-5th and WM CGKS-5th using linear reconstruction. 
+
+mum wall-normal spacing hmin decreases, the WM CGKS-5th results progressively converge toward the reference solutions, confirming the grid convergence of the scheme. Figure 4 shows the mean streamwise velocity profile ⟨u⟩/U ∞ along the wake centerline, where the operator ⟨·⟩ denotes temporal averaging combined with spatial averaging in the 
+
+z-direction. Results from the CGKS-5th and the WM CGKS-5th with linear reconstruc-tion are compared with experimental data [43] and LES results [42] computed on a mesh of 512 ×512 ×128 cells. Both schemes correctly reproduce the reverse-flow region and the subse-quent downstream recovery, while the WM CGKS-5th shows noticeably better quantitative agreement with the reference data, particularly in the recirculation length. Figure 5 further presents the mean streamwise velocity profiles at four wake locations (x/D = 0 .58, 1 .06, 1 .54, and 7 .0), compared with experimental data [43]. At all stations, both schemes capture the overall wake-profile shape reasonably well, while the WM CGKS-18 5th provides more accurate predictions in the near-wake region. Figure 6 presents the profiles of the Reynolds-stress components ⟨u′u′⟩/U 2
+
+> ∞
+
+, ⟨u′v′⟩/U 2
+
+> ∞
+
+, and ⟨v′v′⟩/U 2 
+
+> ∞
+
+at two wake locations ( x/D = 4 .0 and 7 .0), compared with experimental data [43]. The predicted profiles agree well with the measurements at both stations, with only minor differences among the schemes and mesh resolutions, consistent with the far wake being governed by the outer solver and largely insensitive to the near-wall treatment. Table 1 quantitatively compares the mean drag coefficient Cd and the separation angle 
+
+θsep obtained by the CGKS-5th and the WM CGKS-5th against experimental measure-ments [44, 45]. The CGKS-5th overpredicts the separation angle, whereas the WM CGKS-5th brings it close to the measured value; on the refined mesh it attains the best agreement in both Cd and θsep and shows excellent grid convergence. These results further validate the accuracy of the proposed wall-modeled framework in predicting boundary-layer separation. Scheme Mesh Cd θsep (deg) Exp.(Norberg) - 0.98 -Exp.(Parnaudeau et al.) - - 88 WM CGKS-5th 224 × 160 × 60 ( hmin = 0 .005 D) 0.974 87.7 WM CGKS-5th 200 × 160 × 60 ( hmin = 0 .01 D) 0.932 86.2 CGKS-5th 224 × 160 × 60 ( hmin = 0 .005 D) 0.965 90.2 CGKS-5th 200 × 160 × 60 ( hmin = 0 .01 D) 0.921 89.2    
+
+> Table 1: Turbulent flow past a cylinder: comparison of the mean drag coefficient Cdand separation angle
+> θsep obtained by different schemes.
+> Figure 7: Turbulent flow past an RAE 2822 airfoil: visualization of the computational mesh in the x-y plane.
+
+5.2. Turbulent flow past an RAE 2822 airfoil 
+
+To assess the capability of the proposed WM CGKS-5th in handling high-Reynolds-number wall-bounded flows with shock-wave/boundary-layer interaction (SWBLI), the tran-sonic flow over an RAE 2822 supercritical airfoil is considered. This case features complex 19 Figure 8: Turbulent flow past an RAE 2822 airfoil: the iso-surface of the Q-criterion ( Q = 3 .0) with a front view. 
+
+SWBLI with flow separation under stringent near-wall resolution requirements, constituting a challenging benchmark for the wall-modeling strategy. The free-stream conditions correspond to Case 6 of the AGARD experiment [46] with corrected parameters [47, 48]: the free-stream Mach number is M a ∞ = 0 .729, the chord-based Reynolds number is Re c = 6 .5 × 10 6, and the angle of attack is α = 2 .31 ◦.Although the RAE 2822 geometry is two-dimensional, a three-dimensional computation is performed to resolve the spanwise turbulent structures. The computational domain is extended in the spanwise direction with a periodicity length of Lz = 0 .03 c [49], where c = 1 denotes the chord length. The mesh consists of 1920 × 80 × 64 cells in the wrap-around, wall-normal, and spanwise directions, respectively, clustered toward the airfoil surface with a minimum wall-normal spacing of hmin = 4 × 10 −5c. A view of the mesh topology in the 
+
+x–y plane is shown in Figure 7. On the airfoil surface, a no-slip isothermal wall boundary condition is imposed with the wall temperature set equal to the free-stream static temperature, Tw = T∞, and a far-field condition is applied at the outer boundary. The flow field is initialized uniformly with the free-stream state ( ρ, U, V, W, p )∞ = (1 , M a ∞ cos α, M a ∞ sin α, 0, 1/γ ), and the viscosity is evaluated using Sutherland’s law. To accelerate the development of the turbulent flow field, a two-dimensional simulation is first carried out in the x–y plane with identical mesh distribution and flow conditions until a quasi-steady state is reached. The resulting two-dimensional solution is then extruded uniformly in the spanwise direction to initialize the three-dimensional computation. To promote transition to turbulence on the airfoil surface, a wall-normal blowing-and-suction disturbance is applied in the region 0 .12 ⩽ x/c ⩽ 0.15 on the upper surface, following [49], given by 
+
+vn(x, z, t ) = A sin( πθ ) sin(2 πα xθ + 2 πβt ) sin 
+
+2πα z zLz
+
+
+
+, (14) where θ = ( x − x1)/(x2 − x1) with x1/c = 0 .12 and x2/c = 0 .15. The disturbance amplitude 20 Figure 9: Turbulent flow past an RAE 2822 airfoil: the iso-surface of the Q-criterion ( Q = 3 .0) with local isometric views. 
+
+is A = 0 .08, the streamwise and spanwise wavenumber parameters are αx = 2 and αz = 4, respectively, and the temporal frequency parameter is β = −1. Figure 8 and 9 present instantaneous isosurfaces of the Q-criterion ( Q = 3) obtained by the WM CGKS-5th, colored by the local Mach number. The flow development on the airfoil surface is clearly captured. Near the leading edge, the boundary layer remains laminar with no resolved vortical structures. Downstream of the blowing-and-suction region (0 .12 ⩽ x/c ⩽ 0.15), spanwise-coherent structures emerge and rapidly break down into fine-scale three-dimensional eddies, indicating a complete transition to turbulence well upstream of the shock. The supersonic turbulent boundary layer ahead of the shock exhibits dense vortical structures with M a > 1, while a sharp Mach number drop across the shock reflects the abrupt deceleration to subsonic speeds. Downstream of the shock, the vortical structures broaden noticeably, consistent with boundary-layer thickening under the adverse pressure gradient. These results show that the WM CGKS-5th captures the transition process and 21 Figure 10: Turbulent flow past an RAE 2822 airfoil: the instantaneous density contour and Mach number contour in the mid-span plane. 
+
+> Figure 11: Turbulent flow past an RAE 2822 airfoil: the instantaneous density gradient magnitude contour in the mid-span plane and Mach number contour near the shock region with in-plane streamlines.
+
+the post-shock boundary-layer development on the coarse wall-modeled mesh. Figures 10 and 11 present instantaneous flow fields around the airfoil on the mid-span plane. In the density and Mach number contours, the flow accelerates rapidly over the leading edge and forms an extensive supersonic zone, terminated by a well-defined shock near x/c ≈ 0.56. The density contour exhibits a sharp jump across the shock, indicating the shock-capturing capability of the CGKS-5th on the present coarse wall-modeled mesh. This observation is further corroborated by the density-gradient magnitude field shown in Figure 11 (left), where the shock front appears as a thin, crisp band with peak |∇ ρ| values sharply concentrated. The close-up view of the shock region (Figure 11, right), overlaid with in-plane streamlines, reveals that the boundary layer thickens appreciably upstream of the shock foot and that the streamlines deflect markedly away from the wall immediately downstream, indicating a shock-induced separation driven by the strong adverse pressure gradient. Together, these instantaneous results show that the WM CGKS-5th resolves the shock, the induced separation, and the post-shock boundary-layer response on a relatively 22 x      
+
+> y+
+> 00.2 0.4 0.6 0.8 1
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> y+at exchange location
+
+Figure 12: Turbulent flow past an RAE 2822 airfoil: the time- and spanwise-averaged y+ at the exchange location along the upper surface. x           
+
+> Cp
+> 00.2 0.4 0.6 0.8 1
+> -1.5
+> -1
+> -0.5
+> 0
+> 0.5
+> 1
+> 1.5
+> Exp. (AGARD) WM CGKS-5th h min =4e-5 CGKS-5th h min =4e-5 x
+> Cf
+> 00.2 0.4 0.6 0.8 1
+> -0.002
+> 0
+> 0.002
+> 0.004
+> 0.006
+> 0.008 Exp. (AGARD) WM CGKS-5th h min =4e-5 CGKS-5th h min =4e-5
+
+Figure 13: Turbulent flow past an RAE 2822 airfoil: the time- and spanwise-averaged pressure coefficient distribution along the airfoil surface (left) and skin friction coefficient distribution along the upper surface (right). 
+
+coarse near-wall grid. Figure 12 shows the time- and spanwise-averaged y+ at the exchange location along the upper surface. Except for a thin region near the leading edge, where the boundary layer is laminar and extremely thin, the exchange-location y+ remains within approximately 18–22 over the entire chord. Since the wall model integrates the near-wall momentum balance directly on the embedded mesh rather than fitting a logarithmic law, this level keeps the modeled layer thin while still spanning the inner layer, and the wall model therefore operates in the first regime described in Section 4, acting as a turbulence closure for the unresolved inner layer. Figure 13 compares the time- and spanwise-averaged pressure coefficient Cp and skin-friction coefficient Cf on the upper surface obtained with and without the wall model on 23 x       
+
+> prms
+> Cf
+> 0.2 0.4 0.6 0.8 1
+> 0
+> 0.01
+> 0.02
+> 0.03
+> 0.04
+> -0.002
+> 0
+> 0.002
+> 0.004
+> 0.006
+> Cf
+> prms Figure 14: Turbulent flow past an RAE 2822 airfoil: the time- and spanwise-averaged skin-friction coefficient
+> Cf(right axis) and wall-pressure fluctuation prms (left axis) along the upper surface.
+
+the same coarse mesh. In the Cp distribution, both computations reproduce the suction-side pressure plateau in the supersonic region and capture the shock location in close agreement with the experiment. The difference between the two approaches becomes more pronounced in the Cf distribution. Without the wall model, the CGKS-5th systematically under-predicts the skin friction over the entire upper surface, a characteristic consequence of insufficient near-wall resolution on this coarse mesh. In contrast, the WM CGKS-5th returns appreciably higher Cf levels that are markedly closer to the experimental data. For instance, near the transition region at x/c ≈ 0.2, the WM CGKS-5th predicts Cf ≈ 0.003, in close agreement with the measured value, whereas the CGKS-5th yields only Cf ≈ 0.0024. Near the shock foot, both solutions exhibit a sharp drop in Cf crossing zero, consistent with the shock-induced incipient separation observed in the instantaneous flow field. Downstream of the shock, the WM result recovers to a positive friction level more rapidly. These results confirm that the wall model is essential for obtaining quantitatively reliable wall shear stress on the present coarse mesh, whereas the pressure field is comparatively less sensitive to the near-wall treatment. To further characterize the SWBLI, Figure 14 shows the time- and spanwise-averaged skin-friction coefficient Cf together with the wall-pressure fluctuation prms along the upper surface. At x/c ≈ 0.56, Cf drops sharply to a near-zero minimum, indicating the shock and its induced incipient separation, before recovering downstream. At the same location, prms ,which remains low and nearly flat over the rest of the chord, exhibits a pronounced peak. The coincidence of the Cf minimum and the prms peak confirms that the strong wall-pressure fluctuations originate from the unsteady shock motion and the associated separation. Table 2 lists the mean drag and lift coefficients. Both computations on the coarse mesh yield reasonable predictions of the integral aerodynamic forces. Since Cl is predominantly determined by the surface pressure distribution, which is nearly identical for the two schemes, 24 the resulting lift coefficients are expectedly close, their difference being within the statistical and grid uncertainty. For the drag coefficient, wave drag dominates over friction drag in transonic flow, so the pronounced difference in Cf between the two approaches does not translate into an appreciable difference in Cd. The benefit of the wall model is therefore primarily reflected in the local wall shear stress prediction. Scheme Mesh Cd Cl
+
+Exp.(AGARD) - 0.0128 0.743 WM CGKS-5th 1920 × 80 × 64 ( hmin = 4 × 10 −5) 0.0116 0.732 CGKS-5th 1920 × 80 × 64 ( hmin = 4 × 10 −5) 0.0114 0.735 
+
+> Table 2: Turbulent flow past an RAE 2822 airfoil: comparison of the mean drag coefficient and lift coefficient obtained by different schemes.
+
+5.3. Computational efficiency 
+
+In this subsection, the computational efficiency of the proposed WM CGKS-5th is eval-uated. To quantify the extra overhead introduced by the wall model, Table 3 compares the computational cost of the CGKS-5th and the WM CGKS-5th per 1000 time steps, measured on the respective computational meshes of the two cases in the same multi-GPU environ-ment. For both the cylinder and the RAE 2822 cases, the cost of the WM CGKS-5th is nearly identical to that of the baseline CGKS-5th, with a marginal increase of only 0 .5% to 0.7%. This negligible overhead is expected, since the additional wall-modeling procedures are strictly confined to the first layer of off-wall cells, which constitute a minuscule fraction of the total three-dimensional computational domain. Given the nearly identical per-step cost, the principal advantage of the WM CGKS-5th lies in its grid-reduction capability. By sustaining high accuracy on meshes far coarser than those required by a wall-resolved computation, the proposed scheme avoids the prohibitive cell counts that arise from resolving the near-wall region at high Reynolds numbers. To put this coarsening in perspective, the near-wall mesh of the high-Reynolds-number RAE 2822 case corresponds to an exchange-location y+ ≈ 20, whereas a wall-resolved computation requires a first-cell y+ ≈ 1. Recovering wall-resolved resolution would therefore demand a roughly twentyfold wall-normal refinement near the wall, together with a comparable streamwise and spanwise refinement to resolve the near-wall turbulent scales; the resulting growth in cell count, and the attendant time and memory cost, becomes increasingly prohibitive as the Reynolds number rises. This translates into substantial savings in both computational time and memory, making the WM CGKS-5th attractive for engineering-scale simulations. 
+
+6. Conclusion 
+
+This work extends wall-modeled simulation methodology to the gas-kinetic scheme frame-work by integrating a non-equilibrium wall model with a recently developed fifth-order com-25 Case Scheme Mesh Time (s) Ratio Cylinder CGKS-5th 224 × 160 × 60 827.3 1Cylinder WM CGKS-5th 224 × 160 × 60 831.6 1.005 RAE 2822 CGKS-5th 1920 × 80 × 64 6936.3 1RAE 2822 WM CGKS-5th 1920 × 80 × 64 6986.5 1.007 
+
+> Table 3: Computational efficiency: computational time per 1000 time steps for the CGKS-5th and the WM CGKS-5th.
+
+pact gas-kinetic scheme (CGKS-5th), yielding an affordable framework for high-Reynolds-number wall-bounded turbulent flows. The wall model retains the wall-parallel pressure-gradient source term and employs a pressure-gradient-corrected generalization of the van Dri-est damping function, enabling it to account for departures from local equilibrium in adverse-pressure-gradient and separated regions. The coupling is realized purely as a boundary-condition correction, requiring no modification to the underlying CGKS-5th solver and in-curring only negligible overhead, 0 .5%–0 .7% per time step. The entire framework is real-ized in a multi-GPU implementation parallelized via CUDA and MPI, which makes these high-fidelity separated-flow simulations tractable on a modest multi-GPU workstation. The framework has been validated using two cases with distinct separation mechanisms. The circular-cylinder case assesses geometry-induced laminar separation and vortex shedding in a turbulent wake, while the RAE 2822 airfoil case examines SWBLI and shock-induced incipient separation. In both cases, the wall-modeled CGKS-5th achieves improved predic-tions on coarse near-wall meshes. In particular, it improves the skin-friction peak and base pressure for the circular cylinder, and captures the shock structure, incipient separation, and upper-surface skin-friction distribution for the RAE 2822 airfoil. The two cases also exercise the wall model in its two operating regimes: pressure-gradient-corrected near-wall reconstruction in the laminar cylinder boundary layer, and inner-layer turbulence closure in the attached turbulent boundary layer of the airfoil. These results demonstrate that the proposed coupling provides an accurate and low-overhead route to wall-modeled simulation within the CGKS framework. Future work will further refine the wall-model formulation and extend the framework to more complex three-dimensional and engineering-relevant con-figurations. 
+
+Acknowledgements 
+
+The current research is supported by National Science Foundation of China (92371107), National Key R&D Program of China (Grant Nos. 2022YFA1004500), and Hong Kong research grant council (16208324). 
+
+Declaration of competing interest 
+
+The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. 26 Data availability 
+
+The data that support the findings of this study are available from the corresponding author upon reasonable request. 
+
+References 
+
+[1] Lele, S. K. (1992). Compact finite difference schemes with spectral-like resolution. Journal of compu-tational physics, 103(1), 16-42. [2] Mahesh, K. (1998). A family of high order finite difference schemes with good spectral resolution. Journal of Computational Physics, 145(1), 332-358. [3] Harten, A., Engquist, B., Osher, S., & Chakravarthy, S. R. (1987). Uniformly high order accurate essentially non-oscillatory schemes, III. Journal of computational physics, 131(1), 3-47. [4] Shu, C. W., & Osher, S. (1988). Efficient implementation of essentially non-oscillatory shock-capturing schemes. Journal of computational physics, 77(2), 439-471. [5] Liu, X. D., Osher, S., & Chan, T. (1994). Weighted essentially non-oscillatory schemes. Journal of computational physics, 115(1), 200-212. [6] Jiang, G. S., & Shu, C. W. (1996). Efficient implementation of weighted ENO schemes. Journal of computational physics, 126(1), 202-228. [7] Qiu, J., & Shu, C. W. (2004). Hermite WENO schemes and their application as limiters for Runge–Kutta discontinuous Galerkin method: one-dimensional case. Journal of Computational Physics, 193(1), 115-135. [8] Reed, W. H., & Hill, T. R. (1973). Triangular mesh methods for the neutron transport equation (No. LA-UR–73-479; CONF-730414–2). Los Alamos Scientific Lab., N. Mex. (USA). [9] Cockburn, B., & Shu, C. W. (1989). TVB Runge-Kutta local projection discontinuous Galerkin finite element method for conservation laws. II. General framework. Mathematics of computation, 52(186), 411-435. [10] Huynh, H. T. (2007). A flux reconstruction approach to high-order schemes including discontinuous Galerkin methods. In 18th AIAA computational fluid dynamics conference (p. 4079). [11] Wang, Z. J., & Gao, H. (2009). A unifying lifting collocation penalty formulation including the discon-tinuous Galerkin, spectral volume/difference methods for conservation laws on mixed grids. Journal of Computational Physics, 228(21), 8161-8186. [12] Pan, L., Xu, K., Li, Q., & Li, J. (2016). An efficient and accurate two-stage fourth-order gas-kinetic scheme for the Euler and Navier-Stokes equations. Journal of Computational Physics, 326, 197-221. [13] Zhao, F., Ji, X., Shyy, W., & Xu, K. (2019). Compact higher-order gas-kinetic schemes with spectral-like resolution for compressible flow simulations. Advances in Aerodynamics, 1(1), 13. [14] Ji, X., Shyy, W., & Xu, K. (2021). A gradient compression-based compact high-order gas-kinetic scheme on 3D hybrid unstructured meshes. International Journal of Computational Fluid Dynamics, 35(7), 485-509. [15] Zhao, F., Ji, X., Shyy, W., & Xu, K. (2023). High-order compact gas-kinetic schemes for three-dimensional flow simulations on tetrahedral mesh. Advances in Aerodynamics, 5(1), 1. [16] Yang, Y., Zhao, F., & Xu, K. (2026). An effective implementation of high-order compact gas-kinetic scheme on structured meshes for compressible flows. Journal of Computational Physics, 114729. [17] Xu, K. (2001). A gas-kinetic BGK scheme for the Navier-Stokes equations and its connection with artificial dissipation and Godunov method. Journal of Computational Physics, 171(1), 289-335. [18] Xu, K. (2015). Direct modeling for computational fluid dynamics: construction and application of unified gas-kinetic schemes. World Scientific. [19] Xu, K. (2021). A unified computational fluid dynamics framework from rarefied to continuum regimes. Cambridge University Press. [20] Launder, B. E., & Spalding, D. B. (1983). The numerical computation of turbulent flows. In Numerical prediction of flow, heat transfer, turbulence and combustion (pp. 96-116). Pergamon. 
+
+27 [21] Spalart, P. R. (2009). Detached-eddy simulation. Annual review of fluid mechanics, 41(1), 181-202. [22] Piomelli, U., & Balaras, E. (2002). Wall-layer models for large-eddy simulations. Annual review of fluid mechanics, 34(1), 349-374. [23] Bose, S. T., & Park, G. I. (2018). Wall-modeled large-eddy simulation for complex turbulent flows. Annual review of fluid mechanics, 50, 535-561. [24] Schumann, U. (1975). Subgrid scale model for finite difference simulations of turbulent flows in plane channels and annuli. Journal of computational physics, 18(4), 376-404. [25] Shi, J., Yan, H., & Wang, Z. J. (2020). Flux reconstruction implementation of an algebraic wall model for large-eddy simulation. AIAA Journal, 58(7), 3051-3062. [26] Balaras, E., Benocci, C., & Piomelli, U. (1996). Two-layer approximate boundary conditions for large-eddy simulations. AIAA journal, 34(6), 1111-1119. [27] Cabot, W., & Moin, P. (2000). Approximate wall boundary conditions in the large-eddy simulation of high Reynolds number flow. Flow, Turbulence and Combustion, 63(1), 269-291. [28] Wang, M., & Moin, P. (2002). Dynamic wall modeling for large-eddy simulation of complex turbulent flows. Physics of Fluids, 14(7), 2043-2051. [29] Mettu, B. R., & Subbareddy, P. K. (2022). Wall-modeled large eddy simulation of high speed flows. AIAA journal, 60(7), 4302-4324. [30] Duprat, C., Balarac, G., M´ etais, O., Congedo, P. M., & Brugi` ere, O. (2011). A wall-layer model for large-eddy simulations of turbulent flows with/out pressure gradient. Physics of fluids, 23(1). [31] Bhatnagar, P. L., Gross, E. P., & Krook, M. (1954). A model for collision processes in gases. I. Small amplitude processes in charged and neutral one-component systems. Physical review, 94(3), 511. [32] Chapman, S., & Cowling, T. G. (1990). The mathematical theory of non-uniform gases: an account of the kinetic theory of viscosity, thermal conduction and diffusion in gases. Cambridge university press. [33] Zhao, F., Ji, X., Shyy, W., & Xu, K. (2022). A compact high-order gas-kinetic scheme on unstructured mesh for acoustic and shock wave computations. Journal of Computational Physics, 449, 110812. [34] Zhao, F., & Xu, K. (2025). A generalized ENO reconstruction in compact GKS for compressible flow simulations. Journal of Computational Physics, 114612. [35] Seal, D. C., G¨ u¸ cl¨ u, Y., & Christlieb, A. J. (2014). High-order multiderivative time integrators for hyperbolic conservation laws. Journal of Scientific Computing, 60(1), 101-140. [36] Li, J., & Du, Z. (2016). A two-stage fourth order time-accurate discretization for Lax–Wendroff type flow solvers I. Hyperbolic conservation laws. SIAM Journal on Scientific Computing, 38(5), A3046-A3069. [37] Li, J. (2019). Two-stage fourth order: temporal-spatial coupling in computational fluid dynamics (CFD). Advances in Aerodynamics, 1(1), 3. [38] Zhao, F., Ji, X., Shyy, W., & Xu, K. (2023). Direct modeling for computational fluid dynamics and the construction of high-order compact scheme for compressible flow simulations. Journal of Computational Physics, 477, 111921. [39] Norberg, C. (1993). Pressure forces on a circular cylinder in cross flow. In Bluff-Body Wakes, Dynamics and Instabilities: IUTAM Symposium, Springer Berlin Heidelberg. [40] Ma, X., Karamanos, G. S., & Karniadakis, G. E. (2000). Dynamics and low-dimensionality of a turbu-lent near wake. Journal of fluid mechanics, 410, 29-65. [41] Cheng, W., Pullin, D. I., Samtaney, R., Zhang, W., & Gao, W. (2017). Large-eddy simulation of flow over a cylinder with Re D from 3 .9 × 10 3 to 8 .5 × 10 5: A skin-friction perspective. Journal of Fluid Mechanics, 820, 121-158. [42] Song, H., Ghate, A. S., Matsuno, K. V., West, J. R., Subramaniam, A., & Lele, S. K. (2024). A robust compact finite difference framework for simulations of compressible turbulent flows. Journal of Computational Physics, 519, 113419. [43] Molochnikov, V. M., Mikheev, N. I., Mikheev, A. N., Paereliy, A. A., Dushin, N. S., & Dushina, O. A. (2019). SIV measurements of flow structure in the near wake of a circular cylinder at Re= 3900. Fluid Dynamics Research, 51(5), 055505. [44] Norberg, C. (1994). An experimental investigation of the flow around a circular cylinder: influence of 
+
+28 aspect ratio. Journal of Fluid Mechanics, 258, 287-316. [45] Parnaudeau, P., Carlier, J., Heitz, D., & Lamballais, E. (2008). Experimental and numerical studies of the flow over a circular cylinder at Reynolds number 3900. Physics of fluids, 20(8). [46] Cook, P. H., Firmin, M. C. P., & McDonald, M. A. (1977). Aerofoil RAE 2822: pressure distributions, and boundary layer and wake measurements. RAE. [47] Haase, W., Bradsma, F., Elsholz, E., Leschziner, M., & Schwamborn, D. (1993). EUROVAL-An Eu-ropean Initiative on Validation of CFD Codes. Notes on Numerical Fluid Mechanics, Vol. 42. Vieweg, Braunschweig/Wiebaden. [48] Xiao, M. J., & She, Z. S. (2020). Precise drag prediction of airfoil flows by a new algebraic model. Acta Mechanica Sinica, 36(1), 35. [49] Liang, X., Li, X. L., Fu, D. X., & Ma, Y. W. (2011). Ten thousand order cores expandable CFD software and its application. Journal of Huazhong University of Science and Technology (Natural Science Edition), 39(Sup. I), 67-70. (in Chinese) 
+
+29

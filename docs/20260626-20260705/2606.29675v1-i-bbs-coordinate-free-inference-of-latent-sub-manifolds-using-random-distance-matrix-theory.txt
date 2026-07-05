@@ -1,0 +1,2740 @@
+Title: I-BBS: Coordinate-Free Inference of Latent Sub-Manifolds Using Random Distance Matrix Theory
+
+URL Source: https://arxiv.org/pdf/2606.29675v1
+
+Published Time: Tue, 30 Jun 2026 01:33:39 GMT
+
+Number of Pages: 53
+
+Markdown Content:
+# I-BBS: Coordinate-Free Inference of Latent Sub-Manifolds Using Random Distance Matrix Theory 
+
+Igor Halperin ∗
+
+June 30, 2026 
+
+Email: ighalp@gmail.com 
+
+Abstract 
+
+Bogomolny, Bohigas and Schmit (BBS) found that the spectrum of the pairwise distance matrix on N points sampled from a smooth d-dimensional manifold encodes a signature of the underlying geometry. We develop I-BBS (Inference-BBS), a coordinate-free method that identifies a low-dimensional latent sub-manifold embedded in a high-dimensional ambient distance matrix alone, without accessing an ambient high-dimensional vector space. It therefore applies even when that space is only partly observable or undefined. We model the ambient embedding by two classes of generative noise, model-based and model-free. The noise mixes the latent signal with off-manifold components, so the eigenvalues reorganise collectively and the latent geometry cannot be read off eigenvalue by eigenvalue. We recover it instead from two integer-stable signatures that survive the noise: the multiplicity of the top non-Perron multiplet, which fixes 
+
+d, and a parameter-free law for how the multiplet positions shrink as the noise grows. On synthetic spheres S1, S2 and S3 these integer signatures are far more stable under noise than the continuous spectral slope, and a blind test recovers both the manifold and the noise model from a single distance matrix. Applications to neural-network representations and to the dynamic training regime are developed in two companion papers. 
+
+## Contents 
+
+1 Introduction 22 BBS theory in a nutshell 63 Generative models for the ambient space data 94 Inverse problem for the latent distance matrix 13 5 Numerical experiments: latent sub-manifold inference 19 
+
+> ∗
+
+All calculations, numerical analysis, and manuscript preparation were performed by Claude Code with Opus 4.8 working as an AI assistant under the author’s supervision. I would like to thank Charles Martin for numerous discussions and comments on the manuscript. All remaining errors are my own. All Python code, analysis scripts, and figures supporting this paper are available at https://github.com/ighalp/I-BBS .
+
+1
+
+> arXiv:2606.29675v1 [cs.LG] 29 Jun 2026
+
+6 Discussion 25 7 Summary 30 A Detailed derivations for the RSM model 30 B Detailed derivations for the FSM model 34 C Spectra of the geodesic distance matrix and its off-manifold residual 36 D Finite-N corrections to the BBS theory on Sd−1 45 E Quasi-degenerate perturbation theory cross-check 49 
+
+## 1 Introduction 
+
+Many complex natural systems and human-created datasets, such as images and text, often carry latent low-dimensional structure beneath a high-dimensional ambient representation. In machine learning, the emergence of a low-dimensional manifold as a good approximation to the high-dimensional activation space of a neural network is itself a diagnostic of structural changes or phase transitions during training. Whether such a low-dimensional sub-manifold is present, and, if so, what its intrinsic dimension and geometry are, is therefore the central inference question across these settings, and the question we address here from observations alone. Bogomolny, Bohigas, and Schmit (BBS) [ 1, 2 ] showed that the spectrum of a pairwise distance matrix (defined below) of N uniform samples from a smooth low-dimensional manifold encodes, in the large-N limit, the manifold’s intrinsic dimension and isometry-group structure. For a distance matrix M of distances on a hyper-sphere Sd−1, BBS theory predicts a sequence of discrete multiplets at the top of the spectrum, a delocalised power-law tail |ΛK | ∼ K−d/ (d−1) in the rank K ordered by descending magnitude, and a complementary localised branch at the bottom whose small eigenvalues accumulate with the BBS exponent βloc = 1 /(d − 1). Section 2 reviews the BBS framework in the level of detail required here. This paper develops Inference-BBS (I-BBS), an inference framework that uses BBS theory to read the latent geometry off the ambient distance matrix when the observed data lies near (rather than exactly on) a low-dimensional sub-manifold Md embedded in a high-dimensional ambient space. We work on the ambient sphere SD−1, with D of order hundreds; we use D = 125 and D = 128 (ambient spheres S124 and S127 ) in our numerical experiments 1. I-BBS is coordinate-free: unlike most dimension-reduction or manifold-learning methods, it operates only on the distance matrix and not on the underlying vector space itself, which may be partially or fully unobservable, or even undefined. Also, unlike many other statistical methods, our approach can make inference from a 
+
+single observation , by relying on the “magic” of random matrix theory (RMT), see below.           
+
+> 1The unit multi-dimensional sphere is a common ambient arena for modern high-dimensional data. The single unit sphere SD−1corresponds, in particular, to the normalized activations of modern neural networks: normalized layers (LayerNorm, RMSNorm, ℓ2-normalized projection heads, and similar constructions used in transformers, convolutional, and self-supervised models) are commonly chosen to have unit normalization in RD, which is equivalent to SD−1.The choice D= 128 is motivated by the companion papers [ 3,4], which apply I-BBS to the distance matrix between neural activations in the learning dynamics of neural networks.
+
+2We adopt the geodesic distance matrix M (n) 
+
+> ij
+
+:= arccos (⃗u i ·⃗u j ) on N unit vectors ⃗u i ∈ Sn−1 ⊂ Rn
+
+as the primary object throughout. This is the geodesic distance studied in BBS-2 [ 2], of negative type unconditionally on the unit sphere and full rank generically, so the BBS spectral diagnostics (reviewed in Sec. 2) are directly available. The signal-plus-noise picture organising the paper is then a decomposition into three BBS distance matrices: the deterministic latent M (d) on the low-dimensional sub-manifold Md ⊂ Sd−1 (the signal ), the random residual M (D−d) on the complementary sub-sphere SD−d−1 (the noise ), and the observed ambient M (D) on SD−1 (the 
+
+observable ). A model-based construction (see Sec. 3.1), built from an orthogonal split of the ambient coordinates RD = V1 ⊕ V2, relates the three at the cosine-kernel level by the convex combination cos M (D) = (1 − ε2) cos M (d) + ε2 cos M (D−d)( ¯y), with ¯y the random residual sample on SD−d−1.Inference asks how the BBS spectral fingerprint of M (d) can be read off M (D) across the range of ε
+
+in which the noise has not yet washed it out. We hasten to clarify here what I-BBS does and what it does not do. As a part of their analysis of random distance matrices for manifolds embedded in some ambient Euclidean space, the BBS theory also considers the embedding problem : finding a specific particle configuration in that Euclidean space that matches a given distance matrix for the manifold embedded in it. We work with the high-dimensional ambient matrix M (D) as a noisy observation of a latent low-dimensional 
+
+matrix M (d) and infer the latter directly, namely the manifold Md and its distance matrix M (d)
+
+together with their BBS spectral content, so we bypass the embedding problem for the ambient 
+
+D-dimensional space altogether. We may then perfectly well add a solution of the embedding problem for the inferred M (d), recovering a configuration {⃗x i} on Sd−1 that realises the latent distances, for downstream tasks such as visualising the training process of neural networks [3, 4]. We split the forward (generative) step into two classes, borrowing the terminology from reinforce-ment learning. A model-based approach posits an explicit stochastic embedding ⃗x i →⃗ Xi of the latent unit vectors ⃗x i ∈ Sd−1 into ambient unit vectors ⃗ Xi ∈ SD−1 and reads M (D) 
+
+> ij
+
+= arccos (⃗X⊤
+
+> i
+
+⃗ Xj )off them. A model-free approach specifies the conditional distribution of M (D) 
+
+> ij
+
+given M (d) 
+
+> ij
+
+directly, with no ⃗ Xi constructed. We pursue both classes in this paper. The Residual Sphere Mixture (RSM) is model-based: the ambient coordinates split into a latent subspace V1 carrying the noiseless signal on Sd−1 and a residual subspace V2 carrying the noise as a BBS distance matrix on SD−d−1, but the vector space enters only at the construction stage, with every calculation done on the distance matrix itself (see Sec. 3.1). The Free Spectral Mixture (FSM) is model-free: it builds the ambient cosine kernel cos M (D) 
+
+> ij
+
+directly as a positive-definite zonal kernel on the product of the latent and residual sub-spheres, with a freely chosen nonnegative spectral array {βpq } and a noise amplitude ε2 = 1 −β10 ,and no ambient vectors constructed at all (see Sec. 3.2). Both apply when the high-dimensional space is partially or fully unobservable, or absent altogether, as for financial correlation matrices. The model-free framing adds two things that the RSM model does not have. First, it covers every SO (d) × SO (D − d)-invariant cosine kernel, of which the linear convex combination of RSM (see Eq. (9) ) is the two-coefficient corner. Second, it makes the angular-momentum content of the noise readable from the observed spectrum alone, through the nonnegative array {βpq } that no subspace-split model produces. Because the construction keeps the kernel positive semidefinite by Schoenberg’s theorem (the coefficients are nonnegative), M (D) = arccos (cos M (D)) is a genuine spherical distance matrix for every FSM instance. Distinct off-diagonal entries of cos M (D) are not independent: they are coupled through the shared residual coordinates and the shared spectral array. Both classes share a single noise amplitude ε controlling M (D) − M (d), with ε → 0 collapsing the 3model onto the identity. As discussed in Sec. 4 and Appendix C, the eigenvalues of the observed ambient distance matrix reorganise collectively, so the latent spectrum of M (d) is not read level by level. What survives the noise is the multiplet structure, where the isotropic perturbation shifts each BBS multiplet as a whole, so the integer multiplicities are gap-protected and give the latent-dimension readout (see Sec. 4.1). Our inference method is able to work with a single (multi-dimensional, matrix-valued) observation by employing self-averaging . The latter amounts to concentration of spectral observables of large random matrices around their ensemble mean with fluctuations vanishing as N → ∞ , so the 
+
+N -normalised matrix 1 
+
+> N
+
+M (d) fixes the spectral signatures of the latent geometry to O(N −1/2) in its operator-normalised eigenvalues [ 5] (the unnormalised multiplet positions are O(N ) and their finite-N spread is O(√N )). This is the “magic” (or rather a kind of blessing of dimensionality )of RMT: the spectral functionals of one large matrix concentrate, so a large sample size makes inference possible, unlike regression where each coefficient needs many observations. It also enables the blind setting of this paper: the multiplet multiplicities, the shrinkage, and the residual shape are self-averaged functionals sharp enough to read both the latent dimension and the noise model off a single M (D).Inference is then organised around the structural signatures of the ambient matrix M (D):1. the multiplicity ˆh1 of the lowest non-Perron multiplet, an integer-valued, gap-protected readout of the latent dimension via the representation theory of the latent isometry group. For a hyper-sphere Sd−1, ˆh1 = d; the inversion table for tori and projective spaces is in Sec. 6.1. 2. a parameter-free angular-momentum-level shrinkage law that places the multiplet positions (see Sec. 4.2): each angular-momentum-ℓ multiplet is shrunk under noise by a factor fixed by the Funk–Hecke spectrum of the geodesic kernel, and the latent positions are recovered by matching the shrinkage-corrected multiplets to the clean BBS tower. 3. the angular-momentum component that the noise populates, a fingerprint of the generative noise class: the model-free FSM injects an ℓ = 2 component, through a nonnegative spectral coefficient β20 , that the isotropic RSM kernel leaves empty by parity, with the residual-spectrum bulk providing an exploratory random-matrix consistency check (see Sec. 5.3, Appendix C.5). The integer multiplicity is the most stable handle; the finite-N -corrected power-law slope (BBS asymptote d/ (d − 1)) is a secondary low-noise cross-check. The stability is gap-protected: as long as the off-manifold perturbation ∥δM ∥op stays below half the inter-multiplet gap g, Weyl’s eigenvalue inequality keeps the multiplet an isolated cluster of the same integer size and the Davis–Kahan sin θ
+
+theorem keeps its eigenspace coherent (rotation bounded by ∥δM ∥op /g ), both made quantitative in Sec. 6.1. We validate the framework on synthetic hyper-sphere latents from S1, S2 and S3 across RSM and FSM. The integer multiplet diagnostic recovers the correct manifold in every realisation up to a relative noise level η = 0 .5, and beyond it for the isotropic noise model, while a blind test identifies both the manifold and the noise model from a single ambient matrix. The eigenvalue positions themselves degrade smoothly, tracking the shrinkage law. The results in this paper rest on a combination of theoretical results (BBS theory, the Davis–Kahan stability theorem, and random matrix theory) with numerical analysis (Funk–Hecke-based kernel denoising and quasi-degenerate L¨ owdin–Schrieffer–Wolff perturbation theory) and direct simulations. Applications to real neural-network representations and to the dynamic training regime are developed in two companion papers [3, 4]. 4Outline. Section 2 reviews the BBS framework. Section 3 organises the forward (generative) step of I-BBS into a model-free class (FSM) and a model-based class (RSM). Section 4 treats the inverse problem, and establishes the gap-protected multiplicity invariant and the angular-momentum-level shrinkage law, and packages the pipeline as Algorithm 1 (the I-BBS pipeline). Section 5 reports the inference experiments that test it step by step. Section 6 discusses scope, limitations, and extensions, and Section 7 summarises. Appendices A and B collect detailed derivations for the RSM and FSM generative models, respectively. Appendix C provides details of RMT analysis of distance matrices. Appendix D analyses finite-N corrections to the BBS theory. Appendix E gives details of tests involving the quasidegenerate perturbation theory. 
+
+1.1 Related work 
+
+Intrinsic-dimension estimation has a long history in nonlinear dimensionality reduction. Maximum-likelihood estimators read d off nearest-neighbour distances under a local Poisson model [ 6]. The TwoNN estimator [ 7 ] uses the smallest neighbourhood and is stable under density variation. Topo-logical data analysis and persistent homology [ 8, 9] extract coordinate-free invariants. Spectral methods such as Laplacian eigenmaps and diffusion maps [ 10 ] preserve local diffusion distances. These operate on the point cloud directly, not on the spectrum of the pairwise distance matrix. Closer to ours is the analysis of distance and Gram matrices as random operators in high dimension. El Karoui [ 11 ] and Bordenave [ 12 ] analysed high-dimensional kernel matrices by Taylor expansion around the concentrated norm, and Couillet and Liao [ 13 ] treat distance- and inner-product kernel matrices on Gaussian-mixture inputs (their Ch. 4) via a spiked-Wishart-plus-Euclidean decomposition, with the focus on class recovery rather than dimension inference. The EDMA framework [ 14 ] handles coordinate noise on landmark configurations by moments on centred distance matrices. The replica analyses of M´ ezard, Parisi, and Zee [ 15 ] and Casaburi and Vivo [16 , 17 ] reduce the extremal-eigenvalue problem of Euclidean random matrices to self-consistent equations. El Karoui [ 18 ] inverts the Marchenko–Pastur equation to estimate a population spectrum from sample eigenvalues by discretising the spectral measure into point masses. The Manifold-Spectrometrics framework of Chen and Ma [ 19 ] disentangles a low-rank signal from heteroskedastic noise in sample-covariance spectra. In kernel-learning terms, I-BBS recovers the latent BBS signal M (d) on Sd−1 from the noisy ambient M (D) (D ≫ d), the contamination supplied by M (D−d). This is dual to kernel approximation ,where random features [ 20 , 21 ] compress a kernel into a tractable surrogate: both expand the kernel in a spectral basis on the latent manifold, but our target is kernel inference of M (d) and its dimension 
+
+d from the BBS spectral signatures (the h1 = d multiplet, the angular-momentum-level shrinkage of the positions, and the residual shape), reading d off the spectrum rather than fixing it. The two model classes of Sec. 3 instantiate two conventions for placing data near a latent manifold. The additive ambient Gaussian (spike-model) convention corrupts a low-dimensional signal S by Gaussian noise, Y = S + Σ 1/2X, with inference on Y Y ⊤/N [22 , 23 ] and its heteroskedastic, two-dataset [ 19 , 24 ], and integral-operator [ 25 ] refinements; our RSM is its sphere-native analogue, spectral-dual through shared nonzero eigenvalues. The spectral Gram matrix convention specifies the noise in the cosine kernel through a Gegenbauer profile in the BBS eigenbasis [ 26 , 11 , 12 ]; our FSM is model-free in this sense. Methods acting directly on the point cloud or pairwise distances, such as locally linear embedding [ 27 ], interpoint-distance two-sample tests [ 28 ], and distance-covariance spectral analysis [ 29 ], make no distributional noise assumption and are complementary. For a review of manifold learning, see e.g. [ 30 ]. The geometry of probability spaces underlying the BBS continuum limit and the integral-operator analyses [25, 31] is developed in [32]. 52 BBS theory in a nutshell 
+
+We first fix dimension conventions. Throughout, Rn is the n-dimensional Euclidean space and 
+
+Sn−1 = {u ∈ Rn : ∥u∥ = 1 } its unit sphere, a manifold of intrinsic dimension n − 1. The ambient data live on SD−1 ⊂ RD. The orthogonal split RD = Rd ⊕ RD−d places the latent signal on 
+
+Sd−1 ⊂ Rd and the residual on SD−d−1 ⊂ RD−d; we call d the latent (embedding) dimension, so the latent manifold Sd−1 has intrinsic dimension d − 1. Two papers underlie the analysis. BBS-1 [ 1 ] derives the spectrum of distance matrices on 
+
+N random points drawn from a base manifold X, with the delocalised and localised power-law exponents set by the intrinsic dimension of X (its worked circle S1 is the one-dimensional case, with the circle symmetry producing quasi-doublets). BBS-2 [ 2] extends this with the isometric-embedding problem, the negative-type (algebraic sign) constraint, and a detailed analysis of spherical spaces 
+
+Sd−1 ⊂ Rd defined by x21 + · · · + x2 
+
+> d
+
+= 1 (BBS-2 [ 2 ] Eq. (53)), from which we take the multiplet structure used here. Our base manifold is the sphere Sd−1 itself. Following the BBS-2 convention we call d the embedding dimension, so Sd−1 has intrinsic dimension d − 1, and the BBS-1 exponents (stated there for the intrinsic dimension) are evaluated here at intrinsic dimension d − 1. We work throughout with the geodesic distance matrix Mij = arccos (⃗x i·⃗x j ) on unit-sphere samples ⃗x i ∈ Sn−1
+
+(the BBS-2 form (b) distance), which is full rank generically and of negative type : it has exactly one positive Perron eigenvalue and N − 1 non-positive ones, unconditionally, with no separate verification needed. Two algebraic facts carry into the construction of Sec. 3. First, a convex combination of unit-diagonal positive semidefinite Gram matrices is again such a Gram matrix, namely the Gram matrix of the direct-sum embedding with the weights as block scalings, and its entrywise arccos is therefore a valid angular-distance matrix of negative type. Second, the squared-chord matrix is additive under an orthogonal split RD = V1 ⊕ V2,⃗ Xi =⃗x i +⃗y i,
+
+∥⃗ Xi −⃗ Xj ∥2 = ∥⃗x i −⃗x j ∥2 + ∥⃗y i −⃗y j ∥2. (1) The BBS spectral diagnostics live on the full-rank geodesic matrix M ; the squared-chord matrix of unit vectors is rank-deficient (rank ≤ n + 1) and serves only as an algebraic intermediate. The non-positive spectrum splits into two branches. Throughout this paper, and following BBS-1 and BBS-2, we set the leading Perron eigenvalue (the only positive eigenvalue of a distance matrix) aside and focus on the remaining non-positive eigenvalues, which we sort by descending magnitude 
+
+|ΛK |; this magnitude index is the natural one, as the BBS power laws and multiplets live in the magnitudes of the negative-type spectrum. The spectrum then splits into two physically distinct branches. The delocalised branch is the band of the roughly √N largest-|Λ| eigenvalues, whose eigenvectors are extended, plane-wave-like modes over the manifold. The localised branch is the small-|Λ| remainder at larger rank K, whose eigenvectors concentrate on close pairs of points. The two meet at a crossover near |Λ| ∼ N −1/(d−1) .Symmetry organises the spectrum into multiplets. When X has a non-trivial isometry group G,the spectrum of M inherits the irreducible-representation structure of G. While in the strict limit 
+
+N → ∞ eigenvalues are exactly degenerate within each irreducible representation, at finite N the degeneracy is lifted by an O(N −1/2) perturbation (see Appendix D), producing a quasi-multiplet 
+
+of size the representation dimension at each unperturbed eigenvalue. For X = Sd−1 the isometry group is SO (d), the irreducible representations are labelled by integer ℓ ≥ 0 with basis the degree-ℓ
+
+spherical harmonics, and the multiplicity is (BBS-2 [2] Eq. (58)) 
+
+h(ℓ, d ) = (2 ℓ + d − 2) ( ℓ + d − 3)! 
+
+ℓ! ( d − 2)! . (2) 6For every d, h(0 , d ) = 1 (the constant mode); h(ℓ, 2) = 2 for ℓ ≥ 1 (Fourier pairs on S1), h(ℓ, 3) = 2ℓ + 1 on S2 (multiplets 1 , 3, 5, 7, . . . ), and h(ℓ, 4) = ( ℓ + 1) 2 on S3. These appear as the visible plateaus at the top of the rank-ordered spectrum, the lowest giving the integer readout of the latent dimension. Next we present the BBS power laws on each branch. In the continuum limit the discrete operator ( M u )i becomes an integral operator, and solving its eigenvalue problem gives a power law on each branch. On the delocalised branch BBS-1 solve the continuum eigenvalue problem with a large-wavevector plane-wave ansatz. The plane-wave dispersion is Λ( q) ∝ − (N/V ) q−d (BBS-1 Eq. (62) at intrinsic dimension d − 1), and the density of plane-wave states on the ( d − 1)-dimensional sphere is ρ(q) ∝ qd−2 (BBS-1 Eq. (63)). Integrating ρ(q) up to q(Λ) gives the counting function of negative eigenvalues (BBS-1 Eq. (64) at intrinsic dimension d − 1) 
+
+N(Λ) ≈ Cd
+
+ NV
+
+−1/d 
+
+(−Λ) −(d−1) /d , (3) so the rank-ordered eigenvalues decay as |ΛK | ∝ K−d/ (d−1) , a delocalised slope βdeloc = d/ (d − 1) set by the dimension d alone (the counterpart of the localised βloc below). On the localised branch, a close pair at separation r contributes an eigenvalue Λ ≈ − r (BBS-1 Eq. (99)); counting close pairs on the intrinsic ( d − 1)-dimensional sphere gives the cumulative localised count (BBS-1 Eq. (100) at intrinsic dimension d − 1) 
+
+Nloc (|Λ|) = N 2 ωd−2
+
+2V (d − 1) |Λ|d−1 ∝ N 2 |Λ|d−1, (4) i.e. a localised counting exponent βloc = 1 /(d − 1), with |Λ| ∝ N1/(d−1) loc for the smallest eigenvalues. The O(1 /√N ) finite-N correction of Appendix D applies to the delocalised branch; on the localised branch the relative per-eigenvalue fluctuation is O(1), so βloc = 1 /(d − 1) stands only as a leading-order pair-counting statement. We contrast the BBS regime with the Marchenko–Pastur limit. The delocalised power law lives on the first √N largest-magnitude negative eigenvalues, the window K ∈ [2 , √N ] (only the single positive Perron eigenvalue at K = 1 is excluded). This is the content of the BBS-1 validity condition (BBS-1 Eq. (91)): the continuum approximation reproduces the non-averaged eigenvalues only above a scaled-eigenvalue threshold that selects the first √N states. For the sphere Sd−1 this threshold reads |λ| ≳ N d/ (2( d−1)) (BBS-1 Eq. (91) at intrinsic dimension d − 1). Below it the spacing between successive continuum eigenvalues becomes comparable to the finite-N fluctuations and states mix; the quasi-multiplets cover the same first √N band. The power law is a clean, fittable decay only when this window extends past the first ( ℓ = 1) multiplet, which is h(1 , d ) = d eigenvalues wide: this needs √N ≳ d, i.e. N ≳ d2. We call this the BBS regime : finite dimension d and large sample size N with N ≫ d2. Most of the random-matrix literature (Bordenave [ 12 ], El Karoui [ 11 ], and others) instead works in the Marchenko–Pastur (MP) limit d, N → ∞ at fixed ratio N/d , where the empirical spectral density of a smooth distance matrix Aij = f (∥⃗Xi −⃗ Xj ∥2) converges to an atom plus a Marchenko–Pastur bulk, Λ = f (0) − f (2) + 2 f ′(2) − 2f ′(2) S, S ∼ νM P , (5) with f (x) = arccos (1 − x/ 2) for the geodesic distance and νM P the MP law at aspect ratio y =(D + 1) /N (so y < 1 in the BBS regime N ≫ D, matching the fitted y ≈ 0.13 at D = 128, N = 1000 of Fig. 2). In this limit the two BBS branches map onto the two parts of the law: the discrete delocalised multiplets spread out into the Marchenko–Pastur bulk (the −2f ′(2) S term, the largest-|Λ|
+
+7band), while the localised branch collapses onto the single atom at Λ = f (0) −f (2)+2 f ′(2) = 1 −π/ 2(the smallest-|Λ| delta-peak). The two regimes describe different corners of parameter space, and the same construction sits in either depending on d relative to N . We work at moderately large N , e.g. 
+
+N = 1000, which satisfies N ≫ d for a low-dimensional latent ( S2, d = 3, well inside the BBS regime) but not for a high-dimensional sphere ( S127 , d = 128, where N < d 2 puts it in the MP regime). Figure 1 contrasts the two: on S2 the delocalised slope follows the BBS prediction −d/ (d − 1) with the SO (3) multiplet plateaus 1 , 3, 5, . . . at the top, while on S127 the spectrum is a single dominant, only weakly decaying band of the largest ∼ 128 eigenvalues (the ℓ = 1 multiplet, spread out in the MP regime) ending in a sharp drop, the delocalised window [2 , √N ] not reaching past this first multiplet ( √N ≈ 31 < 128). Figure 2 overlays the Bordenave–MP prediction (5) on the geodesic ESD: it matches the S127 bulk end-to-end while landing far outside the S2 range, confirming the regime split. Ensemble fluctuations of the non-Perron eigenvalues are at the few-percent level throughout, which is what lets us use a single observed spectrum, rather than an ensemble average, as the inference target. 10 0 10 1 10 2 10 3    
+
+> rank K
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> 10 2
+> K
+
+S2, uniform (N = 1000)                                
+
+> geodesic ij = arccos( XiXj)
+> linear chord rij =XiXj
+> small-Kfit =1.98 (R2fit = 0.93, R2BBS = 0.87)
+> BBS deloc =1.500
+> large-Kfit = +0.48 (R2fit = 1.00, R2BBS = 0.99)
+> BBS loc = +0.500
+> 10 010 110 210 3
+> rank K
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> 10 2
+> K
+
+S2, beta blob (35%) (N = 1000)                            
+
+> geodesic ij = arccos( XiXj)
+> linear chord rij =XiXj
+> small-Kfit =1.89 (R2fit = 0.98, R2BBS = 0.94)
+> BBS deloc =1.500
+> large-Kfit = +0.48 (R2fit = 1.00, R2BBS = 1.00)
+> BBS loc = +0.500
+> 10 010 110 210 3
+> rank K
+> 10 0
+> 10 1
+> K
+
+S127 , uniform (N = 1000)                              
+
+> geodesic ij = arccos( XiXj)
+> linear chord rij =XiXj
+> small-Kfit =0.08 (R2fit = 0.98, R2BBS =143.05)
+> BBS deloc =1.008
+> large-Kempirical = +0.00 (MP regime) (R2fit = 0.97, R2BBS =9.60)
+> BBS loc = +0.008
+> 10 010 110 210 3
+> rank K
+> 10 0
+> 10 1
+> 10 2
+> K
+
+S127 , beta blob (35%) (N = 1000)                         
+
+> geodesic ij = arccos( XiXj)
+> linear chord rij =XiXj
+> small-Kfit =0.26 (R2fit = 0.97, R2BBS =7.09)
+> BBS deloc =1.008
+> large-Kempirical = +0.01 (MP regime) (R2fit = 0.98, R2BBS = 0.95)
+> BBS loc = +0.008
+
+BBS distance matrix spectrum: linear chord vs geodesic on the same data 
+
+Figure 1: BBS distance-matrix spectrum on N = 1000 points on S2 and S127 , under uniform sampling (left) and a concentrated beta-product blob (right, 35% sphere coverage); 20 realisations of the geodesic (red) and linear-chord (blue) distances overlaid, with the Perron mode at K = 1 omitted so the spectrum is plotted from K = 2. Top row (S2, BBS regime): the small-K delocalised slope is near the BBS value −d/ (d − 1) (up to the finite-N shift of Appendix D) and the SO (3) multiplets appear as plateaus of size 1 , 3, 5, 7, . . . . Bottom row (S127 , MP regime): a dominant, weakly decaying ℓ = 1 band of size D + 1 = 128 then a sharp drop; the delocalised window [2 , √N ]does not extend past this first multiplet ( √N ≈ 31 < 128), so BBS-1 does not describe this spectrum and the BBS reference lines are shown only to make the regime gap explicit. 810 3 10 2 10 1 10 0 10 1 10 2                                                    
+
+> ||, log scale
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> ESD  (|  |)
+> S2, uniform (N= 1000)
+> pooled (20 reps)
+> MP atom at | | = 0.571 (deloc/loc separator)
+> 10 310 210 110 010 110 2
+> ||, log scale
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> ESD  (|  |)
+> S2, beta blob (35%) (N= 1000)
+> pooled (20 reps)
+> MP atom at | | = 0.571 (deloc/loc separator)
+> 10 010 1
+> ||, log scale
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> ESD  (|  |)
+> S127 , uniform (N= 1000)
+> pooled (20 reps)
+> Bordenave MP bulk ( y= 0.128)
+> MP atom at | | = 0.571
+> MP fit (| a| = 0.57, | b| = 1, y= 0.13)
+> 10 010 1
+> ||, log scale
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> ESD  (|  |)
+> S127 , beta blob (35%) (N= 1000)
+> pooled (20 reps)
+> Bordenave MP bulk ( y= 0.128)
+> MP atom at | | = 0.571
+> MP fit (| a| = 0.35, | b| = 9.5, y= 0.73)
+> Empirical spectral density (negative eigenvalues, Perron excluded): ij = arccos( XiXj)
+
+Figure 2: Empirical spectral density of the negative eigenvalues of the geodesic matrix (Perron excluded) for the data of Fig. 1, pooled over 20 realisations. Left column: uniform sampling; right column: the concentrated beta-product blob. Red: the Bordenave–MP prediction (5) , matching the uniform S127 (MP-regime) bulk end-to-end and far outside the S2 (BBS-regime) range; on S2
+
+the Bordenave atom at |Λ| = |1 − π/ 2| (dashed, top row) marks the delocalised/localised crossover. Green (both S127 panels): an MP fit with the aspect ratio y fitted alongside the affine shift and scale; uniform recovers y ≈ 0.13 and matches the bulk, while the concentrated blob broadens to 
+
+y ≈ 0.73 and approximately tracks the long, slowly-decaying bulk, a deformed Marchenko–Pastur law (Appendix C). The red uniform Bordenave bulk is a reference and does not describe the concentrated case. 
+
+## 3 Generative models for the ambient space data 
+
+We start with fixing the notation used in this section. We work with the geodesic distance matrix 
+
+M (n)
+
+ij := arccos( ⃗u i ·⃗u j ) ∈ [0 , π ],
+
+on N unit vectors ⃗u i,⃗ u j ∈ Sn−1 ⊂ Rn, the BBS-2 form (b) distance of Sec. 2. The parenthesised superscript denotes the dimension of the ambient Euclidean space hosting the sphere: M (D) is the ambient geodesic matrix on SD−1 ⊂ RD, M (d) the latent geodesic matrix on Sd−1 ⊂ Rd, and (for the 
+
+V1 ⊕ V2 decomposition below) M (D−d) the residual geodesic matrix on SD−d−1 ⊂ RD−d. Diagonals vanish, M (n)
+
+ii = 0. The squared-chord N-matrix N (n)
+
+ij = ∥⃗u i −⃗u j ∥2 = 4 sin 2(M (n)
+
+ij /2) appears below as an algebraic intermediate in the RSM decomposition, where the dimensional additivity (1) is exploited; the BBS spectral diagnostics themselves are read off M (n). The ℓ-th angular-momentum multiplet on Sn−1 has dimension h(ℓ, n ) (2) (BBS Eq. (58)), giving h(1 , d ) = d on the latent Sd−1
+
+and h(1 , D ) = D on the ambient SD−1. The latent unit vectors on Sd−1 are written ˜xi and the 9ambient unit vectors on SD−1 as Xi; W0 ∈ RD×d is the noiseless isometric embedding so that 
+
+Xi ε=0 = W0 ˜xi, with W ⊤ 
+
+> 0
+
+W0 = Id. The noise amplitude ε ∈ [0 , 1] is a single scalar; we work at common per-particle amplitude. Throughout, d denotes the embedding dimension of the latent sphere Sd−1, whose intrinsic manifold dimension is d − 1, and we infer d (equivalently d − 1) through the first-multiplet multiplicity h(1 , d ) = d. The lone exception is Table 6, which is written in the intrinsic-dimension convention for the beyond-sphere geometries and flags the switch in its caption. We seek to infer d ≪ D.We classify embedding models into two classes by how they specify the conditional law of 
+
+M (D) given M (d), and summarise each by the matrix- level forward (generative) drift–volatility decomposition 
+
+M (D) 
+
+> ij
+
+= μij 
+
+ M (d), ε  + σij 
+
+ M (d), ε  Gij , i̸ = j, (6) with the noise vanishing at ε = 0 ( μij → M (d) 
+
+> ij
+
+, σij → 0). For model-specific drift μij , volatility σij ,and centred noise Gij , the RSM (see Sec. 3.1) decomposition admits a closed-form expression at the cosine- kernel level through a linear convex-combination identity, cos M (D) = (1 − ε2) cos M (d) +
+
+ε2 cos M (D−d)( ¯y). 2 For FSM (see Sec. 3.2) the drift μij and volatility σij are read off a positive-definite zonal kernel built from a nonnegative spectral array {βpq }, so the noise is correlated across pairs sharing an index rather than pair-diagonal, and cos M (D) stays a valid Gram matrix. 
+
+3.1 Residual Sphere Mixture (RSM) 
+
+Let Xi, X j ∈ SD−1 ⊂ RD. Decompose the ambient space into orthogonal subspaces RD = V1 ⊕ V2
+
+(dim V1 = d, dim V2 = D−d), with V1 the latent embedding subspace (the range of W0) and V2 = V ⊥
+
+> 1
+
+the residual subspace, and project Xi = xi + yi with xi ∈ V1, yi ∈ V2, and ∥xi∥2 + ∥yi∥2 = 1. The orthogonality V1 ⊥ V2 gives the chord Pythagorean identity in RD,
+
+∥Xi − Xj ∥2 = ∥xi − xj ∥2 + ∥yi − yj ∥2. (7) The squared chord between two SD−1 points decomposes exactly as the sum of the squared chords of its two orthogonal projections. This is the algebraic identity that the RSM construction exploits; the BBS spectral matrix is the geodesic one obtained from this via the arccosine transformation. The projections {xi, y i} have per-particle norms summing to one but neither is unit-norm. We rescale each projection to a unit vector on its sub-sphere with a single common amplitude ε ∈ [0 , 1], 
+
+xi = p1 − ε2 W0 ˜xi, yi = ε V 0 ¯yi, (8) with ˜xi ∈ Sd−1 the latent unit vector on the V1 sub-sphere, ¯yi ∈ SD−d−1 the residual unit vector on the V2 sub-sphere, and W0 ∈ RD×d, V0 ∈ RD×(D−d) fixed Stiefel frames ( W ⊤ 
+
+> 0
+
+W0 = Id, V ⊤ 
+
+> 0
+
+V0 = ID−d). The amplitude ε controls the noise level: ε = 0 collapses Xi onto its noiseless latent isometric image 
+
+W0 ˜xi; ε = 1 pushes Xi fully onto the residual sub-sphere. Because both factors of xi, x j carry the common scalar √1 − ε2 and both factors of yi, y j carry 
+
+ε, orthonormality of W0, V 0 gives ∥xi − xj ∥2 = (1 − ε2) ∥˜xi − ˜xj ∥2 = 2(1 − ε2) (1 − cos M (d) 
+
+> ij
+
+) and 
+
+∥yi − yj ∥2 = ε2 ∥¯yi − ¯yj ∥2 = 2 ε2 (1 − cos M (D−d) 
+
+> ij
+
+( ¯y)). Substituting into the chord Pythagorean identity (7) and the corresponding identity for the ambient sphere ∥Xi − Xj ∥2 = 2 − 2 cos M (D) 
+
+> ij
+
+,and cancelling the constant offset yields the RSM generative form at the cosine-kernel level cos M (D) 
+
+> ij
+
+= (1 − ε2) cos M (d) 
+
+> ij
+
++ ε2 cos M (D−d) 
+
+> ij
+
+(¯ y), (9)               
+
+> 2The residual cosine kernel is equivalently the random Gram matrix cos M(D−d)
+> ij (¯y) = Gij (¯y) := ¯yi·¯yjof the residual unit vectors {¯yi} ⊂ SD−d−1; we prefer the symmetric form expressed through the residual distance matrix M(D−d).
+
+10 The forward map (9) is an exact linear convex combination of two unit-diagonal PSD matrices: the latent cosine kernel cos M (d) on the latent sub-sphere Sd−1 ⊂ V1 (deterministic in {˜xi}) and the residual cosine kernel cos M (D−d)( ¯y) on the residual sub-sphere SD−d−1 ⊂ V2 (stochastic, specified below). It is convenient to introduce the mixing angle θ ∈ [0 , π/ 2] defined by sin θ = ε, so that 1 − ε2 = cos 2 θ and ε2 = sin 2 θ. The geodesic ambient matrix is then the entry-wise arccosine, 
+
+M (D) 
+
+> ij
+
+= arccos cos 2 θ cos M (d) 
+
+> ij
+
++ sin 2 θ cos M (D−d) 
+
+> ij
+
+(¯ y), ε2 = sin 2 θ, (10) where arccos [ · ] applies element-wise. The geodesic ambient matrix is generically full-rank at finite 
+
+N , of negative type by item (c) of Sec. 2, and the matrix on which the BBS spectral diagnostics live. The diagonal M (D) 
+
+> ii
+
+= 0 is automatic from cos 2 θ + sin 2 θ = 1. Expanding the mixing-angle kernel (10) through the addition theorem for Gegenbauer polynomials (see e.g. Eq. (10.10.34) in Erd´ elyi et al. [ 33 ]) gives a double Gegenbauer expansion in the latent and residual cosine kernels (see Appendix A.2), 
+
+M (D) 
+
+> ij
+
+= X
+
+> p,q ≥0
+
+Φpq (θ) Cμp
+
+ cos M (d)
+
+> ij
+
+ Cρq
+
+ cos M (D−d) 
+
+> ij
+
+(¯ y), μ = d−22 , ρ = D−d−22 , (11) where μ and ρ are the ultraspherical indices that set the degree of the Gegenbauer polynomials 
+
+Cμp and Cρq on the latent sphere Sd−1 and the residual sphere SD−d−1, respectively. Because arccos (w) − π/ 2 is odd in w, the coefficients Φ pq (θ) vanish unless p + q is odd, the only even term being the mean Φ 00 = π/ 2. Averaging over the uniform residual {¯yi} projects (11) onto q = 0, since 
+
+⟨Cρq (cos M (D−d) 
+
+> ij
+
+)⟩ = δq0, and leaves a latent Gegenbauer series 
+
+M (D)  
+
+> ij ¯y
+
+= π
+
+2 + X 
+
+> podd
+
+Φp0(θ) Cμp
+
+ cos M (d)
+
+> ij
+
+, (12) the constant Φ 00 = π/ 2 the mean angle (the Perron mode), and each degree-p term the BBS quasi-multiplet of multiplicity h(p, d ) (2) , shrunk from the noiseless latent ( θ = 0) by the parameter-free factor fp(θ) = Φ p0(θ)/Φp0(0), the angular-momentum-level shrinkage law of Sec. 4.2. Although (9) is symmetric in the two cosine-kernel terms, they play asymmetric roles in the inference problem. The latent configuration {˜xi} is treated as fixed and observed through the deterministic geodesic matrix M (d) on Sd−1; the residual unit vectors {¯yi} are treated as purely random on SD−d−1 with covariance Σ B , and enter through the random geodesic matrix M (D−d)( ¯y)on SD−d−1. The BBS theory of Sec. 2 applies to both sub-spheres: M (d) and M (D−d) are both BBS distance matrices, the latent fixed in {˜xi} and the residual random. Conditional on {˜xi}, the RSM forward (9) is the cosine-kernel convex combination of these two BBS matrices, and the geodesic ambient matrix (10) is its entry-wise arccosine. For ¯yi uniform on SD−d−1 the off-diagonal entries of cos M (D−d) are centred with variance 1/(D − d) and a pair-diagonal covariance, the diagonal being deterministic ( cos M (D−d) 
+
+> ii
+
+= 1); these exact moments (Marsaglia–Olkin [ 34 ]) are recorded in Appendix A, Eq. (A.1) . In the BBS-relevant regime N ≫ D − d, the cosine kernel cos M (D−d) is rank-deficient with rank D − d, and its non-zero spectrum follows the Marchenko–Pastur law at y = ( D − d)/N in the joint limit N, D − d → ∞ at fixed y (see Appendix C). 
+
+3.2 Free Spectral Mixture (FSM): model-free generalisation of RSM 
+
+The RSM forward (11) is a double Gegenbauer series in the two sub-sphere inner products, with coefficients Φ pq (θ) fixed by the mixing angle θ = arcsin ε. This form is dictated by symmetry, not the 11 RSM mechanism: the latent sphere Sd−1 carries an SO (d) invariance and the residual sphere SD−d−1
+
+an independent SO (D − d), so any ambient forward respecting both and zonal under SO (D − 1) depends only on the two invariants cos M (d) 
+
+> ij
+
+and cos M (D−d) 
+
+> ij
+
+. The product Gegenbauer functions 
+
+C(d−2) /2 
+
+> p
+
+⊗ C(D−d−2) /2 
+
+> q
+
+are their joint Laplacian eigenbasis, so every SO (d) × SO (D − d)-invariant forward has the form (11): the only model freedom is the coefficient array. The Free Spectral Mixture keeps the symmetry-mandated product basis and frees the coefficient array, subject to the one constraint of being a distance matrix: since M (D) = arccos (cos M (D))requires cos M (D) to be a Gram matrix, cos M (D) ⪰ 0 with unit diagonal is mandatory. We therefore free the spectrum at the cosine-kernel level, where positivity is controlled, not the geodesic level (11). The building blocks are the normalised zonal kernels 
+
+Z(n) 
+
+> p
+
+(t) := C(n−2) /2 
+
+> p
+
+(t)
+
+C(n−2) /2 
+
+> p
+
+(1) , Z(n) 
+
+> p
+
+(1) = 1 , (13) the degree-p Gegenbauer kernel on Sn−1. By the addition theorem (BBS-2 [ 2 ] Eq. (57)) Z(n) 
+
+> p
+
+( ˜xi·˜xj ) = 
+
+h(p, n )−1 P 
+
+> m
+
+Ypm ( ˜xi)Ypm ( ˜xj ) each Z(n) 
+
+> p
+
+is a Gram matrix, and by Schoenberg’s theorem a zonal kernel is positive definite exactly when its Gegenbauer coefficients are nonnegative [35]. FSM is defined by a nonnegative coefficient array {βpq }p,q ≥0 on the product basis, cos M (D) 
+
+> ij
+
+= X
+
+> p,q ≥0
+
+βpq Z(d)
+
+> p
+
+ ˜xi · ˜xj
+
+ Z(D−d)
+
+> q
+
+ ¯yi · ¯yj
+
+, βpq ≥ 0, X
+
+> p,q
+
+βpq = 1 , (14) with ˜xi ∈ Sd−1 the latent and ¯yi ∈ SD−d−1 the residual unit vectors drawn as in RSM. The Schur product theorem makes each product Z(d) 
+
+> p
+
+⊙ Z (D−d) 
+
+> q
+
+positive semidefinite and the normalisation fixes the unit diagonal, so cos M (D) ⪰ 0 for every nonnegative array by construction and M (D) =arccos (cos M (D)) is a genuine spherical distance matrix (triangle inequalities and embeddability automatic). Nonnegativity is also necessary by Schoenberg’s theorem on each factor, so the FSM simplex {βpq ≥ 0, P 
+
+> p,q
+
+βpq = 1 } is a natural complete positive class of SO (d) × SO (D − d)-invariant kernels, explored fully by freeing the coefficients. RSM is one corner of this simplex. The kernel arguments are the sub-sphere inner products ˜xi·˜xj =cos M (d) 
+
+> ij
+
+and ¯yi·¯yj = cos M (D−d) 
+
+> ij
+
+, and the degree-one zonal is the identity Z(n)1 (t) = t (with Z(n)0 = 1). Taking β10 = 1 − ε2, β01 = ε2 and the rest zero collapses (14) to (1 − ε2) cos M (d) 
+
+> ij
+
++ ε2 cos M (D−d) 
+
+> ij
+
+,the RSM identity (9) , so RSM populates only the degree-one sectors; FSM switches on higher coefficients while keeping positivity. Setting the noise amplitude to ε2 := 1 − β10 (the weight off the latent degree-one sector), FSM and isotropic RSM share the leading top-d cosine shrinkage 
+
+E[rK ] = 1 − ε2 and the ηcos calibration of Sec. 4.2. The construction is model-free in a precise sense: it commits to the two rotational symmetries and to positivity, but to no embedding mechanism, no per-particle map ⃗x i →⃗ Xi and no arccos expansion. A random FSM instance draws {βpq } from a law on the simplex (in the experiments a Dirichlet draw on a finite ( p, q ) grid with the degree-one weights set by ε), positive semidefinite pathwise. The drift–volatility form (6) still applies entry by entry, but the fluctuations couple through shared indices rather than being pair-diagonal, which is what keeps the kernel positive semidefinite. FSM and isotropic RSM differ in the angular-momentum component they populate: switching on the even coefficient β20 > 0 adds a degree-two zonal Z(d)2 , an ℓ = 2 component the isotropic RSM kernel leaves empty by parity. This even-harmonic signature drives the blind model-identification test of Sec. 5.3. 12 4 Inverse problem for the latent distance matrix 
+
+The inverse problem is to recover the latent BBS structure of M (d) from a single observed ambient matrix M (D), when the data lies near a low-d sub-manifold of SD−1 rather than exactly on it. The spectrum cannot be recovered eigenvalue by eigenvalue. At the cosine-kernel level the RSM forward (9) is a sum of two Gram matrices, cos M (D) = (1 − ε2) ˜X ˜X⊤ + ε2 ¯Y ¯Y ⊤, but in the BBS regime its spectrum is not a free additive convolution. With the latent dimension d fixed and small the latent term is a finite-rank deformation of the residual Gram matrix, a spiked model governed by the Baik–Ben Arous–P´ ech´ e and Benaych-Georges–Nadakuditi theory of finite-rank perturbations [ 36 , 37 ] rather than by asymptotic freeness, which would need the two ranks to grow proportionally to N [38 , 39 , 15 ]. In either regime the BBS structure lives in the geodesic matrix M (D) = arccos (cos M (D)), a non-linear function that the Gegenbauer addition theorem (see Appendix A.2) turns into angular-momentum components of products of latent and residual blocks, so no additive deconvolution applies at the level that carries the geometry. The ambient spectrum reorganises collectively, fixed by a self-consistent resolvent rather than any single matrix element [40 ]. A single-level perturbation theory is the wrong tool in this setting, since the low-K BBS quasi-multiplets are degenerate and require degenerate perturbation theory [ 41 , 42 ], which shifts each multiplet as a whole (the L¨ owdin–Schrieffer–Wolff block reduction [43] of Sec. 4.1, verified in Appendix E). The recovery therefore rests on two structural quantities that survive the mixing, established below and tested numerically in Sec. 5: the integer multiplicities of the low-lying quasi-multiplets, gap-protected well into the strong-noise regime and carrying the dimension directly (see Sec. 4.1); and the multiplet positions , which shrink under noise by a parameter-free, angular-momentum-dependent factor fixed by the Funk–Hecke spectrum of the geodesic kernel (see Sec. 4.2). 
+
+4.1 The multiplet multiplicities as a gap-protected invariant 
+
+The lowest non-Perron quasi-multiplets carry the isometry group of the latent manifold through their integer multiplicities h(ℓ, d ) (2) . On Sd−1 the off-manifold noise is isotropic and does not break 
+
+SO (d) on average, so it cannot split a degenerate angular-momentum subspace at leading order. Within a multiplet the perturbation acts as a near-degenerate block (L¨ owdin / Schrieffer–Wolff partitioning [ 44 , 45 ]) that shifts the multiplet as a whole while preserving its dimension. The multiplicity is then protected by the spectral gap to the neighbouring multiplets, and stays an integer until the noise closes that gap. The product-kernel analysis of Sec. 4.2 makes this precise: the residual sectors that could mix into the dimension cluster sit at O(ε2/(D − d)), separated from it, so the h(1 , d )-fold degeneracy survives rather than being split. Table 1 reports the recovered pattern on the S2 latent geometry, for the latent matrix and for the RSM ambient matrix at the four noise levels of Fig. 5. Only the odd degrees ℓ = 1 , 3, 5, . . . contribute, since arccos (t) − π/ 2 is odd. The first multiplet is a cleanly isolated triplet, h(1 , 3) = 3, the S2
+
+signature; the second is the ℓ = 3 septet, h(3 , 3) = 7. Both are reproduced exactly at every noise level up to ηcos ≈ 20%, while the third multiplet ( ℓ = 5) already overlaps the bulk: its recovered multiplicity is 6 rather than the ideal h(5 , 3) = 11, since the higher odd degrees ℓ = 5 , 7, . . . crowd together and merge with the bulk, an effect that worsens as the noise grows. The gap protection is quantitative: Weyl’s eigenvalue inequality keeps each cluster isolated and the Davis–Kahan sin θ
+
+theorem keeps its eigenspace coherent while ∥δM ∥op < g/ 2 (see Sec. 6.1). The integer pattern is thus the most stable carrier of the dimension and topology, read off without any deconvolution. 13 Table 1: Multiplet sizes (and mean |Λ|) from the log -gap detector on S2, for the latent matrix and the RSM ambient matrix. The triplet and septet multiplicities are preserved at all noise levels. 
+
+N = 1000, d = 3, D − d = 125. 
+
+ℓ = 1 ℓ = 3 ℓ = 5 (merging) latent M (d) 3 (392 .7) 7 (24 .7) 6 (6 .7) 
+
+ε = 0 .10 3 (385 .7) 7 (22 .6) 6 (5 .5) 
+
+ε = 0 .22 3 (362 .6) 7 (17 .4) 6 (3 .5) 
+
+ε = 0 .32 3 (334 .4) 7 (12 .9) 6 (2 .4) 
+
+ε = 0 .45 3 (288 .3) 7 (8 .1) 6 (3 .6) 
+
+4.2 The product-kernel spectrum and the multiplet shrinkage law 
+
+A single observed matrix is one joint draw {( ˜xi, ¯yi)}, and as N → ∞ the normalised matrix 1 
+
+> N
+
+M (D)
+
+concentrates to the integral operator Tε on L2(Sd−1 × SD−d−1) with kernel 
+
+Kε = arccos  (1 − ε2)u + ε2v, u = ˜ x· ˜x′, v = ¯ y· ¯y′, (15) The eigenbasis is the product Yrm ( ˜x) Ysn ( ¯y) of the degree-r and degree-s spherical harmonics on the two factors Sd−1 and SD−d−1, with within-degree labels m = 1 , . . . , h (r, d ) and n = 1 , . . . , h (s, D −d). Summed over a degree these products give the normalised zonals Z(d) 
+
+> r
+
+and Z(D−d) 
+
+> s
+
+(13) , where the addition theorem ties the harmonics to the Gegenbauer polynomials. Because Kε depends on the two points only through u and v, it is invariant under SO (d) on the latent factor and SO (D − d) on the residual factor, so Tε commutes with SO (d) × SO (D − d) and, by Schur’s lemma, acts as a single scalar ars (ε) on each degree-( r, s ) block, independent of the within-degree labels m, n ; the block is thus h(r, d ) h(s, D − d)-fold degenerate. By the Funk–Hecke theorem this eigenvalue is the projection of the kernel Kε (15) onto the product zonal Z(d) 
+
+> r
+
+(u) Z(D−d) 
+
+> s
+
+(v), 
+
+ars (ε) = 
+
+Z Z 
+
+arccos  (1 − ε2)u + ε2v Z(d) 
+
+> r
+
+(u) Z(D−d) 
+
+> s
+
+(v) ωd(u) ωD−d(v) d u dv, (16) where Z(n) 
+
+> ℓ
+
+∝ C(n−2) /2 
+
+> ℓ
+
+is the degree-ℓ zonal normalised to Z(n) 
+
+> ℓ
+
+(1) = 1 (13) and ωn(t) ∝ (1 −t2)(n−3) /2
+
+is the density of the inner product t on Sn−1. For a single factor this is the Funk–Hecke coefficient 
+
+aℓ[κ] = 
+
+Z 1
+
+> −1
+
+κ(t) Z(d) 
+
+> ℓ
+
+(t) ωd(t) d t, (17) the per-mode eigenvalue of the zonal kernel κ, shared by all h(ℓ, d ) modes of degree ℓ; the kernel is positive definite exactly when these coefficients are nonnegative (the Schoenberg condition) [46]. As the mean of the residual zonal vanishes above degree zero, E¯y
+
+Z(D−d) 
+
+> s
+
+(v) = δs0, only the 
+
+s = 0 term survives averaging (16) over uniformly random residual coordinates {¯yi} on SD−d−1.This produces the residual-averaged kernel 
+
+κobs (t; ε) = 
+
+Z 1
+
+> −1
+
+arccos  (1 − ε2)t + ε2s ωD−d(s) d s, (18) zonal in t, with ar0(ε) = ar[κobs ]. This s = 0 column is the latent multiplet tower. Relative to the noiseless latent kernel κlat (t) = arccos t — whose even sector collapses to the Perron constant 14 a0 = π/ 2 (BBS-2 [ 2 ] Eq. (64); Λ 0 ≃ N π/ 2, set aside) and whose non-Perron coefficients are nonzero only for odd ℓ, with a1 = −π/ 8 on S2 — each tower level is shrunk by 
+
+fℓ(ε) = aℓ[κobs (· ; ε)] 
+
+aℓ[κlat ] , ar0(ε) = fr(ε) ar[κlat ], (19) the angular-momentum-level shrinkage law, fixed by ( ε, d, D ) with no free parameters. It is defined only on the latent tower: fℓ is a ratio of observed to noiseless coefficient, and only s = 0 has a nonzero noiseless value, since ars (0) = ar[κlat ] δs0. The residual sectors s ≥ 1 vanish at ε = 0, so they carry no latent value to shrink from; switched on by the noise, they grow as O(ε2s), derived next. This is the spiked-model eigenvalue shrinkage [ 22 , 23 , 5] resolved level by level on the sphere, tied to the BBS multiplet structure by Funk–Hecke rather than to a generic random-matrix result. “Parameter-free” refers to this shrinkage integral, which fits nothing to the spectra; the pipeline as a whole carries the log-gap threshold τ , the candidate set, the finite-N slope correction of Appendix D, the rank cutoff Klat , and the model-classification threshold. We evaluate κobs and its coefficients by two nested Gauss–Legendre rules, an inner average over s and an outer projection onto Z(d) 
+
+> ℓ
+
+against 
+
+ωd, exactly in ε with no series and no closed form needed. A small-ε expansion fixes how the columns scale. Writing the argument as u + ε2(v − u), arccos  u + ε2(v − u) = arccos u − ε2(v − u)
+
+√1 − u2 + O(ε4),
+
+the coefficient of ε2k is a degree-k polynomial in v with no projection onto Z(D−d) 
+
+> s
+
+for s > k , so 
+
+ars (ε) = O(ε2s) for s ≥ 1. The v-independent piece + ε2u/ √1 − u2 of the first-order term stays in 
+
+s = 0, giving the attenuation κobs = arccos t + ε2t/ √1 − t2 + O(ε4) and hence fℓ = 1 − O(ε2) at small noise. The v-linear piece −ε2v/ √1 − u2 is the leading residual sector, 
+
+ar1(ε) = − ε2
+
+D − d gr + O(ε4), gr = a(d)
+
+> r
+
+h 1√1−u2
+
+i
+
+, (20) with 1 /(D −d) the degree-one eigenvalue of v on SD−d−1 and gr the degree-r coefficient of 1 /√1 − u2;since the latter is even, gr vanishes for odd r, consistent with the parity rule that r + s is odd. The 
+
+s ≥ 1 family thus sits at O(ε2/(D − d)), with multiplicity h(r, d ) · (D − d), seeding the residual bulk near zero (see Sec. C.4). The shrinkage law uses the full integral (18) rather than this truncation, which is non-uniform ( t/ √1 − t2 diverges at t → ± 1 and the high-ℓ levels leave the perturbative regime, f5 ≈ 0.1 at ε = 0 .45); the quadrature resums every order. The quasi-degenerate L¨ owdin– Schrieffer–Wolff reduction of Appendix E reaches the same shrinkage on S1, S 2, S 3, a numerical cross-check of the resummation rather than a proof. The dimension cluster is the ( r, s ) = (1 , 0) sector, the h(1 , d ) = d eigenvalues at a10 (ε) = 
+
+f1(ε) a1[κlat ] of magnitude O(1). It is bounded below by the next latent level a30 = f3 a3[κlat ] across the BBS gap gBBS = |a1|f1 −| a3|f3 that the multiplicity readout of Sec. 4.1 already uses, and above by the whole residual family at O(ε2/(D − d)). Both gaps stay open while ε2 < ε 2
+
+> ∗
+
+(d, D − d), the smaller of the level-crossing bound f1|a1| = f3|a3| and the residual-collision bound f1|a1| = Cd ε2/(D − d)with Cd = max r |gr| = g0. For small ε and large D − d the level crossing binds first: the residual family, at O(ε2/(D − d)), never reaches the O(1) cluster. We write g∗ for the resulting two-sided separation, positive while ε < ε ∗(d, D − d). Under uniform sampling on both factors with d fixed, D − d specified, ε < ε ∗(d, D − d), and 
+
+N → ∞ , two facts make this an inference statement rather than a single-realisation observation. First, the empirical operator converges, ∥ 1 
+
+> N
+
+M (D) − Tε∥op = O(plog N/N ) [ 32 ]. Second, once this 15 deviation falls below g∗/2, the Davis–Kahan theorem [ 47 ] fixes the eigenvalue count in the cluster at h(1 , d ) = d and bounds the rotation of its empirical eigenspace by the deviation divided by g∗.The recovered multiplicity is then exactly d in the limit and the cluster sits at a10 (ε). The residual sectors are genuine O(ε2/(D − d)) eigenvalues of the product operator, not O(1 /√N ) fluctuations of the latent levels, so the separation keeps them clear of the dimension cluster. This discrete picture holds at fixed ( d, D − d); when D − d grows proportionally to N the s = 1 family broadens into the deformed Marchenko–Pastur residual bulk (see Sec. C.4), whose edge still scales as ε2 times an O(1) aspect-ratio factor, so the separation persists at small ε but reads as a bulk-edge condition. The multiplet position is read off the spectrum, blind, as the mean |Λ| of the ℓ-th gap-detected cluster (see Sec. 4.1), needing no latent coordinates; when those coordinates are available, in validation, the same quantity is the zonal-projector estimate bΛℓ = N −1 P 
+
+> ij
+
+Mij Z(d) 
+
+> ℓ
+
+( ˜xi · ˜xj ). The shrinkage is sharply degree-dependent: at ηcos ≈ 20% the dipole retains f1 = 0 .73 while f3 = 0 .30 and f5 = 0 .10, so noise erodes the high-ℓ structure first, the mechanism behind the noise-induced bias of the delocalised rank-decay slope, which samples progressively higher ℓ as |Λ| decreases. Inverting recovers the latent spectrum: with d fixed by the multiplicity, the de-shrunk positions Λobs ,ℓ /f ℓ(ε; d, D ) are required to fall back onto the clean BBS tower N a ℓ[κlat ] across the resolved degrees ℓ = 1 , 3, . . . , and because the fℓ carry distinct ℓ-dependence this over-determined match fixes a single ε, the lowest multiplets anchoring the fit. Two points fix the status of this inversion. The shrinkage (19) is a forward spectral formula: given ( d, D − d, ε ) it predicts the level positions, and the inversion reads those parameters back. It depends on the residual dimension D − d through ωD−d, so the ambient dimension enters as an input that Algorithm 1 takes as D (or, when D is unknown, D − d joins the candidate set); “coordinate-free” means no ambient vectors are required, not that ( d, D − d, ε ) are left unspecified. With d fixed, the map ( ε, D − d) 7 → { fℓ(ε; d, D − d)}ℓ is, on the candidate grid, injective across the resolved degrees, a property we verify there rather than prove in general: ε enters every level at 
+
+O(ε2) while D − d reshapes the residual density and so the ℓ-dependence of the higher levels, and two resolved degrees overdetermine the pair, so distinct ( ε, D − d) give distinct ratio vectors. When only the first multiplet is resolved this identifiability is lost, and the method returns d but not a unique noise calibration. Table 2 and Fig. 3 compare the prediction (19) to the simulated shrinkage on the S2/S 124 setup, agreeing to three significant figures for the resolved ℓ = 1 , 3 and within sampling scatter for ℓ = 5. Fig. 4 evaluates the full array {ars (ε)} by the same quadrature extended to the double projection (16) , showing the sector map and the (1 , 0) separation margin versus ε and D − d and confirming the cluster stays isolated across the experimental noise range. Table 2: Angular-momentum-level shrinkage fℓ(ε): parameter-free prediction (19) against the simulated ratio Λ obs ,ℓ /Λlat ,ℓ (S2/S 124 , N = 1000, 12 realisations). 
+
+ℓ = 1 ℓ = 3 ℓ = 5 
+
+ε pred. sim. pred. sim. pred. sim. 0.10 0.982 0.982 0.912 0.911 0.816 0.824 0.22 0.923 0.923 0.697 0.694 0.480 0.502 0.32 0.851 0.851 0.508 0.504 0.267 0.299 0.45 0.733 0.734 0.299 0.293 0.104 0.143 16 0.0 0.1 0.2 0.3 0.4 0.5       
+
+> noise amplitude
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> shrinkage  f ( ) =  obs,  / lat,
+> = 1 (predicted)
+> = 3 (predicted)
+> = 5 (predicted)
+> = 1 (simulated)
+> = 3 (simulated)
+> = 5 (simulated)
+
+Figure 3: Angular-momentum-level shrinkage fℓ(ε) for degrees ℓ = 1 , 3, 5: parameter-free prediction (19) (lines) and simulated multiplet shrinkage (markers) on the S2/S 124 setup. 0 1 2 3 4 5                           
+
+> latent degree r
+> 10 21
+> 10 18
+> 10 15
+> 10 12
+> 10 9
+> 10 6
+> 10 3
+> 10 0
+> |ars ( )|
+> (1,0) dimension
+> cluster
+> (a) sector map, = 0.32, Dd= 125
+> s=0
+> s=1
+> s=2
+> s=3
+> s=4
+> 0.1 0.2 0.3 0.4 0.5 0.6
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> 0.30
+> 0.35
+> 0.40
+> margin | a10 | max
+> s 1
+> |ars  |
+> (b) (1,0) separation margin
+> Dd= 8
+> Dd= 32
+> Dd= 125
+> (0,1)
+> (1,0)
+> (1,2)
+> (2,1)
+> (3,0)
+> (3,2)
+> (4,1)
+> (5,0)
+> (5,2)
+> 0.35
+> 0.30
+> 0.25
+> 0.20
+> 0.15
+> 0.10
+> 0.05
+> 0.00
+> ars ( )
+> (c) one realisation, = 0.32, Dd= 32
+> quadrature
+> realisation N=2000
+
+Figure 4: Product-kernel spectrum of the RSM operator Tε on S2 × SD−d−1. (a) Sector map: the double Funk–Hecke coefficients ars (ε) (16) by ( r, s ), with the s = 0 latent tower (filled) and the 
+
+s ≥ 1 residual sectors (open) at magnitude O(ε2/(D − d)). (b) Separation margin of the (1 , 0) dimension cluster, |a10 | minus the largest competing |ars | with s ≥ 1, against ε for several D − d;the margin stays positive across the experimental noise range. (c) Sectors resolved from a single sampled realisation ( N = 2000) against the quadrature prediction, confirming that one matrix shows the full array, not the averaged column. 
+
+4.3 Implications for the BBS diagnostics 
+
+The two recovery handles rest on different stabilities, not on the single-level perturbation theory that diverges in the dense bulk. The integer multiplicity is gap-protected by the Weyl and Davis–Kahan bounds while ∥δM ∥op stays below the inter-multiplet gap (see Secs. 4.1 and 6.1). The multiplet positions are set by the resummed Funk–Hecke shrinkage of the noise-averaged kernel (see Sec. 4.2). The consequences for the three BBS spectral diagnostics follow. On the delocalised branch , the angular-momentum-level shrinkage (19) leaves the leading K−d/ (d−1) decay on K ∈ [2 , √N ] intact at small noise (the lowest components shrink least). The slope bias enters through the faster erosion of the higher-ℓ components and is calibrated by the finite-N correction ∆ β(N, d ) of Appendix D. For multiplet sharpness , the degree-dependent shrinkage draws neighbouring multiplets together, so the multiplicity diagnostic fails once the noise closes the inter-multiplet gap, beyond ηcos ≈ 20% on 
+
+S2 (see Sec. 4.1). On the localised branch (small |Λ|) the relative per-eigenvalue fluctuation is O(1) rather than O(1 /√N ) (see Appendix D), so the off-manifold noise competes with the leading BBS 17 prediction βloc = 1 /(d − 1) rather than being subleading to it. The localised slope is therefore not a reliable dimension estimator but instead fingerprints the ambient noise model, developed in Sec. 6 (see Fig. 11). 
+
+4.4 Algorithm 1: I-BBS pipeline 
+
+The diagnostics combine into Algorithm 1 below, framed as a single coordinate-free pipeline for compactness. In practice the steps are independent and usable separately depending on the noise regime, the prior on the ambient model, and the spectrum quality at the relevant rank windows; the numbered ordering is one natural workflow, not a strict dependency chain. 
+
+Algorithm 1: I-BBS pipeline. Latent sub-manifold identification from an ambient distance matrix. 
+
+Input: the ambient distance matrix M (D), sample size N , ambient dimension D, log-gap threshold τ (default 0 .3), candidate-d set D. No ambient coordinates are required. 
+
+Output: latent-dimension estimate ˆd and ambient noise-model verdict. 1. Diagonalise M (D); sort eigenvalues by descending |ΛK |.2. Multiplicity (primary): apply the log -gap walk of Sec. 5.1 to the descending spectrum to read the lowest-multiplet multiplicity ˆh1, which fixes ˆdh1 through the BBS relation ˆh1 = h(1 , d ). Gap-protected and the primary handle. 3. Shrinkage (positions): recover the latent multiplet positions by inverting the parameter-free angular-momentum-level shrinkage fℓ of Sec. 4.2; matching the shrinkage-corrected multiplets to the BBS tower confirms ˆd and gives the latent spectrum. 4. Delocalised slope (cross-check): fit the rank-decay slope on K ∈ [dguess , √N ], apply the finite-N correction ∆ β(N, d guess ) from Eq. (D.3) and rule (D.4) to obtain ˆddeloc  
+
+> β
+
+(see Appendix D). The slope drifts under noise, so this is a low-noise cross-check, not a primary handle. 5. Noise model: identify the ambient noise class from the angular-momentum component the noise populates (the ℓ = 2 component that FSM injects and the isotropic RSM leaves empty, Sec. 5.3) and from the bulk/localized-branch shape of the residual R =
+
+M (D) − ˆM (d) against the semicircle reference (C.17) (see Appendix C.5). 6. Report: ˆd = ˆdh1 , upgraded to high confidence when the shrinkage ( 3 ) and slope ( 4 )cross-checks agree, together with the noise-model verdict. The multiplicity step ( 2 ) alone fixes ˆd in every realisation of our inference experiment for ε ≤ 0.2on S1 and S2; the shrinkage and slope cross-checks ( 3, 4 ) upgrade it to a triple-agreement high-confidence estimate when they agree, the small-|Λ| branch being more delicate than the large-|Λ|
+
+one because of multiplicative finite-N noise on the localised states (see Sec. 6). The noise-model step ( 5 ) then shifts the question from “which manifold is the data on?” to “which ambient noise model generated the deviation from it?”. 18 5 Numerical experiments: latent sub-manifold inference 
+
+Before the inference experiments we illustrate how ambient noise pollutes the BBS spectrum at the matrix level. We compare the empirical spectral densities (ESDs) of the latent M (d), the residual M (D−d), and the RSM ambient M (D) (10) at ε ∈ { 0.10 , 0.22 , 0.32 , 0.45 }, with N = 1000, latent S2 and residual S124 . Each sub-sphere is sampled either uniformly or from a concentrated beta-product single-particle density: each hyperspherical angle is drawn from a symmetric Beta (κ, κ )peaked at its midpoint, so increasing κ shrinks the particle cloud to a blob around a fixed point, an ergodicity-breaking configuration in which the dynamics has not explored the whole sphere. The sharpness κ is calibrated by simulation so the blob occupies a target fraction of the sphere, here 40%, 35%, 30%, 25%, and 20% (Appendix C sets out the beta-product model). Eigenvalues are pooled over 20 realisations, Perron excluded. The grid calibrates to the relative cosine-Frobenius perturbation 
+
+ηcos (ε) := ∥ cos M (D) − cos M (d)∥F
+
+∥ cos M (d)∥F
+
+= ε2 ∥G − cos M (d)∥F
+
+∥ cos M (d)∥F
+
+≈ ε2, (21) so ηcos ∈ { 1% , 5% , 10% , 20% }, the perturbative window in which the RSM mean-shift expansion of Sec. 3.2 is controlled. Figure 5 shows the result. The latent ESD on S2 is the BBS power law with the SO (3) multiplet spikes; the residual ESD on S124 is the Bordenave–MP atom-plus-bulk. As ε grows the ambient ESD interpolates between them: indistinguishable from the latent at ηcos ≈ 1%, acquiring a Marchenko– Pastur bulk by 5–10%, and dominated by the residual bulk by 20%. Concentrating the single-particle density (the blob panels) reshapes the latent and residual endpoints but leaves this interpolation pattern intact; the concentration is a stress test of the uniform-sampling assumption, treated as a misspecification in Sec. C.3. This is the free-convolution picture made concrete, and it frames the inference task: read the latent BBS fingerprint off M (D) while the noise has not yet washed it out. The experiments that follow isolate the three questions that decide whether the latent manifold can be recovered from an observed ambient matrix. First , how stable is the integer multiplicity of the lowest non-Perron BBS multiplet as the ambient noise grows, and does that stability depend on the generative model? Second , how do the eigenvalues that carry that multiplet move under the same perturbation, and do they follow the angular-momentum-level shrinkage law of Sec. 4.2? 
+
+Third , working blind from a single observed M (D) and without the latent coordinates, can we name both the manifold and the ambient noise model that produced it? All three experiments share one setup. We sample N = 1000 points uniformly on the latent spheres S1, S 2, S 3 (embedding dimension d ∈ { 2, 3, 4}, intrinsic dimension d − 1) and embed them in RD with D = 128. Two noise models drive the ambient matrix at the cosine-kernel level: the isotropic RSM forward (10) , with a uniform residual on SD−d−1, and the FSM forward of Sec. 3.2 with a nonnegative array carrying weight in the β20 sector, whose kernel adds the ℓ = 2 zonal component Z(d)2 ( ˜xi · ˜xj ). To compare the two at equal perturbation magnitude we drive each at a common relative cosine-Frobenius level η = ∥ cos M (D) − cos M (d)∥F /∥ cos M (d)∥F ; for RSM this is η ≈ ε2, while the FSM amplitude is calibrated to the same η by bisection. We sweep 
+
+η ∈ { 0, 0.05 , 0.10 , 0.20 , 0.35 , 0.50 , 0.65 , 0.80 } with 20 independent realisations per cell. The upper end of this range is well outside the perturbative window of Sec. 3.2 and serves as a stress test of the discrete diagnostics. 19 10 2 10 1 10 0 10 1 10 2                                                                                                                                                     
+
+> ||, log scale
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> ESD  (|  |)
+> uniform single-particle density (reference)
+> M(d)(latent, S2)
+> M(Dd)(residual, S124 )
+> M(D),= 0.1
+> M(D),= 0.22
+> M(D),= 0.32
+> M(D),= 0.45
+> 10 210 110 010 110 2
+> ||, log scale
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> ESD  (|  |)
+> beta-product blob, 40% coverage ( lat = 6.88, res = 24.5)
+> M(d)(latent, S2)
+> M(Dd)(residual, S124 )
+> M(D),= 0.1
+> M(D),= 0.22
+> M(D),= 0.32
+> M(D),= 0.45
+> 10 210 110 010 110 2
+> ||, log scale
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> ESD  (|  |)
+> beta-product blob, 35% coverage ( lat = 8.19, res = 27.5)
+> M(d)(latent, S2)
+> M(Dd)(residual, S124 )
+> M(D),= 0.1
+> M(D),= 0.22
+> M(D),= 0.32
+> M(D),= 0.45
+> 10 210 110 010 110 2
+> ||, log scale
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> ESD  (|  |)
+> beta-product blob, 30% coverage ( lat = 10.04, res = 30.3)
+> M(d)(latent, S2)
+> M(Dd)(residual, S124 )
+> M(D),= 0.1
+> M(D),= 0.22
+> M(D),= 0.32
+> M(D),= 0.45
+> 10 210 110 010 110 2
+> ||, log scale
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> ESD  (|  |)
+> beta-product blob, 25% coverage ( lat = 12.67, res = 33.1)
+> M(d)(latent, S2)
+> M(Dd)(residual, S124 )
+> M(D),= 0.1
+> M(D),= 0.22
+> M(D),= 0.32
+> M(D),= 0.45
+> 10 210 110 010 110 2
+> ||, log scale
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> ESD  (|  |)
+> beta-product blob, 20% coverage ( lat = 16.25, res = 35.7)
+> M(d)(latent, S2)
+> M(Dd)(residual, S124 )
+> M(D),= 0.1
+> M(D),= 0.22
+> M(D),= 0.32
+> M(D),= 0.45
+> RSM forward ESDs: uniform vs concentrated (beta-product) single-particle density (latent S2, residual S124 ,N= 1000)
+
+Figure 5: ESDs of the latent M (d) (blue), residual M (D−d) (red), and RSM ambient M (D) at 
+
+ε ∈ { 0.10 , 0.22 , 0.32 , 0.45 } (ηcos ≈ { 1, 5, 10 , 20 }%, Eq. (21) ) for a uniform reference (top-left) and beta-product concentrated single-particle densities at 40%, 35%, 30%, 25%, and 20% sphere coverage (sharper beta peaks, deeper ergodicity breaking; the per-sphere sharpness κlat , κ res is shown in each panel). N = 1000, d = 3, D − d = 125, 20 realisations pooled, Perron excluded. As ε grows the ambient ESD interpolates from the latent BBS power law to the residual Bordenave–MP bulk; concentrating the density reshapes the endpoints but preserves the interpolation. 
+
+5.1 Multiplicity stability of the lowest multiplet 
+
+The lowest non-Perron multiplet on Sd−1 carries the fixed integer multiplicity h(1 , d ) = d: a doublet on S1 (d = 2), a triplet on S2 (d = 3), a quartet on S3 (d = 4). In the rank-ordered spectrum it appears as a plateau in |ΛK | bounded by two large gaps, the Perron-to-multiplet gap at K = 1 → 2and the multiplet-to-next gap at K = 1 + h(1 , d ) → 2 + h(1 , d ). A detector that walks the descending log |ΛK | from K = 2 and stops at the first drop exceeding a fixed threshold τ returns a multiplet size ˆh1 = K⋆ − 1, hence the embedding dimension ˆd = ˆh1 and intrinsic dimension ˆh1 − 1. We fix 
+
+τ = 0 .30 throughout. The gap detects an isolated empirical cluster; identifying it with the latent (1 , 0) sector rests on the product-kernel separation of Sec. 4.2, not on the gap alone. A base-ten log gap of τ between two consecutive levels means a multiplicative ratio |ΛK⋆−1|/|ΛK⋆ | ≥ 10 τ , hence an additive gap g ≥ | ΛK⋆ |(10 τ − 1). At τ = 0 .30 the ratio is 10 0.30 ≈ 2, so the detected boundary certifies, from the observed spectrum alone, an additive gap g ≳ |ΛK⋆ |. The gap is observable, but protection also needs ∥δM ∥op < g/ 2, which the threshold does not by itself certify; we use 10 τ ≈ 2as the empirical proxy for the Davis–Kahan requirement of Sec. 6.1, matched to where that bound holds in the experiments. A larger τ trades recovery reach for a stronger separation guarantee. Figure 6 reports the recovery probability P (ˆh1 = h(1 , d )) over the 20 realisations. For RSM the multiplicity is recovered in every realisation at every noise level tested, up to η = 0 .80 on all three manifolds. For FSM it is recovered perfectly up to η = 0 .50 and then collapses to zero at η ≥ 0.65, simultaneously on S1, S2 and S3. These rates are confirmed at higher statistics, with pre-specified threshold and per-realisation confidence intervals, against null and out-of-family models in Sec. 5.4. The integer is therefore gap-protected across the whole perturbative range and well beyond it. A continuous deformation of the ambient noise cannot change a discrete multiplicity until it closes the gap that isolates the multiplet, and the eigenvalue analysis of Sec. 5.2 shows that closing the gap 20 is exactly what happens to FSM near η ≈ 0.6. The recovery and eigenvalue numbers for S2 are collected in Table 3. 0.0 0.2 0.4 0.6 0.8               
+
+> noise level
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> P(h1 = h(1,  d))
+> S1(h(1, 1) = 2)
+> RSM
+> FSM
+> 0.0 0.2 0.4 0.6 0.8
+> noise level
+> S2(h(1, 2) = 3)
+> 0.0 0.2 0.4 0.6 0.8
+> noise level
+> S3(h(1, 3) = 4)
+> Multiplicity recovery vs noise ( N= 1000, D= 128)
+
+Figure 6: Multiplicity recovery P ( ˆh1 = h(1 , d )) vs noise η for RSM and FSM on S1, S 2, S 3 (N = 1000, 
+
+D = 128, 20 realisations, detector threshold τ = 0 .30). RSM recovers it up to η = 0 .80; FSM up to 
+
+η = 0 .50, then fails when its inter-multiplet gap closes (Sec. 5.2). 
+
+5.2 Eigenvalue stability and the shrinkage law 
+
+The multiplicity is an integer; the eigenvalues that carry it are not. We track the mean magnitude of the ℓ = 1 multiplet block ( K = 2 , . . . , 1 + h(1 , d )) and normalise it by its noiseless latent value to obtain the shrinkage factor |Λ(D)
+
+> ℓ=1
+
+|/|Λ(d)
+
+> ℓ=1
+
+|, and we record the log gap from the ℓ = 1 block to the next multiplet. For RSM the measured shrinkage matches the parameter-free Funk–Hecke prediction f1(ε) of Sec. 4.2 to within the realisation scatter at every noise level (Table 3, Fig. 7 top row). The same shrinkage emerges from the quasi-degenerate block reduction (Pymablock [ 43 ], Fig. 7 top row, green): on S1, S 2, S 3 it reproduces f1 across the full range, a numerical cross-check consistent with the recovery being the resummed degenerate perturbation theory of Sec. 4.2. That route needs the bounded spliced drift (A.5) to avoid the fictitious arccos edge singularities, whereas the Funk–Hecke law needs no such expansion, which is why the pipeline reads the positions from f1 (see Appendix E). FSM shrinks more slowly, because its injected ℓ = 2 component partly refills the kernel, so its multiplet positions follow the FSM-specific law rather than the RSM one. The eigenvalues thus move smoothly and in a model-specific way, which is what the slope diagnostics see as a drifting power law. The two models part company in the inter-multiplet gap (Fig. 7 bottom row). For RSM the gap widens at first, because the higher-ℓ neighbours shrink faster than the ℓ = 1 block, and it stays above 0 .6 in log even at η = 0 .80, so the multiplet remains isolated. For FSM the injected ℓ = 2 multiplet sits directly above the ℓ = 1 block and rises with η, so the gap falls monotonically and crosses the detector threshold τ = 0 .30 near η ≈ 0.6. This is the mechanism behind the multiplicity breakdown of Sec. 5.1: FSM recovery fails at exactly the noise level where its gap closes. The continuous eigenvalues degrade gracefully, but the integer they support is stable until the gap that protects it is gone. 
+
+5.3 Blind identification of the manifold and the noise model 
+
+The first two experiments use the latent coordinates as an oracle. The inference question is whether the same conclusions survive when only M (D) is observed. We proceed blind in two stages, each 21 0.0              
+
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> multiplet shrinkage |  (D)= 1 |/|  (d)= 1 |
+> S1
+> Funk--Hecke (RSM)
+> RSM
+> FSM
+> quasi-deg. PT (Pymablock)
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> S2
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> S3
+> 0.0 0.2 0.4 0.6 0.8
+> noise level
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> 1.4
+> 1.6
+> inter-multiplet gap log 10
+> detector = 0.30
+> RSM
+> FSM
+> 0.0 0.2 0.4 0.6 0.8
+> noise level
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> 1.4
+> 1.6
+> 0.0 0.2 0.4 0.6 0.8
+> noise level
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> 1.4
+> 1.6
+> Multiplet shrinkage (top) and inter-multiplet gap (bottom)
+
+Figure 7: Top: ℓ = 1 multiplet shrinkage |Λ(D)
+
+ℓ=1 |/|Λ(d)
+
+ℓ=1 | vs η for RSM and FSM on S1, S 2, S 3, with the Funk–Hecke prediction f1 (dashed); RSM lies on it, FSM shrinks more slowly. The green curve is the quasi-degenerate block reduction (Pymablock [ 43 ], Appendix E) of the bounded spliced mean drift; it tracks RSM and f1 across the full range on all three manifolds. Bottom: the log inter-multiplet gap with the detector threshold τ = 0 .30 (dotted); the RSM gap stays wide while the FSM gap closes near η ≈ 0.6, where its recovery fails. 
+
+η 0.05 0.10 0.20 0.35 0.50 0.65 0.80 RSM recovery 1.00 1.00 1.00 1.00 1.00 1.00 1.00 RSM |Λ(D)
+
+ℓ=1 |/|Λ(d)
+
+ℓ=1 | 0.92 0.85 0.74 0.58 0.44 0.30 0.17 RSM Funk–Hecke f1 0.92 0.85 0.74 0.58 0.44 0.30 0.17 RSM gap log 1.28 1.36 1.51 1.58 1.33 1.07 0.75 FSM recovery 1.00 1.00 1.00 1.00 1.00 0.00 0.00 FSM |Λ(D)
+
+ℓ=1 |/|Λ(d)
+
+ℓ=1 | 0.94 0.89 0.81 0.71 0.61 0.51 0.41 FSM gap log 1.23 1.15 0.89 0.64 0.46 0.30 0.12 Table 3: Multiplicity recovery, ℓ = 1 multiplet shrinkage, and inter-multiplet gap on S2 (N = 1000, 
+
+D = 128, 20 realisations). RSM shrinkage tracks the parameter-free Funk–Hecke prediction f1
+
+exactly; FSM shrinks more slowly and its gap closes near η ≈ 0.6, where its multiplicity recovery fails while RSM stays intact. from a single ambient matrix, repeating over 20 realisations only to estimate success rates. Working from a single matrix is justified by self-averaging: the spectral observables of a large random matrix concentrate around their ensemble mean, with relative fluctuations of order N −1/2,so one N ×N observation already determines the eigenvalue density and the functionals we read from it (the multiplet multiplicity for the dimension, and the FSM-injected ℓ = 2 component for the noise model) without averaging over realisations [ 5]. The spectral functionals of a single M (D) concentrate as N grows, though its N eigenvalues are not independent replicates; the realisations here convert the per-matrix outcome into a success rate, quantified at higher statistics with confidence intervals in Sec. 5.4. 22 The manifold is read from the gap-protected multiplicity, which needs only the spectrum of M (D).Across both models and 0 .05 ≤ η ≤ 0.50 the inferred ˆd equals the true dimension in every realisation on S1, S2 and S3: the manifold-confusion matrix is the identity (see Fig. 8a). The noise model is read from the ℓ = 2 component, which is the FSM signature. The geodesic kernel arccos (t) has only odd-ℓ content, since arccos (t) − π/ 2 is odd, so RSM leaves the ℓ = 2 multiplet empty up to a parity-suppressed O(1 /√N ) Monte-Carlo floor, whereas FSM populates it through its nonnegative β20 coefficient. To measure it blind we estimate the latent directions from the top ˆd eigenvectors of cos M (D), which span the degree-one block: for centred uniform spherical data the latent linear-harmonic Gram component ˜xi · ˜xj has rank h(1 , d ) = ˆd and carries the leading non-Perron eigenvalues, the ℓ = 0 constant mode being suppressed by the centring. We form the implied unit-diagonal Gram matrix and read the component ratio |ˆλ2/ˆλ1| from the zonal projector estimator. The estimated basis fixes orientation only up to a sign, so the discriminator uses the magnitude. The two classes separate cleanly (see Fig. 8b): RSM stays at the floor, |ˆλ2/ˆλ1| ≤ 0.002, at all η, while FSM rises from 0 .034 at η = 0 .05 to 0 .32 at η = 0 .50. A geometric-mean boundary at 0 .015 identifies the model correctly in 99% of RSM realisations and 100% of FSM realisations, pooled over S1–S3 and 0 .05 ≤ η ≤ 0.50 (see Fig. 8c). Model identification is meaningful only where the manifold itself is identified, so it is reported on the regime where the multiplicity recovers. Beyond η ≈ 0.6 the failed dimension estimate makes the blind component ratio uninformative. The residual-spectrum consistency check, which tests whether the off-manifold deviation behaves as random-matrix noise once the recovered geometry is subtracted, is reported in Appendix C.5. S1 S2 S3             
+
+> inferred d
+> S1
+> S2
+> S3
+> true manifold
+> 1.00
+> 1.00
+> 1.00
+> (a) blind manifold ID
+> (multiplicity, 0.05 0.5)
+> 0.1 0.2 0.3 0.4 0.5
+> noise level
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> 0.30
+> 0.35
+> 0.40
+> blind |  2/ 1|
+> (b) blind model signature
+> (= 2 channel; all Sd)
+> threshold = 0.015
+> RSM
+> FSM
+> RSM FSM
+> identified model
+> RSM
+> FSM
+> true model
+> 0.99 0.01
+> 0.00 1.00
+> (c) blind model ID
+> (0.05 0.5 pooled)
+> Blind identification from a single M(D)
+
+Figure 8: Blind identification from a single M (D), pooled over 0 .05 ≤ η ≤ 0.50 and S1–S3. (a) Manifold confusion from the gap-protected multiplicity (identity). (b) Blind ℓ = 2 component ratio 
+
+|ˆλ2/ˆλ1| from the top cos M (D) eigenvectors: RSM at the parity floor, FSM rising with η, separated by a geometric-mean boundary (dashed). (c) The resulting noise-model confusion matrix. 
+
+5.4 Statistical validation: null models, out-of-family noise, and decision rates 
+
+The experiments above report recovery on in-family models. To test the detector as a decision rule we fix its only free choice, the log-gap threshold τ = 0 .30, in advance, run it over 200 independent realisations per cell, and report the per-realisation decision rate with a Wilson 95% confidence interval rather than a pooled histogram. The setup is N = 600 on a latent S2 (d = 3), candidate set d ∈ { 2, . . . , 8}, ambient D = 128. We add two ingredients the in-family study lacks: an out-of-family noise model, with the residual directions drawn from a heavy-tailed Student-t law ( ν = 3) outside both the RSM and FSM families, and three null models that carry no low-dimensional spherical latent factor, where a faithful detector should not report a small integer multiplet. The 23 nulls are uniform points on an ambient sphere S20 (whose first multiplet h1 = 21 lies outside the candidate set), an anisotropic Gaussian with coordinate amplitudes ∝ k−3/4 across the D=128 axes (a continuous covariance spectrum with no integer plateau), and a random symmetric distance matrix with off-diagonal entries Uniform[0 , 1) (pure noise). Table 4 and Fig. 9 report the result. The in-family RSM recovers h1 = 3 in every realisation up to ε = 0 .75, the FSM up to ε = 0 .65 and in 92 .5% of realisations at ε = 0 .75 (the FSM losing its gap earlier, as in Sec. 5.1), and the out-of-family t-noise model is recovered throughout, since the detector reads only the top multiplet and is insensitive to the residual law. The three null models give a false-positive rate consistent with zero ( ≤ 0.5%), so the detector does not hallucinate a small sphere on data that lacks one. The classification of Sec. 5.3 is evaluated on held-out realisations distinct from those used to place its boundary, separating threshold selection from evaluation. Table 4: Per-realisation decision rates with Wilson 95% intervals, N = 600, latent S2, 200 realisations per cell, threshold τ = 0 .30 fixed in advance. In-family and out-of-family rows give the recovery rate P (ˆh1 = 3); null rows give the false-positive rate P (ˆh1 ∈ { 2, . . . , 8}). 
+
+ε = 0 .45 ε = 0 .65 ε = 0 .75 RSM (in-family) 1.00 [ .98 , 1] 1.00 [ .98 , 1] 1.00 [ .98 , 1] FSM (in-family) 1.00 [ .98 , 1] 1.00 [ .98 , 1] 0.93 [ .88 , . 95] 
+
+t-noise (out-of-family) 1.00 [ .98 , 1] 1.00 [ .98 , 1] 1.00 [ .98 , 1] false-positive rate null: ambient S20 0.00 [ .00 , . 02] null: anisotropic Gaussian 0.005 [ .001 , . 03] null: random matrix 0.00 [ .00 , . 02] 0.1 0.2 0.3 0.4 0.5 0.6 0.7             
+
+> noise amplitude
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> recovery rate  P(h1 = d)
+> Dimension recovery, latent S2(N= 600, 200 reps)
+> RSM (in-family)
+> FSM (in-family)
+> t-noise (out-of-family)
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> false-positive rate P(h1{2. . 8})
+> ambient sphere S20
+> anisotropic Gaussian
+> random distance matrix
+> Null models (no low-dsphere)
+
+Figure 9: Statistical validation of the multiplicity detector with τ = 0 .30 fixed in advance, N = 600, 200 realisations per cell, error bars Wilson 95% intervals. Left: dimension-recovery rate P ( ˆh1 = d)versus noise for the in-family RSM and FSM models and the out-of-family Student-t residual model; RSM and t-noise hold to ε = 0 .75 while FSM degrades near ε = 0 .75. Right: false-positive rate 
+
+P ( ˆh1 ∈ { 2, . . . , 8}) on three null models without a low-dimensional spherical latent, all consistent with zero. The full study underlying every figure fixes its fit windows and normalisations in advance, collected in Table 5 for reproducibility. 24 Table 5: Reproducibility settings for the diagnostics. All thresholds and windows are fixed before evaluation. quantity setting log-gap threshold τ 0.30 (base ten), fixed candidate dimensions d ∈ { 2, . . . , 8}
+
+corrected slope-fit window (per candidate d) K ∈ [dguess , √N ]residual rank cutoff Klat ⌊√N ⌋
+
+eigenvalue normalisation operator units Λ /N 
+
+Perron mode excluded ( ℓ = 0) throughout shrinkage quadrature nested Gauss–Legendre, no ε series realisations per validation cell 200 (Wilson 95% CI) 
+
+## 6 Discussion 
+
+The central contribution of this paper is a coordinate-free inference method, packaged as Algorithm 1, that reads the latent geometry off the ambient distance matrix alone, without constructing the ambient vectors. Because the ambient spectrum is a finite-rank spiked deformation that reorganises collectively, it is not recovered eigenvalue by eigenvalue. Recovery rests instead on the gap-protected integer multiplicity and the resummed angular-momentum shrinkage, not on the divergent single-level perturbation theory. The diagnostics are complementary and degrade at different rates with ambient noise, and we discuss below the empirical lessons and the limitations of the framework. The clearest empirical result is that the latent dimension is a discrete, gap-protected signature in the spectrum of M (D) (see Sec. 4.1): the multiplicity h(1 , d ) = d of the lowest non-Perron BBS multiplet is recovered correctly in every realisation up to a relative noise level η = 0 .5, and up to η = 0 .8 for the isotropic noise model, while the continuous slope diagnostics degrade smoothly with noise. The stability mechanism is analogous to topological invariants in gapped quantum systems, where Chern numbers, representation multiplicities, and ground-state degeneracies are stable under any continuous perturbation that does not close the relevant gap. Here the relevant gap is the inter-multiplet log gap, which on S2 at N = 1000 is ∼ 1.2 and stays open until the noise finally closes it near η ≈ 0.6, where the multiplicity recovery fails. The analogy is mechanistic, not topological: h(1 , d ) = d is the dimension of the first nontrivial SO (d) irreducible representation of the hyper-sphere Sd−1, and that degeneracy is protected only while the sampling respects SO (d). A nonuniform sampling density q breaks the symmetry and splits the multiplet into the irreducible representations of the subgroup fixing q, an effect already present in the limiting operator Tq and quantified in Appendix C.3. It is a misspecification of the uniform-sampling assumption, not an ambient-noise effect, and it scales as O(N α ) in the density anisotropy α rather than as an O(√N )fluctuation. Figure 10 reports a direct test on S2. Drawing points uniformly, stretching them along z
+
+by a factor r, and renormalising to unit directions does not change the spherical metric; it reweights the sampling into an axial density on S2. The hyper-sphere triplet ( r = 1, detected sequence [3 , 5]) then splits at r ≳ 1.25 into singlet + doublet (detected [1 , 2, 5]), the decomposition under the residual SO (2) × Z2 symmetry predicted by Tq. The single-multiplet hyper-sphere inversion fails past the tolerance radius (see Appendix C.3), but the full multiplet sequence still identifies the latent geometry class through the table of Sec. 6.1. A useful split emerges from the inference experiment: the latent geometry (the dimension d and the multiplet sequence) is encoded at the top of the descending-|Λ| rank-ordered spectrum (low 
+
+K), while the embedding model (the ambient noise model) is encoded in the angular-momentum 25 Figure 10: Anisotropic-sampling negative control on S2, N = 1000. Latent samples are drawn uniformly on S2 then stretched along z by factor r before forming the unit-direction distance matrix; taking unit directions keeps the spherical metric and instead concentrates the sampling into an axial density, so the split below is the Tq symmetry breaking of Appendix C.3, not an intrinsic ellipsoid geometry. Left: top-10 |ΛK | vs rank K for each r. The lowest non-Perron triplet at K ∈ { 2, 3, 4}
+
+(hyper-sphere d + 1 = 3 irrep) splits into a singlet at K = 2 plus a doublet at K ∈ { 3, 4} for r ≳ 1.25. Right: log gap between K = 4 and K = 5 vs r. The gap separating the (now-split) first block from the ℓ = 2 quintet remains open, but the internal split within the original triplet drives the multiplet diagnostic to misreport ˆh1 = 1. components that the geometry leaves empty. The two questions are answered by different parts of the same data, and Algorithm 1 organises this split into a single workflow. The dimension follows from the gap-protected multiplicity, and the noise model follows from the ℓ = 2 component: the isotropic RSM kernel leaves it at the parity-suppressed floor, while FSM populates it through its P2
+
+term, a distinction to which the dimension signal is blind (see Sec. 5.3). Both are read blind from a single M (D), without oracle access to M (d). An independent consistency check on the off-manifold residual, confirming that the deviation from the recovered geometry is random-matrix noise, is given in Appendix C.5 (see Eq. (C.16), Fig. 19). Our analysis suggests that the signal sits at the top of the spectrum while noise resides at the bottom. The generalised sample-covariance structure M = Φ AΦ⊤ (see Appendix C) organises this split through a Baik–Ben Arous–P´ ech´ e (BBP) transition of the finite-rank spiked deformation of the residual Marchenko–Pastur law [ 36 , 37 ]. The control parameter is the magnitude of each (shrunk) multiplet eigenvalue N a ℓ[κobs ] measured against the residual bulk edge, the deformation having fixed rank h(ℓ, d ) per multiplet in the BBS regime. Each non-Perron multiplet is a separate spike, so the transition governs the handful of largest such outliers, not a single top eigenvalue, and the one positive Perron eigenvalue (the trivial ℓ = 0 constant mode) is excluded throughout. A multiplet above the bulk edge is supercritical and appears as a stable, self-averaging outlier (relative fluctuation ∼ N −1/2): this is the delocalised branch, which carries the dimension through the multiplet multiplicities. As the noise grows (or ℓ increases) the shrinkage of Sec. 4.2 drives the multiplet below the edge, where it turns subcritical and merges into the bulk: this is the localised branch, the small-|Λ| region where the sampling fluctuation is of order the eigenvalues themselves (see Fig. 11a). The two ends of the spectrum therefore play opposite roles, and the localised branch is a poor geometry estimator but a sharp noise probe. Its power-law slope already fails as a route to 
+
+d at zero noise. Because βloc = 1 /(d − 1) is a uniform-sphere result, a non-uniform latent distribution distorts it: the Beta-concentrated configurations of panels (a,b) give βloc = 0 .44 on S2 (versus 0 .5) 26 and 0 .30 on the strongly concentrated S124 (versus 0 .008), so the distribution, not the nominal dimension, sets the slope (see Fig. 11b). Ambient noise compounds this, polluting the localised branch by two to three orders of magnitude more than the delocalised branch in relative shift (see Fig. 11c). The same sensitivity makes the localised branch the sharpest fingerprint of the noise mechanism: the isotropic RSM and the anisotropic, ℓ = 2-injecting FSM fill the small-|Λ| region with visibly different shapes, FSM flattening it toward a Wigner-like plateau (see Fig. 11d). This is the residual random-matrix discrimination of Appendix C.5, read directly off the localised branch. 10 1 10 2 10 3                                           
+
+> rank K
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> relative fluctuation std(  K)/|  K |
+> (a) signal vs noise-dominated localised tail
+> S2
+> S124
+> 10 010 110 210 3
+> bottom-up rank K′=NK+ 1
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> | |/ N (smallest first)
+> (b) localised slope loc : measured vs uniform 1/( d1)
+> S2
+> S2 fit loc =0.44
+> uniform 1/( d1)
+> S124
+> S124 fit loc =0.30
+> window [2, N]
+> 10 110 210 3
+> rank K
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> 10 2
+> relative shift |  (D)
+> K
+> (d)
+> K |/|  (d)
+> K |
+> (c) ambient-noise pollution by rank
+> RSM =0.1
+> RSM =0.3
+> FSM =0.1
+> FSM =0.3
+> 10 410 310 210 110 0
+> ||/ N
+> 10 1
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> ESD
+> (d) localised bulk: noise-model fingerprint
+> latent (no noise)
+> RSM =0.30
+> FSM =0.30
+> Signal at the top, noise in the localised branch
+
+Figure 11: Signal and noise across the spectrum ( N = 1000, Perron excluded). Panels (a,b) use non-uniform (Beta-concentrated) latent configurations at zero ambient noise; (c,d) are on S2 with the two ambient-noise models, isotropic RSM and anisotropic ( ℓ = 2-injecting) FSM. (a) Relative eigenvalue fluctuation by rank: ∼ 10 −2 on the delocalised branch (low K), rising to ∼ 0.5 on the localised branch (high K). (b) Localised slope βloc (dashed) in bottom-up rank K′ = N − K + 1 versus the uniform-sphere 1 /(d − 1) (dotted) over the window K′ ∈ [2 , √N ] (shaded); see text. (c) Per-rank relative shift under ambient noise: O(10 −2) delocalised, O(1–10 2) localised. (d) Localised-bulk ESD: RSM decays more steeply, FSM flattens toward a Wigner-like plateau. We next turn to the finite-N -corrected exponent and its limitations. The corrected-slope estimator ˆβcorr deloc = ˆβdeloc − ∆β(N, d guess ) subtracts the deterministic finite-window offset of Appendix D to anchor the rank-decay slope to the BBS asymptote at zero noise. That offset is not a noise effect: the BBS power law is the ℓ → ∞ asymptote, and the fit window [2 , √N ] samples pre-asymptotic multiplets, so ∆ β(N, d ) is the operator’s finite-window curvature, fixed by the Funk–Hecke coefficients (see Sec. D.1). It is non-negligible (∆ β ≈ 0.5 at N = 1000 across d, large enough to invalidate direct d-inversion from the raw exponent) and decays with a shallow effective exponent ≈ 0.2–0 .3for d = 2 , 3, 4 (see Fig. 21), the shallow rate expected rather than anomalous. Under noise the slope acquires a further, ε-dependent bias from the angular-momentum-level shrinkage law (see Sec. 4.2), which erodes the higher-ℓ (smaller-|Λ|) components fastest, so the slope is a derived, secondary handle. The localised branch is treated at leading order βloc = 1 /(d − 1) only: the v2 ∼ N
+
+27 obstruction (see Sec. 2) prevents a controlled 1 /√N expansion, and the empirical βloc holds to 10–30% finite-N noise at d ≥ 2. 
+
+Which BBS power law is the better dimension diagnostic at finite N ? At N = 1000, D = 128, 
+
+ε = 0 .05 the semicircle-reference edge 2 √N v of the residual is ∼ 1 –5. The latent landmark |Λ(d)1+ h(1 ,d )|
+
+is of order 10 2– 10 3, parametrically outside the noise. The small-|Λ| landmark |Λ(d)
+
+> K=100
+
+| ∼ 10 −1–10 0
+
+sits inside the noise. The delocalised power law is therefore shielded from the noise floor and the localised one is not: the small-|Λ| slope estimate degrades with ε at the rate the noise grows. The large-|Λ| delocalised power law is the more reliable continuous diagnostic. The small-|Λ|
+
+exponent is a weak low-ε consistency check at best. The integer multiplet diagnostic, sitting yet further above the noise floor at the very top of the spectrum, is the most stable of the three. The entry-wise perturbation theory is kept only as the mean-drift correction for model iden-tification. For isotropic RSM the small parameter is δiso = ε√D (see Sec. 3.1), so most of the isotropic RSM runs in Sec. 5 are stress tests beyond strict PT validity rather than perturbative checks. The finite-N derivation in Appendix D additionally uses a local plane-wave ansatz on the Euclidean tangent space, ignoring intrinsic curvature; for flat latents (e.g. T 2 Fourier representations) the curvature corrections vanish identically and the CLT correction derived here is the dominant subleading effect. 
+
+6.1 Extending the framework beyond hyper-spheres 
+
+The empirical experiments above are confined to hyper-sphere latents, but the I-BBS framework is independent of that choice. We collect here the general statements that allow the diagnostic structure of Algorithm 1 to be applied to a broader class of latents without further simulation. The multiplet structure follows from the latent isometry group, rigorously for the two-point homogeneous spaces. For a compact rank-one symmetric space Md (the hyper-spheres and the real, complex, and quaternionic projective spaces, together with the Cayley plane) the geodesic distance depends on a single invariant, the kernel is zonal, and the Funk–Hecke and addition theorems diagonalise M (d) exactly into multiplets whose multiplicities are the dimensions of the harmonic blocks [48, 49]. Table 6 records these entries. For a general compact homogeneous space G/H the situation is more delicate: L2(G/H ) decomposes with multiplicities governed by the H-fixed vectors in each irreducible representation of G, a G-invariant kernel acts by scalars on the resulting isotypic blocks, and the Laplace ordering of those blocks need not coincide with the spectral ordering of the distance matrix. The first-multiplet entries beyond the rank-one symmetric spaces are therefore indicative candidates to be confirmed case by case, not consequences of a single universal rule. The multiplicity is gap-protected by a Davis–Kahan bound. Let M 0 be the unperturbed BBS matrix on the latent Md, with an isolated cluster of eigenvalues {Λ(0)  
+
+> K1
+
+, . . . , Λ(0) 
+
+> Kh1
+
+} separated from the rest of the spectrum by a gap g > 0 (the inter-multiplet gap). Suppose the ambient matrix is 
+
+M (D) = M 0 + δM with ∥δM ∥op < g/ 2. By Weyl’s eigenvalue inequality (the addition problem of [ 38 ]) each eigenvalue moves by at most ∥δM ∥op < g/ 2, so the eigenvalues in any g/ 2-neighbourhood of the multiplet remain an isolated cluster of exactly h1 elements; the Davis–Kahan sin θ theorem [ 47 ] further bounds the rotation of the corresponding h1-dimensional eigenspace by ∥δM ∥op /g , so the multiplet stays a coherent block. The multiplicity is preserved; the same operator-norm and gap-controlled Davis–Kahan estimate underlies the closely related signal-plus-noise analysis of [ 19 ]. The experiments calibrate the noise by the relative cosine-Frobenius level η (see Sec. 5), but the norm entering the bound is the operator norm, which we compute directly from δM = M (D) − M (d):on S2 it is a fixed fraction of the Frobenius perturbation, ∥δM ∥op ≈ 0.55–0 .6 ∥δM ∥F , and with 28 latent Md isometry group G first-multiplet mul-tiplicity h1
+
+inversion d ← h1
+
+hyper-sphere Sd SO (d + 1) d + 1 d = h1 − 1flat torus T d =(S1)d
+
+T d ⋊ Aut(Λ) 2d (equal-side lat-tice; generally 2per shortest-vector pair) 
+
+d = h1/2 (equal-side) real projective RP d P O (d + 1) d(d + 3) /2 ( ℓ = 2 irrep, parity selects out ℓ = 1) nonlinear in h1
+
+Table 6: Multiplet-multiplicity table for representative latent geometries. The hyper-sphere and projective-space rows are the rigorous rank-one symmetric-space entries; the flat-torus row is lattice-dependent, with h1 = 2 d only for the equal-side lattice and generally 2 per shortest-vector pair, and is included as an indicative candidate. The inversion from h1 to d is unique within each row but not across rows: detection of h1 produces a short list of compatible candidates whose remaining ambiguity is resolved by the rank-decay slope and the residual-RMT fingerprint of Algorithm 1. In this table d is the intrinsic manifold dimension; the hyper-sphere Sd is written Sd−1 in the embedding-d convention of the rest of the paper, where its lowest multiplet has multiplicity h1 = d.the latent gap g read from M 0 the condition ∥δM ∥op < g/ 2 holds throughout the recovery regime (to η ≈ 0.4 at N = 1000). The multiplet is observed to survive beyond this point as well, the Davis–Kahan criterion being sufficient rather than tight. This converts the empirical observation that “the multiplet survives under ambient noise” on hyper-spheres into a quantitative bound on any latent Md with a resolved inter-multiplet gap. In the hyper-sphere case the first inter-multiplet gap is g = N (|a1|f1 − | a3|f3) + o(N ), of order N , since the lowest multiplets sit at the fixed continuum eigenvalues N a ℓ with O(1) spacing (see Appendix E); the N 1−2/d scaling of the BBS finite-N
+
+analysis (see Appendix D) describes the crowded level spacing high in the tower, not the gap that protects the first multiplet. For other latents the relevant g is computed from the spectral gap of 
+
+M 0 in the BBS limit. The noise models and the residual fingerprint are not specific to spheres. The two generative model classes (RSM and FSM) and the residual-RMT diagnostic make no use of the latent being a sphere: RSM is a convex combination of two sub-sphere Gram kernels at the cosine level, whose isotropic limit resembles an ambient additive perturbation without our claiming an exact ambient-Gaussian or heat-kernel-Brownian equivalence, and FSM specifies a positive-definite Gram-kernel construction in terms of the latent M (d). Each class’s first-order kernel mean and variance is computed from M (d) and the ambient geometry. Substituting a non-spherical M (d) leaves the perturbative structure of Sec. 4 intact, with the only manifold-specific input being the unperturbed BBS spectrum on Md. The FSM construction extends naturally to other kernels (heat kernel on the sphere, hyperbolic-space kernels, flat-torus kernels, etc.) by replacing the hyper-sphere Gegenbauer basis with the appropriate spectral basis on the latent manifold, with the BBS spectral signatures replaced by the corresponding multiplet structure of the latent isometry group. For the rank-one compact symmetric spaces (the two-point homogeneous spaces: the hyper-spheres together with the real, complex, and quaternionic projective spaces of Table 6 and the Cayley plane) the Funk–Hecke theorem, the Mercer expansion, and the addition theorem carry over verbatim with the Gegenbauer polynomials replaced by Jacobi polynomials Rα,β ℓ , whose parameters encode the space and whose 29 eigenvalue and multiplicity growth δ(ℓ, d ) ∼ ℓd−1 reproduce the same multiplet counting [49]. We close by noting the empirical scope of this paper. Quantitative validation in Sec. 5 is restricted to hyper-sphere latents S1, S2 and S3. Departures from uniform sampling are treated as a misspecification, with the multiplet splitting and a tolerance radius derived in Appendix C.3 and illustrated by the ellipsoid experiment of Sec. 6 (see Fig. 10). Direct empirical tests of the framework on non-spherical latents, on real neural-network representations, and on the oracle-free residual reconstruction protocol of Appendix C.5 appear in the two companion papers [3, 4]. 
+
+## 7 Summary 
+
+I-BBS infers a latent sub-manifold from the ambient distance matrix alone, without constructing the ambient vectors. Being coordinate-free, it applies even where a vector space is undefined or only partly observable. It analyses the full observable distance matrix M (D) in a blind setting, using different parts of its spectrum to learn the latent low-dimensional manifold from the largest-|Λ|
+
+eigenvalues and the noise model from the lowest-|Λ| ones; the two readouts together form the basis of Algorithm 1. The latent geometry sits at the top of the rank-ordered spectrum. The multiplicity of the lowest non-Perron multiplet is the integer-valued, gap-protected signature of the dimension; for hyper-spheres h(1 , d ) = d, and the inversion for tori, projective spaces, and products is tabulated in Sec. 6.1. It is recovered correctly on S1, S 2, S 3 up to η = 0 .5 under both noise models, and up to η = 0 .8 for the isotropic one. The multiplet positions are then placed by the parameter-free angular-momentum-level shrinkage law (see Sec. 4.2), exact in the noise amplitude, with the finite-
+
+N -corrected large-K slope d/ (d − 1) as a low-noise cross-check. The embedding model, in turn, is read from the bottom of the spectrum: the ℓ = 2 component that FSM injects and the isotropic RSM leaves empty identifies the noise class blind from a single M (D) (see Sec. 5.3), corroborated by the residual-bulk shape against the exploratory semicircle reference (see Appendix C.5). Two companion papers apply the same framework to real machine-learning tasks, as a diagnostic for structural changes in the trained model or input data [ 3 ], and for the residual-stream representations of modular-addition transformers [4]. 
+
+## A Detailed derivations for the RSM model 
+
+This appendix collects all derivations for the RSM model of Sec. 3.1: (i) the residual-Gram noise moments and pair-graph covariance; (ii) the derivation of the RSM forward triple (A.5) –(A.6) and the per-pair applicability constraints that bound the cot , csc divergence to the BBS top-K window; and (iii) the double Gegenbauer expansion of the geodesic kernel, the angular-momentum-level shrinkage law, and the Itˆ o drift with its noise-induced potential. 
+
+A.1 Forward triple and noise moments 
+
+The RSM noise is carried by the residual Gram matrix Gij = ¯yi · ¯yj of N i.i.d. uniform samples ¯yi ∈ Sp−1 (p := D −d), with Gii = 1 and (1+ Gij )/2 ∼ Beta (( p−1) /2, (p−1) /2) for i̸ = j (Marsaglia– Olkin [ 34 ]). From E[ ¯yi ¯y⊤ 
+
+> i
+
+] = Ip/p and independence of ¯yi, ¯yj for i̸ = j, the moments entering the RSM forward are exact (not asymptotic), 
+
+E[Gij ] = 0 , Var[ Gij ] = 1 
+
+> p
+
+, Cov[ Gij , G kl ] = 1 
+
+> p
+
+δ{i,j },{k,l } (i̸ = j, k ̸ = l), (A.1) 30 so the pair-graph covariance is pair-diagonal, with zero shared-vertex contribution E[( ¯y⊤ 
+
+> i
+
+¯yj )( ¯y⊤ 
+
+> j
+
+¯yl)] = 0 ( i̸ = j̸ = l); the off-diagonal noise carries the pair-graph structure of the N -particle configuration (N −1 entries share each index), shared-vertex corrections entering only sub-leading through the arccos non-linearity and quartic Wick contractions, reaching O(1) only for a low-rank residual covariance. These moments feed the forward triple (A.5) – (A.6) ; the bulk of G is the Marchenko– Pastur law, the uniform ( C = I) case of the deformed-MP saddle of Appendix C. Take Eq. (9) of Sec. 3.1 as the starting point. Separating the noiseless piece from the ε2
+
+perturbation, the cosine-kernel argument has the form cos M (d) 
+
+> ij
+
++ yij with yij := ε2 cos M (D−d) 
+
+> ij
+
+( ¯y) −
+
+cos M (d)
+
+> ij
+
+. Inverting through the entry-wise arccos , M (D) 
+
+> ij
+
+= arccos (cos M (d) 
+
+> ij
+
++ yij ), with |yij | small relative to the distance of cos M (d) 
+
+> ij
+
+from the branch points ±1 (the PT control parameter, satisfied for M (d) 
+
+> ij
+
+bounded away from 0 and π), Taylor-expand the arccos around the unperturbed argument cos M (d) 
+
+> ij
+
+in M (d) 
+
+> ij
+
+itself via arccos  cos M (d) 
+
+> ij
+
++ yij 
+
+ = M (d) 
+
+> ij
+
+− yij 
+
+sin M (d)
+
+> ij
+
+− cos M (d)
+
+> ij
+
+2 sin 3 M (d)
+
+> ij
+
+y2 
+
+> ij
+
++ O(y3 
+
+> ij
+
+), (A.2) and substitute yij from its definition above. The y2 
+
+> ij
+
+term is O(ε4) and drops at the order kept here. The linear term gives 
+
+M (D) 
+
+> ij
+
+= M (d) 
+
+> ij
+
++ ε2 
+
+> i
+
++ ε2
+
+> j
+
+2 cot M (d) 
+
+> ij
+
+− εiεj
+
+sin M (d)
+
+> ij
+
+Gij + O(ε4), (A.3) valid throughout M (d) 
+
+> ij
+
+∈ (0 , π ) \ { π/ 2}. The symmetric ( ε2 
+
+> i
+
++ ε2 
+
+> j
+
+)/2 piece is deterministic and reduces to ε2 cot M (d) 
+
+> ij
+
+at common amplitude εi = ε; the cross-term carries the stochastic noise through Gij .At i = j the kernel (9) has argument 1 ( Gii = 1), so M (D) 
+
+> ii
+
+= 0 exactly; the Taylor formula (A.3) is 0 /0 there (limit 0) and applies off-diagonal only. Near the boundaries the half-angle identity (9) of Sec. 3.1, at leading order in ε and small angles, gives 
+
+M (D) 
+
+> ij
+
+≃
+
+q
+
+(M (d) 
+
+> ij
+
+)2 + ( ε2 
+
+> i
+
++ ε2 
+
+> j
+
+) − 2εiεj Gij (A.4) (right tail: mij = π−M (d) 
+
+> ij
+
+, Gij → − Gij ). Linearising in Gij gives the μB, σ B branches of (A.5) –(A.6) ;like the bulk form these are off-diagonal only, the diagonal taken from (9) directly. Splicing the bulk linear form (A.3) to the near-boundary form (A.4) (linearised in Gij ) at junction angles mμ,σ  
+
+> 0
+
+= O(√ε), with mij := M (d) 
+
+> ij
+
+near the left boundary and mij := π − M (d) 
+
+> ij
+
+near the right, gives the entry-wise forward drift and volatility 
+
+μij 
+
+ M (d)
+
+> ij
+
+ =
+
+
+
+M (d) 
+
+> ij
+
++ ε2 cot M (d) 
+
+> ij
+
+, mμ 
+
+> 0
+
+≤ M (d) 
+
+> ij
+
+≤ π − mμ 
+
+> 0
+
+,M (d) 
+
+> ij
+
+± q
+
+2ε2 + m2 
+
+> ij
+
+− mij 
+
+, otherwise , (A.5) 
+
+σij 
+
+ M (d)
+
+> ij
+
+ =
+
+
+
+ε2/ sin M (d) 
+
+> ij
+
+, mσ 
+
+> 0
+
+≤ M (d) 
+
+> ij
+
+≤ π − mσ 
+
+> 0
+
+,ε2/
+
+q
+
+2ε2 + m2 
+
+> ij
+
+, otherwise , (A.6) with the upper/lower sign for the left/right tail. Figure 12 compares the two spliced branches to the exact prefactors at ε = 0 .1, each matching to sub-percent accuracy in its region and bounded across (0 , π ). 31 Two per-pair constraints control (A.3) , without collapsing εi, ε j to a common value. The control is set by the distance of the expansion point cos M (d)
+
+ij from the branch points ±1 of arccos , since the coefficients in (A.2) diverge only as sin M (d)
+
+ij → 0 and arccos is analytic at the midpoint cos M (d)
+
+ij = 0. The linear term dominates the quadratic when |yij | ≪ 2 sin 2 M (d)
+
+ij /| cos M (d)
+
+ij |, i.e. 
+
+εiεj |Gij | ≪ 2 sin 2 M (d)
+
+ij /| cos M (d)
+
+ij |, which fails as M (d)
+
+ij → 0, π and is least restrictive at M (d)
+
+ij = π/ 2. Smallness of the symmetric correction relative to M (d)
+
+ij requires ε2
+
+i + ε2
+
+j ≪ 2M (d)
+
+ij | tan M (d)
+
+ij |, which also fails as M (d)
+
+ij → 0, π . Twice the first plus the second collapses them into the single per-pair condition (εi + εj )2 ≪ 4 sin 2 M (d)
+
+ij 
+
+| cos M (d)
+
+ij | | Gij | + 2 M (d)
+
+ij tan M (d)
+
+ij , (A.7) whose right-hand side depends only on the angles M (d)
+
+ij and M (D−d)
+
+ij ( ¯y) and vanishes only at the coincident and antipodal pairs M (d)
+
+ij → 0, π , not at π/ 2. At common amplitude εi = εj = ε the left side is 4 ε2 and the right recovers the min -form ε2 ≲ min (M (d)
+
+ij | tan M (d)
+
+ij |, sin 2 M (d)
+
+ij /| cos M (d)
+
+ij |), both factors controlled by sin M (d)
+
+ij near the endpoints. The BBS diagnostics of Sec. 5 restrict to the top-K window where (A.7) holds. 0 /4 /2 3 /4                                      
+
+> M(d)
+> ij
+> 20
+> 15
+> 10
+> 5
+> 0
+> 5
+> 10
+> 15
+> 20
+> drift prefactor (per  2)
+> Drift correction prefactor ( = 0.1, m0=0.350)
+> Regime B applicable ( M(d)<m0or > m0)
+> Regime A applicable ( m0M(d)m0)
+> Exact
+> A: cot M(d)
+> ij
+> B: +m2m,= 2 2
+> B (quadratic): expand at m0, parabola over tail band
+> 0/4 /2 3/4
+> M(d)
+> ij
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> 12
+> 14
+> volatility prefactor (per  2 Var  C )
+> Volatility prefactor ( = 0.1, m0=0.495)
+> Regime B applicable ( M(d)<m0or > m0)
+> Regime A applicable ( m0M(d)m0)
+> Exact
+> A: 1/sin M(d)
+> ij
+> B: 1/ +m2
+
+Figure 12: RSM forward drift (left) and volatility (right) correction prefactors versus M (d)
+
+ij at ε = 0 .1. Black: exact deterministic prefactor from (9) . Blue: bulk branch; orange dashed: near-boundary branch from (A.5) –(A.6) ; red dotted (drift only): quadratic Taylor expansion of μB
+
+ij about the junction. Shaded bands mark the applicability regions (A.7) . Each branch matches the exact curve to sub-percent accuracy in its region, and the splices cover (0 , π ) with bounded values. 
+
+A.2 Gegenbauer addition theorem for the geodesic kernel 
+
+We derive the double Gegenbauer expansion (11) of the geodesic ambient kernel (10) , M (D)
+
+ij =arccos ( cos 2 θ t 1 + sin 2 θ t 2) with t1 = cos M (d)
+
+ij , t2 = cos M (D−d)
+
+ij ( ¯y) and sin θ = ε. The latent sphere 
+
+Sd−1 and residual sphere SD−d−1 carry the ultraspherical indices μ = ( d−2) /2 and ρ = ( D−d−2) /2; the ambient sphere SD−1 carries ν = ( D − 2) /2 = μ + ρ + 1. By (8) , Xi = cos θ W 0 ˜xi + sin θ V 0 ¯yi, so every ambient point lies at the common latitude θ on the orthogonal join Sd−1 ∗ SD−d−1 ⊂ SD−1, and Xi ·Xj = cos 2 θ t 1 + sin 2 θ t 2. The geodesic distance is 32 a zonal function on SD−1, with the Gegenbauer expansion of BBS-2 [2], arccos( w) = π
+
+2 + X 
+
+> nodd
+
+bn Cνn (w), bn = − (D − 2)( D − 2 + 2 n)8π
+
+" Γ( D−22 ) Γ( n 
+
+> 2
+
+)Γ(1 + n+D−22 )
+
+#2
+
+, (A.8) the even-n coefficients vanishing (BBS-2 Eq. (70), their p = D−2). Restricted to the common-latitude join, each ambient zonal Cνn (Xi·Xj ) decomposes under the branching SO (D) ↓ SO (d) × SO (D − d), by the zonal addition theorem applied on each factor (BBS-2 Eq. (57); Erd´ elyi et al. [33], 11.4.2), 
+
+Cνn
+
+ cos 2 θ t 1 + sin 2 θ t 2
+
+ = X 
+
+> p+q≤nn−p−qeven
+
+G(n) 
+
+> pq
+
+(θ) Cμp (t1) Cρq (t2),G(n) 
+
+> pq
+
+(θ) = g(n) 
+
+> pq
+
+(cos θ)2p(sin θ)2qj(n) 
+
+> pq
+
+(cos 2 θ)2,
+
+(A.9) where j(n) 
+
+> pq
+
+is the Jacobi radial polynomial of degree ( n − p − q)/2 of the branching and g(n) 
+
+> pq
+
+> 0. Inserting (A.8) and resumming over n gives (11) with Φ pq (θ) = P 
+
+> k≥0
+
+bp+q+2 k G(p+q+2 k) 
+
+> pq
+
+(θ). Equivalently, the products {Cμp (t1)Cρq (t2)} are a complete orthogonal basis of L2([ −1, 1] 2, w μ×wρ)with wλ(t) = (1 − t2)λ−1/2, so the coefficients are the projections Φpq (θ) = 1
+
+∥Cμp ∥2 ∥Cρq ∥2
+
+Z 1
+
+> −1
+
+Z 1
+
+> −1
+
+arccos  cos 2 θ t 1 + sin 2 θ t 2
+
+
+
+× Cμp (t1) Cρq (t2) wμ(t1) wρ(t2) d t1 dt2,
+
+(A.10) with ∥Cλl ∥2 from BBS-2 Eq. (63) (Erd´ elyi 10.9.7). Eq. (A.10) is the form evaluated numerically; the two routes agree, and a truncated (11) reconstructs the kernel to better than 10 −3 relative accuracy at modest order ( p, q ≤ 9). Under ( t1, t 2) → (−t1, −t2) the argument w → − w, while 
+
+Cλl (−t) = ( −1) lCλl (t); since arccos (w) − π/ 2 is odd, the integrand of (A.10) is even only when p + q
+
+is odd. Hence Φ pq = 0 unless p + q is odd, the single exception being the mean Φ 00 = π/ 2. For numerical work the coefficients drop steeply at low order (Φ 10 ≈ 0.90, Φ 30 ≈ 0.04, Φ 50 ≈
+
+8 × 10 −3 at ε = 0 .45), so the first few odd degrees already capture the dominant quasi-multiplets. The uniform reconstruction error decays algebraically, ∼ K−5/2 in the joint truncation K = p = q,the power-law (rather than exponential) rate being set by the square-root endpoint singularity of arccos at w = ±1. A handful of terms therefore suffices for the few largest-|Λ| multiplets used in BBS inference; the slowly-converging algebraic tail corresponds to the small-|Λ| bulk that the top-K
+
+window discards. For ¯yi uniform on SD−d−1 the residual cosine kernel t2 has the marginal density ∝ wρ by the Marsaglia–Olkin moments (A.1) , so ⟨Cρq (t2)⟩ = δq0 and (11) averages to the latent series (12) , with only odd p (matching the odd-ℓ rule of (A.8) ). The degree-p term is the BBS quasi-multiplet of multiplicity h(p, d ) (2) ; at θ = 0, M (D) = M (d) and Φ p0(0) is the latent Funk–Hecke coefficient, so the multiplet is shrunk by fp(θ) = Φ p0(θ)/Φp0(0), the angular-momentum-level shrinkage law of Sec. 4.2. How many terms of (12) are needed to reproduce the realised drift? We answer this on a single fixed random residual realisation (latent S2, residual S3, ε = 0 .45, N = 1000). In the angle-remapped Gegenbauer basis μ(M (d) 
+
+> ij
+
+) = P 
+
+> ℓ
+
+˜cℓ P (d−2) /2 
+
+> ℓ
+
+(z), z = (2 /π )M (d) 
+
+> ij
+
+− 1 (the angle-remapped Gegenbauer basis), the drift is odd about M (d) = π/ 2 because arccos is odd about its midpoint, so only odd ℓ
+
+contribute and the even coefficients vanish: ˜c2, ˜c4 are zero to machine precision, and the empirical 33 values, obtained by binning the simulated M (D) 
+
+> ij
+
+in z and projecting the per-bin conditional mean, are consistent with zero (see Table 7). The odd coefficients fall off geometrically, ˜c1 = 1 .10, ˜c3 = −0.13, ˜c5 = −0.021, ˜c7 = −0.0010, each roughly an order of magnitude below the last, and the exact (quadrature) and empirical coefficients agree to within the finite-N scatter. The truncation error follows the largest omitted coefficient (see Fig. 13). The ℓmax = 1 truncation (the linear drift) leaves a sup-norm error of 0 .15 rad, concentrated near the endpoints where the curvature lives. The cubic ( ℓmax = 3) truncation cuts this to 0 .02 rad, about 1% of the angular range, and the ℓmax = 5 truncation reaches 6 × 10 −4 rad, indistinguishable from the full drift. Three odd terms thus give a percent-level description and five an essentially exact one. At N = 1000 this is also the practical resolution limit: the realisation scatter on each coefficient is ≈ 0.002, so ˜c5 is the last coefficient resolved above the Monte-Carlo noise while ˜c7 and beyond lie below it. The leading correction to the linear drift is the parity-allowed cubic term, and the expansion has effectively converged by ℓ = 5. Table 7: Angle-remapped Gegenbauer coefficients ˜cℓ of the RSM drift (latent S2, residual S3,
+
+ε = 0 .45, N = 1000): exact (quadrature) against the empirical mean ± standard deviation over 40 fixed random residual realisations. Even-ℓ coefficients vanish by parity (empirical values consistent with zero); the odd coefficients decay geometrically and agree across methods down to the ≈ 0.002 realisation scatter, which ˜ c7 already reaches. 
+
+ℓ exact empirical (mean ± std) 0 +1 .5708 +1 .5707 ± 0.0004 1 +1 .0989 +1 .0979 ± 0.0010 2 0.0000 −0.0002 ± 0.0016 3 −0.1307 −0.1312 ± 0.0018 4 0.0000 −0.0003 ± 0.0022 5 −0.0206 −0.0210 ± 0.0023 6 0.0000 −0.0001 ± 0.0024 7 −0.0010 −0.0013 ± 0.0026 
+
+## B Detailed derivations for the FSM model 
+
+This appendix supplies, in detail, the facts behind the main-text FSM construction (14) : that the product basis is forced by symmetry, that the Schoenberg condition is necessary as well as sufficient, and the degree-one impossibility statement that explains why the higher coefficients must be supplied at the kernel level. It closes with the drift, the amplitude calibration, and the geodesic forward. The latent unit vectors are ⃗x i ∈ Sd−1 and the residual ¯yi ∈ SD−d−1, the zonal kernels Z(n)
+
+> p
+
+are those of (13) with Z(n)0 = 1 and Z(n)1 (t) = t, and W is the noiseless embedding with ambient image ⃗ h(0)  
+
+> i
+
+:= W⃗ x i.An SO (d) × SO (D − d)-invariant kernel of the pair depends only on the two invariants uij = ˜xi·˜xj
+
+and vij = ¯yi·¯yj , and the product Gegenbauer functions {Z (d) 
+
+> p
+
+(u) Z(D−d) 
+
+> q
+
+(v)} are a complete orthogonal basis for such kernels (see Appendix A.2), so every invariant cosine kernel has the form (14) and the array {βpq } is the only model freedom. By Schoenberg’s theorem a single-factor zonal kernel 
+
+P 
+
+> p
+
+bpZ(n) 
+
+> p
+
+is positive definite, for every configuration and every N , if and only if every bp is nonnegative [ 35 ]. Sufficiency on the product is the addition-theorem and Schur argument of the main text. Necessity carries over to the product: concentrating the latent and residual points so the 34 0.0 0.5 1.0 1.5 2.0 2.5 3.0                            
+
+> M(d)
+> ij (latent geodesic angle)
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> 3.0
+> M(D)
+> ij  (ambient geodesic angle)
+> (a) Drift and its Gegenbauer truncations
+> pairs ( i,j)
+> full drift (M(d))
+> max = 1 (linear)
+> max = 3
+> max = 5
+> noiseless M(D)=M(d)
+> 13579
+> truncation order max (odd terms)
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> error / coefficient (rad)
+> (b) Convergence of the truncation
+> sup-norm error max| L|
+> RMS error
+> coefficient | c|
+> Angular-momentum expansion of the RSM drift ( = 0.45, latent S2, residual S3,N= 1000)
+
+Figure 13: Convergence of the angular-momentum Gegenbauer expansion of the RSM drift (one fixed random residual; latent S2, residual S3, ε = 0 .45, N = 1000). (a) The realised pairs ( M (d)
+
+ij , M (D)
+
+ij )(grey), the full drift μ(M (d)) (black), and its truncations at ℓmax = 1 , 3, 5: the linear truncation misses the endpoint curvature, ℓmax = 3 tracks the drift to about 1%, and ℓmax = 5 is indistinguishable from it. (b) Truncation error versus order: the sup-norm and RMS deviations from the full drift and the coefficient magnitude |˜cℓ|. Only odd ℓ contribute, and the error follows the largest omitted coefficient, falling from 0 .15 rad at ℓmax = 1 to 0 .02 rad at ℓmax = 3 and 6 × 10 −4 rad at ℓmax = 5. quadratic form localises on the bidegree-( p, q ) product harmonic drives that block negative whenever 
+
+βpq < 0. The complete positive class is therefore the nonnegative simplex, the sum-to-one condition fixing the unit diagonal, and RSM is its {(1 , 0) , (0 , 1) } corner. The higher coefficients carry genuine cross-particle dependence, which is why they cannot be reproduced by independent ambient sampling. Suppose each ambient point ⃗ Xk ∈ SD−1 were drawn independently from a per-particle rotation-invariant law centred at ⃗ h(0) 
+
+k . Rotation invariance about ⃗h(0) 
+
+k gives E[⃗Xk |⃗x k] = a⃗ h (0) 
+
+k for a scalar contraction a ∈ [0 , 1] independent of ⃗x k, and independence of distinct particles gives the conditional-mean kernel 
+
+Ecos M (D)
+
+ij |⃗x i,⃗ x j
+
+ = E[⃗Xi |⃗x i]⊤E[⃗Xj |⃗x j ] = a2⃗ h(0) ⊤
+
+i⃗ h(0) 
+
+j = a2 Z(d)1 (uij ), i̸ = j, (B.1) a pure degree-one latent sector, so βp0 = 0 for every p ≥ 2. Any FSM with βp0 > 0 at some 
+
+p ≥ 2 thus cannot arise from independent per-particle ambient sampling: it carries cross-particle statistical dependence. The PSD-kernel construction (14) supplies that dependence directly, reaching the higher coefficients that independent per-particle sampling cannot, while remaining positive semidefinite by construction. The conditional-mean drift, the amplitude, and the covariance follow from the residual average. Averaging over the residual coordinates {¯yk}, uniform on SD−d−1, collapses every residual zonal to its mean, E¯y[Z(D−d)
+
+q (vij )] = δq0 for i̸ = j, leaving the drift kernel ¯κij := E¯y
+
+cos M (D)
+
+ij 
+
+ = X
+
+p≥0
+
+βp0 Z(d)
+
+p (uij ), (B.2) a single zonal expansion in the latent angle whose Funk–Hecke coefficients place the multiplet positions through the shrinkage law of Sec. 4.2. The degree-one weight sets the amplitude, ε2 := 1 − β10 , matching the RSM top-d cosine shrinkage 1 − ε2. The fluctuations of cos M (D)
+
+ij about ¯κij are not pair-diagonal: entries sharing an index are correlated through the shared residual coordinate, 35 the same coupling that keeps the realised kernel positive semidefinite. Written in the drift–volatility form (6) , FSM has drift μij = arccos ¯ κij at leading order and volatility σij the residual standard deviation, and the inverse analysis of Sec. 4 uses only the residual-averaged drift, which is well defined for every nonnegative array. The geodesic forward follows from the chain rule. Applying d arccos (t)/dt = −1/√1 − t2 to (14) gives 
+
+M (D) 
+
+> ij
+
+= arccos ¯ κij − δκ ij 
+
+q
+
+1 − ¯κ2
+
+> ij
+
++ O(δκ 2 
+
+> ij
+
+), δκ ij := cos M (D) 
+
+> ij
+
+− ¯κij , (B.3) with the centred residual fluctuation δκ ij entering through the geometric weight 1 /
+
+q
+
+1 − ¯κ2 
+
+> ij
+
+=1/ sin ¯M (d) 
+
+> ij
+
+. For the canonical even profile β20 > 0 the drift ¯κ carries a degree-two latent zonal 
+
+Z(d)2 , the ℓ = 2 component absent from isotropic RSM, and the volatility is the heteroscedastic 
+
+|δκ ij |/ sin ¯M (d) 
+
+> ij
+
+set by the residual variance of (14). 
+
+## C Spectra of the geodesic distance matrix and its off-manifold residual 
+
+The uniform-sphere residual-Gram moments of Appendix A assume i.i.d. uniform samples; the single-particle law is in general not uniform, and the geodesic distance-matrix spectrum depends on it. We derive that spectrum for a general law by the Euclidean-random-matrix route. Conditional on a configuration {xi} the matrix is deterministic, so the joint law of the off-diagonal entries is formally P ({Mij }i<j ) = R Q  
+
+> i
+
+pi(xi) d xi
+
+Q 
+
+> i<j
+
+δ(Mij − arccos (xi ·xj )), with all randomness in the quenched positions. This is only a definition: the N (N −1) /2 entries are functions of N (d−1) coordinates, so for the noiseless M (d) the joint entry density is singular (supported on the rank-d
+
+distance-matrix manifold) and is never computed. As is standard for Euclidean random matrices [15 , 50 ], the spectral statistics follow not from P (M ) but by averaging over the positions: one conditions on {xi} and integrates over the single-particle law at the end, the saddle controlled by the density ¯p = 1
+
+> N
+
+P 
+
+> i
+
+pi. The spectrum splits into a deterministic, self-averaging signal (the top eigenvalues, carried by the mean operator of ¯p; Sec. C.2) and a continuous bulk from the entrywise fluctuations (see Sec. C.4). This is the large-N saddle point of the replica analysis of [ 15 ]; we obtain each part directly, and first fix a concrete family of non-uniform laws to test against. 
+
+C.1 The product-Beta ensemble 
+
+Each particle i is placed on SD−1 ⊂ RD through its D−1 hyperspherical angles, drawn independently from Beta distributions, 
+
+pi(θ) = 
+
+> D−1
+
+Y
+
+> k=1
+
+Beta( θk; αki , β ki ), θk ∈ [0 , 1] , (C.1) with ϕk = πθ k (k < D − 1) and ϕD−1 = 2 πθ D−1 mapped to Cartesian coordinates by the standard hyperspherical map. The symmetric baseline α = β = 2 gives a smooth concentrated law; varying the parameters tilts and sharpens it per angle and per particle. We consider four anisotropy patterns, all varied parameters drawn from Uniform [1 , 3] and redrawn per realisation: common to all particles and angles (homogeneous), varying across particles only (per-particle anisotropy), across angles 36 only (per-angle anisotropy), and across both (per-particle-and-angle anisotropy). The product-Beta law in hyperspherical angles is coordinate-dependent, and the sphere-coverage fraction it defines is likewise tied to that chart, so the ensemble serves as a stress test of the uniform-sampling assumption (in the misspecification sense of Sec. C.3) and not as evidence of density-independent geometry inference. Figure 14 shows the pooled empirical densities of the negative eigenvalues of M (N = 1000, 20 realisations) on S2 and S124 . On S2 the four patterns nearly coincide: with two angles the anisotropy leaves the BBS power-law bulk and the SO (3) quasi-multiplet spikes unchanged. On 
+
+S124 they separate, the anisotropic patterns filling a small-|Λ| tail absent in the homogeneous case. The single-particle law thus controls the small-|Λ| part of the spectrum while the large-|Λ| multiplet structure is rigid. These stored spectra are the reference against which the calculation below is verified. 10 2 10 1 10 0 10 1 10 2                   
+
+> ||
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> ESD  (|  |)
+> S2
+> sc1: uniform params
+> sc2: per-particle
+> sc3: per-dimension
+> sc4: per-(i,k)
+> 10 210 110 010 110 2
+> ||
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> ESD  (|  |)
+> S124
+> sc1: uniform params
+> sc2: per-particle
+> sc3: per-dimension
+> sc4: per-(i,k)
+> Beta-product sphere ESDs: scenario overlay
+
+Figure 14: Empirical spectral densities of the negative eigenvalues of the geodesic distance matrix 
+
+Mij = arccos (xi ·xj ) for the product-Beta single-particle law (C.1) , on S2 (left) and S124 (right), 
+
+N = 1000, 20 realisations pooled, Perron eigenvalue excluded. The four patterns are common parameters (sc1), per-particle anisotropy (sc2), per-angle anisotropy (sc3), and per-particle-and-angle anisotropy (sc4), with varied parameters drawn from Uniform [1 , 3] about the baseline α = β = 2. On S2 the patterns nearly coincide; on S124 the anisotropic patterns add a small-|Λ| tail that the homogeneous case lacks. 
+
+C.2 Signal: the operator spectrum and the BBS power law 
+
+As N → ∞ the eigenvalue problem of the N × N matrix M is approximated by that of an integral operator, which is what brings the Funk–Hecke theorem and the spherical-harmonic expansion into the analysis. The matrix entries are values of the coupling arccos (x·y), and read as an integral operator weighted by the population density ¯ p this coupling is (T¯pg)( x) = 
+
+Z
+
+arccos( x·y) g(y) ¯ p(y) d y. (C.2) The matrix 1 
+
+> N
+
+M is the Nystr¨ om approximation of T¯p built from the N sample points {xi} (the i.i.d. draw from ¯p), which serve as both the quadrature nodes and the evaluation points: by the law of large numbers the row average 1
+
+> N
+
+P 
+
+> j
+
+arccos (xi ·xj )g(xj ) converges to its expectation ( T¯pg)( xi), so the matrix eigenvalues converge to the operator’s, Λ K (M ) → N eig (T¯p), set by ¯p alone; the finite-N deviations are the corrections of Appendix D. Figure 15 confirms the limit: the stored top eigenvalues land on an independent large-sample estimate of T¯p to a few percent on both spheres, 37 the per-angle pattern showing the larger scatter of a quenched anisotropy. The multiplet structure that carries the dimension thus reads off the operator of the actual law. For uniform ¯p this operator is zonal and is diagonalised exactly by spherical harmonics, with eigenvalues given by Funk–Hecke; this is the route to the BBS power law, derived next. 2 4 6 8 10 12                      
+
+> rank K(Perron K= 1 dropped)
+> 10 2
+> 10 1
+> | K|/ N
+> S2: signal eigenvalues, stored ( N= 1000) vs operator ( M= 4000)
+> sc1 operator
+> sc2 operator
+> sc3 operator
+> sc4 operator
+> sc1 stored
+> sc2 stored
+> sc3 stored
+> sc4 stored
+> 246810 12
+> rank K(Perron K= 1 dropped)
+> 10 2
+> 10 1
+> | K|/ N
+> S124: signal eigenvalues, stored ( N= 1000) vs operator ( M= 4000)
+> sc1 operator
+> sc2 operator
+> sc3 operator
+> sc4 operator
+> sc1 stored
+> sc2 stored
+> sc3 stored
+> sc4 stored
+
+Figure 15: Signal limit: the top eigenvalues |ΛK |/N of the stored matrices ( N = 1000, markers with error bars over 20 realisations) against the operator spectrum eig (T¯p) from an independent M = 4000 sample (lines), on S2 (left) and S124 (right). The four single-particle patterns are reproduced by their respective ¯p; the per-angle pattern (sc3) shows the larger scatter expected of a quenched anisotropy. 
+
+C.3 Nonuniform sampling as misspecification: splitting of the multiplet 
+
+The multiplicity readout assumes uniform sampling, and that assumption is not cosmetic. The operator Tq with a general density q is equivariant under rotation, UR Tq U −1
+
+R = Tq◦R−1 , so it commutes with the full SO (d) only when q is uniform and otherwise commutes only with the subgroup that fixes q [48 ]. The degeneracy of the degree-ℓ multiplet is a property of an SO (d)irreducible representation, so once q breaks SO (d) the multiplet is no longer protected: it splits into the irreducible representations of the residual symmetry group. This splitting lives in the limiting operator itself, so it is a misspecification of the sampling model rather than an ambient-noise effect, and it does not vanish as N → ∞ .The mechanism is explicit on S2. Take the axial density qα(x) = (1 + αP 2(x3)) /(4 π) with 
+
+P2(z) = (3 z2 − 1) /2 and |α| small, whose residual symmetry is the SO (2) × Z2 that fixes the z-axis. The degree-one triplet splits under that subgroup into an axial singlet ( z) and a transverse doublet (x1, x 2). Using E0[z2P2(z)] = 2 /15, the q-weighted degree-one second moments are 
+
+Eq[z2] = 13 + 2α
+
+15 , Eq[x21] = Eq[x22] = 13 − α
+
+15 , (C.3) so the singlet and the doublet separate by α/ 5 at first order. The degree-one block of Tq inherits the same singlet–doublet structure: its three eigenvalues, degenerate at a1 = −π/ 8 for α = 0, split with the axial level moving as a1 − c α and the two transverse levels staying degenerate, with c ≈ 0.24 by quadrature, so the matrix eigenvalues split by O(N α ). This is an operator-level shift linear in the anisotropy, not an O(√N ) sampling fluctuation. The readout therefore has a quantifiable tolerance radius. The h(1 , d )-fold degeneracy and the cluster count survive as long as the density-induced splitting stays below the separation g∗ of Sec. 4.2, which by the Weyl and Davis–Kahan bounds holds while ∥T q − T unif ∥op < g ∗/2. For the axial family ∥T qα − T unif ∥op = c |α| + O(α2), giving a tolerance |α| < α ∗ ≈ g∗/(2 c). Beyond it the triplet resolves into singlet plus doublet and the single-multiplet hyper-sphere inversion misreports the 38 dimension, though the full multiplet sequence still identifies the geometry class through the table of Sec. 6.1. The ellipsoid experiment of Sec. 6 realises exactly this axial density: drawing uniform points, stretching along z, and renormalising to unit directions leaves the spherical metric unchanged and instead reweights the sampling, so its observed singlet–doublet split at stretch r ≳ 1.25 is the 
+
+Tq symmetry breaking, read at finite anisotropy past α∗.We first recover the BBS power law from the Mercer–Funk–Hecke spectrum. For uniform ¯p the harmonics diagonalise T¯p, and its spectrum gives the BBS delocalised exponent βdeloc = d/ (d − 1) (see Sec. 2) directly, without the counting argument of [ 1 ], as a ratio of two growth rates. Here ν is the latent ultraspherical index ( d − 2) /2 of Sd−1, not the ambient ( D − 2) /2 of the observed sphere 
+
+SD−1: the ambient kernel is reduced to this latent expansion by the branching and residual average of Appendix A.2 (with no residual noise the data lie on Sd−1 and the latent expansion is immediate). The geodesic kernel on Sd−1 (ultraspherical index ν = ( d − 2) /2) has the Gegenbauer expansion (A.8) , arccos (x·y) = π 
+
+> 2
+
++ P  
+
+> ℓodd
+
+bℓCνℓ (x·y), and the addition theorem Cνℓ (x·y) ∝ Ph(ℓ,d ) 
+
+> m=1
+
+Yℓm (x)Yℓm (y)turns it into the Mercer form arccos( x·y) = X
+
+> ℓ
+
+aℓh(ℓ,d )
+
+X
+
+> m=1
+
+Yℓm (x) Yℓm (y), (C.4) with aℓ the Funk–Hecke eigenvalue on degree ℓ (proportional to bℓ), carrying the degeneracy 
+
+h(ℓ, d ) ∼ ℓd−2; only odd ℓ contribute. The decay follows from the square-root coincidence singularity arccos (1 − x) = √2x [1 + O(x)]: reading (A.8) on Sd−1 (its dimension parameter set to d − 2), the exact bℓ contain Γ( ℓ/ 2) /Γ( ℓ+d 
+
+> 2
+
+) ∼ (ℓ/ 2) −d/ 2, so 
+
+bℓ ∼ ℓ−(d−1) , aℓ ∼ ℓ−d, (C.5) the second after the zonal normalisation ∥Cνℓ ∥2/C νℓ (1) ∼ ℓ−1 (numerically aℓ decays as 2 .00 , 2.98 , 3.93 on S1,2,3; on S1 it is the Fourier value aℓ = −4/πℓ 2). This is the generic polynomial decay of a non-analytic zonal kernel, the same Gegenbauer asymptotics governing the singular kernels |t|α
+
+and (1 − t)−α [51 ]. Ranking the nonzero (odd-ℓ) eigenvalues by cumulative degeneracy K(ℓ) = P  
+
+> ℓ′≤ℓ, odd
+
+h(ℓ′, d ) ∼ ℓd−1,
+
+|ΛK |
+
+N = |aℓ(K)| ∼ K−d/ (d−1) , βdeloc = dd − 1 , (C.6) the coefficient-decay rate d over the degeneracy-growth rate d − 1, matching the BBS counting function (3) ; a different singularity order would give a different βdeloc through the same ratio. Here 
+
+K is the rank in descending |Λ| order, with K = 1 the discarded Perron eigenvalue and K = 2 the most negative, so the delocalised branch occupies the top of the spectrum, K ∈ [2 , √N ], with the localised tail beyond. Within this branch (C.6) is the K → ∞ (large-ℓ) asymptote, reached only as N → ∞ (when the window edge √N exposes large ℓ); at finite N the small-K end is steeper and the windowed slope approaches βdeloc slowly from above, as discussed in Appendix D. The same operator spectrum, {aℓ} (uniform) or {τj } = eig (T¯p) (general), is the population input to the bulk: signal and bulk are the discrete and continuous parts of one self-averaging resolvent, the top eigenvalues being its Perron and quasi-multiplet δ’s (see Appendix D). We check the prediction against simulation. The counting function makes the power law directly checkable. Ranking the operator point masses {aℓ} with their multiplicities h(ℓ, d ) in descending |aℓ|
+
+gives the counting function and hence |ΛK |/N = |aℓ(K)|; its slope over K ∈ [2 , √N ] is the operator prediction for βdeloc . Table 8 compares it with the slope read the same way from the eigenvalues of 39 the actual random matrix M , and with the asymptote βBBS = d/ (d − 1). The operator counting and the simulation agree to about one percent, both sitting above βBBS by the finite-N offset and drifting toward it as N grows ( S2: 1 .79 → 1.67 over N = 10 3 → 4 × 10 3, ∆ β ∼ N −0.3; Appendix D). Figure 16 shows the S2 rank plot: the operator counting tracks the simulated |ΛK | and bends from a steeper small-K slope toward the βBBS reference at larger K. The counting route (C.6) and the resolvent (see Sec. C.4) are not independent of each other, both built on the same operator spectrum; the independent check is this operator prediction against the direct diagonalisation, which it matches. Table 8: Delocalised slope βdeloc from the operator counting function (with multiplicities) versus direct simulation of M , against the BBS asymptote βBBS = d/ (d − 1), all fit over K ∈ [2 , √N ]. The two agree to ∼ 1% and approach βBBS as N → ∞ .sphere N βBBS counting (with mult.) simulation 
+
+S1 1000 2.000 2.230 2.228 
+
+S2 1000 1.500 1.786 1.771 
+
+S2 2000 1.500 1.727 1.713 
+
+S2 4000 1.500 1.672 1.664 
+
+S3 1000 1.333 1.765 1.698 10 1      
+
+> rank K
+> 10 3
+> 10 2
+> 10 1
+> | K|/ N
+> N
+> S2: delocalised counting function vs simulation
+> simulation ( N= 1000)
+> operator counting (with mult.)
+> BBS = 3/2 slope
+
+Figure 16: Delocalised rank plot on S2 (N = 1000): |ΛK |/N versus rank K in descending |Λ|,with the Perron mode at K = 1 omitted so the first non-Perron multiplet is at K = 2. Markers: eigenvalues of the simulated matrix M (mean over 16 realisations). Red line: the operator counting function, the ranked Funk–Hecke spectrum {| aℓ|} with multiplicities 2 ℓ + 1. Dashed: the βBBS = 3 /2reference slope. Shaded: the fit window [2 , √N ]. The counting function tracks the simulation and bends from a steeper small-K slope toward βBBS at larger K.
+
+C.4 Bulk: a deformed Marchenko–Pastur law 
+
+Throughout this subsection M = M (d) is the noiseless geodesic matrix Mij = arccos( xi ·xj ) on the sphere Sd−1 (not the ambient M (D)): the same matrix whose signal Sec. C.2 analysed, studied here for both a low-dimensional sphere ( S2) and a high-dimensional one ( S124 ). Its entrywise fluctuations about the signal fill a continuous bulk, obtained from the same Mercer expansion read as a sample-covariance model. Evaluating (C.4) at the sample points, truncated to its P retained 40 modes, writes the matrix exactly as the standard ERM split M = HT H ⊤ into a position-random feature matrix 3 and a deterministic mode matrix [15, 50], 
+
+M = Φ AΦ⊤, Φi, (ℓm ) = Yℓm (xi) ∈ RN ×P , A = diag( aℓ) ∈ RP ×P . (C.7) Since eig (Φ AΦ⊤) \ { 0} = eig (A Φ⊤Φ) \ { 0}, the nonzero spectrum of M/N is that of S1/2AS 1/2 with 
+
+S = 1 
+
+> N
+
+Φ⊤Φ N →∞ 
+
+−−−−→ C := E¯p[Y Y ⊤] ⪰ 0, (C.8) the sample covariance of the features, with population C. Read this way, as S1/2AS 1/2, M/N is a 
+
+signed sample covariance: a conventional sample covariance has a positive semidefinite population, whereas here the weight A is indefinite (the geodesic kernel is conditionally negative definite, with one positive Perron mode a0 > 0 and the delocalised modes aℓ < 0), so the population spectrum 
+
+{τj } = eig( C1/2AC 1/2) = eig( CA ) = eig( T¯p) (C.9) carries both signs, negative on the delocalised branch. The last equality holds because AC is the matrix of T¯p in the harmonic basis ( T¯pYℓ′m′ has coefficient ( AC )(ℓm )( ℓ′m′) on Yℓm , and eig (AC ) = eig (CA )): the population spectrum that deforms the bulk is the same operator spectrum that fixes the signal (see Sec. C.2). We now average over the latent positions. The single-particle law enters only through C, the “integrate last” step. Expanding ¯p = P 
+
+> LM
+
+μLM YLM with moments μLM = E¯p[YLM ] and using the Gaunt coefficients GLM  
+
+> (ℓm )( ℓ′m′)
+
+= R Yℓm Yℓ′m′ YLM dσ,
+
+C(ℓm )( ℓ′m′) = X
+
+> L≥0,M
+
+μLM GLM  
+
+> (ℓm )( ℓ′m′)
+
+= δℓℓ ′ δmm ′ + X
+
+> L≥1,M
+
+μLM GLM 
+
+> (ℓm )( ℓ′m′)
+
+. (C.10) The L = 0 term is the identity ( μ00 = 1, Y00 = 1), so C −I is the Gaunt contraction of the anisotropy moments {μLM }L≥1, with selection rules |ℓ − ℓ′| ≤ L ≤ ℓ + ℓ′, M = m + m′. For uniform ¯p all 
+
+μL≥1 = 0, so C = I and {τj } = {aℓ}. For the Beta-product the moments factorise over the angles into one-dimensional Beta integrals (azimuthal: a Beta characteristic function; polar: moments of 
+
+P ML (cos πθ )), so C is analytic in the Beta parameters. On S2 it gives ∥C − I∥F /√P ≈ 0.4, growing with anisotropy. Signal and bulk come from one resolvent. The full spectrum is read from the self-averaging resolvent of M/N , m(z) = lim N →∞ 1 
+
+> N
+
+Tr (M/N − z)−1 (density ρ(λ) = 1 
+
+> π
+
+Im m(λ + i0)), which separates into discrete signal poles and a continuous bulk, 
+
+m(z) = 1
+
+N
+
+1
+
+a0 − z + 1
+
+N
+
+X
+
+> ℓ
+
+h(ℓ, d )
+
+aℓ − z + mbulk (z). (C.11) 
+
+> 3
+
+The feature matrix Φ in this relation is not a Haar rotation: it is rectangular, and its rows are the harmonics at the (sphere-image) sample points. It is asymptotically isotropic, 1 
+
+> N
+
+Φ⊤Φ → C (= I for uniform ¯p), so Φ /√N behaves like a truncated-Haar (Stiefel) matrix. Replacing it by an i.i.d.-Gaussian (or Haar–Stiefel) H makes M = HT H ⊤ ageneralised sample covariance whose bulk is the free multiplicative convolution of the Marchenko–Pastur law with the population spectrum {τj } (the S-transforms multiply, [ 52 ]). Computing the spectrum of an M = Φ AΦ⊤ with Φ approximated as Gaussian or Stiefel this way is standard: M´ ezard–Parisi–Zee and Goetschy treat the Euclidean random matrix as a generalised Wishart HT H ⊤ [15 , 50 ] (Goetschy, Eq. 65), and Couillet–Liao give the Silverstein/deformed-MP equation for such kernel matrices [ 13 ]. It is the multiplicative counterpart of the free additive convolution of the cosine-kernel noise (see Sec. 4), the matrix analogue of Zee’s law of addition where a square Haar rotation randomises the relative eigenbasis [39]. 
+
+41 The Perron pole at a0 and the resolved low-ℓ multiplet poles at aℓ (weights h(ℓ, d )/N ) are the signal of Sec. C.2; their finite-N shifts and widths are computed in Appendix D. The continuous part 
+
+mbulk , into which the high-ℓ tower merges, remains to be determined, which is the rest of this subsection. As a sample covariance with population {τj }, the bulk is the free multiplicative convolution of the Marchenko–Pastur law (ratio c = P/N ) with H = 1
+
+> P
+
+P 
+
+> j
+
+δτj , the multiplicative counterpart of the additive cosine-kernel case (see Sec. 4). Marchenko–Pastur theory in Silverstein’s form [ 53 , 13 ]gives m as the unique C+ solution of 
+
+z = − 1
+
+m + 1
+
+N
+
+X
+
+> j
+
+τj
+
+1 + τj m = − 1
+
+m + c
+
+Z τ
+
+1 + τ m dH(τ ), (C.12) valid for signed τj , so the negative population places the bulk on the negative axis; the only inputs are {τj } and c.Following El-Karoui [ 18 ], we solve (C.12) by discretising the population into point masses, which the operator spectrum already is: {τk}Kk=1 with multiplicities gk (P 
+
+> k
+
+gk = P ), on S2 the harmonic eigenvalues aℓ with degeneracies 2 ℓ + 1, on S124 a large Nystr¨ om sample of T¯p coarse-grained to K
+
+masses. Equation (C.12) is then the finite sum 
+
+z = − 1
+
+m + 1
+
+N
+
+> K
+
+X
+
+> k=1
+
+gk τk
+
+1 + τk m , (C.13) and multiplying through by m Q
+
+> k
+
+(1 + τkm) gives the polynomial actually solved at each probe 
+
+z = λ + i0+,(z m + 1) 
+
+> K
+
+Y
+
+> k=1
+
+(1 + τkm) − mN
+
+> K
+
+X
+
+> k=1
+
+gkτk
+
+Y 
+
+> l̸=k
+
+(1 + τlm) = 0 , (C.14) of degree K + 1 in m. Since the probe z = λ + iη (η → 0+) is complex, (C.14) is a polynomial with complex coefficients and has K + 1 complex roots; at each grid point λ (small finite η) we find all of them with a standard root finder and keep the physical one, the unique root with Im m > 0continued from m ∼ − 1/z at large |z|. The single complex equation determines both parts of 
+
+m = Re m + i Im m at once; we impose neither, using Im m > 0 only to select the root among the 
+
+K + 1. Their meaning follows from m(z) = R ρ(t)/(t − z) d t: at z = λ + i0+ the imaginary part is the density we want, Im m = πρ (λ), while the real part is its Hilbert transform, Re m = P R ρ(t)/(t−λ) d t
+
+(a principal value), part of the self-consistent solution but not itself needed for the density. We check the solver two ways: against direct fixed-point iteration of (C.13) , which it reproduces to machine precision ( ∼ 10 −13 ), and against the data. Figure 17 overlays ρ (dashed), computed from (C.14) with {τk, g k} read off the operator, on the stored empirical eigenvalue density of M/N (solid): the two agree on the signal outliers, the multiplet positions, and the negative-bulk support. The sharp small-|Λ| peak is not captured by this leading deformed-MP density; it is a kernel-tail feature (the many near-degenerate small operator eigenvalues), the noise-dominated localised branch of Sec. 6 (see Fig. 11). Whether this deformed-MP density is itself sharp is dimension-dependent (see Sec. 2). At high latent dimension ( S124 , N < d 2) the feature rows are nearly isotropic and the matrix is in the genuine Marchenko–Pastur limit, where the deformed-MP law tracks the bulk end-to-end. At low dimension ( S2, the BBS regime N > d 2) the matrix is not in the MP limit: the spectrum is dominated by the discrete BBS multiplets and the near-zero localised peak, and the deformed-MP 42 density reproduces the signal outliers and the bulk support but not that peak. This does not affect the dimension inference, which rests on the signal multiplets, the N → ∞ operator limit of Sec. C.2 that is exact at any d, rather than on the bulk being MP-exact. The deformed-MP law is used here as a description of the continuous part, sharp at high d and a leading approximation at low d.10 7 10 6 10 5 10 4 10 3 10 2 10 1 10 0                                                               
+
+> ||/ N
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> density
+> S2 / sc1 (harmonic ,j=0.02)
+> stored | |/ N
+> closed-form (Silverstein)
+> 10 710 610 510 410 310 210 110 0
+> ||/ N
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> density
+> S2 / sc4 (harmonic ,j=0.02)
+> stored | |/ N
+> closed-form (Silverstein)
+> 10 510 410 310 210 1
+> ||/ N
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> density
+> S124 / sc1 (Nystrom ,j=-0.00)
+> stored | |/ N
+> closed-form (Silverstein)
+> 10 610 510 410 310 210 110 0
+> ||/ N
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> density
+> S124 / sc4 (Nystrom ,j=-0.00)
+> stored | |/ N
+> closed-form (Silverstein)
+> Closed-form bulk density (deformed-MP / Silverstein) vs stored spectrum
+
+Figure 17: Closed-form bulk density from the deformed-MP self-consistent equation (C.12) (dashed) versus the stored eigenvalue density (solid), for the homogeneous (sc1) and full-anisotropy (sc4) patterns on S2 (operator spectrum from harmonics) and S124 (from a large Nystr¨ om sample). The closed form matches the signal and the bulk support; the small-|Λ| localized peak is a kernel-tail feature beyond the leading deformed-MP law. The inverse problem is a regularised multiplicative deconvolution on a fixed grid. The same self-consistent equation runs backwards. The forward solve takes the population {τk, g k} as known and finds m from the polynomial (C.14) at each probe, a consistency check that a given operator spectrum reproduces the data. The inverse reverses which side is known: the observed spectrum determines m, and the population becomes the unknown. In S-transform language the multiplicative convolution is a product, SM/N = SMP c SH , which suggests dividing out the Marchenko–Pastur factor, SH = SM/N /S MP c [52 ]. We use this only as a heuristic motivation: the standard free multiplicative deconvolution is established for positive populations, whereas the operator here can be signed (see Sec. C.4), so the S-transform division is not justified as a theorem at the indefinite atoms, and we rely instead on the linear inversion below, validated numerically. The observed eigenvalues μi = eig (M )/N fix the companion transform m(z) = 1
+
+N
+
+P
+
+i(μi − z)−1 directly, as a finite sum at any probe z off the real axis, and (C.12) rearranges to 
+
+z + 1
+
+m(z) = X
+
+k
+
+wk
+
+tk
+
+1 + tk m(z) , (C.15) which is linear in the weights wk ≥ 0 once the atom locations tk are fixed on a prescribed grid 
+
+43 {tk}, in contrast to the polynomial (C.14) solved forward. Stacking several probes and solving by non-negative least squares then returns the weights wk on that grid; the recovered support, the grid points carrying nonzero weight, localises the operator eigenvalues and their multiplicities 
+
+wk = hk/N . This is a regularised linear inversion on a candidate grid, related numerically to the inversion of El Karoui [ 18 ], not a blind recovery of unknown atom positions: the resolution is set by the grid spacing and the conditioning of the probe matrix, not by a closed-form deconvolution. Figure 18 reports three experiments. Panel (a) is a controlled self-test: a planted Gaussian sample covariance 1
+
+N ΦT Φ⊤ with a known signed population (atoms τ ∈ {− 0.5, 1, 3}) is inverted on a grid spanning those values, and the recovered support and weights wk = # {τ }/N reproduce the planted ones. Panels (b,c) apply the same inversion to the geodesic matrix on S2 and S124 , where the atoms are the operator Funk–Hecke eigenvalues aℓ and the weights their multiplicities h(ℓ, d )/N . On S2
+
+the inverse recovers the Perron value a0 and the ℓ = 1 eigenvalue with weight h1/N , hence d = h1,agreeing with the direct top-eigenvalue read-off and the Funk–Hecke truth. The two routes are complementary rather than independent: both invert the same forward map, the direct read-off taking the resolved top eigenvalues at face value, the deconvolution recovering the weights and hence multiplicities on a prescribed grid. Two limits are visible. The deep small-|aℓ| levels sit inside the near-zero localised pile and fall below the deconvolution’s resolution, the generic ill-conditioning of spectral deconvolution, whereas the sharp BBS staircase still lets the direct read-off resolve them. And in the MP regime ( S124 ) the ℓ = 1 level is buried in the bulk and neither route separates it, consistent with the BBS window [2 , √N ] not reaching past the first multiplet there ( √N < d ). For an ambient matrix M (D) the operator recovery is preceded by the additive stage of Sec. 4, which strips the residual cosine-kernel contribution; the multiplicative deconvolution here acts on the latent matrix that stage returns. 1 0 1 2 3 4                      
+
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> weight
+> (a) Self-test: Gaussian 1
+> NT
+> (blind recovery of atoms + weights)
+> planted atoms (weight)
+> recovered measure wk
+> = 0 = 1 = 3 = 5 = 7
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> |a | (operator eigenvalue)
+> = 1 multiplicity
+> h1/N: true 0.003, deconv 0.003
+> (b) S2,N= 1000 (BBS regime)
+> truth (Funk-Hecke)
+> direct read-off (signal)
+> deconvolved
+> = 0 = 1 = 3
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> |a | (operator eigenvalue)
+> = 1 buried in bulk:
+> h1/Ntrue 0.125, deconv
+> mass 0.09 (bulk)
+> (c) S124 ,N= 1000 (MP regime)
+> truth (Funk-Hecke)
+> direct read-off (signal)
+> deconvolved
+> Free multiplicative deconvolution of the operator spectrum vs the direct read-off and truth
+
+Figure 18: Free multiplicative deconvolution of the operator spectrum (the inverse of the Silverstein map (C.12) , Eq. (C.15) ) against the direct top-eigenvalue read-off and the truth, N = 1000. (a) A planted Gaussian sample covariance 1
+
+N ΦT Φ⊤ with known signed population is recovered to its atoms and weights. (b) On S2 (BBS regime) the inverse recovers the Perron value a0 and the ℓ = 1 eigenvalue with multiplicity h1/N (hence d = h1), matching the direct read-off and Funk–Hecke; the deep small levels fall on the deconvolution’s resolution floor (dotted), where the direct read-off still resolves them. (c) On S124 (MP regime) the ℓ = 1 level is buried in the bulk and neither route separates it. 
+
+C.5 Residual-spectrum RMT consistency 
+
+Once the manifold and the noise model have been identified, a final consistency check probes whether the off-manifold residual behaves as structureless random-matrix noise. Subtracting the 44 recovered latent geometry from the ambient matrix leaves a residual whose bulk we compare to a semicircle reference set by the residual’s own entry variance. This residual is not a Wigner matrix: at small noise the oracle residual is Rij ≈ ε2 cot M (d) 
+
+> ij
+
+− ε2 Gij / sin M (d) 
+
+> ij
+
+, a deterministic curvature kernel plus a heteroscedastic Hadamard transform of the residual Gram matrix G = ¯Y ¯Y ⊤, with entries that share indices and obey rank and polynomial constraints. Its limiting bulk is therefore of Marchenko–Pastur type, a Gram-matrix law, not the semicircle of an i.i.d. Wigner ensemble [54 ], and in the proportional regime D − d ∝ N it is the deformed-MP law of Sec. C.4. We use the semicircle (C.17) only as an exploratory reference for the bulk shape and edge scale, not as a proven limiting law; a quantitative residual theory would identify the variance profile and the limiting spectral distribution under a stated joint limit, which we do not claim here. The oracle residual 
+
+R = M (D) − M (d) uses the true latent matrix, available only in synthetic tests. The operational residual replaces it by a rank-Klat truncation of the ambient matrix, with Klat = ⌊√N ⌋,ˆM (d) := 
+
+> Klat
+
+X
+
+> K=1
+
+Λ(D) 
+
+> K
+
+u(D) 
+
+> K
+
+(u(D) 
+
+> K
+
+)⊤, ˆR := M (D) − ˆM (d), (C.16) which needs no access to M (d). The semicircle reference for the residual bulk is 
+
+ρsc (λ) = 12πN v 
+
+p4N v − λ2, |λ| ≤ 2√N v, (C.17) with v the residual off-diagonal entry variance, used as a shape-and-scale guide rather than a derived law. Figure 19 overlays this reference on the oracle and operational residual spectra from the convex-combination forward at ε ∈ { 0.10 , 0.22 , 0.32 , 0.45 } on S2. The oracle residual shows a semicircle-shaped bulk with the structured outliers of the deterministic curvature kernel, while the latent eigenvalues |Λ(d)| sit one to three orders of magnitude beyond the bulk edge: the spectral statement of the gap protection of Sec. 5.1, that the dimension-carrying multiplet lives where the residual noise cannot reach. The operational residual keeps the bulk shape but retains the small-|Λ|
+
+localised band that the rank truncation discards, so it supports a bulk-shape check rather than a quantitative edge match. Quantitative validation on representation-space data is in the companion papers [3, 4]. 
+
+## D Finite-N corrections to the BBS theory on Sd−1
+
+This appendix gives the finite-N corrections to the operator limit of Appendix C, where the leading spectrum is Λ K → N a ℓ with multiplicity h(ℓ, d ). The fitted delocalised slope ˆβdeloc drifts above the asymptote d/ (d − 1) by a deterministic, noise-free amount, the finite-window sampling of the operator spectrum (see Sec. D.1); this is the dominant finite-N effect, and the one the dimension estimator corrects for. The individual eigenvalue values receive two subleading corrections from the ambient sampling (see Sec. D.2): a mean-zero O(N −1/2) broadening, and a deterministic O(1) self-energy shift of the multiplet centre. The broadening cancels in the slope by self-averaging and the centre shift undershoots it, so neither controls the slope, but the centre shift is the leading correction to the value N a ℓ itself. The localised-branch power law βloc = 1 /(d − 1) (4) is not treated here: the v2 ∼ N obstruction of Sec. 2 makes the BBS 1 /√N machinery inapplicable on that branch, and any reference to the small-|Λ| exponent below is to the leading-order BBS expression. Throughout this appendix the bare β (and its finite-window fit ˆβ) abbreviates the delocalised slope βdeloc .45 1.0 0.5 0.0 0.5 1.0                                                                                                                                              
+
+> 10 7
+> 10 5
+> 10 3
+> 10 1
+> 10 1
+> density (log)
+> |(d)4|/edge = 403
+> oracle R,= 0.1
+> oracle Rbulk
+> Wigner 2 Nv
+> 42024
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> |(d)4|/edge = 102
+> oracle R,= 0.22
+> oracle Rbulk
+> Wigner 2 Nv
+> 7.5 5.0 2.5 0.0 2.5 5.0 7.5
+> 10 8
+> 10 6
+> 10 4
+> 10 2
+> 10 0|(d)4|/edge = 54
+> oracle R,= 0.32
+> oracle Rbulk
+> Wigner 2 Nv
+> 15 10 50510 15
+> 10 3
+> 10 2
+> 10 1
+> 10 0|(d)4|/edge = 31
+> oracle R,= 0.45
+> oracle Rbulk
+> Wigner 2 Nv
+> 1.0 0.5 0.0 0.5 1.0
+> 10 7
+> 10 5
+> 10 3
+> 10 1
+> 10 1
+> density (log)
+> |(d)4|/edge = 403
+> |(d)100 |/edge = 0.44
+> operational R,= 0.1
+> operational Rbulk
+> Wigner 2 Nv
+> 42024
+> 10 1
+> 10 0
+> |(d)4|/edge = 102
+> |(d)100 |/edge = 0.11
+> operational R,= 0.22
+> operational Rbulk
+> Wigner 2 Nv
+> 7.5 5.0 2.5 0.0 2.5 5.0 7.5
+> 10 8
+> 10 6
+> 10 4
+> 10 2
+> 10 0|(d)4|/edge = 54
+> |(d)100 |/edge = 0.06
+> operational R,= 0.32
+> operational Rbulk
+> Wigner 2 Nv
+> 15 10 50510 15
+> 10 2
+> 10 1
+> 10 0|(d)4|/edge = 31
+> |(d)100 |/edge = 0.03
+> operational R,= 0.45
+> operational Rbulk
+> Wigner 2 Nv
+> Residual-spectrum RMT: oracle R=M(D)M(d)(top) and operational R=M(D)M(d)(bottom) vs the Wigner noise floor (latent S2, residual S124 ,N= 1000, Klat = 31)
+
+Figure 19: Residual-spectrum RMT consistency on S2 (N = 1000, D − d = 125). Top row: oracle residual R = M (D) − M (d). Bottom row: operational residual ˆR = M (D) − ˆM (d) from (C.16) with Klat = ⌊√N ⌋. Columns are ε ∈ { 0.10 , 0.22 , 0.32 , 0.45 }. The dashed curve is the exploratory semicircle reference (C.17) at the residual’s own entry variance; the annotations give the ratio of the latent eigenvalue |Λ(d)| to the bulk edge, which is large at every ε and quantifies the gap protection. The operational residual keeps the bulk shape but retains the localised band of M (d) removed by the oracle subtraction. 
+
+D.1 Finite-window sampling of the operator spectrum 
+
+The BBS power law |ΛK | ∝ K−βdeloc , βdeloc = d/ (d − 1), is the ℓ → ∞ asymptote of the ranked operator spectrum derived in Sec. C.2 ( aℓ ∼ ℓ−d ranked by K(ℓ) ∼ ℓd−1, multiplet ℓ at Λ ≃ N a ℓ). The delocalised diagnostic fits the slope over the window K ∈ [2 , √N ]. Since the cumulative degeneracy is K(ℓ) ∼ ℓd−1, this window reaches only up to ℓmax ∼ (√N )1/(d−1) = N 1/(2( d−1)) , a handful of multiplets at moderate N (e.g. ℓmax ≈ 5.6 on S2 at N = 1000); the fit therefore samples 
+
+low ℓ, where the ranked slope is steeper than β. As N grows the window edge √N reaches higher ℓ
+
+and ˆβ drifts down toward β.This drift is deterministic, following from the operator spectrum {aℓ, h (ℓ, d )} alone with no reference to the noise or the random matrix: ranking {N |aℓ|} and fitting over [2 , √N ] gives ˆβ(N ) − β ∼ N −ν with a shallow effective exponent ν ≈ 0.2–0 .3 on S1, S 2, S 3 over the experimental range, well below the noise-only ν = 1 /2. These are effective exponents: the ranked spectrum is a staircase of discrete multiplets whose envelope reaches the asymptotic slope only as ℓ → ∞ ,so the drift is a discreteness/pre-asymptotic effect. It is self-averaging: the per-realisation fitted slope equals the slope of the realisation-averaged spectrum to numerical precision, so the O(N −1/2)multiplet splitting (see Sec. D.2) cancels in ˆβ. The dominant finite-N bias is therefore a property of the continuum operator sampled on a finite, N -dependent window, not a random-matrix effect. 
+
+D.2 Noise corrections to the multiplet eigenvalues 
+
+Beyond the window effect of Sec. D.1, the ambient sampling corrects the eigenvalue values. In the factorisation M = Φ AΦ⊤ of Sec. C.4 (see Eq. (C.7) ), the sampling fluctuation about the population covariance is E = 1
+
+N Φ⊤Φ−C, with E[E] = 0 and Eab = O(N −1/2) (here C = I, uniform). Expanding the eigenvalues of the degree-ℓ block in E gives, in absolute units, Λ K = N a ℓ + √N ξ K + ∆ ℓ + · · · :46 the leading BBS term N a ℓ (O(N )), a mean-zero random broadening √N ξ K (O(√N )), and a deterministic self-energy shift ∆ ℓ (O(1)), the two corrections acting at different orders in E.The first correction is a mean-zero broadening of each multiplet. The first-order term splits the 
+
+h(ℓ, d )-fold degenerate value N a ℓ into h(ℓ, d ) nearby eigenvalues of width O(√N ). Equivalently, through the central-limit decomposition of the row sums ( M u )i = N μ (⃗x i) + √N σ (⃗x i) ξi + O(1) and first-order perturbation theory on the BBS plane-wave ansatz u0 = ei⃗ q·⃗z , the rms fluctuation of a delocalised eigenvalue is 
+
+ Var Λ( q)1/2 = √N S(q), S(q) = O(1) , (D.1) so the relative fluctuation is O(N −1/2) and the correction is mean-zero ( Eξi = 0). The covariance kernel between rows and the variance integral give the counting-function correction, a steeper term ⟨N(λ)⟩ = Cd(−λ)−(d−1) /d + (d−1)(2 d−1) 2d2 CdN −1/d S2(−λ)−(3 d−1) /d + O(N −2/d ), of order N −1/d 
+
+in scaled units. This broadening cancels in the slope: the per-realisation fitted ˆβdeloc equals the slope of the realisation-averaged spectrum ⟨| ΛK |⟩ to numerical precision (see Sec. D.1), so it does not enter the dimension estimate. A deterministic second-order self-energy shifts the multiplet centre. The leading correction to the multiplet value itself is the second-order, self-averaging shift of the centre, Λcentre  
+
+> ℓ
+
+= N a ℓ + ∆ ℓ + O(1 /N ), ∆ℓ = X 
+
+> ℓ′̸=ℓ
+
+h(ℓ′, d ) aℓ aℓ′
+
+aℓ − aℓ′
+
+, (D.2) the pole shift of the resolvent (C.11) (the multiplet pole moves from aℓ to aℓ + ∆ ℓ/N ). It follows from degenerate second-order perturbation theory in E under the simplifying assumption that the inter-block matrix elements are uncorrelated with common variance, EE2 
+
+> ab
+
+≈ 1/N : the off-diagonal coupling between blocks ℓ and ℓ′ is a1/2 
+
+> ℓ
+
+a1/2 
+
+> ℓ′
+
+Eab , and averaging over the h(ℓ′, d ) states of each other block gives (D.2) . For spherical harmonics the inter-block second moments are not uniform: the Gaunt and Wigner coefficients give a nontrivial covariance tensor, so (D.2) is the leading isotropic estimate of the shift, not its exact value, and we use it as a heuristic rather than a derived closed form. This shift is O(1) absolute ( O(1 /N ) relative), hence smaller than the O(√N ) broadening: each multiplet broadens by ±O(√N ) about a centre displaced from N a ℓ by only O(1). It is the genuine leading correction to the BBS eigenvalue value, and summing it over the resolved tower reproduces the mean multiplet positions of the stored spectra. The ranked slope it alone implies is comparable to the full window drift on S1, S 2, S 3, so ∆ ℓ is a leading contributor to the deterministic slope drift. The resolvent structure is simple. These corrections act on the discrete poles of the resolvent (C.11) , the continuous bulk mbulk unchanged at this order. Averaged over the configuration the resolvent has an integer-power expansion m = m0 + N −1m1 + O(N −2) with no 1/√N term [ 15 ]: the 
+
+O(N −1/2) within-multiplet splitting is mean-zero and cancels in the average, leaving a deterministic object. Only the bulk integrates to a density. Finally, we estimate the magnitude on S2 (d = 3). The combined finite-N departure on S2 at 
+
+N = 1000 is of order N −1/3 ≈ 0.1 relative to the asymptote, dominated by the window drift; this is the right magnitude for the observed departures from a pure power law (a T 2 Fourier embedding at 
+
+N = 1000 gives ˆβ ≈ 1.89 against the BBS asymptote 1 .5). The noise estimate (D.1) alone would give N −1/2 on d = 2, against the observed shallower ≈ N −0.3 (see Sec. D.3), confirming the window effect as the controlling one. 47 D.3 Numerical verification 
+
+We test this on the geodesic matrix of i.i.d. particles on S1, S 2, S 3, reading ˆβdeloc from the most-negative eigenvalues over K ∈ [2 , c √N ] and tracking ˆβdeloc −βBBS against N ∈ [500 , 4000] for uniform and product-Beta laws and two windows ( c = 1 , 2). Figure 20 shows the bias with the deterministic operator-only curve overlaid: the bare operator {N |aℓ|} , with no noise, already reproduces most of it, with shallow effective exponents ν ≈ 0.2–0 .3 on S1, S 2, S 3, the full random matrix lying close by, the ambient noise of Sec. D.2 only slightly steepening the decay. The exponent is the same for the uniform and product-Beta laws, the curves differing only by a prefactor, so the drift is set by the operator and the local kernel geometry, not the single-particle density, and the slope converges to 
+
+βBBS in every case. The rate is far shallower than the N −1/2 of a noise-only counting argument. We therefore treat ∆ β(N, d ) below as an empirically measured offset. 10 36 × 10 2 2 × 10 3 3 × 10 3                             
+
+> 4 × 10 3
+> N
+> 3 × 10 1
+> 4 × 10 1
+> 6 × 10 1
+> | | = |  del  BBS |
+> S1(BBS = 2)
+> uniform, [2, sqrtN]
+> uniform, [2, 2 sqrtN]
+> beta, [2, sqrtN]
+> beta, [2, 2 sqrtN]
+> operator only (no noise)
+> 10 36 × 10 22 × 10 33 × 10 3
+> 4 × 10 3
+> N
+> 2 × 10 1
+> 3 × 10 1
+> 4 × 10 1
+> S2(BBS = 1.5)
+> uniform, [2, sqrtN]
+> uniform, [2, 2 sqrtN]
+> beta, [2, sqrtN]
+> beta, [2, 2 sqrtN]
+> operator only (no noise)
+> 10 36 × 10 22 × 10 33 × 10 3
+> 4 × 10 3
+> N
+> 2 × 10 1
+> 3 × 10 1
+> 4 × 10 1
+> 6 × 10 1
+> S3(BBS = 1.33)
+> uniform, [2, sqrtN]
+> uniform, [2, 2 sqrtN]
+> beta, [2, sqrtN]
+> beta, [2, 2 sqrtN]
+> operator only (no noise)
+> Finite-Ndelocalised-slope bias vs N(geodesic Mon Sk)
+
+Figure 20: Finite-N delocalised-slope bias | ˆβdeloc − βBBS | versus N for the geodesic matrix on 
+
+S1, S 2, S 3 (uniform and product-Beta sampling, two rank windows). The black line is the determin-istic operator-only bias from the ranked {N |aℓ|} (no noise): it accounts for most of the drift, the full random-matrix curves lying close to it. The curves are nearly parallel across the uniform and product-Beta sampling laws, and the effective rate ( ν ≈ 0.2–0 .3) is far shallower than the N −1/2 anoise-only estimate would give. 
+
+D.4 Operational slope correction and its use as a consistency check 
+
+The delocalised rank-decay slope enters Algorithm 1 only as a low-noise consistency check on the dimension already fixed by the multiplet multiplicity (see Sec. 4.1); the angular-momentum-level shrinkage law of Sec. 4.2 is the primary positional tool. At finite N the fitted latent slope sits above the BBS asymptote d/ (d − 1) by an O(1) offset, dominated by the finite-window curvature of Sec. D.1: at N = 1000, ˆβ(d=2) deloc = 2 .512 ± 0.003 (BBS 2) and ˆβ(d=3) deloc = 1 .992 ± 0.004 (BBS 1 .5), reproducible to four digits across 20 uniform-sample configurations. We define the empirical correction ∆β(N, d ) := ˆβ(d,N ),s 
+
+lat s − dd − 1 (D.3) from 50 uniform latent samples (at N = 1000, ∆ β = 0 .513 , 0.491 , 0.497 for d = 2 , 3, 4), the corrected estimator ˆβcorr deloc (dguess ) := ˆβdeloc (K ∈ [dguess , ⌊√N ⌋]) − ∆β(N, d guess ), whose per-candidate fit window coincides with the delocalised window [2 , √N ] at dguess = 2 and starts just past the leading multiplet otherwise, and the inference rule ˆdβ := argmin dguess 
+
+ˆβcorr deloc (dguess ) − dguess 
+
+dguess − 1 . (D.4) 48 The N -dependence of ∆ β is the operator-window drift of Sec. D.1; Fig. 21 shows it measured across 
+
+N ∈ { 500 , 1000 , 2000 , 4000 } and d ∈ { 2, 3, 4}, with a shallow fitted exponent ≈ 0.2–0 .3, consistent with the operator window-drift of Sec. D.3. So ∆ β is a deterministic, N -dependent offset, not a rate-1 /2 noise correction. 
+
+Figure 21: Delocalised-branch slope bias |∆β(N, d )| vs N on latent samples of Sd−1. Solid lines: power-law fits with a shallow exponent ≈ 0.2–0 .3 for d = 2 , 3, 4, tracking the deterministic operator-window drift of Sec. D.1; the rate is shallower than the N −1/2 of a noise-only estimate. Applied to ambient data, the corrected slope matches the BBS asymptote at ε = 0 but drifts monotonically downward under noise: on S2 under FSM, ˆβcorr deloc (2) = 1 .50 , 1.31 , 1.12 , 0.93 , 0.65 at 
+
+ε = 0 , 0.02 , 0.05 , 0.10 , 0.20. The argmin rule (D.4) therefore recovers the true d reliably only near 
+
+ε = 0 and flips for ε > 0. The slope is a low-noise consistency check, not a stand-alone dimension estimator, consistent with Sec. 4: the noise reorganises the spectrum collectively, and the smaller-|Λ|
+
+(higher-ℓ) components shrink fastest (see Sec. 4.2). 
+
+## E Quasi-degenerate perturbation theory cross-check 
+
+The shrinkage law of Sec. 4.2 was derived as the noise-averaged Funk–Hecke coefficient, and the argument of Sec. 4 interprets it as the resummation of degenerate perturbation theory on the gap-isolated multiplet. We test this numerically with the multi-block L¨ owdin–Schrieffer–Wolff–van Vleck transformation, in the algorithmic form of [ 43 ]; the agreement below is a numerical cross-check, not a proof of resummation, which would identify the block-diagonal continuum operator and show that its eigenvalue equals the coefficient ratio. The construction places M (d) on N = 300 points of S2
+
+as the unperturbed operator and the noise-averaged forward drift ⟨M (D)⟩ as the perturbation, with the residual drawn on SP −1, P = 127. We use the bounded spliced form (A.5) of that drift. 4 The 
+
+ℓ = 1 triplet (the three most negative non-Perron levels of M (d), separated from the rest by a gap of order N ) is the decoupled block, and the transformation returns its effective 3 × 3 Hamiltonian. The multiplet position at noise level ε is the mean of the block eigenvalues, normalised by its latent value, and gives the shrinkage f PT 1 (ε).         
+
+> 4Extending the naive arccos expansion of the kernel into the region M(d)
+> ij →0, π where it no longer applies produces an apparent singularity (the unbounded cot ,csc prefactors); splicing to the bounded near-boundary form fixes it.
+
+49 ε block reduction (spliced) Funk–Hecke f1 full simulation 0.05 0.9952 0.9953 0.9953 0.10 0.9819 0.9821 0.9821 0.20 0.9339 0.9353 0.9356 0.30 0.8631 0.8669 0.8677 0.45 0.7244 0.7332 0.7355 Table 9: Shrinkage of the ℓ = 1 triplet on S2 (N = 300, residual on S124 ). The quasi-degenerate block reduction (Pymablock [ 43 ]) of the bounded spliced drift (A.5) reproduces the full-simulation shrinkage across the noise range; the closed Funk–Hecke coefficient f1 of Eq. (19) is the resummation of the same reduction. For isotropic noise, Table 9 compares the block reduction against the full simulation and the closed shrinkage f1 of Eq. (19) . The three agree across the noise range, and the reduction converges already at first Schrieffer–Wolff order because the O(N ) gap suppresses the coupling to the bulk; the same reduction reproduces the shrinkage on S1, S 2, S 3 in Fig. 7. The closed Funk–Hecke coefficient therefore agrees with the block reduction across the range, consistent with its being the resummation of that reduction rather than an independent fit, the role assigned to it in Sec. 4.2; the agreement is a numerical cross-check, not a proof of resummation. Fig. 22(a) shows the three curves together. 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45           
+
+> noise level
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> = 1 shrinkage  f1
+> (a) isotropic RSM: shrinkage of the = 1 triplet
+> full simulation
+> Funk--Hecke f1(resummed)
+> QDPT (Pymablock, spliced drift)
+> 1.0 1.1 1.2 1.3 1.4 1.5 1.6
+> axial stretch r
+> 100
+> 120
+> 140
+> 160
+> | | of the triplet levels
+> (b) ellipsoid (multi-block): triplet splits into singlet+doublet
+> full simulation
+> QDPT (1st order)
+> Quasi-degenerate perturbation theory (Pymablock) vs full simulation
+
+Figure 22: Quasi-degenerate perturbation theory (Pymablock [43]) against the full simulation. (a) Isotropic case: the ℓ = 1 shrinkage f1 from the block reduction of the spliced drift, the full simulation, and the closed Funk–Hecke coefficient, which coincide across the noise range. (b) Anisotropic latent: under an axial stretch r the triplet splits into a singlet and a doublet, and the first-order block prediction (lines) follows the full diagonalisation (markers). We also test an anisotropic latent. A single 3-dimensional block suffices only while the latent is isotropic and the triplet stays degenerate. Stretching the latent S2 along its axis by a factor r
+
+breaks the rotational symmetry to SO (2) × Z2 and splits the triplet into a singlet (the axial mode) and a doublet. The block treatment captures this through the secular problem inside the multiplet: the first-order effective Hamiltonian has one isolated eigenvalue and a near-degenerate pair, and the resulting level positions Λ 1 + ( r − 1) δΛ follow the full diagonalisation through the onset of the split, as shown in Fig. 22(b). Resolving co-existing sub-levels of this kind is the capability that distinguishes the multi-block algorithm from a two-subspace Schrieffer–Wolff reduction. 50 References 
+
+[1] E. Bogomolny, O. Bohigas, and C. Schmit. Spectral properties of distance matrices. Journal of Physics A: Mathematical and General , 36:3595–3616, 2003. arXiv:nlin/0301044. [2] E. Bogomolny, O. Bohigas, and C. Schmit. Distance matrices and isometric embeddings. arXiv:0710.2063, 2007. [3] I. Halperin. Learning as Observable Matrix Dynamics: Diffusive Relaxations versus Phase Transitions. 2026. [4] I. Halperin. Grokking as Bagel Formation in Activation Space: Spectral Evidence for a Phase Transition. 2026. [5] J. Bun, J.-P. Bouchaud, and M. Potters. Cleaning large correlation matrices: tools from Random Matrix Theory. Physics Reports , 666:1–109, 2017. [6] E. Levina and P. J. Bickel. Maximum likelihood estimation of intrinsic dimension. Advances in Neural Information Processing Systems (NeurIPS) , 2004. [7] E. Facco, M. d’Errico, A. Rodriguez, and A. Laio. Estimating the intrinsic dimension of datasets by a minimal neighborhood information. Scientific Reports , 7(1):12140, 2017. [8] F. Chazal and B. Michel. An introduction to Topological Data Analysis: fundamental and practical aspects for data scientists. Frontiers in Artificial Intelligence , 4:667963, 2021. [9] N. Otter, M. A. Porter, U. Tillmann, P. Grindrod, and H. A. Harrington. A roadmap for the computation of persistent homology. EPJ Data Science , 6(1):17, 2017. [10] R. R. Coifman and S. Lafon. Diffusion maps. Applied and Computational Harmonic Analysis ,21(1):5–30, 2006. [11] N. El Karoui. The spectrum of kernel random matrices. Annals of Statistics 38(1):1–50, 2010. [12] C. Bordenave. On Euclidean random matrices in high dimension. arXiv:1209.5888, 2012. [13] R. Couillet and Z. Liao. Random Matrix Methods for Machine Learning . Cambridge University Press, 2022. [14] S. Lele. Euclidean Distance Matrix Analysis (EDMA): Estimation of Mean Form and Mean Form Difference. Mathematical Geology , 25(5):573–602, 1993. [15] M. M´ ezard, G. Parisi, and A. Zee. Spectra of Euclidean random matrices. Nuclear Physics B ,559(3):689–710, 1999. [16] P. Casaburi and P. Vivo. Largest eigenvalue and top eigenvector statistics of large Euclidean random matrices. arXiv:2604.26852, 2026. [17] P. Casaburi and P. Vivo. Replica approach to extreme eigenvalues of Euclidean random matrices. Journal of Physics A: Mathematical and Theoretical , 2026. [18] N. El Karoui. Spectrum estimation for large dimensional covariance matrices using random matrix theory. The Annals of Statistics , 36(6):2757–2790, 2008. 51 [19] H. Chen and R. Ma. Statistical Inference for Manifold Similarity and Alignability across Noisy High-Dimensional Datasets. arXiv:2511.21074, 2025. [20] A. Rahimi and B. Recht. Random features for large-scale kernel machines. Advances in Neural Information Processing Systems (NIPS) , 2007. [21] F. Liu, X. Huang, Y. Chen, and J. A. K. Suykens. Random Features for Kernel Approximation: A Survey on Algorithms, Theory, and Beyond. IEEE Transactions on Pattern Analysis and Machine Intelligence , 44(10):7128–7148, 2022 (arXiv:2004.11154, 2021). [22] D. Paul. Asymptotics of sample eigenstructure for a large dimensional spiked covariance model. 
+
+Statistica Sinica , 17(4):1617–1642, 2007. [23] D. Donoho and M. Gavish. Minimax risk of matrix denoising by singular value thresholding. 
+
+The Annals of Statistics , 42(6):2413–2440, 2014. [24] Y. Yan, Y. Chen, and J. Fan. Inference for heteroskedastic PCA with missing data. The Annals of Statistics , 52(2):729–756, 2024. [25] X. Ding and R. Ma. Learning low-dimensional nonlinear structures from high-dimensional noisy data: an integral operator approach. The Annals of Statistics , 51(4):1744–1769, 2023. [26] K. V. Mardia and P. E. Jupp. Directional Statistics . John Wiley & Sons, 2nd edition, 2000. [27] H.-T. Wu and N. Wu. Think globally, fit locally under the manifold setup: asymptotic analysis of locally linear embedding. The Annals of Statistics , 46(6B):3805–3837, 2018. [28] J. Li. Asymptotic normality of interpoint distances for high-dimensional data with applications to the two-sample problem. Biometrika , 105(3):529–546, 2018. [29] W. Li, Q. Wang, and J. Yao. Eigenvalue distribution of a high-dimensional distance covariance matrix with application. Statistica Sinica , 33(1):149–168, 2023. [30] M. Meil˘ a and H. Zhang. Manifold learning: what, how, and why. Annual Review of Statistics and Its Application , 11:393–417, 2024. [31] X. Ding and R. Ma. Kernel spectral joint embeddings for high-dimensional noisy datasets using duo-landmark integral operators. Journal of the American Statistical Association , 1–28, 2025. [32] S. Smale and D.-X. Zhou. Geometry on probability spaces. Constructive Approximation ,30(3):311–323, 2009. [33] A. Erd´ elyi, W. Magnus, F. Oberhettinger, and F. G. Tricomi. Higher Transcendental Functions, Vol. II (Bateman Manuscript Project). McGraw-Hill, 1953. [34] G. Marsaglia and I. Olkin. Generating correlation matrices. SIAM Journal on Scientific and Statistical Computing , 5(2):470–475, 1984. [35] I. J. Schoenberg. Positive definite functions on spheres. Duke Math. J. 9 (1942), 96–108. [36] J. Baik, G. Ben Arous, and S. P´ ech´ e. Phase transition of the largest eigenvalue for nonnull complex sample covariance matrices. The Annals of Probability , 33(5):1643–1697, 2005. [37] F. Benaych-Georges and R. R. Nadakuditi. The eigenvalues and eigenvectors of finite, low rank perturbations of large random matrices. Advances in Mathematics , 227(1):494–521, 2011. 52 [38] L. Pastur and V. Vasilchuk. On the law of addition of random matrices. Communications in Mathematical Physics , 214:249–286, 2000. [39] A. Zee. Law of addition in random matrix theory. Nuclear Physics B , 474(3):726–744, 1996. [40] G. Parisi. Euclidean random matrices: solved and open problems. In Applications of Random Matrices in Physics , NATO Science Series II, vol. 221, Springer, 2006 (arXiv:cond-mat/0512004). [41] L. D. Landau and E. M. Lifshitz. Quantum Mechanics: Non-Relativistic Theory (Course of Theoretical Physics, Vol. 3). Pergamon Press, 3rd edition, 1977 ( §38–39). [42] G. Hose and U. Kaldor. Quasidegenerate perturbation theory. The Journal of Physical Chemistry ,86(12):2133–2140, 1982. [43] I. Araya Day, S. Miles, H. K. Kerstens, D. Varjas, and A. R. Akhmerov. Pymablock: An algorithm and a package for quasi-degenerate perturbation theory. SciPost Physics Codebases ,50, 2025. [44] P.-O. L¨ owdin. Studies in perturbation theory. IV. Solution of eigenvalue problem by projection operator formalism. Journal of Mathematical Physics , 3(5):969–982, 1962. [45] J. R. Schrieffer and P. A. Wolff. Relation between the Anderson and Kondo Hamiltonians. 
+
+Physical Review , 149(2):491–492, 1966. [46] A. J. Smola, Z. L. ´Ov´ ari, and R. C. Williamson. Regularization with dot-product kernels. In 
+
+Advances in Neural Information Processing Systems 13 (NIPS 2000) , pages 308–314. MIT Press, 2001. [47] C. Davis and W. M. Kahan. The rotation of eigenvectors by a perturbation. III. SIAM Journal on Numerical Analysis , 7(1):1–46, 1970. [48] S. Helgason. Groups and Geometric Analysis: Integral Geometry, Invariant Differential Opera-tors, and Spherical Functions. Academic Press, 1984. [49] D. Azevedo and V. S. Barbosa. Covering numbers of isotropic reproducing kernels on compact two-point homogeneous spaces. Mathematische Nachrichten , 291(1):1–15, 2018. [50] A. Goetschy and S. E. Skipetrov. Euclidean random matrices and their applications in physics. 
+
+arXiv:1303.2880 , 2013. [51] V. N. Stepanov. The method of spherical harmonics for integral transforms on a sphere. 
+
+Mathematical Structures and Modeling , 2(42):36–48, 2017. [52] J. A. Mingo and R. Speicher. Free Probability and Random Matrices . Fields Institute Mono-graphs, Springer, 2017. [53] Z. D. Bai and J. W. Silverstein. Spectral Analysis of Large Dimensional Random Matrices , 2nd ed. Springer, 2010. [54] G. W. Anderson, A. Guionnet, and O. Zeitouni. An Introduction to Random Matrices . Cambridge University Press, 2010. 53
