@@ -1,0 +1,1667 @@
+Title: Goal-oriented space-time adaptivity for the Navier–Stokes equations based on the dual weighted residual method
+
+URL Source: https://arxiv.org/pdf/2607.00686v1
+
+Published Time: Thu, 02 Jul 2026 01:00:45 GMT
+
+Number of Pages: 28
+
+Markdown Content:
+# Goal-Oriented Space-Time Adaptivity for the Navier–Stokes Equations based on the Dual Weighted Residual Method 
+
+Marius Paul Bruchh¨ auser ∗,‡ · Nils Margenberg † · Markus Bause ‡
+
+Abstract 
+
+This work presents a goal-oriented a posteriori error estimator based on the Dual Weighted Residual (DWR) method together with space-time mesh adaptivity for the Navier–Stokes equations. The resulting nonlinear algebraic systems on the space-time slabs are solved by Newton’s method with GMRES, preconditioned by a slab-wise geometric multigrid method. This combination yields reliable control of target quantities on computationally feasible space-time meshes together with a robust and efficient solution of the algebraic systems. The implementation is based on a MPI-parallel programming model in the deal.II library. Further ingredients are a discontinuous Galerkin discretization in time and inf-sup stable finite element pairs with discontinuous pressure on tensor-product meshes. The performance of the approach is investigated in benchmark computations with regard to accuracy, efficiency, and stability. 
+
+Keywords: Navier–Stokes Equations · Goal-Oriented Error Control · Dual Weighted Residual Method · Space-Time Adaptivity · Geometric Multigrid Method · Local Vanka Smoother · Nitsche Method 
+
+# 1 Introduction 
+
+The accurate numerical simulation of incompressible viscous fluid flow governed by the Navier–Stokes equations remains challenging, in particular when strong dynam-ics and fine-scale structures in space and time have to be resolved. The robust and efficient solution of the arising algebraic systems adds a further layer of complexity. Moreover, algorithms that address these challenges have to be implemented in a soft-ware framework that is suitable for computations on modern hardware architectures with tens of thousands of compute cores, including hybrid CPU and GPU systems. This places high demands on the underlying data structures. In this work, we design an approach that addresses these requirements. The implementation is based on the deal.II library [1]. Space-time mesh adaptation based on rigorous error representations, or on indi-cators derived from such representations, has been shown to yield accurate results on computationally feasible grids at moderate numerical cost, even for problems with complex solution structures [26, 39]. Among these approaches, the Dual Weighted  
+
+> ∗,‡Helmut Schmidt University Hamburg, Faculty of Mechanical and Civil Engineering, Chair of Numerical Mathematics, Holstenhofweg 85, 22043 Hamburg, Germany, bruchhaeuser@hsu-hamburg.de ( ∗corresponding author), bause@hsu-hamburg.de
+> †University of Magdeburg, Institute for Analysis and Numerics, Universit¨ atsplatz 2, 39104 Magde-burg, Germany, nils.margenberg@ovgu.de.de
+
+1
+
+> arXiv:2607.00686v1 [math.NA] 1 Jul 2026
+
+Residual method (DWR) [6] offers the possibility of controlling the discretization error in user-defined goal quantities of practical interest. The key idea of this approach is to compute dual weights for the local residuals entering the error representation. This requires the solution of the generally nonlinear primal problem and its linearized dual problem by space-time finite element methods. The DWR method has been successfully applied to numerous problem classes, including fluid flow [7, 10], wave propagation [3], fluid-structure interaction [33, 43], among others. For a comprehen-sive review with detailed references on various model problems, we refer, for instance, to [6, 4, 33]. Error control in norms associated with the weak formulation constitutes a conceptually different class of techniques for a posteriori error estimation and auto-matic mesh adaptation. For this, an approach using equilibrated flux reconstructions is proposed in [16]. The DWR concept relies on solving the primal Navier–Stokes system and the asso-ciated linearized dual problem by space-time finite element methods. Both, lower- and higher-order approximations, in space and time are of interest. They should maintain stability and preserve as much of the structure of the continuous problem as possible. For the time discretization we use the discontinuous Galerkin method [41, 22]. In space, we employ inf-sup stable finite element pairs with discontinuous pressure. Dis-continuous pressure approximations have demonstrated advantages over continuous ones [24]. Moreover, they are advantageous for the construction and application of the slab-wise local Vanka smoother within the geometric multigrid preconditioner. Non-homogeneous Dirichlet boundary conditions are imposed by Nitsche’s method [32], which leads to a strictly variational formulation rather than enforcing the boundary data through the definition of the function spaces and algebraic systems. We localize the space-time finite element approximation of the primal and dual DWR problems to space-time slabs Ω × (tn−1, t n], where Ω ⊂ Rd with d ∈ { 2, 3}.This yields a time-marching approach. For higher polynomial degrees in time and high spatial resolution, the arising algebraic systems already become large, and the Newton-linearized Jacobian has a complex block structure that complicates the con-struction of efficient preconditioners. Holistic space-time finite element frameworks, in which all time steps are solved fully coupled and simultaneously, have also been studied yet; cf., e.g., [31, 27, 44, 17]. Their feasibility continues to remain an open problem if three space variables and a huge number of time steps are involved. The lack of efficient preconditioning techniques for such systems still limits the appli-cation of holistic approaches. For this reason, we use a slab-wise approach with a tensor-product mesh structure in this work. For the slab-wise solution of the Newton-linearized primal problems and of the linear dual problems, we apply a Flexible Generalized Minimum RESidual (FGM-RES) method preconditioned by a single V -cycle of a geometric multigrid (GMG) method. Nowadays, multigrid techniques are typically used as preconditioners for Krylov subspace methods rather than as stand-alone solvers. GMG methods have been studied extensively for the iterative solution of discrete systems arising from stationary partial differential equations. For this we refer to the pioneering work [19]. Owing to their optimal linear complexity, GMG methods are highly efficient and robust for this class of problems [18]. They have also been generalized in several directions, including hp multigrid methods based on hierarchies of polynomial degrees and meshes. For space-time finite element approximations of the Navier–Stokes equa-tions, block systems with generalized saddle-point structure arise, where the precise block structure depends on the ordering of the slab unknowns [2, 28]. For such sys-tems, the smoothing procedure is decisive for the overall efficiency of the multigrid 2preconditioner. In the present work, we use a local Vanka smoother, which can be interpreted as a non-overlapping Schwarz method. It is among the most effective smoothers for saddle-point problems, although its cost increases with the polyno-mial degree and with the number of space-time unknowns [28]. Algebraic MultiGrid (AMG) methods, a further class of multigrid techniques, perform damping of high frequency errors in the solution to linear systems and coarse grid corrections on the algebraic level and do not need any geometric information for building a hierarchy of problems [30, 38]. However, memory usage limits the application of AMG if large scale systems are encountered. In this work, we study the combination of DWR error estimation, automatic space-time mesh adaptation, and slab-wise geometric multigrid preconditioning for the Navier–Stokes equations. The focus is on goal-oriented adaptivity and its in-teraction with a GMG-preconditioned Newton–Krylov method. For this purpose, we combine a DWR a posteriori error estimator with adaptive space-time refinement and GMRES iterations preconditioned by slab-wise geometric multigrid. The implemen-tation uses MPI parallelization in deal.II, discontinuous Galerkin time discretization, and inf-sup stable finite element pairs with discontinuous pressure on tensor-product meshes. On benchmark computations, we assess estimator quality, reduction of the goal error relative to total computational work, and solver performance for both pri-mal and adjoint problems. A central question we address is whether the gain from goal-oriented adaptivity justifies the additional cost of the adjoint solve and how this trade-off interacts with the robustness of the solvers. This work is organized as follows. In Sec. 2, we present the weak form as well as the space-time discretization schemes. In Sec. 3, we derive an a posteriori error representation for the model problem. In Sec. 4, we discuss practical aspects of the implementation as well as the underlying space-time adaptive algorithm. In Sec. 5, we present the results of our numerical examples. Finally, Sec. 6 summarizes the results and outlines directions for future research. 
+
+# 2 Model Problem and Discretization in Space and Time 
+
+In this work, we investigate the accurate and efficient numerical simulation of incom-pressible viscous flow modeled by the nonstationary Navier–Stokes equations 
+
+∂tv − ν∆v + v · ∇ v + ∇p = f in Q = Ω × I , 
+
+∇ · v = 0 in Q = Ω × I , 
+
+v = vD on Σ D = Γ D × I , ν∂ nv − p n = 0 on Σ outflow = Γ outflow × I , 
+
+v(0) = v0 on Σ 0 = Ω × { 0} ,
+
+(2.1) In (2.1), we denote by Q = Ω × I the space-time domain, where Ω ⊂ Rd, with d = 2 or d = 3, is a polygonal or polyhedral bounded domain with Lipschitz boundary 
+
+∂Ω and I = (0 , T ), with 0 < T < ∞, is a finite time interval. The flow behavior at the boundary ∂Ω = Γ D ∪ Γoutflow is modeled by a function vD on the segments ΓD := Γ inflow ∪ Γwall , that prescribes an inflow profile vin on Γ inflow and a no-slip condition v = 0 on the fixed wall segment Γ wall , as well as a so-called “do-nothing” condition on the artificial boundary segment Γ outflow . For this refer to [23, 21]. The velocity field v and the pressure variable p are the unknown variables. The parameter 
+
+ν > 0 denotes the fluid’s viscosity, f is a given volume force density, and v0 is the initial value. 3For the sake of brevity, we present the continuous and semidiscrete in time vari-ational problem for homogeneous Dirichlet boundary conditions only. The mixed boundary conditions in (2.1) are incorporated in the fully discrete system and deriva-tion of the duality based a posteriori error estimation; cf. Remark 2.2. Further, they are used in one of our numerical experiments. Throughout, we use standard notation for Sobolev and Bochner spaces. In particular, by L2
+
+> σ
+
+(Ω) d we denote the L2-closure of the set of divergence-free test functions on Ω. For the existence, uniqueness and regularity of weak solutions to the Navier–Stokes equations such that all of the ar-guments and terms used below are well-defined, we refer to the literature, cf., e.g., [20, 23, 40]. 
+
+2.1 Weak Form and Discretization in Space and Time 
+
+For the discretization in space and time we follow the lines of [7, 2]. The variational formulation of (2.1) reads as: 
+
+For f ∈ L2(I; H−1(Ω) d) and v0 ∈ L2
+
+> σ
+
+(Ω) d, find u := {v, p } ∈ X such that 
+
+A(u)( φ) = F (ψ) ∀φ := {ψ, ξ } ∈ X , (2.2) 
+
+where the semi-linear form A(·)( ·) and the linear form F (·) are defined by 
+
+A(u)( φ) := 
+
+Z
+
+> I
+
+(∂tv, ψ) + a(u)( φ) dt + ( v(0) , ψ(0)) , (2.3) 
+
+F (ψ) := 
+
+Z
+
+> I
+
+(f , ψ) d t + ( v0, ψ(0)) , (2.4) 
+
+with the inner semi-linear form a(·)( ·) given by 
+
+a(u)( φ) := ν(∇v, ∇ψ) + ( v · ∇ v, ψ) − (p, ∇ · ψ) + ( ∇ · v, ξ ) . (2.5) Here, ( ·, ·) denotes the inner product on L2(Ω) (or L2(Ω) d) and the underlying func-tion space X is defined as 
+
+X := {u = {v, p }, v ∈ L2 I; H10 (Ω) d, ∂ tv ∈ L2 I; H−1(Ω) d, p ∈ L2 I; L20(Ω) } .
+
+(2.6) For the semi-discretization in time we use a discontinuous Galerkin method dG( r)with an arbitrary polynomial degree r ≥ 0. Let Tτ = {0} ∪ I1 ∪ · · · ∪ IN be a partition of the closure of the time domain ¯I = [0 , T ] with left-open subintervals In := ( tn−1, t n], 
+
+n = 1 , . . . , N , with 0 =: t0 < t 1 < · · · < t N := T and time step sizes τn = tn − tn−1
+
+and the global time discretization parameter τ = max n τn. On the subintervals In,we define the time-discrete function space Xrτ as 
+
+Xrτ := 
+
+n
+
+uτ = {vτ , p τ } ∈ L2 I; H10 (Ω) d × L20(Ω)  vτ |In ∈ P r
+
+ In; H10 (Ω) d,
+
+vτ (0) ∈ L2(Ω) d, p τ ∈ P r
+
+ In; L20(Ω)  , n = 1 , . . . , N 
+
+o
+
+,
+
+(2.7) where Pr(In; Y ) denotes the space of all polynomials in time up to degree r ≥ 0 on In
+
+with values in a Banach space Y . For some discontinuous in time function vτ ∈ Xrτ
+
+we define the limits v± 
+
+> τ,n
+
+from above and below of vτ at tn as well as their jump at 
+
+tn by 
+
+v± 
+
+> τ,n
+
+:= lim  
+
+> t7→ tn±0
+
+vτ (t) , [vτ ]n := v+ 
+
+> τ,n
+
+− v− 
+
+> τ,n
+
+.
+
+4Then, the semi-discretization in time scheme of the incompressible Navier–Stokes equations (2.2) reads as follows: Find uτ = {vτ , p τ } ∈ Xrτ such that 
+
+Aτ (uτ )( φτ ) = Fτ (ψτ ) ∀φτ = {ψτ , ξ τ } ∈ Xrτ , (2.8) 
+
+where the semi-discrete semi-linear form Aτ (·)( ·) and linear form Fτ (·) are defined by 
+
+Aτ (uτ )( φτ ) := 
+
+> N
+
+X
+
+> n=1
+
+Z
+
+> In
+
+(∂tvτ , ψτ ) + a(uτ )( φτ ) dt (2.9a) +
+
+> N
+
+X
+
+> n=2
+
+([ vτ ]n−1, ψ+
+
+> τ,n −1
+
+) + ( v+
+
+> τ, 0
+
+, ψ+
+
+> τ, 0
+
+) ,Fτ (ψτ ) := 
+
+Z
+
+> I
+
+(f , ψτ ) d t + ( v0, ψ+
+
+> τ, 0
+
+) . (2.9b) 
+
+Remark 2.1. By the choice of a discontinuous test basis, supported on the subinter-vals In, Equation (2.8) splits into a sequence of variational problems on the space-time slabs Ω × In. This allows us to solve the algebraic problems associated with the slabs sequentially in a time-marching approach. Further, we introduce dynamic spatial meshes below, permitting the spatial decomposition of Ω to depend on the subintervals 
+
+In and change from subinterval to subinterval. For the analysis and application of dynamic meshes we refer to [8, 11, 37]. 
+
+For the discretization in space, let T nh = {K} be a triangulation of mesh size hn
+
+of the domain Ω on subinterval In such that Ω = S 
+
+> K∈T nh
+
+K. For t = 0, we let T 0
+
+> h
+
+denote a decomposition of Ω with mesh size h0. The maximal mesh size is denoted by 
+
+h := max n hn. We define the space-time mesh slabs Qn := T nh × In for n = 1 , . . . , N .Our mesh adaptation process yields locally refined elements, which is enabled by using hanging nodes. We point out that the global conformity of the finite element approach is preserved since the unknowns at such hanging nodes are eliminated by interpolation between the neighboring ’regular’ nodes; cf. [4, Chapter 4.2] and [15]. In our GMG approach we apply a local (element-based) Vanka smoother [2]. Nu-merical studies have shown, that this smoother performs efficiently for local velocity-pressure couplings by using discontinuous pressure approximations. Therefore, we apply the inf-sup stable family of finite element pairs Qk/P disc 
+
+> k−1
+
+, for k ≥ 2 [23, 29]). Thus, we built our spatial discretization on the following pair of spaces: 
+
+V kh(T nh ) := {vh ∈ [H1(Ω)] d : ( vh)|K ∈ V k(K) ∀K ∈ T nh } ,Qk−1 
+
+> h
+
+(T nh ) := {qh ∈ L20(Ω) : ( qh)|K ∈ Qk−1(K) ∀K ∈ T nh } , (2.10) where the finite elements V k(K) and Qk−1(K) are defined by 
+
+V k(K) := [ Qk]d ◦ F −1 
+
+> K
+
+, Qk−1(K) := P disc  
+
+> k−1
+
+◦ F −1 
+
+> K
+
+, (2.11) and FK is the standard multilinear map from the reference element to K. We employ the mapped variant of P disc  
+
+> k−1
+
+for geometric consistency on curved and non-affine meshes and improved conditioning of the algebraic systems. Here, Qk, k ≥ 2, denotes the space of polynomials defined on the reference element with maximum degree k in each variable and P disc  
+
+> k−1
+
+is the space of polynomials defined on the reference element with maximum degree k − 1. Now, by replacing H10 (Ω) and L20(Ω) in the definition 5of the semi-discrete function space Xrτ in (2.7) by the spatial finite element spaces defined above, we obtain the fully discrete function space 
+
+Xr,k τ h := 
+
+n
+
+uτ h = {vτ h , p τ h } vτ h |In ∈ P r
+
+ In; Vkh(T nh ) , vτ h (0) ∈ Vkh(T 0 
+
+> h
+
+) ,pτ h |In ∈ P r
+
+ In; Qk−1 
+
+> h
+
+(T nh ) , n = 1 , . . . , N 
+
+o
+
+.
+
+(2.12) For the treatment of Dirichlet boundary conditions, we use Nitsche’s method (cf. [32]), where the Dirichlet boundary conditions are imposed in weak form. For this, we let 
+
+NΓD : L2 I; H1/2(Γ D)d × Xr,k τ h → R be defined by 
+
+NΓD (v, φ)x := 
+
+> N
+
+X
+
+> n=1
+
+Z
+
+> In
+
+ − (v, ν∂ nψ + ξ n)ΓD + ν γ1
+
+h (v, ψ)ΓD + γ2
+
+h (v · n, ψ · n)ΓD dt
+
+for v ∈ L2 I; H1/2(Γ D)d and φ ∈ Xr,k τ h and some numerical (tuning) parameters 
+
+γ1 > 0 and γ2 > 0 ensuring stability of the discrete system . Further, we define 
+
+BΓD : Xr,k τ h × Xr,k τ h → R by 
+
+BΓD (u, φ) := 
+
+> N
+
+X
+
+> n=1
+
+Z
+
+> In
+
+−(ν∂ nv − p n, ψ)ΓD dt + NΓD (v, φ) (2.13) for ( u, φ) ∈ Xr,k τ h × Xr,k τ h . Finally, the fully discrete problem to Equation (2.2) reads as follows: Find uτ h = {vτ h , p τ h } ∈ Xr,k τ h such that 
+
+Aτ h (uτ h )( φτ h ) = Fτ h (φτ h ) ∀φτ h = {ψτ h , ξ τ h } ∈ Xr,k τ h , (2.14) 
+
+where the semi-discrete semi-linear form Aτ h (·)( ·) and the linear form Fτ h (·) are defined by 
+
+Aτ h (uτ h )( φτ h ) := Aτ (uτ h )( φτ h ) + BΓD (uτ h , φτ h ) (2.15a) 
+
+Fτ h (φτ h ) := Fτ (ψτ h ) + NΓD (vD, φτ h ) . (2.15b) We note that in the case of homogeneous Dirichlet boundary conditions the last term in (2.15b) vanishes since vD = 0.
+
+Remark 2.2. We note that in the continuous problem (2.2) and discrete in time system (2.8) the homogeneous Dirichlet boundary conditions are prescribed in strong form by the definition of the solution spaces. In the fully discrete problem (2.14) , the Dirichlet boundary conditions are implemented in weak or variational form. This af-fects our duality-based a posteriori error control in Section 3 below and the derivation of the error identity therein. This approach follows a more general version compared to the result derived in [6], covering the case of inconsistently stabilized discretiza-tions and can be found in [7, Lem. 5.1]. Here, the additional terms are introduced only at the fully discrete level, without corresponding consistent counterparts in the continuous or semi-discrete in time formulations, cf. [7, 12]. 
+
+# 3 DWR-Based A Posteriori Error Estimation 
+
+In this section, we derive an a posteriori error representation based on the DWR method. This representation is given in terms of a user-chosen goal functional J :
+
+X 7 → R, in general given as 
+
+J(u) = 
+
+Z T
+
+> 0
+
+J1(u(t)) d t + J2(u(T )) , (3.1) 6where J1 and J2 are three times differentiable functionals and either of them may vanish; cf., e.g., [33]. Since we aim at controlling the error due to the discretization in time and in space, we split the a posteriori error representation with respect to J
+
+into the contributions 
+
+J(u) − J(uτ h ) = J(u) − J(uτ ) + J(uτ ) − J(uτ h ) . (3.2) To derive these representations, we introduce the Lagrangian functionals L : X ×X →
+
+R, Lτ : Xrτ ×Xrτ → R, and Lτ h : Xr,k τ h ×Xr,k τ h → R based on the Euler Lagrange method of constraint optimization: 
+
+L(u, z) := J(u) + F (w) − A(u)( z) , (3.3a) 
+
+Lτ (uτ , zτ ) := J(uτ ) + Fτ (wτ ) − Aτ (uτ )( zτ ) , (3.3b) 
+
+Lτ h (uτ h , zτ h ) := J(uτ h ) + Fτ h (zτ h ) − Aτ h (uτ h )( zτ h ) (3.3c) = Lτ (uτ h , zτ h ) − BΓD (uτ h , zτ h ) + NΓD (vD, zτ h ) .
+
+Here, the Lagrange multipliers z = {w, q }, zτ = {wτ , q τ }, and zτ h = {wτ h , q τ h } are called dual variables in contrast to the primal variables u = {v, p }, uτ = {vτ , p τ },
+
+and uτ h = {vτ h , p τ h }; cf. [6, 7]. Considering the directional derivatives of the Lagrangian functionals, also known as Gˆ ateaux derivatives, with respect to their first argument, i.e. 
+
+L′
+
+> u
+
+(u, z)( φ) := lim  
+
+> t̸=0 ,t →0
+
+t−1L(u + tφ, z) − L (u, z) , φ ∈ X , (3.4) leads to the so-called dual problems, cf., e.g., [7]. The continuous, semi-discrete, and fully discrete dual solutions z ∈ X, zτ ∈ Xrτ , and zτ h ∈ Xr,k τ h are determined by the optimality conditions 
+
+L′
+
+> u
+
+(u, z)( φ) = 0 ∀φ ∈ X , (3.5a) 
+
+L′
+
+> τ, u
+
+(uτ , zτ )( φτ ) = 0 ∀φτ ∈ Xrτ , (3.5b) 
+
+L′
+
+> τ h, u
+
+(uτ h , zτ h )( φτ h ) = 0 ∀φτ h ∈ Xr,k τ h . (3.5c) More precisely, the continuous dual solution z ∈ X is the solution of 
+
+A′(u)( φ, z) = J′(u)( φ) ∀φ ∈ X , (3.6) where the adjoint semi-linear form A′(·)( ·, ·) is given by 
+
+A′(u)( φ, z) := 
+
+Z
+
+> I
+
+(ψ, −∂tw) + a′(u)( φ, z) dt + ( ψ(T ), w(T )) . (3.7) We note that for the representation (3.7) of A′(·)( ·, ·) integration by parts in time is applied, which is allowed for weak solutions w ∈ X; cf., e.g., [33, Lemma 8.9]. The derivative a′(u)( φ, z) of the inner semi-linear form a(u)( z) in A′ admits the explicit form 
+
+a′(u)( φ, z) = ν(∇ψ, ∇w) + ( v · ∇ ψ, w) + ( ψ · ∇ v, w) − (ξ, ∇ · w) + ( ∇ · ψ, q ) .
+
+The right-hand side of Eq. (3.6) is given by 
+
+J′(u)( φ) := 
+
+Z
+
+> I
+
+J′
+
+> 1
+
+(u)( φ)d t + J′
+
+> 2
+
+(u(T ))( φ(T )) . (3.8) 7Further, the semi-discrete dual solution zτ ∈ Xrτ and the fully discrete dual solution 
+
+zτ h ∈ Xr,k τ h satisfy the equations 
+
+A′ 
+
+> τ
+
+(uτ )( φτ , zτ ) = J′(uτ )( φτ ) ∀φτ ∈ Xrτ , (3.9a) 
+
+A′
+
+> τ h
+
+(uτ h )( φτ h , zτ h ) = J′(uτ h )( φτ h ) ∀φτ h ∈ Xr,k τ h , (3.9b) where A′ 
+
+> τ
+
+(·)( ·, ·) and A′
+
+> τ h
+
+(·)( ·, ·) are given by 
+
+A′ 
+
+> τ
+
+(uτ )( φτ , zτ ) := 
+
+> N
+
+X
+
+> n=1
+
+Z
+
+> In
+
+(ψτ , −∂twτ ) + a′(uτ )( φτ , zτ ) dt
+
+− 
+
+> N−1
+
+X
+
+> n=1
+
+(ψ−
+
+> τ,n
+
+, [wτ ]n) + ( ψ− 
+
+> τ,N
+
+, w− 
+
+> τ,N
+
+) ,
+
+and 
+
+A′
+
+> τ h
+
+(uτ h )( φτ h , zτ h ) := A′ 
+
+> τ
+
+(uτ h )( φτ h , zτ h ) + BΓD (φτ h , zτ h ) .
+
+Remark 3.1. We note that the directional derivatives of the Lagrangian functionals with respect to their second argument lead to the primal problems given by Eqs. (2.2) ,
+
+(2.8) and (2.14) , respectively. 
+
+Now, using an abstract error representation result in terms of Lagrangian func-tionals defined on different discretization levels given in [7, Lemma 5.1], we get the following error representation formulas for the discretization errors in space and time. 
+
+Theorem 3.2. Let {u, z} ∈ X×X, {uτ , zτ } ∈ Xrτ ×Xrτ , and {uτ h , zτ h } ∈ Xr,k τ h ×Xr,k τ h 
+
+denote the stationary points of L, Lτ , and Lτ h on the different levels of discretization, i.e., 
+
+L′(u, z)( δu, δ z) = L′ 
+
+> τ
+
+(u, z)( δu, δ z) = 0 ∀{ δu, δ z} ∈ X × X , 
+
+L′ 
+
+> τ
+
+(uτ , zτ )( δuτ , δ zτ ) = 0 ∀{ δuτ , δ zτ } ∈ Xrτ × Xrτ ,
+
+L′
+
+> τ h
+
+(uτ h , zτ h )( δuτ h , δ zτ h ) = 0 ∀{ δuτ h , δ zτ h } ∈ Xr,k τ h × Xr,k τ h .
+
+Then, for the discretization errors in space and time we get the representation for-mulas 
+
+J(u) − J(uτ ) = 12 ρτ (uτ )( z − ˜zτ ) + 12 ρ∗ 
+
+> τ
+
+(uτ , zτ )( u − ˜uτ ) + Rτ , (3.10a) 
+
+J(uτ ) − J(uτ h ) = 12 ρτ (uτ h )( zτ − ˜zτ h ) + 12 ρ∗ 
+
+> τ
+
+(uτ h , zτ h )( uτ − ˜uτ h ) (3.10b) 
+
+− 12 NΓD (vD,h , ˜zτ h + zτ h )+ 12 B′ 
+
+> ΓD
+
+(uτ h , zτ h )(˜ uτ h − uτ h , ˜zτ h − zτ h ) + BΓD (uτ h , zτ h ) + Rh ,
+
+where ρτ and ρ∗ 
+
+> τ
+
+denote the primal and dual residual based on the semi-discrete schemes (2.8) and (3.9a) , respectively, and B′ 
+
+> ΓD
+
+(·, ·)( ·, ·) denotes the Gˆ ateaux deriva-tives with respect to the first and second argument of the Nitsche terms BΓD (·, ·) given in Eq. (2.13) , defined as 
+
+ρτ (u)( φ) := L′ 
+
+> τ, z
+
+(u, z)( φ) = Fτ (ψ) − Aτ (u)( φ) , (3.11a) 
+
+ρ∗ 
+
+> τ
+
+(u, z)( φ) := L′
+
+> τ, u
+
+(u, z)( φ) = J′(u)( φ) − A′ 
+
+> τ
+
+(u)( φ, z) , (3.11b) 
+
+B′ 
+
+> ΓD
+
+(uτ h , zτ h )(˜ uτ h − uτ h , ˜zτ h − zτ h ) := BΓD (uτ h , ˜zτ h − zτ h ) (3.11c) + BΓD (˜ uτ h − uτ h , zτ h ) .
+
+8Here, {˜uτ , ˜zτ } ∈ Xrτ × Xrτ and {˜uτ h , ˜zτ h } ∈ Xr,k τ h × Xr,k τ h can be chosen arbitrarily, the discrete function vD,h is an appropriate finite element approximation of an extension 
+
+˜vD in the sense that the trace equals vD on ΓD in accordance with the trace theorem. Finally, Rτ and Rh are higher-order remainder terms with respect to the errors u −
+
+uτ , z − zτ and uτ − uτ h , zτ − zτ h , cf. [7, 6]. 
+
+Proof. The technique to prove the temporal and spatial error representation for-mulas goes back to an abstract error result in terms of Lagrangian functionals defined on different discretization levels given by Besier and Rannacher applied to the incom-pressible Navier–Stokes equations using local projection stabilization (LPS) in[7]. More precisely, we are using the abstract result given in [7, Lemma 5.1] with the following settings: 
+
+L = L , ˜L = Lτ , Y1 = X × X , Y2 = Xrτ × Xrτ , Y := Y1 + Y2 ,L = Lτ , ˜L = Lτ h , Y1 = Xrτ × Xrτ , Y2 = Xr,k τ h × Xr,k τ h , Y := Y1 ,
+
+where L, Lτ , and Lτ h are the Lagrangian functionals defined in (3.3) and Y, Y 1 and 
+
+Y2 are function spaces defined in [7, Lemma 5.1]. The resulting Nitsche terms are treated in the same way as the stabilization terms in the proof of [7, Thm. 5.2]. ■
+
+# 4 Practical Aspects 
+
+In this section, we introduce local error indicators in space and time, present the space-time adaptive algorithm, and describe the geometric multigrid preconditioned Newton–Krylov solver together with selected aspects of the parallel implementation. 
+
+4.1 Local Error Indicators in Space and Time 
+
+For the marking step in the adaptive mesh refinement process, we require local ver-sions of the error representations (3.10) from Theorem 3.2. Neglecting the higher-order remainder terms Rτ and Rh in (3.10) yields the global a posteriori estimators 
+
+J(u) − J(uτ ) ≈ ητ ,J(uτ ) − J(uτ h ) ≈ ηh ,
+
+with 
+
+ητ := 12 ρτ (uτ )( z − ˜zτ ) + 12 ρ∗ 
+
+> τ
+
+(uτ , zτ )( u − ˜uτ ) ,ηh := 12 ρτ (uτ h )( zτ − ˜zτ h ) + 12 ρ∗ 
+
+> τ
+
+(uτ h , zτ h )( uτ − ˜uτ h )
+
+− 12 NΓD (vD,h , ˜zτ h + zτ h ) + 12 B′ 
+
+> ΓD
+
+(uτ h , zτ h )(˜ uτ h − uτ h , ˜zτ h − zτ h )+ BΓD (uτ h , zτ h ) .
+
+To obtain implementable estimators, we replace the unknown exact and semi-discrete solutions by the fully discrete approximations uτ h , zτ h ∈ Xr,k τ h . The temporal weights u − ˜uτ and z − ˜zτ , and the spatial weights uτ − ˜uτ h and zτ − ˜zτ h , are then approximated as follows. 9Temporal weights. We approximate the temporal weights by higher-order recon-structions in time: 
+
+u − ˜uτ ≈ E(r+1)  
+
+> τ
+
+uτ h − uτ h , z − ˜zτ ≈ E(r+1)  
+
+> τ
+
+zτ h − zτ h .
+
+Here E (r+1)  
+
+> τ
+
+denotes a reconstruction operator in time that lifts the discrete solution to a piecewise polynomial of degree r + 1, see [13, 12]. 
+
+Spatial weights. We approximate the spatial weights by patch-wise higher-order interpolation: 
+
+uτ − ˜uτ h ≈ I(2 k)2h uτ h − uτ h , zτ − ˜zτ h ≈ I(2 k)2h zτ h − zτ h . (4.1) Here I (2 k)2h denotes a patch-wise interpolation operator that acts on a patch of size 2 h
+
+and lifts the discrete solution to a piecewise polynomial of degree 2 k, see [5]. With these approximations, the implemented temporal and spatial estimators are given by ˜ητ ≈ 12 ρτ (uτ h )(E (r+1)  
+
+> τ
+
+zτ h − zτ h ) + 12 ρ∗ 
+
+> τ
+
+(uτ h , zτ h )(E (r+1)  
+
+> τ
+
+uτ h − uτ h ) , (4.2a) ˜ηh ≈ 12 ρτ (uτ h )(I (2 k)2h zτ h − zτ h ) + 12 ρ∗ 
+
+> τ
+
+(uτ h , zτ h )(I (2 k)2h uτ h − uτ h ) (4.2b) 
+
+− 12 NΓD (vD,h , I(2 k)2h zτ h + zτ h ) + 12 B′ 
+
+> ΓD
+
+(uτ h , zτ h )(I (2 k)2h uτ h − uτ h , I(2 k)2h zτ h − zτ h )+ BΓD (uτ h , zτ h ) .
+
+For mesh marking, these implemented estimators are decomposed into local con-tributions applying integration by parts on each element K ∈ T nh to the viscous term. Following [6, 4, 7], we write ˜ητ =
+
+> N
+
+X
+
+> n=1
+
+X 
+
+> K∈T nh
+
+˜ηK,n τ , ˜ηh =
+
+> N
+
+X
+
+> n=1
+
+X 
+
+> K∈T nh
+
+˜ηK,n h . (4.3) The local indicators ˜ ηK,n τ and ˜ ηK,n h are then used for slab and element marking. 
+
+4.2 Space-Time Adaptive Algorithm 
+
+We present a condensed version of the adaptive solution algorithm based on tensor-product space-time slabs Qn. For further details on the slab data structures, we refer to [14] and [12, Sec. 4.4]. 
+
+Remark 4.1 (Adaptation of the space-time mesh) . In Algorithm 1, we do not specify the concrete marking strategy. We briefly describe the strategy used in this work. Let ω ∈ [1 .5, 3.5] be the criterion for temporal or spatial error domination. Let 
+
+θτ 
+
+> top
+
+∈ (0 , 1] denote the fraction of slabs to refine in time. Let θh,n 
+
+> top ,1
+
+, θ h,n  
+
+> top ,2
+
+∈ (0 , 1] be the fractions of elements to refine on slab n without and with temporal refinement, respectively. Let θh
+
+> bot ,1
+
+, θ h 
+
+> bot ,2
+
+∈ [0 , 1) be the corresponding fractions of elements to coarsen. Let ˜ητ and ˜ηh denote the global temporal and spatial indicators used for marking. The marking strategy is as follows. 
+
+• If |˜ητ | ≥ ω |˜ηh|, then we mark the top θτ 
+
+> top
+
+fraction of slabs for temporal refine-ment. 
+
+10 Algorithm 1 Goal-Oriented Space-Time Adaptivity  
+
+> 1:
+
+Input: Initial space-time mesh Q1 
+
+> n
+
+= T 1 
+
+> h,n
+
+× I1
+
+> n
+
+, n = 1 , . . . , N 1, and parameter 
+
+ω ∈ [1 .5, 3.5].  
+
+> 2:
+
+Set iteration counter ι ← 1.  
+
+> 3:
+
+repeat  
+
+> 4:
+
+Solve the primal problem (2.14) to obtain uιτ h . 
+
+> 5:
+
+Solve the dual problem (3.9b) to obtain zιτ h . 
+
+> 6:
+
+Evaluate the global space-time error indicators ˜ ηιτ and ˜ ηιh. 
+
+> 7:
+
+if |˜ηιτ | > ω |˜ηιh| then  
+
+> 8:
+
+Adapt the temporal mesh only.  
+
+> 9:
+
+else if |˜ηιh| > ω |˜ηιτ | then  
+
+> 10:
+
+Adapt the spatial mesh only.  
+
+> 11:
+
+else  
+
+> 12:
+
+Adapt both the temporal and spatial meshes.  
+
+> 13:
+
+end if  
+
+> 14:
+
+Set ι ← ι + 1.  
+
+> 15:
+
+until a stopping criterion is met.  
+
+> 16:
+
+Output: Adapted space-time mesh and final primal solution. 
+
+• If |˜ηh| ≥ ω |˜ητ |, then on each slab n,
+
+– we refine the top θh,n  
+
+> top ,1
+
+fraction of elements if the slab is not marked for temporal refinement, 
+
+– we refine the top θh,n  
+
+> top ,2
+
+fraction of elements if the slab is marked for tem-poral refinement, 
+
+– we coarsen the bottom θh 
+
+> bot ,1
+
+fraction of elements if the slab is not marked for temporal refinement, 
+
+– we coarsen the bottom θh 
+
+> bot ,2
+
+fraction of elements if the slab is marked for temporal refinement. 
+
+• If neither indicator dominates, then we apply both the temporal and spatial marking rules above. 
+
+In Remark 4.1, we introduced slab-wise refinement fractions. In this work, we either keep these fractions constant, as in previous work, or adapt them according to the following rule. 
+
+Remark 4.2 (Slab-wise adaptation of the spatial refinement fractions) . On iteration 
+
+ι, define on each space-time slab the local indicator 
+
+˜ηn,ι τ h = ˜ ηn,ι h + ˜ ηn,ι τ ,
+
+and the corresponding global quantity 
+
+˜ηιτ h = 
+
+> Nι
+
+X
+
+> n=1
+
+˜ηn,ι τ h .
+
+If ˜ηιτ h = 0 , we keep the nominal refinement fractions. Otherwise, we define the normalized slab-wise weights 
+
+αn = ˜ηn,ι τ h 
+
+˜ηιτ h 
+
+, αmin = min  
+
+> n
+
+αn , αmax = max  
+
+> n
+
+αn .
+
+11 These weights are used to adapt the nominal fraction θh 
+
+> top ,2
+
+on slabs that are marked both in time and in space. To avoid large deviations from the nominal value, we bound the adapted fractions by 
+
+θh, − 
+
+> top ,2
+
+= 34 θh 
+
+> top ,2
+
+, θh, +top ,2 = min 
+
+n
+
+1, 43 θh
+
+> top ,2
+
+o
+
+.
+
+The slab-wise fraction θh,n  
+
+> top ,2
+
+is then defined by 
+
+θh,n  
+
+> top ,2
+
+=
+
+
+
+θh
+
+> top ,2
+
+, αmax − αmin < ε, θh, − 
+
+> top ,2
+
++  θh, +top ,2 − θh, −
+
+> top ,2
+
+ αn − αmin 
+
+αmax − αmin 
+
+, otherwise ,
+
+where ε > 0 is a small tolerance. Hence 
+
+θh,n  
+
+> top ,2
+
+∈ θh, −
+
+> top ,2
+
+, θ h, +top ,2
+
+ ,
+
+and the spatial refinement fraction is distributed according to the relative slab-wise error contributions. 
+
+Remark 4.3 (Dynamic meshes) . We solve the fully problem (2.14) on the mesh slabs Qn = T nh × In. Here, the mesh T nh and the pair of finite element spaces 
+
+V kh(T nh ) × Qk−1 
+
+> h
+
+(T nh ) are allowed to change from subinterval to subinterval. The velocity field v− 
+
+> n−1
+
+:= vτ,h (tn−1) ∈ V kh(T n−1 
+
+> h
+
+), computed on In−1, then satisfies the discrete divergence-free constraint with respect to all test functions in Qk−1 
+
+> h
+
+(T n−1 
+
+> h
+
+)
+
+and violates the constraint with respect to Qk−1 
+
+> h
+
+(T nh ) on In, if T n−1
+
+> h
+
+̸ = T nh . To re-cover the discrete divergence-free constraint of the coupling term on In, we substitute 
+
+v− 
+
+> n−1
+
+by its Helmholtz projection Πnhv− 
+
+> n−1
+
+∈ V kh(T nh ), satisfying with some additional pressure function ϑnh ∈ Qk−1 
+
+> h
+
+(T nh ) the variational equation [9, 11], 
+
+(Π nhv−
+
+> n−1
+
+, vh) − (ϑnh, ∇ · vh) + ( ∇ · Πnhv−
+
+> n−1
+
+, q h) = ( bv nτ h,n −1, vh) (4.4) 
+
+for all (vh, q h) ∈ V kh(T nh )×Qk−1 
+
+> h
+
+(T nh ). The projection Πnhv− 
+
+> n−1
+
+∈ V kh(T nh ) is discretely divergence free with respect to the decomposition T nh of Ω,
+
+(∇ · Πnhv−
+
+> n−1
+
+, q h) = 0 
+
+for all qh ∈ Qk−1 
+
+> h
+
+(T nh ). Alternatively, a Stokes projection can be used. As studied in [11], either projections can lead to the accumulation of projection errors that are due to (4.4) . Instabilities and failure of can occur if arbitrary mesh modifications without hierarchical embeddings along with a high number of changes are involved. In our numerical computations presented in Section 5, we do not observe such short-comings. Suitable space-time projections or further post-processing might overcome accumulating projection errors, even for high numbers of mesh changes. 
+
+4.3 Geometric Multigrid Preconditioned Newton-Krylov Method 
+
+The space-time finite element discretization of the incompressible Navier–Stokes equa-tions leads to the nonlinear algebraic system (2.14). To solve this problem, we employ a Newton–Krylov method preconditioned by geometric multigrid. Newton’s method is applied in the weak form 
+
+A′
+
+> τ h
+
+(u(l−1) )( w(l), φτ h ) = Fτ h (φτ h ) − Aτ h (u(l−1) )( φτ h ), u(l) = u(l−1) + w(l). (4.5) 12 Algorithm 2 Geometric multigrid method for the linear system ALxL = bL on the finest level L. Under the standard smoothing and approximation properties, a multigrid V-cycle can achieve O(N ) complexity.  
+
+> 1:
+
+procedure multigrid (ℓ, Aℓ, bℓ, xℓ) 
+
+> 2:
+
+sℓ ← S (Aℓ, bℓ, xℓ) ▷ Pre-smoothing  
+
+> 3:
+
+rℓ ← bℓ − Aℓsℓ ▷ Residual  
+
+> 4:
+
+rℓ−1 ← R (ℓ, rℓ) ▷ Restriction  
+
+> 5:
+
+if ℓ = 1 then  
+
+> 6:
+
+c0 ← A−10 r0 ▷ Coarse-grid solve  
+
+> 7:
+
+else  
+
+> 8:
+
+cℓ−1 ← multigrid (ℓ − 1, Aℓ−1, rℓ−1, 0) 
+
+> 9:
+
+end if  
+
+> 10:
+
+x′ 
+
+> ℓ
+
+← sℓ + P(ℓ, cℓ−1) ▷ Prolongation  
+
+> 11:
+
+s′ 
+
+> ℓ
+
+← S (Aℓ, bℓ, x′
+
+> ℓ
+
+) ▷ Post-smoothing  
+
+> 12:
+
+return s′ 
+
+> ℓ
+> 13:
+
+end procedure Algorithm 3 Newton–GMRES method with GMG preconditioning  
+
+> 1:
+
+Input: initial guess x(0) , tolerance ϵ, maximum number of iterations Nmax , re-assembly threshold ρmax . 
+
+> 2:
+
+Assemble the initial Jacobian J ← A ′(x(0) ).  
+
+> 3:
+
+for l = 0 , 1, . . . , N max − 1 do  
+
+> 4:
+
+Compute the residual r(l) ← F τ h − A(x(l)).  
+
+> 5:
+
+if ∥r(l)∥ < ϵ then  
+
+> 6:
+
+return x(l) 
+
+> 7:
+
+end if  
+
+> 8:
+
+if l > 0 and ∥r(l)∥/∥r(l−1) ∥ > ρ max then  
+
+> 9:
+
+Reassemble J ← A ′(x(l)).  
+
+> 10:
+
+end if  
+
+> 11:
+
+Solve J w(l) = r(l) by GMRES preconditioned by GMG, see Algorithm 2.  
+
+> 12:
+
+Update x(l+1) ← x(l) + w(l). 
+
+> 13:
+
+end for  
+
+> 14:
+
+Output: x(Nmax ).Here A′
+
+> τ h
+
+(u(l−1) ) denotes the Fr´ echet derivative of the semilinear form Aτ h at u(l−1) .Algebraically, this corresponds to the Jacobian matrix evaluated at u(l−1) and ap-plied to the Newton correction w(l). The Jacobian can be computed analytically, see [33, Sec. 4.4.2]. To reduce numerical costs, the Jacobian is reused over several Newton iterations and consecutive slabs, and is reassembled only when the observed residual reduction factor ∥r(l)∥/∥r(l−1) ∥ exceeds a prescribed threshold ρmax . In our computations, ρmax is chosen empirically and typically lies between 0 .05 and 0 .1. Each Newton step requires the solution of a large, sparse, nonsymmetric, and indefinite linear system arising from the saddle-point structure of the Navier–Stokes equations. We use the Generalized Minimal Residual method (GMRES) [25, 35] to solve these linear systems. To accelerate convergence, GMRES is preconditioned by geometric multigrid. On each slab In, the multigrid method is built on a hierarchy of nested discrete saddle-point spaces 
+
+X n 
+
+> 0
+
+⊂ X n 
+
+> 1
+
+⊂ · · · ⊂ X nL ,
+
+13 associated with nested spatial meshes T n 
+
+> 0
+
+, . . . , T nL = T nh . On each level, high-frequency errors are damped by a smoothing operator, while low-frequency components are transferred to coarser levels by L2-projection-based restriction and interpolative pro-longation. On the coarsest level, a direct solver is employed. Under the standard multigrid assumptions, one V-cycle has linear complexity in the number of degrees of freedom. To treat the saddle-point structure efficiently and to obtain a parallelizable smoother, we employ a Vanka-type smoother [42] within the multigrid cycle. It is defined by 
+
+Vℓ(Aℓ) = X
+
+> K∈T ℓ
+
+R⊤
+
+> K
+
+RK AℓR⊤
+
+> K
+
+−1RK , (4.6) where Aℓ denotes the system matrix on level ℓ, and RK is the restriction operator to the degrees of freedom associated with the element K ∈ T ℓ. One smoothing step is then given by 
+
+S(Aℓ, bℓ, xk) = xk + ω Vℓ(Aℓ) ( bℓ − Aℓxk), (4.7) with damping parameter ω ∈ (0 , 1]. In our experience, two to five pre- and post-smoothing steps are sufficient for robust convergence. The discontinuous pressure approximation is beneficial for the Vanka smoother, since it localizes the pressure degrees of freedom and thereby improves the efficiency of the element-wise local solves. 
+
+Remark 4.4 (Weighting in the Vanka smoother) . In the implementation, the ad-ditive operator (4.6) is combined with a diagonal partition-of-unity weighting. We choose the weight of each degree of freedom as the reciprocal of its valence. An al-ternative is a restricted Vanka smoother, which assigns each degree of freedom to a unique element. This reduces communication, but in our tests it led to a less effective smoother and hence to a larger number of GMRES iterations. Since in the present matrix-based setting the dominant cost comes from global matrix-vector products, we use the weighted variant here. 
+
+Remark 4.5 (Dual linear systems) . For fixed primal solution, the dual problem is linear and solved backward in time. Its slab-wise discretization leads to nonsymmetric saddle-point systems with diffusion, backward transport, and a reaction term. In the implementation, these systems are treated with the same GMRES-preconditioned geometric multigrid method as the primal Newton linearizations, based on the same level hierarchy, intergrid transfers, and Vanka-type smoothing. 
+
+In summary, the nonlinear space-time finite element system is linearized by New-ton’s method and the resulting linear systems are solved by GMRES preconditioned by geometric multigrid with a Vanka-type smoother. For a more detailed description of the solver architecture and its parallelization, we refer to [2]. 
+
+4.4 Parallel implementation 
+
+The implementation of the adaptive algorithm is distributed by MPI and uses the par-allel infrastructure of deal.II for error estimation, marking, refinement, and multi-grid setup across all processes. No stage is executed on a dedicated master rank. Collective communication is still required for the assembly of global indicators and for the coarse-grid solve. 
+
+Remark 4.6 (MPI-distributed adaptation) .
+
+14 • Local error estimation with face terms. Each rank computes its element-wise residual contributions, including jump terms on interior faces. For faces on process boundaries, ghost-element values are exchanged with neighboring ranks so that these face terms are evaluated consistently. Each face contribution is computed exactly once and communicated if necessary. 
+
+• Global indicator assembly. The local error contributions per slab or per element are summed by MPI Allreduce to form the global indicators ˜ηh and ˜ητ , and to normalize the slab-wise weights αn.
+
+• Marking for refinement and coarsening. Each rank marks its locally owned slabs or elements according to the global decision between ˜ηh and ˜ητ and according to the local fractions θh,n 
+
+> top ,2
+
+. No additional communication is required for the marking itself. 
+
+• Distributed mesh refinement. At present, we do not repartition the mesh, so load imbalance may accumulate over several adaptive cycles. Repartitioning is available in deal.II . In the present space-time setting, however, the many mesh transfers make it less clear how much performance can be gained. The development of an optimized repartitioning strategy is left to future work. 
+
+• Multigrid preconditioner with local smoothing. On each rank, the space-time element-wise Vanka smoother is applied to the locally owned elements on each level, with the usual ghost-layer exchange where required. The coarse-grid cor-rection is handled by a global, direct solve. 
+
+At present, load balancing and repartitioning are not used. To maintain scalability after several adaptive cycles, we plan to incorporate dynamic repartitioning in future work. 
+
+# 5 Numerical Examples 
+
+In this section, we investigate the performance properties of the proposed approach, which integrates goal-oriented error control with iterative solver techniques. In partic-ular, we study the convergence behavior, computational efficiency, as well as stability properties of the underlying space-time adaptive algorithm (Algorithm 1) introduced in Sect. 4.2. These properties are examined by means of the following three numerical examples. 1. Exact Analytical Solution: The first example is an academic test problem in-cluding a given analytical solution that goes back to [7, Ex. 1]. It is used to validate accuracy and efficiency of the derived approach for different discretiza-tions up to polynomial order 3 in time and 4 in space. 2. DFG Benchmark 2D-3: The second example is the famous DFG flow around cylinder benchmark 2D-3 that simulates the time-periodic behavior of a fluid in a pipe with a circular obstacle that goes back to [36]. The goal functional is chosen to control the mean drag. We evaluate the accuracy and efficiency of our proposed approach in terms of several quantities. Firstly, to assess the accuracy of the duality based space-time error esti-mator, we compute the effectivity index defined as the ratio of the estimated to the exact error, given by 
+
+Ieff := ˜ητ + ˜ ηh
+
+J(u) − J(uτ h ) . (5.1) 15 Secondly, to measure the gain in accuracy over the increase of work, we determine the empirical convergence rates, averaged over all DWR-loops, rate ∥eT ∥ 
+
+> NST
+
+and rate ∥eT ∥ 
+
+> Wtot
+
+(5.2) of the reduction of the error in the goal quantity with respect to the increase of the number of space-time degrees of freedom NST and the total work Wtot . The latter is measured by the cumulative linear solver work 
+
+Wtot = Wp + Wd, with primal and dual contributions (5.3) 
+
+Wp := 
+
+> Ntime
+
+X
+
+> n=1
+
+np
+
+> L,n
+
+N p
+
+> DoF ,n
+
+, W d := 
+
+> Ntime
+
+X
+
+> n=1
+
+nd
+
+> L,n
+
+N d 
+
+> DoF ,n
+
+, (5.4) where np 
+
+> L,n
+
+and nd 
+
+> L,n
+
+denote the numbers of primal and dual linear iterations on slab 
+
+Qn = T nh × In, and N p
+
+> DoF ,n
+
+, N d 
+
+> DoF ,n
+
+the corresponding numbers of spatial degrees of freedom. The nonlinear primal problem is solved by Newton’s method. We therefore also report the number of nonlinear iterations on slab Qn, denoted by nNL ,n . Accord-ingly, we let np 
+
+> L,n
+
+denote the total number of linear iterations accumulated over the 
+
+nNL ,n Newton steps on slab Qn. By nNL , np
+
+> L
+
+, and nd 
+
+> L
+
+we denote the total numbers of nonlinear, primal linear, and dual linear iterations over all slabs within one DWR loop ℓ. In addition, we record min 
+
+> ℓ=1 ,...,ℓ max
+
+ nNL 
+
+Ntime 
+
+
+
+, max 
+
+> ℓ=1 ,...,ℓ max
+
+ nNL 
+
+Ntime 
+
+
+
+, min 
+
+> ℓ=1 ,...,ℓ max
+
+ np
+
+> L
+
+nNL 
+
+
+
+, max 
+
+> ℓ=1 ,...,ℓ max
+
+ np
+
+> L
+
+nNL 
+
+
+
+, (5.5) together with the relative dual contribution 
+
+Wd
+
+Wtot 
+
+. (5.6) Throughout, by ℓ we denote the refinement level or DWR loop number, Ntime the number of subintervals in time, N max space the maximum number of degrees of freedom associated with a spatial triangulation within one loop and Ntot the number of total degrees of freedom in space and time. We consider different finite element approxima-tions dG( r)-Qk/P disc  
+
+> k−1
+
+denoting a discontinuous in time approximation of polynomial degree r ≥ 0 as well as a continuous velocity and discontinuous pressure approxima-tions in space of polynomial degree k ≥ 2. The implementation is based on the deal.II finite element library [1]. The tests are run on a single node with 2 Intel Xeon Platinum 8360Y CPUs and 1024 GB RAM of the HPC cluster HSUper at Helmut Schmidt University. 
+
+5.1 Example 1: Exact Analytical Solution 
+
+As a first test case, we consider a model problem on the space-time domain Ω × I =[0 , 1] 2 × [0 , 1] with prescribed solution given for the velocity v : Ω × I → R2 and pressure p : Ω × I → R by 
+
+v(x, t ) = sin( t)
+
+sin 2(πx ) sin( πy ) cos( πy )sin( πx ) cos( πx ) sin 2(πy )
+
+
+
+,p(x, t ) = sin( t) sin( πx ) cos( πx ) sin( πy ) cos( πy ) .
+
+(5.7) 16 We choose the kinematic viscosity as ν ∈ { 1, 10 −3} and choose the external force f
+
+such that the solution (5.7) satisfies (2.1). The initial velocity is prescribed as zero and homogeneous Dirichlet boundary conditions are imposed on ∂Ω for all times 
+
+v = 0 on Ω × { 0}, v = 0, on ∂Ω × (0 , T ] .
+
+The initial space-time mesh Th ⊗ M τ is a uniform tensor-product partition of the space-time domain Ω × I. We use discretizations with varying polynomial degrees 
+
+r ∈ { 0, . . . , 3} in time, where we use Qr+1 /Pdisc  
+
+> r
+
+elements in space, except for the 
+
+dG (0) case where we use Q2/Pdisc 1 elements. The goal quantity is chosen to control the L2-error e− 
+
+> N
+
+, e − 
+
+> N
+
+= u(x, T ) − uτ h (T −), at the final time point T = 1, given by 
+
+JT (u) = 
+
+ u(x, T ), e −
+
+> N
+
+
+
+∥e− 
+
+> N
+
+∥ . (5.8) In Tables 5.1–5.4 we present the development of the total discretization error J(e) = 
+
+∥eT ∥, the approximated spatial and temporal error estimators ηh and ητ as well as the effectivity index Ieff during an adaptive refinement process for various discretiza-tions. For all discretizations considered, we observe a consistent and satisfactory reduction of the discretization error ∥eT ∥. Concerning the accuracy of the employed error estimators, all cases exhibit reliable quantitative agreement with the discretiza-tion error, as indicated by effectivity indices Ieff close to one (cf. the last column of Tables 5.1–5.4). From the perspective of computational efficiency in space–time adaptive algorithms, it is crucial to ensure an equilibrated reduction of the temporal as well as spatial discretization error. Referring to this, we point out for all test cases a good equilibration of the spatial and temporal error indicators ηh and ητ in the course of the refinement process (cf. column 6 and 7 of Tables 5.1–5.4). Table 5.1: Adaptive refinement results for the dG(0)-Q2/P disc 1 discretization using the goal quantity (5.8) for Example 1.                                                                                                                   
+
+> ℓNtime Nmax space Ntot ∥eT∥˜ηh˜ητ˜ητ h Ieff
+> 15210 1050 2.20 ·10 −21.94 ·10 −31.08 ·10 −21.28 ·10 −20.58 26374 2680 1.07 ·10 −24.61 ·10 −36.23 ·10 −31.08 ·10 −21.02 37592 4766 5.17 ·10 −31.12 ·10 −34.08 ·10 −35.20 ·10 −31.00 49623 11 069 2.67 ·10 −31.50 ·10 −32.19 ·10 −33.70 ·10 −31.39 511 703 21 704 1.56 ·10 −31.09 ·10 −31.47 ·10 −32.56 ·10 −31.64 614 761 40 028 9.72 ·10 −46.49 ·10 −49.59 ·10 −41.61 ·10 −31.65 718 11 761 91 930 6.44 ·10 −43.49 ·10 −46.63 ·10 −41.01 ·10 −31.57 823 15 203 193 063 4.43 ·10 −41.40 ·10 −44.49 ·10 −45.89 ·10 −41.33 929 15 489 439 491 3.24 ·10 −48.09 ·10 −53.39 ·10 −44.20 ·10 −41.30 10 37 15 187 869 234 2.37 ·10 −46.57 ·10 −52.47 ·10 −43.12 ·10 −41.32 11 48 17 776 1 698 684 1.76 ·10 −44.36 ·10 −51.81 ·10 −42.25 ·10 −41.28 12 62 26 742 3 599 510 1.30 ·10 −43.50 ·10 −51.33 ·10 −41.68 ·10 −41.30 13 80 21 531 7 238 636 9.84 ·10 −52.29 ·10 −51.01 ·10 −41.24 ·10 −41.26
+
+17 Table 5.2: Adaptive refinement results for the dG(1)-Q2/P disc 1 discretization using the goal quantity (5.8) for Example 1. 
+
+ℓ Ntime N max space Ntot ∥eT ∥ ˜ηh ˜ητ ˜ητ h Ieff 
+
+1 4 1540 6160 9.34 ·10 −4 2.89 ·10 −4 6.77 ·10 −5 3.56 ·10 −4 0.38 2 5 1736 12 390 4.57 ·10 −4 3.17 ·10 −4 4.00 ·10 −5 3.57 ·10 −4 0.78 3 5 3248 23 138 2.16 ·10 −4 −7.39 ·10 −5 1.91 ·10 −5 −5.49 ·10 −5 0.25 4 7 3494 57 272 9.18 ·10 −5 −4.36 ·10 −6 4.41 ·10 −6 5.60 ·10 −8 0.00 5 9 3572 114 154 5.17 ·10 −5 5.98 ·10 −5 6.65 ·10 −6 6.64 ·10 −5 1.29 6 9 4712 183 120 2.52 ·10 −5 8.63 ·10 −6 2.37 ·10 −6 1.10 ·10 −5 0.44 7 12 4868 371 674 1.06 ·10 −5 9.72 ·10 −6 3.25 ·10 −7 1.00 ·10 −5 0.95 8 12 4868 655 942 6.25 ·10 −6 3.82 ·10 −6 4.46 ·10 −7 4.26 ·10 −6 0.68 9 12 129 014 1 180 326 2.78 ·10 −6 −3.41 ·10 −6 3.95 ·10 −7 −3.02 ·10 −6 1.08 
+
+Table 5.3: Adaptive refinement results for the dG(2)-Q3/P disc 2 discretization using the goal quantity (5.8) for Example 1. 
+
+ℓ Ntime N max space Ntot ∥edrag ∥ ˜ηh ˜ητ ˜ητ h Ieff 
+
+1 2 4902 9804 1.71 ·10 −4 2.93 ·10 −6 4.35 ·10 −5 4.65 ·10 −5 0.27 2 3 4902 14 706 3.41 ·10 −5 1.53 ·10 −5 1.59 ·10 −6 1.69 ·10 −5 0.50 3 3 19 920 61 122 1.91 ·10 −5 6.58 ·10 −5 3.00 ·10 −6 6.88 ·10 −5 3.59 4 3 40 368 128 460 1.63 ·10 −5 4.75 ·10 −5 3.58 ·10 −6 5.11 ·10 −5 3.13 5 3 121 374 399 990 1.46 ·10 −5 1.49 ·10 −5 4.04 ·10 −6 1.90 ·10 −5 1.30 6 4 137 706 782 160 1.01 ·10 −6 6.71 ·10 −6 1.86 ·10 −7 6.90 ·10 −6 6.81 7 4 234 618 1 229 250 9.51 ·10 −7 3.57 ·10 −6 1.98 ·10 −7 3.77 ·10 −6 3.96 8 4 704 400 3 852 132 9.11 ·10 −7 1.35 ·10 −6 2.07 ·10 −7 1.56 ·10 −6 1.71 9 4 1 106 778 6 574 092 9.09 ·10 −7 8.46 ·10 −7 2.08 ·10 −7 1.05 ·10 −6 1.16 
+
+Table 5.4: Adaptive refinement results for the dG(3)-Q4/P disc 3 discretization using the goal quantity (5.8) for Example 1. 
+
+ℓ Ntime N max space Ntot ∥eT ∥ ˜ηh ˜ητ ˜ητ h Ieff 
+
+1 2 11 272 22 544 4.62 ·10 −6 1.81 ·10 −7 4.36 ·10 −7 6.17 ·10 −7 0.13 2 3 18 664 78 888 7.64 ·10 −7 −5.39 ·10 −7 5.31 ·10 −9 −5.34 ·10 −7 0.70 3 3 38 536 157 424 3.34 ·10 −7 −4.02 ·10 −7 1.48 ·10 −8 −3.88 ·10 −7 1.16 4 3 53 528 277 208 1.78 ·10 −7 −2.68 ·10 −7 2.22 ·10 −8 −2.46 ·10 −7 1.38 5 3 62 944 450 472 1.75 ·10 −7 −2.96 ·10 −7 2.25 ·10 −8 −2.74 ·10 −7 1.56 6 3 113 528 596 728 1.75 ·10 −7 −1.93 ·10 −7 2.25 ·10 −8 −1.70 ·10 −7 0.97 7 4 225 000 1 958 424 6.15 ·10 −9 −6.62 ·10 −9 4.36 ·10 −10 −6.19 ·10 −9 1.01 8 4 284 728 2 768 280 4.38 ·10 −9 −6.89 ·10 −9 6.13 ·10 −10 −6.28 ·10 −9 1.43 
+
+Across all four fully adaptive runs, the DWR estimator in combination with adap-tive refinement yields a consistent reduction of the goal error with increasing space-time resolution, while the corresponding effectivity indices remain in a reasonable range. The reported mean rates show that the decay of the goal error with respect to total work is close to its decay with respect to the space-time number of degrees of freedom, indicating that the adaptive refinement translates effectively into computa-tional efficiency. A compact comparison of these approximation and cost quantities is given in Table 5.5. 18 Table 5.5: Summary of the fully adaptive DWR computations for the four temporal orders r. Reported are the data from the final adaptive cycle: The space-time number of degrees of freedom NST , the goal error ∥eT ∥, the magnitude of |˜ητ h |, and the effectivity index. The table includes the convergence rates (5.2), as well as the ranges of the average nonlinear iterations, the average primal linear iterations per nonlinear step (5.5), and the relative dual work fraction (5.6).                                                                   
+
+> DWR mean rates nNL /N time np
+> L/n NL
+> rℓmax NST ∥eT∥|˜ητ h |Ieff rate ∥eT∥
+> NST rate ∥eT∥
+> Wtot min max min max Wd/W tot
+> 013 7 238 636 9.84 ·10 −51.24 ·10 −41.26 0.62 0.50 2.80 3.44 1.00 13.52 0.37 191 180 326 2.78 ·10 −63.02 ·10 −61.08 1.13 0.99 3.00 3.50 8.42 17.69 0.28 296 574 092 9.09 ·10 −71.05 ·10 −61.16 1.11 1.12 3.00 3.33 11.50 21.62 0.31 382 768 280 4.38 ·10 −96.28 ·10 −91.43 1.08 0.98 3.00 3.33 14.17 24.17 0.31
+
+The algebraic behavior is summarized in Figure 5.1, which shows stable nonlinear iteration counts per slab and only moderate growth of the primal linear iterations per nonlinear step over the adaptive loops. This indicates that the slab-wise geometric multigrid preconditioned Newton–Krylov method remains robust under successive adaptive refinement. At the same time, the relative dual work fraction stays at a comparable level across all discretizations, showing that the adjoint solve contributes a noticeable but controlled part of the overall computational cost. 0 5 10 2.833.23.4adaptive loop ℓ
+
+> NNewt /N slabs
+
+dG (0)-Q2/P disc 1 dG (1)-Q2/P disc 1 dG (2)-Q3/P disc 2 dG (3)-Q4/P disc 3
+
+0 5 10 010 20 adaptive loop ℓ
+
+> N p
+> lin /N Newt
+
+0 5 10 00.20.4adaptive loop ℓ
+
+> Wd/W tot
+
+Figure 5.1: Algebraic performance over the adaptive loops: nonlinear iterations per slab, primal linear iterations per nonlinear step, and relative dual work fraction. In Fig. 5.2 we plot the share of the primal problem, the dual problem as well as the error estimation over the entire wallclock time and its percentage share for one adaptive run including all DWR loops for the different discretizations corresponding to Tables 5.1–5.4. While the total runtime from dG(1)-Q2/P disc 1 to dG(3)-Q4/P disc 3
+
+increases progressively as expected, the percentage share of the three units remains stable and nearly unchanged across all discretizations. In comparison to the primal problem, the dual problem requires only one third of its computational effort, while the error estimator itself is negligible at less than one percent. The fact that the total runtime of the dG(0)-Q2/P disc 1 discretization is slightly higher to that of the dG(1)-Q2/P disc 1 one is due to the large number of slabs required in the first case. 19 Q2/P disc 1 Q2/P disc 1 Q3/P disc 2 Q4/P disc 3
+
+10 3
+
+10 4
+
+10 5
+
+10 6
+
+FE pair          
+
+> time [s]
+> primal dual error estimator
+> Q2/P disc 1Q2/P disc 1Q3/P disc 2Q4/P disc 3
+
+0
+
+20 
+
+40 
+
+60 
+
+80 
+
+100 
+
+FE pair   
+
+> Portion of wall time [%]  primal dual error estimator
+
+(a) (b) 
+
+Figure 5.2: Share of time spent on the primal problem, dual problem, and error estimation over the total wall-clock time for an adaptive run, including all DWR loops, measured in seconds (left), and their percentage shares (right) for the different discretizations corresponding to Tables 5.1–5.4. Finally, in Fig. 5.3 and Fig. 5.4 we visualize the distribution of the adaptively determined time step sizes τn and minimal spatial element diameter min K∈T n,ℓ max 
+
+> h
+
+hK
+
+within the slab Qn over the entire time interval I, respectively, corresponding to the final DWR loop of the different discretizations listed in Tables 5.1–5.4. For all discretizations, the step and element sizes are relatively large at the beginning, but they decrease continuously over time, reaching their minimal values at the final time T = 1. We note that the initial steps correspond to the initial distribution of the temporal and spatial meshes. This behavior is consistent with the choice of the underlying goal functional (5.8), which specifically targets the control of the 
+
+L2-error at the final time T . Furthermore, we observe that the total length of the subintervals is significantly reduced when using higher-order discretizations compared to the lowest-order case. 0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 110 −3
+
+10 −2
+
+10 −1
+
+10 0
+
+dG(0)-Q2/P disc 1
+
+dG(1)-Q2/P disc 1
+
+dG(2)-Q3/P disc 2
+
+dG(3)-Q4/P disc 3
+
+t
+
+τn(I8
+
+> n
+
+)
+
+τn(I9
+
+> n
+
+)
+
+τn(I9
+
+> n
+
+)
+
+τn(I13  
+
+> n
+
+)Figure 5.3: Distribution of the adaptively determined temporal step size τn plotted over the entire time interval I = (0 , T ] for the different discretizations corresponding to the respective final DWR loop in Tables 5.1–5.4. 20 0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1
+
+10 −2
+
+10 −1
+
+dG(0)-Q2/P disc 1
+
+dG(1)-Q2/P disc 1
+
+dG(2)-Q3/P disc 2
+
+dG(3)-Q4/P disc 3
+
+t
+
+h(I8
+
+> n
+
+)
+
+h(I9
+
+> n
+
+)
+
+h(I9
+
+> n
+
+)
+
+h(I13  
+
+> n
+
+)
+
+Figure 5.4: Distribution of the adaptively determined minimal spatial element di-ameter min K∈T n,ℓ max 
+
+> h
+
+hK within the slab Qn plotted over the entire time interval 
+
+I = (0 , T ] for the different discretizations corresponding to the respective final DWR loop in Tables 5.1–5.4. 
+
+5.2 Example 2: DFG Benchmark 2D-3 
+
+We consider the well-established benchmark problem of laminar flow around a cylinder introduced by Sch¨ afer and Turek [36], precisely the unsteady 2D-3 test setting. In this case, the flow around a circular obstacle with Reynolds number Re = 100 (the kinematic viscosity is set to ν = 0 .001) is driven by a parabolic inflow profile whose amplitude is modulated in time by a sin function. The geometry of the flow domain is shown in Fig. 5.5. We note that the coarse mesh used here is the same as in previous studies [7, 34]. The final time point is set to T = 8. The goal quantity is chosen to control the error of the mean drag coefficient. This coefficient is defined by 
+
+Jdrag (u) = −
+
+Z
+
+> I
+
+{(∂tv, ˆψd) + a(u)( ˆ φd)} dt , (5.9) where ˆ φd = ( ˆψd, 0) ⊤ fulfills ˆψd|S = ( |I|−1C, 0) ⊤ , ˆψd|∂ΩnS = 0 with the constant 
+
+C = 2( U 2mean d)−1. Here, the mean inflow velocity is given by 
+
+Umean = 2 /3 vD(0 , 0.205 , 0) = sin( πt/ 8) given by Eq. (5.10) and d denotes the diameter of the obstacle with boundary S =
+
+S = ∂B r(0 .2, 0.2). We take the reference value for the goal functional from [7] and set it to 1.6072872. Γwall 
+
+Γout 
+
+Γwall 
+
+Γin 
+
+2.20.41 
+
+d = 0 .1
+
+d = 0 .1
+
+c = (0 .2, 0.2) 
+
+S
+
+Figure 5.5: Geometry of the test scenario with a parabolic inflow profile Γ in , do-nothing boundary conditions at the outflow boundary Γ out and no-slip conditions on the walls Γ wall .21 The flow is driven by the Dirichlet inflow profile v = vD on the left boundary Γin := {0} × [0 , H ], given by 
+
+vD(x, t ) = 
+
+sin   π 
+
+> 8
+
+t 6y(H − y)
+
+H2
+
+0
+
+ on Γ in , (5.10) where H = 0 .41 denotes the channel height. On the wall boundary Γ wall and on the obstacle boundary we prescribe no-slip boundary conditions v = 0. On the outflow boundary Γ out we impose a do-nothing condition [21]. In Table 5.6 we present the results of an adaptive refinement run together with a comparison of the algebraic performance of a GMG-preconditioned Newton-Krylov method and an ILU method using a dG(1)-Q2/P disc 1 discretization. The adaptive refinement reduces the mean drag error (5.9) monotonically. The drag value converges to the reference value and the effectivity indices stay close to one on all loops. This shows that the DWR estimator provides a reliable approximation of the goal error. The observed decay of the goal error with respect to the space-time number of degrees of freedom is at least linear and becomes higher on the finer loops. Measured against total algebraic work, the same trend is obtained more efficiently with GMG than with ILU. Table 5.6: Adaptive refinement and algebraic performance for the dG(1)-Q2/P disc 1
+
+discretization with goal functional Jdrag . a reports the mean-drag value, the goal error, the space-time estimator contributions, and the effectivity index. b compares the GMG and ILU preconditioners in terms of nonlinear iterations per slab, primal linear iterations per nonlinear step, total algebraic work, and the resulting convergence rates with respect to work. 
+
+(a) Goal quantity, error estimator, and effectivity.                                         
+
+> ℓNtime Ntot Jdrag (uτ h )∥edrag ∥˜ηh˜ητ˜ητ h Ieff
+> 1160 606 720 1.389 2.14 ·10 −11.57 ·10 −19.08 ·10 −22.47 ·10 −11.16 2176 1 341 824 1.516 8.74 ·10 −25.68 ·10 −23.95 ·10 −29.63 ·10 −21.10 3193 3 004 238 1.584 1.93 ·10 −21.35 ·10 −28.34 ·10 −32.18 ·10 −21.13 4212 7 023 508 1.601 1.86 ·10 −31.22 ·10 −38.71 ·10 −42.09 ·10 −31.13
+
+(b) Solver robustness, total work, and convergence rates. 
+
+nNL /N time np
+
+> L
+
+/n NL Wtot rates of ∥edrag ∥
+
+ℓ GMG ILU GMG ILU GMG ILU Ntot W GMG W ILU 
+
+1 4.39 8.87 1.00 1.12 3.51 ·10 7 6.36 ·10 8 – – –2 4.20 9.25 1.03 1.12 1.34 ·10 8 1.49 ·10 9 1.13 6.69 1.05 3 4.25 6.42 1.21 1.09 3.28 ·10 8 2.40 ·10 9 1.87 1.68 3.15 4 4.64 6.85 1.33 1.05 8.40 ·10 8 3.80 ·10 9 2.76 2.49 5.11 
+
+This is consistent with the solver data. The GMG-preconditioned Newton-Krylov method remains robust over the full adaptive sequence, whereas ILU requires sub-stantially more nonlinear iterations and much larger primal linear iteration counts. The larger number of nonlinear iterations for ILU can be explained by the lower accu-racy of the linear solves in the Newton steps. Since the resulting Newton corrections are less accurate than with GMG, the convergence of the outer Newton iteration is correspondingly weaker. Overall, the results indicate that the adaptive strategy is ef-22 fective for the drag goal quantity (5.9) and that GMG is the more robust and efficient preconditioner for this problem. The temporal evolution of the drag coefficient is compared for the different DWR refinement loops in Fig. 5.6. We note that the curves converge by increasing the adaptive refinement (cf. loop 3 and 4) and are in good comparison to the results given in [7, Fig. 10] and [34, Fig. 6(a)], respectively. 
+
+Figure 5.6: Drag over all DWR loops Finally, in Fig. 5.7 we present the discrete primal solution on the final DWR loop as well as the adaptively refined spatial meshes for all four DWR loops at time point 
+
+t = 5. The spatial refinement remains concentrated close to the cylinder and in the wake, as confirmed by the selected meshes and solution snapshots. The drag and lift histories are smooth and consistent with the benchmark results, which indicates that the adaptive discretization resolves the relevant time dependent features and the Stokes projections avoids spurious oscillations. 23 (a) Adaptive mesh after loop 1. 
+
+> (b) Adaptive mesh after loop 2.
+> (c) Adaptive mesh after loop 3.
+> (d) Adaptive mesh after loop 4.
+> (e) Discrete solution on the final loop.
+
+Figure 5.7: Adaptive refinement history and final-loop solution at t = 5. The first four panels show the meshes generated over the adaptive loops. The last two panels show a refined view of the final mesh and the corresponding discrete solution. 
+
+# 6 Conclusion 
+
+We have developed a goal-oriented space-time adaptive finite element method for the incompressible Navier–Stokes equations based on the Dual Weighted Residual method. The approach combines discontinuous Galerkin time discretization, inf-sup stable mixed finite elements in space, adaptive refinement in space and time, and a slab-wise Newton–Krylov solver with geometric multigrid preconditioning. The numerical results show that this combination yields effective control of the goal quan-tities on dynamically adapted meshes. The main computational benefit of the DWR approach is its problem-driven re-finement. The estimator identifies those regions in space and time that are most relevant for the chosen output and thereby focuses resolution where it matters for 24 the quantity of interest. At the same time, the results show that this accuracy comes at a substantial cost. In addition to the primal problem, the adaptive loop requires the repeated solution of a dual problem and the evaluation of weighted residual con-tributions. The efficiency of the overall approach therefore depends not only on the quality of the estimator, but equally on the robustness of the underlying iterative solvers. The Newton iteration counts are essentially unaffected by the choice of linear preconditioner, whereas the GMRES iteration counts depend strongly on it. Thus, the additional cost of the DWR framework is governed primarily by the linear solver performance for the primal and dual subproblems. In this setting, geometric multigrid provides the required robustness, while ILU does not yield a competitive performance. This is especially important for higher-order discretizations, where the linear systems become more demanding and the dual solve adds a further substantial burden. For goal-oriented space-time adaptivity, robust preconditioning is therefore essential. Overall, the results show that DWR-based space-time adaptivity is effective for goal-oriented error control, provided that it is paired with scalable linear algebra. The practical cost of the method is determined by the interplay between estimator quality and solver performance. Future work should therefore address both aspects together, in particular through cheaper dual solves, more selective dual updates, and improved multilevel solvers for higher-order and larger-scale space-time discretizations. 
+
+# Acknowledgement 
+
+Computational resources (HPC cluster HSUper) have been provided by the project hpc.bw, funded by dtec.bw - Digitalization and Technology Research Center of the Bundeswehr. dtec.bw is funded by the European Union - NextGenerationEU. 
+
+# References 
+
+[1] Pasquale C. Africa, Daniel Arndt, Wolfgang Bangerth, Bruno Blais, Marc Fehling, Rene Gassm¨ oller, Timo Heister, Luca Heltai, Sebastian Kinnewig, Martin Kronbichler, Matthias Maier, Peter Munch, Magdalena Schreter-Fleischhacker, Jan P. Thiele, Bruno Turcksin, David Wells, and Vladimir Yushutin. The deal.II library, version 9.6. Journal of Numerical Mathematics ,32(4):369–380, 2024. [2] Mathias Anselmann and Markus Bause. A geometric multigrid method for space-time finite element discretizations of the navier–stokes equations and its appli-cation to 3d flow simulation. ACM Transactions on Mathematical Software ,49(1):1–25, 2023. [3] W. Bangerth, M. Geiger, and R. Rannacher. Adaptive galerkin finite element methods for the wave equation. Computational Methods in Applied Mathematics ,10(1):3–48, 2010. [4] W. Bangerth and R. Rannacher. Adaptive Finite Element Methods for Differen-tial Equations . Birkh¨ auser Verlag, Basel, 2003. [5] M. Bause, M. P. Bruchh¨ auser, B. Endtmayer, N. Margenberg, I. Toulopoulos, and T. Wick. Anisotropic space-time goal-oriented error control and mesh adap-tivity for convection-diffusion-reaction equations. J. Numer. Math , 2025. 25 [6] R. Becker and R. Rannacher. An optimal control approach to a posteriori error estimation in finite element methods. Acta Numer. , 10:1–102, 2001. [7] M. Besier and R. Rannacher. Goal-oriented space-time adaptivity in the finite element Galerkin method for the computation of nonstationary incompressible flow. Int. J. Num. Methods Fluids , 70(9):1139–1166, 2012. [8] Michael Besier and Winnifried Wollner. On the pressure approximation in nonstationary incompressible flow simulations on dynamically varying spatial meshes. International Journal for Numerical Methods in Fluids , 69(6):1045– 1064, 2012. [9] Michael Besier and Winnifried Wollner. On the pressure approximation in nonstationary incompressible flow simulations on dynamically varying spa-tial meshes: PRESSURE APPROXIMATION ON DYNAMIC MESHES. 69(6):1045–1064, 2012. [10] Malte Braack and Alexandre Ern. Adaptive computation of reactive flows with local mesh refinement and model adaptation. pages 159–168. Springer, 2004. [11] Andreas Brenner, Eberhard B¨ ansch, and Markus Bause. A priori error analysis for finite element approximations of the stokes problem on dynamic meshes. IMA Journal of Numerical Analysis , 34(1):123–146, 05 2013. [12] M. P. Bruchh¨ auser. Goal-oriented space-time adaptivity for a multirate approach to coupled flow and transport . PhD thesis, Helmut-Schmidt-University/University of the German Federal Armed Forces Hamburg, 2022. [13] Marius Paul Bruchh¨ auser and Markus Bause. Numerical study of approximation techniques for the temporal weights to the dwr method. In Ad´ elia Sequeira, Ana Silvestre, Svilen S. Valtchev, and Jo˜ ao Janela, editors, Numerical Mathematics and Advanced Applications ENUMATH 2023, Volume 1 , pages 177–187, Cham. Springer Nature Switzerland. [14] Marius Paul Bruchh¨ auser, Uwe K¨ ocher, and Markus Bause. On the implementa-tion of an adaptive multirate framework for coupled transport and flow. Journal of Scientific Computing , 93(59). [15] G.F. Carey and J.T. Oden. Finite elements, computational aspects, Vol. III . The Texas finite element series. Prentice-Hall, Englewood Cliffs, New Jersey, 1984. [16] Alexandre Ern, Iain Smears, and Martin Vohral´ ık. Guaranteed, locally space-time efficient, and polynomial-degree robust a posteriori error estimates for high-order discretizations of parabolic problems. SIAM Journal on Numerical Anal-ysis , 55(6):2811–2834, 2017. [17] R. D. Falgout, S. Friedhoff, Tz. V. Kolev, S. P. MacLachlan, J. B. Schroder, and S. Vandewalle. Multigrid methods with space–time concurrency. Computing and Visualization in Science , 18(4-5):123–143, 8 2017. [18] Bj¨ orn Gmeiner, Ulrich R¨ ude, Holger Stengel, Christian Waluga, and Barbara Wohlmuth. Towards Textbook Efficiency for Parallel Multigrid. Numerical Math-ematics Theory Methods and Applications , 8(1):22–46, 2 2015. 26 [19] Wolfgang Hackbusch. Multi-Grid Methods and Applications , volume 4 of Springer Series in Computational Mathematics . Springer-Verlag, Berlin Heidelberg New York Tokyo, 1985. [20] John G. Heywood and Rolf Rannacher. Finite element approximation of the nonstationary navier–stokes problem. i. regularity of solutions and second-order error estimates for spatial discretization. SIAM Journal on Numerical Analysis ,19(2):275–311, 1982. [21] John G Heywood, Rolf Rannacher, and Stefan Turek. Artificial boundaries and flux and pressure conditions for the incompressible navier–stokes equations. In-ternational Journal for numerical methods in fluids , 22(5):325–352, 1996. [22] S. Hussain. A Note on Accurate and Efficient Higher Order Galerkin Time Stepping Schemes for the Nonstationary Stokes Equations. The Open Numerical Methods Journal , 4(1):35–45, 1 2012. [23] Volker John. Finite Element Methods for Incompressible Flow Problems , vol-ume 51 of Springer series in computational mathematics . Springer Cham, Berlin; Heidelberg, 1. edition edition, 2016. [24] Volker John and Gunar Matthies. Higher-order finite element discretizations in a benchmark problem for incompressible flows. International Journal for Numerical Methods in Fluids , 37(8):885–903, 2001. [25] Carl T Kelley. Iterative methods for linear and nonlinear equations . SIAM, 1995. [26] Ulrich Langer and Andreas Schafelner. Adaptive space–time finite element meth-ods for parabolic optimal control problems. Journal of Numerical Mathematics ,30(4):247–266, 11 2021. [27] Ulrich Langer and Olaf Steinbach, editors. Space-Time Methods . De Gruyter, Berlin, Boston, 2019. [28] Nils Margenberg, Markus Bause, and Peter Munch. An hp multigrid approach for tensor-product space-time finite element discretizations of the stokes equations. 
+
+SIAM Journal on Scientific Computing , 47(6):B1503–B1529, 2025. [29] G. Matthies and L. Tobiska. The inf-sup condition for the mapped q k- p k-1 disc element in arbitrary space dimensions. Computing , 69(2):119–139, 2002. [30] Stephen F. McCormick. Multigrid Methods . Society for Industrial and Applied Mathematics, 1987. [31] Martin Neum¨ uller and Iain Smears. Time-parallel iterative solvers for parabolic evolution equations. SIAM Journal on Scientific Computing , 41(1):C28–C51, 2019. [32] Joachim Nitsche. ¨Uber ein variationsprinzip zur l¨ osung von dirichlet-problemen bei verwendung von teilr¨ aumen, die keinen randbedingungen unterworfen sind. In Abhandlungen aus dem mathematischen Seminar der Universit¨ at Hamburg ,volume 36, pages 9–15. Springer, 1971. [33] Thomas Richter. Fluid-structure interactions: models, analysis and finite ele-ments , volume 118. Springer, 2017. 27 [34] Julian Roth, Jan Philipp Thiele, Uwe K¨ ocher, and Thomas Wick. Tensor-Product Space-Time Goal-Oriented Error Control and Adaptivity With Partition-of-Unity Dual-Weighted Residuals for Nonstationary Flow Problems. 
+
+Comput. Methods Appl. Math. , 24(1):185–214, 2024. [35] Yousef Saad. Iterative methods for sparse linear systems . SIAM, 2003. [36] Michael Sch¨ afer, Stefan Turek, Franz Durst, Egon Krause, and Rolf Rannacher. Benchmark computations of laminar flow around a cylinder. In Flow simulation with high-performance computers II: DFG priority research programme results 1993–1995 , pages 547–566. Springer, 1996. [37] M. Schmich and B. Vexler. Adaptivity with dynamic meshes for space-time finite element discretizations of parabolic equations. SIAM J. Sci. Comput. ,30(1):369–393, 2008. [38] Olaf Steinbach and Huidong Yang. An Algebraic Multigrid Method for an Adap-tive Space–Time Finite Element Discretization . 1 2018. [39] Olaf Steinbach and Huidong Yang. Space-time finite element methods for parabolic evolution equations: discretization, a posteriori error estimation, adap-tivity and solution. In H. Taghavy et al., editors, Space-time methods: Applica-tions to partial differential equations , De Gruyter, pages 207–248. De Gruyter, Berlin, 2019. [40] Roger Temam. Navier–Stokes Equations . North-Holland, Amsterdam, 1984. [41] Vidar Thom´ ee. Galerkin Finite Element Methods for Parabolic Problems (Springer Series in Computational Mathematics) . Springer-Verlag, Berlin, Hei-delberg, 2006. [42] S Pratap Vanka. Block-implicit multigrid solution of navier-stokes equations in primitive variables. Journal of Computational Physics , 65(1):138–158, 1986. [43] Thomas Wick and Winnifried Wollner. Optimization with nonstationary, nonlin-ear monolithic fluid-structure interaction. International Journal for Numerical Methods in Engineering , 122(19):5430–5449, 2021. [44] Christian Wieners. A space-time discontinuous galerkin discretization for the linear transport equation. Computers & Mathematics with Applications , 152:294– 307, 2023. 28

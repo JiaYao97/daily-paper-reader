@@ -1,0 +1,879 @@
+Title: A High-Order Arbitrary Lagrangian-Eulerian Discontinuous Galerkin Method for the Boltzmann Equation in Nearly Incompressible Flows
+
+URL Source: https://arxiv.org/pdf/2607.00199v1
+
+Published Time: Thu, 02 Jul 2026 00:18:08 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+# A High-Order Arbitrary Lagrangian-Eulerian Discontinuous Galerkin Method for the Boltzmann Equation in Nearly Incompressible Flows 
+
+A. Aygun ∗ 1, O. Ata 1, T. Warburton 2 and A. Karakus 11Department of Mechanical Engineering, Middle East Technical University, Ankara, Turkey 06800 
+
+> 2
+
+Department of Mathematics, Virginia Tech, Blacksburg, VA, 24061 USA 
+
+We propose the arbitrary Lagrangian-Eulerian (ALE) form of the Galerkin-Boltzmann for-mulation for the simulation of nearly incompressible flows with moving boundaries. The continuous Boltzmann equations are mapped to a reference state to compensate the mesh motion with an advection term. The resulting system is discretized in space using the dis-continuous Galerkin method on unstructured meshes. A semi-analytic Runge-Kutta time discretization is used to overcome the stiffness introduced by the continuous Boltzmann equations. The well-known geometric conservation law is shown to be satisfied by the time and space discretizations and consistent update of geometric factors of the discretization. The implementation is on the GPU accelerated kernel library libParanumal and validated by a free stream preservation and moving Taylor-Green vortex test cases. Then, the capabilities are shown using a plunging symmetric airfoil in two-dimensions and moving carangiform fish in three-dimensions using perfectly matched layers. 
+
+Keywords: Arbitrary Lagrangian-Eulerian, Galerkin-Boltzmann formulation, moving do-main, nearly incompressible flow, low Mach flow 
+
+# 1 Introduction 
+
+Simulating physical systems governed by partial differential equations (PDEs) on moving domains is a fundamental challenge in computational science and engineering. Applications such as fluid-structure interaction (FSI), arterial blood flow [1], rotating turbines [2], moving airfoils [3], free surface [4], and multi-material flows [5] require robust and accurate numerical methods capable of handling domain deformation over time. The numerical methods for moving domains can be classified into boundary fit-ted (interface tracking) and non-boundary fitted (interface capturing) methods. Non-boundary-fitted methods, including fictitious domain method [6], the extended finite element method (XFEM) [7], and immersed boundary methods [8] embed the moving geometry into a fixed or adaptively refined background mesh. These methods avoid mesh deformation by allowing the geometry to intersect arbi-trary elements, simplifying mesh generation, but they have some difficulty in modifying for high-order accuracy. In boundary fitted methods, the computational mesh conforms to the evolving geometry of the physical domain. The arbitrary Lagrangian–Eulerian (ALE) method is one of the most popular methods in this class, where the mesh moves with a prescribed velocity decoupled from the material flow. An Eulerian framework uses a fixed mesh in space and struggles with moving boundaries and interfaces. A Lagrangian framework moves the mesh with the material but suffers from mesh tangling and distorted elements. The ALE method was developed to offer a more general formulation to over-come the difficulties of the Eulerian and Lagrangian descriptions. It was first developed in [9] with a finite difference discretization by choosing the mesh velocity independently from the material velocity, and later developed for the finite element method [10]. 
+
+> ∗Corresponding author. E-mail address: atakana@metu.edu.tr
+
+1
+
+> arXiv:2607.00199v1 [physics.flu-dyn] 30 Jun 2026
+
+The integration of high-order spatial discretizations, such as the discontinuous Galerkin (DG) and spectral element methods (SEM), into the ALE framework enables the resolution of complex physical phenomena with minimal numerical diffusion. These benefits are especially valuable in simulations involving moving domains, where capturing complex features near deforming boundaries or interfaces is critical. A numerous successful contributions had been made throughout the years with high-order methods [3, 11–15]. In these formulations, the physical moving domain is mapped to a fixed reference frame, allowing the conservation laws to be solved in a consistent coordinate system where the mesh velocity and deformation Jacobian are evaluated with the same high-order precision as the solution variables. To ensure that these high-order ALE schemes maintain their accuracy and stability during mesh motion, specific attention is given to the discrete geometric conservation law (GCL). The GCL provides a framework for ensuring that the numerical fluxes and volume changes are integrated in a manner that preserves constant solutions, such as uniform flow, across a deforming mesh [16]. Various successful strategies have been established to enforce this consistency in high-order methods focusing on the time evolution of the Jacobian [3], evaluating different ways of the mesh velocity [12] or constructing the discrete operators to satisfy GCL automatically [13, 17]. Beyond their theoretical appeal, high-order ALE methods have been increasingly employed in chal-lenging simulation scenarios that demand both geometric flexibility and numerical accuracy. Spectral element formulations have been successfully applied to simulate complex intake stroke dynamics of internal combustion engines [18], where resolving moving valves and piston motion is critical for pre-dicting efficiency. Similarly, high-order ALE frameworks have proven instrumental in a wide range of fluid-structure interaction scenarios, providing the necessary precision to resolve the interactions between flexible structures and transient fluid flows [19]. For highly dynamic regimes, such as com-pressible flows and explosion problems, researchers have utilized ALE methods on Voronoi meshes that support topology changes, often stabilized by a posteriori sub-cell limiters to maintain robustness without sacrificing accuracy [20, 21]. Several other studies employ high-order methods to simulate complex flow dynamics of bio-inspired flows such as flapping wings [22], fish-like movement [23] and arterial blood flow [24]. The Boltzmann equations, describe fluids at the macroscopic level. It has been shown that these equations can recover the Navier-Stokes equations in the low-Mach limit [25]. The complex nonlinear collision term is generally replaced with relaxation models in numerical studies. Lattice-Boltzmann methods are widely used for numerical modeling of the Boltzmann equations [26] along with the continuous Boltzmann formulations [27, 28]. Numerous extensions of lattice-Boltzmann methods had been studied with ALE formulations for moving domains. It has been used for compressible flows and moving airfoils [29], immersed moving solids [30], incompressible flows [31], FSI with large deformations [32] and many more areas of applications. In this study, we propose an ALE form of the Galerkin-Boltzmann formulation, which gives us a moving domain solver for the nearly incompressible flow regime, implemented for GPU architectures. A nodal discontinuous Galerkin method is used for the resulting ALE form. The solver works with simplex elements in both two and three dimensions. The geometric conservation is achieved by consistent update of the geometric factors along with mesh velocity field and evaluating the spatial integrals at the same time level. A fourth order semi-analytic Runge-Kutta time integrator is used for time discretization. The remainder of this paper is structured as follows: Section 2 describes the Galerkin-Boltzmann equation system and the details of the ALE form. Sections 3 and 4 give the details of the spatial and temporal discretization strategies. Section 5 is devoted for the mesh movement strategy and the geometric conservation law. Section 6 briefly explains the GPU implementation strategies of each kernel. Lastly, in Section 7, we show numerical results validating the geometric conservation law and demonstrate the applicability of the proposed approach with concluding remarks in Section 8. 22 Galerkin-Boltzmann Formulation in the ALE Form 
+
+We consider the ALE form of the Galerkin-Boltzmann equations introduced in [28]. The methodology for the stationary form starts with the continuous Boltzmann equations describing the phase-space distribution function, f (x, v, t ) which is a function of the spatial variable x, microscopic particle velocity v, and time t. Using the Bhatnagar-Gross-Krook (BGK) collision model, the continuous Boltzmann-BGK equation becomes 
+
+∂f ∂t x
+
++ v · ∇ f = f eq − fτ , (1) where τ is the relaxation time and f eq is the equilibrium phase space density. The Galerkin-Boltzmann formulation is obtained by the approach of Tölke et al [27] where the phase space distribution function is approximated by a polynomial expansion. The unknown polynomial coefficients is obtained with a Galerkin approach, using the same polynomial for the test functions and integrating over the unbounded microscopic velocity space Ωv = ( −∞ , ∞)d. Choosing a bi-variate Hermite polynomials lead to a constant coefficient stiffness matrix simplified as 
+
+∂q ∂t x
+
+= Ax · ∇ xq + N (q), (2) where q = q(x, t ) is a vector of Hermite polynomial coefficients Ax are directional coefficient matrices, and N is the collision operator. The detailed derivation can be found in [28]. A second order polynomial space approximation for the phase space yields a vector of unknown polynomial coefficients q(x, t ) = [q1(x, y, t ), . . . , q n(x, y, t )] T , where n = 6 for two dimensions and n = 10 for three dimensions. The constant coefficient stiffness matrix for 2D yields 
+
+Ax = −√RT 
+
+
+
+0 1 0 0 0 01 0 0 0 √2 00 0 0 1 0 00 0 1 0 0 00 √2 0 0 0 00 0 0 0 0 0
+
+
+
+, A y = −√RT 
+
+
+
+0 0 1 0 0 00 0 0 1 0 01 0 0 0 0 √20 1 0 0 0 00 0 0 0 0 00 0 √2 0 0 0
+
+
+
+and the nonlinear collision operator is given by 
+
+N = − 1
+
+τ
+
+
+
+0 0 0
+
+
+
+q4 − q2q3
+
+> q1
+
+ 
+
+q5 − q22
+
+> q1
+> √2
+
+ 
+
+q6 − q23
+
+> q1
+> √2
+
+  T
+
+.
+
+The equation system (2) recovers the Navier-Stokes equations for low Mach number, nearly incom-pressible flows with kinematic viscosity ν = τ RT . The relations between macroscopic flow properties and moment of the distribution functions can be written as 
+
+ρ = q1, ρu = √RT q 2, ρv = √RT q 3.
+
+The deviatoric stress tensor is given by 
+
+σ11 = −RT 
+
+√2q5 − q22
+
+q1
+
+
+
+, σ 22 = −RT 
+
+√2q6 − q23
+
+q1
+
+
+
+σ12 = −RT 
+
+
+
+q4 − q2q3
+
+q1
+
+
+
+.
+
+Lastly, the pressure is recovered through equation of state p = ρRT . The details for 3D formulation can be found in [33]. 3Figure 1: Illustration of the transformation of coordinate systems from the reference element bD to time dependent element De(t) in the moving physical domain Ωh with the mapping f G(ξ, t ), shown with two-dimensional triangle elements. To obtain the ALE form of Equation 2, the Eulerian time derivative should be replaced with ALE time derivative with respect to a fixed point in the mesh. By defining the reference frame ξ of the reference element, we can write the ALE time derivative of an arbitrary quantity ϕ using the Reynolds transport theorem as 
+
+∂ϕ ∂t ξ
+
+= ∂ϕ ∂t x
+
++ ∂x
+
+∂t ξ
+
+· ∂ϕ ∂x = ∂ϕ ∂t x
+
++ vG · ∇ xϕ. (3) This theorem produces an additional transport term including vG indicating the grid velocity. The mapping f G(ξ, t ) defines the motion of the domain in the physical coordinates x with respect to the reference frame ξ. Using Equation 3, to replace the Eulerian time derivative, the ALE form of the Galerkin-Boltzmann equation system becomes 
+
+∂q ∂t ξ
+
+= Ax · ∇ xq + vG · ∇ xq + N (q). (4) 
+
+# 3 Spatial Discretization 
+
+We represent the physical time dependent domain Ω( t) with computational domain Ωh(t) composed of K non-overlapping elements De(t), where e = 1 , . . . , K such that 
+
+Ωh(t) = 
+
+> K
+
+[
+
+> e=1
+
+De(t). (5) Each element in Ωh(t) is a straight sided simplex with an affine mapping for all t ∈ [tn, t n+1 ] with the map f G(ξ, t ). The illustration of the mapping is shown in Figure 1. The mapping is time dependent, therefore the metric transformations change in every stage of the time discretization scheme. The mesh topology of Ωh(tn) and Ωh(tn+1 ) is assumed to be the same such that remeshing is not considered in this work. Both Ωh(tn) and Ωh(tn+1 ) have the same number of elements and all the elements are positively oriented with respect to the reference element. We denote the approximation to field variable q, on an element De as qe, and local trace values of 
+
+qe on the element boundary ∂D e as q− with a corresponding neighboring trace value q+. We consider a finite element space V en on each element to be PN (De), the space of polynomial functions of degree 
+
+N . As a basis of finite element spaces, we use Lagrange polynomials interpolated at the Warp & Blend nodes [34] denoted as {ϕei }NP
+
+> i=1
+
+. Next, starting from Equation 4, we seek a local solution q satisfying the following strong variational form, 
+
+Z
+
+> De
+
+ϕ ∂q e
+
+∂t ξ
+
+=
+
+Z
+
+> De(t)
+
+ϕ (Ax · ∇ xqe + vG · ∇ xqe) + 
+
+Z
+
+> ∂D e(t)
+
+ϕF (q∗ − q−) + 
+
+Z
+
+> De(t)
+
+ϕN (qe), (6) 4where F = FS + FALE , FS = Ax · n is the stationary flux and FALE = vG · n is the flux coming from the ALE formulation. The numerical flux q∗ is defined using an upwind formulation. The FS is formulated as in [28, 33] such that the operator is diagonalized as FS = RΛR−1. The ALE upwind flux matrix will be diagonal consisting the entries of vG and therefore the upwind flux can be written as, 
+
+FS q∗ = R(Λ +R−1q− + Λ −R−1q+), FALE q∗ = Λ + 
+
+> ALE
+
+q− + Λ − 
+
+> ALE
+
+q+, (7) where Λ+ 
+
+> ALE
+
+contains the positive valued mesh velocity and Λ− 
+
+> ALE
+
+contains the negative valued mesh velocity. To evaluate the integral terms containing the nonlinear term N (qe), we use a cubature based integration to reduce aliasing errors. We select a nodal set of Nc cubature nodes on the reference element and associated weights, wci for i = 1 , . . . , N c. We then define a set of cubature nodes (xe,c i , y e,c i )
+
+on each element and map to the reference element with an interpolation operator Ie defined as 
+
+Ieij = ϕei (xe,c i , y e,c i ).
+
+The Jacobian of the mapping x = f G(ξ, t ) for x = ( x, y ) and ξ = ( r, s ) can be defined for a time instant as 
+
+Ge =
+
+xer xes
+
+yer yes
+
+
+
+,
+
+and its determinant is defined as Je = det Ge. We also define mass, surface mass and stiffness operators on each element as 
+
+Meij =
+
+Z
+
+> De(t)
+
+ϕej ϕei , Mef ij =
+
+Z
+
+> ∂D e(t)
+
+ϕej ϕei , Se 
+
+> x
+
+=
+
+Z
+
+> De(t)
+
+ϕej
+
+∂ϕ ei
+
+∂x .
+
+Using these operatores, we can write the nodal values of qe for i = 1 , . . . , N p from (6), 
+
+Meij 
+
+∂q ej
+
+∂t = ( Ax + vG)( Se
+
+> x
+
+)ij qej + Mef ij (F (q∗ − q−)) j + JeIeki wkN (Ieqej ) (8) for j = 1 , . . . , N p, k = 1 , . . . , N c and f = 1 , . . . , N f where Nf is the number of faces per element. By multiplying (8) by (Me)−1, we define the differentiation, lift and projection operators as 
+
+De 
+
+> x
+
+= ( Me)−1Se
+
+> x
+
+, Lef = ( Me)−1Mef , Pe = ( Me)−1(Ie)T diag (w),
+
+respectively. Then, we can rewrite Equation 8 using these operators as 
+
+∂q ei
+
+∂t = ( Ax + vG)( De
+
+> x
+
+)ij qej + Lef ij (F (q∗ − q−)) j + JePeik N (Ieqej ). (9) 
+
+# 4 Temporal Discretization 
+
+In our simulations, we have used fourth order semi analytic Runge-Kutta time discretization [28] to overcome the severe time step restriction in the limit of small relaxation time τ . The nonlinear term 
+
+N (q) in the formulation becomes stiff for small relaxation times, therefore, we write the system as 
+
+dq dt = −Λq + L(q) + ˜N(q), (10) where Λ = diag(0 , 0, 0, 1 
+
+> τ
+
+, 1 
+
+> τ
+
+, 1 
+
+> τ
+
+) and ˜N(q) = 
+
+
+
+0, 0, 0, q2q3 
+
+> τ q 1
+
+, q22 
+
+> τ q 1
+> √2
+
+, q23
+
+> τ q 1
+> √2
+
+T
+
+. All linear terms are collected to L. By writing F(q) = L(q) + ˜N(q) we can simplify the notation as 
+
+dq dt = −Λq + F(q). (11) 5Table 1: Butcher tableau for the classic RK4a, with coefficients 0 
+
+> 121212
+
+0 12
+
+1 0 0 1
+
+> 16131316
+
+Since the nonlinear term is absent in the first three equations, these can be integrated explicitly in time with the advective time scale being the relevant stability constraint. The time-splitting approach in (11) separates the system such that we can apply a semi-analytic time integration method to the last three equations, while continuing to use an explicit method for the first three. The explicit scheme is designed in such a way that it aligns with the semi-analytic integration in the non-stiff limit, 1/τ → 0.To derive the semi-analytic formulation, we multiply (11) by eΛt and integrate in time, yielding the following expression: 
+
+q(tn+1 ) = q(tn)e−Λ(tn+1 −tn) +
+
+Z tn+1 
+
+> tn
+
+eΛ(θ−tn+1 )F (q (θ) , θ ) dθ. (12) For a Runge-Kutta method, we begin by integrating (12) from t = tn to some intermediate time level 
+
+t = tn + ∆ ti,
+
+qni = qne−Λ∆ti +
+
+Z ∆ti
+
+> 0
+
+eΛ(θ−∆ti)F (q(tn + θ), t n + θ) dθ. 
+
+Internal and final stages of a general method can be approximated by, 
+
+qni = qne−Λ∆ti + ∆ t
+
+> i−1
+
+X
+
+> j=0
+
+˜aij F (q(tn + ∆ tj ), t n + ∆ tj ) = qne−Λ∆ti + ∆ t
+
+> i−1
+
+X
+
+> j=0
+
+˜aij Fnj ,qn+1 = qne−Λ∆t + ∆ t
+
+> s−1
+
+X
+
+> j=0
+
+˜bj F (q(tn + ∆ ti), t n + ∆ ti) = qne−Λ∆t + ∆ t
+
+> s−1
+
+X
+
+> j=0
+
+˜bj Fni ,
+
+where s is the number of stages, and ˜a and ˜b are the semi-analytic Runge-Kutta method coefficients. Since a semi-analytic method reduces to the base Runge-Kutta method in the limit 1 
+
+> τ
+
+→ 0, the exponential and non-exponential terms are consistent in the equation. It is assumed that the base RK method satisfies s−1X
+
+> j=0
+
+bj = 1 ,
+
+> i−1
+
+X
+
+> j=0
+
+aij = ci, (13) and the semi-analytic RK scheme satisfies an analogous constraint: 
+
+> s−1
+
+X
+
+> j=0
+
+˜bj = γ−1 (eγ − 1) ,
+
+> i−1
+
+X
+
+> j=0
+
+˜aij = 1
+
+ci
+
+γ−1 (eciγ − 1) , (14) for i = 1 , . . . , s − 1 and γ = − ∆tτ . Starting from the classical fourth-order Runge-Kutta method with the Butcher tableau given in Table 1, the coefficients of the SARK method used in this work can be 6presented as, 
+
+˜a10 = γ−1 h
+
+−1 + e γ
+
+> 2
+
+i
+
+,
+
+˜a20 = γ−2 h
+
+4 + γ + e γ 
+
+> 2
+
+(γ − 4) 
+
+i
+
+, ˜b0 = γ−3 −4 − γ + eγ (γ2 − 3γ + 4)  ,
+
+˜a21 = γ−2 h
+
+−4 − 2γ + 4 e γ
+
+> 2
+
+i
+
+, ˜b1 = γ−3 [4 + 2 γ + eγ (2 γ − 4)] ,
+
+˜a30 = γ−2 [2 + γ + eγ (γ − 2)] , ˜b2 = γ−3 [4 + 2 γ + eγ (2 γ − 4)] ,
+
+˜a31 = 0 , ˜b3 = γ−3 −4 − 3γ − γ2 + eγ (4 − γ) ,
+
+˜a32 = γ−2 [−2 − 2γ + 2 eγ ] .
+
+# 5 Mesh Motion and Geometric Conservation Law 
+
+To complete the ALE formulation, the grid velocity field vG must be defined. Because our spatial discretization relies on an affine mapping with constant Jacobians, the physical elements are strictly required to remain straight-sided throughout the simulation. To enforce this geometric constraint for any time interval [tn, t n+1 ], we evaluate the prescribed grid velocity at the mesh nodes and interpolate it linearly across the elements, ensuring the velocity field is globally continuous and piecewise linear 
+
+(C0 ∪P 1). The nodal coordinates are advanced in time using the same Runge-Kutta integration scheme employed for the primary solver. During each Runge-Kutta stage, we evaluate the explicit, continuous velocity field vG and subsequently update the spatial coordinates of the physical nodes. With the definition of the grid velocity, the ALE formulation of the Galerkin-Boltzmann formulation is complete. This ALE scheme should satisfy geometric conservation law, which dictates that the numerical method must exactly preserve a uniform, constant state independent of the mesh motion. To achieve this, the geometric factors are consistently updated, and all spatial integrals evaluated at the same time level [17, 35]. With consistent integration of terms, the ALE form of the Galerkin-Boltzmann formulation inherently satisfies GCL by the consistency of the spatial discretization and upwind numerical flux. To verify this, assume a uniform constant state q(x, t ) = q0 is initialized throughout the moving domain. Substituting this constant state to the right-hand side of Equation 6, we can evaluate the terms one by one: 
+
+• The volume terms including the gradient of a constant field q0 is zero in a stable scheme. 
+
+• The consistency of the upwind flux ensures that when both the internal state q− and the neighbor state q+ equal to q0, the numerical flux term becomes q∗ = q0. Therefore the term in the surface integral q∗ − q0 vanishes. 
+
+• The collision term N (q) drives the system toward the equilibrium. For a uniform and constant state, the system should be perfectly at equilibrium. That yields N (q0) = 0 , vanishing the term on the right-hand side. This yields a zero right-hand side term in Equation 6. Applying this to Equation 11 for time integration by plugging in q0,
+
+dq ∂t = 0 = −Λq0 + F(q0),
+
+Λq0 = F(q0).
+
+This means that, at the equilibrium, the explicit fluxes and nonlinear terms act as an equal and opposite 7force of the stiff decay −Λq0. Plugging this analogy to our time integrator step will yield 
+
+qn+1 = q0e−Λ∆t + ∆ t
+
+> s−1
+
+X
+
+> j=0
+
+˜bj Fni ,qn+1 = q0e−Λ∆t + ∆ t
+
+> s−1
+
+X
+
+> j=0
+
+˜bj (Λq0) .
+
+Factoring out the common q0 yields 
+
+qn+1 = q0
+
+e−Λ∆t + ∆ tΛ
+
+> s−1
+
+X
+
+> j=0
+
+˜bj
+
+ .
+
+Satisfying the constraint in Equation 14, with γ = −Λ∆t,
+
+qn+1 = q0
+
+ e−Λ∆t + ∆ tΛ(γ−1 (eγ − 1))  ,qn+1 = q0
+
+ e−Λ∆t + ∆ tΛ(−Λ∆t)−1  e−Λ∆t − 1 .
+
+The expression in the parentheses becomes unity and this semi-analytic Runge-Kutta scheme yields 
+
+qn+1 = q0 in every timestep, satisfying the geometric conservation law. The numerical tests in Section 7.1 shows that the free stream state can be preserved in the ALE form of the Galerkin-Boltzmann formulation. 
+
+# 6 GPU Implementation 
+
+In this section, we give a brief information about the implementation for obtaining the numerical results. The formulation described above is implemented into the libParanumal kernel library [36], using C++ and OCCA kernel language [37]. OCCA is a vendor neutral framework supporting multiple backends, offering flexibility for building portable device kernels. The solution process consists of six fundamental compute kernels. i) interpolation of grid velocities on solution nodes, ii) recalculating the geometric factors, iii) evaluation of volume integrals, iv) evalu-ation of surface integrals, v) cubature integration of relaxation term, vi) timestep update. We refer to these kernels as; velocity interpolation kernel, geometric factor kernel, volume kernel, surface kernel, cubature kernel and update kernel respectively. 
+
+• Velocity Interpolation Kernel : In the numerical implementations, the grid velocity field is explicitly defined on the vertices of the elements. For the affine mapping, we interpolate the vertex velocities to the interpolation nodes and obtain the grid velocity in the space of P 1. The vertex velocity field is first loaded from global memory to shared memory. An interpolation array of size Np × Nvertices is re-used within the kernel by taking advantage of L1 or L2 caches. Every thread calculates the inner product of a row of the interpolation matrix and the vertex velocity vector stored in the shared memory. 
+
+• Geometric Factor Kernel : After the mesh moves, the geometric factors, including the ele-mental Jacobian, spatial derivative matrices, and interfacial face normals, must be re-evaluated. Since the deformation preserves the affine simplicial elements, these geometric factors remain constant throughout an element and determined by the coordinates of linear vertices. Therefore, rather than assigning a thread block to a single element, the global array is segmented into dis-crete tiles of block size 256, assigning exactly one thread to compute the geometry for one entire element. Once the vertices are loaded, all geometric computations are localized entirely within registers before the updated metrics are written back to global memory. 8• Volume Kernel : The ALE-modified volume kernel evaluates the semi-discrete volume integral terms in (9). Similar to the static mesh formulation, the kernel initially loads the nodal solution fields from global device memory into shared memory arrays of size Np. The differentiation matrices are accessed directly from global memory, exploiting L1 or L2 hardware caches to rapidly broadcast the static reference element operators. Spatial derivatives are evaluated at each node via inner products between the cached matrix rows and the shared solution vectors. Under the restriction of affine mesh transformations, the geometric factors and the Jacobian of local to global mapping remain uniform across the element. Therefore, a single set of geometric metrics is loaded per element and held in register memory. To evaluate the ALE transport operator, the nodal mesh velocities are fetched from global memory utilizing fully coalesced read access patterns. By applying the mesh velocities directly to the physical spatial derivatives already available in the thread registers, the volume integral is calculated. 
+
+• Surface Kernel : The surface kernel computes the interfacial flux contributions of the semi-discrete formulation (9). Similar to the volume kernel, this kernel loads the trace data of the element and all its neighbor node data, including the mesh velocities, into the register memory. Since the mesh velocity field is C0 continuous, it is the same for the trace and neighbor data. These data along with the re-calculated surface geometric factors are then used in numerical flux routines. The resulting fluxes are then scaled by the geometric data and stored in a shared memory array size Nf × Nf p , where Nf is the number of faces and Nf p is the number of nodes along each element face. The computed flux arrays are then lifted to the interpolation nodes with the matrix-vector multiplication similar to the differentiation in volume kernel. 
+
+• Cubature Kernel : The nonlinear relaxation term in the semi-discrete form (9) are evaluated with an appropriately high-order cubature rule. The field variables are first copied to shared memory using Np threads. Then, these values are interpolated to the cubature integration points using the interpolation matrix I with Nc threads, Nc being the number of cubature points. The nonlinear term is computed on cubature nodes and stored in shared memory arrays. Finally, the results are projected back with the projection operator P to the interpolation nodes. 
+
+• Update Kernel : This kernel performs the time integration updates with global vector operations using the right hand side vectors. The Runge-Kutta coefficients are stored in register memory for quick access for the update procedures with Np threads. 
+
+# 7 Results 
+
+In this section, we present the numerical results to show the accuracy and scalability of the ALE form of the Galerkin-Boltzmann equation. We select different test cases showing different aspects of the proposed formulation. A free stream preservation test showing the geometric conservation property of the solver is presented first. Then, a three-dimensional Taylor-Green vortex solution is presented to show the performance and scalabilty of the solver in large problems. Lastly, we study a plunging airfoil test case for moving aerodynamics problems. In all of the test cases, the grid velocity field vG
+
+is explicitly defined in the whole domain. The solutions are obtained in Marenostrum 5 Accelerated partition of Barcelona Supercomputing center with NVIDIA H100 GPUs. 
+
+7.1 Geometric Conservation Law - Free stream preservation tests 
+
+We conduct the free stream preservation test to observe if the ALE form of the Galerkin-Boltzmann formulation fulfills the geometric conservation law. The solver should be able to preserve the free stream flow conditions and the flow field should not be disturbed by a moving mesh. We adapt the 9(a) Node positions at t = 0 (b) Node positions at t = 20 
+
+Figure 2: The initial and final positions of the free stream preservation test case. Table 2: L2 norm of error of the conserved variables versus free flow condition at t = 10 for different number of elements KK 20 2 40 2 80 2
+
+|| ρu || 1.11 × 10 −15 2.22 × 10 −15 4.44 × 10 −15 
+
+|| ρv || 1.11 × 10 −15 2.22 × 10 −15 4.44 × 10 −15 
+
+test case from [38] where the grid motion is defined as: 
+
+x(t) = x0 + X0 sin ( nt2πt/t 0) sin ( nx2πx/L x) sin ( ny2πy/L y)
+
+y(t) = y0 + Y0 sin ( nt2πt/t 0) sin ( nx2πx/L x) sin ( ny2πy/L y), (15) where (x, y ) are the grid coordinates in two-dimensional space and (x0, y 0) are the grid coordinates before the movement. Here, nx, n y and nt are the periods in space and time taken as nx = ny = nt = 1 .The amplitude of the deformation is given as X0 = Y0 = 0 .5. Lx,y are the domain size in each direction and they both are Lx = Ly = 20 . For the free stream case we equate the density ρ = 1 , and velocities in x and y directions u = 1 , v = 1 respectively for the initial condition. The boundaries specified as periodic boundary condition to not disturb the field. The simulation parameters are set such that 
+
+M a = 0 .1 and Re = 100 . The simulation is run for over a time interval 0 ≤ t ≤ T = 20 . The grid positions at t = 0 and t = T = 20 can be seen in Figure 2. The positions of the elements are updated by solving dx/dt = vG where vG is found with the time derivative of Equation 15. We calculate the L2
+
+norm of the error of the momentum in both directions, which are the conserved quantities ρu and ρv .The numerical results for refining number of elements is presented in Table 2. The results show that the error is at order of 10 −15 showing the geometric conservation law is satisfied under these settings. 10 (a) Evolution of the kinetic energy (b) Kinetic energy dissipation rate 
+
+Figure 3: Kinetic energy and its dissipation rate for the moving 3D TGV. 
+
+7.2 3D Taylor-Green Vortex 
+
+We study the behavior of the ALE form of the Galerkin-Boltzmann formulation in transitional and turbulent flows using the three-dimensional Taylor-Green vortex problem. This is a benchmark problem showing the dissipation of energy and decay of isotropic turbulence. The flow starts with the initial state, 
+
+u(x, y, z, t 0) = U0sin (x/L )cos (y/L )cos (z/L ), (16) 
+
+v(x, y, z, t 0) = −U0sin (y/L )cos (x/L )cos (z/L ), (17) 
+
+w(x, y, z, t 0) = 0 . (18) The solution domain starts with Ω0 = [ −π, π ]3 that deforms over time according to the deformation in Equation 19, adapted from [17]. 
+
+x(t) = X + A sin 
+
+
+
+2π tTG
+
+
+
+sin 
+
+
+
+2π Y + L/ 2
+
+L
+
+
+
+sin 
+
+
+
+2π Z + L/ 2
+
+L
+
+
+
+y(t) = Y + A sin 
+
+
+
+2π tTG
+
+
+
+sin 
+
+
+
+2π X + L/ 2
+
+L
+
+
+
+sin 
+
+
+
+2π Z + L/ 2
+
+L
+
+
+
+z(t) = Z + A sin 
+
+
+
+2π tTG
+
+
+
+sin 
+
+
+
+2π X + L/ 2
+
+L
+
+
+
+sin 
+
+
+
+2π Y + L/ 2
+
+L
+
+
+
+,
+
+(19) where X, Y, Z are the initial positions in three different directions, L = 2 π is the length of the initial cube and A = π/ 6 is the amplitude. The simulated time is 0 ≤ t ≤ 20 and the TG = 20 . The Reynolds number is selected as Re = 1600 and Mach number is set to M a = 0 .1 to be in nearly incompressible regime. The computational domain is decomposed to 32 cubes in all three dimensions with each cube is split to 6 tetrahedron which results in a total of K = 196608 elements. The results are obtained with polynomial order N = 3 and compared with stationary version of Galerkin-Boltzmann solver [28] and results obtained using a spectral element method with 521 3 elements [39]. We analyze the problem accuracy by comparing the evolution of the kinetic energy calculated as 
+
+EK = 1
+
+ρ∞Ω
+
+Z
+
+> Ω
+
+12 ρu · u dΩ
+
+11 Table 3: Weak-scaling study of the 3D moving Taylor-Green vortex Nodes # of GPUs K Total DoF tstep (s) eff % 1 4 331776 66M 1.418 ×10 −2 100 2 8 663552 132M 1.632 ×10 −2 86.8 4 16 1327104 265M 1.578 ×10 −2 89.8 8 32 2654208 530M 1.556 ×10 −2 91.1 16 64 5308416 1B 1.588 ×10 −2 89.3 where the reference density is ρ∞ = 1 . The time evolution of the kinetic energy between 0 ≤ t ≤ 20 
+
+is shown in Figure 3a. The ALE formulation can follow the same trend as the stationary solver and together they slightly dissipate in final time compared with the spectral solution since tetrahedral elements introduce more dissipation than the spectral solvers [40]. The kinetic energy dissipation rate ϵ1 = −dE k/dt is also compared with the stationary form and the reference spectral solution in Figure 3b. Comparison with the stationary form show that the peak is achieved at a similar time, showing the ALE formulation does not introduce significant dissipation. The peaks are slightly earlier than the reference solution due to a lower resolution in our results. We also tested the performance of our ALE solvers on multi-GPU systems in Marenostrum 5 to observe the performance of our ALE solver. We measured the average wall time per timestep, 
+
+tstep , using 1000 time steps with the semi analytic Runge-Kutta timestepper. The scaling results are presented in Table 3, where the total degrees of freedom (DoF) are given as an approximate number. We started with one node and performed our analysis up to 16 nodes where we placed 82944 elements per GPU. The solver has a good weak scaling performance as the wall time per time step stays very similar with different number of nodes. The 16 node solution surpassed a total of one billion degrees of freedom showing the applicability of the ALE solver in large scale simulations. 
+
+7.3 Flow Over a Plunging Airfoil 
+
+In this section, we considered nearly incompressible flow over plunging NACA0012 airfoil for varying Strouhal Numbers. Variation in plunging frequencies results in vortex dominated wake flows with different characteristics. Besides increasing the Strouhal number results in thrust generation after a point which is known as Knoller–Betz effect. The results are compared with the results from both experimental [41] and numerical studies [29, 42]. Time dependent and averaged lift and drag values, vorticity visualizations are shared and compared. The sinusoidal plunging motion of the airfoil is given by 
+
+y(t) = Y − h0sin (ωt ), (20) 
+
+x(t) = X, (21) where X, Y are initial positions and h, ω are amplitude and frequency of the plunging motion, respec-tively. The Strouhal number is described as 
+
+St = hω u∞
+
+where u∞ is the non-dimensional free-stream velocity. The Reynolds number is set to Re = 1850 and the Mach number is M a = 0 .1. Three different cases considered in this problem are Case 1: St = 0 .29 
+
+12 Case 1 Case 2 Case 3 
+
+St = 0 .29 h0 = 0 .08 St = 0 .46 h0 = 0 .08 St = 0 .60 h0 = 0 .20 
+
+cD 0.043 -0.029 -0.077 
+
+cL -0.006 -0.016 -0.013 Table 4: Average drag and lift coefficients of the plunging airfoil test cases t$  
+
+> 10 15 20
+> cD
+> -0.02
+> 0
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> 0.1
+
+(a) Case 1 t$   
+
+> 10 15 20
+> cD
+> -0.2
+> -0.15
+> -0.1
+> -0.05
+> 0
+> 0.05
+> 0.1
+> 0.15
+
+(b) Case 2 t$      
+
+> 10 12 14 16 18 20
+> cD
+> -0.4
+> -0.3
+> -0.2
+> -0.1
+> 0
+> 0.1
+> 0.2
+
+(c) Case 3 
+
+Figure 4: Time evolution of drag coefficient of different cases. with h0 = 0 .08 , Case 2: St = 0 .46 with h0 = 0 .08 , and Case 3: St = 0 .60 with h0 = 0 .20 . These configurations result in drag production, zero drag, and thrust production, respectively according to simulations performed using a panel code and experimental results [41]. The time evolution of the drag coefficients for all cases are presented in Figure 4. The drag coefficient is calculated as cD = FD/(0 .5ρ∞u2
+
+> ∞
+
+c) where FD is the total drag force and c = 1 is the chord length. As it can be seen in Figure 4, the flow produces net drag for the Case 1 with an average drag coefficient of cD = 0 .043 . The vortex structures behind the airfoil are presented in Figure 5. The wake pattern of Case 1 shows the characteristic von Kármán vortex street indicating the drag production. As for the Case 2, the experimental studies indicate zero drag production. Although the vortex structure in Figure 5 is similar to the experimental study with almost symmetric vortex structures around the center of the domain [41], the drag coefficient oscillates around a negative value similar to the numerical studies in [29, 42]. Our simulation reveals an average drag coefficient of cD = −0.029 indicating a small amount of thrust is generated in the zero drag case. The thrust production in Case 3 is validated by the average negative drag coefficient cD = −0.077 . Also, the vortex positions are in agreement with the thrust production stated in [41]. All three cases produces almost zero average lift coefficient. These values, along with the average drag coefficients are tabulated in Table 4. 
+
+7.4 Flow Over a Carangiform Fish 
+
+In this section, a carangiform fish and its swimming motion are modeled in the nearly incompressible flow medium. The geometry is adapted from [43], by defining elliptical profiles through the fish body. The half-height R(x) in the y direction and half-width r(x) in z direction measured from the center is defined as 
+
+R(x) = 0 .14 L sin (2 πx/ 1.6L) + 0 .0008 L(e2πx/ 1.1L − 1) 
+
+r(x) = 0 .045 L sin (2 πx/ 1.25 L) + 0 .06 L sin (2 πx/ 3.14 L), (22) 13 (a) Case 1 (b) Case 2 
+
+> (c) Case 3
+
+Figure 5: Vortex structures behind the plunging airfoil. where L is the full-length of the fish body and x is the axial coordinate along the fish body starting from the nose. The body and the surface mesh is visualized with L = 1 in Figure 6. The swimming motion of a carangiform fish is defined as the following displacement of the centerline of the fish body: 
+
+∆z(x, t ) = A(x) sin (2 πx/λ − 2πf t ), (23) where f is the tail beat frequency and λ is the wavelength. A(x) is the amplitude function given as 
+
+A(x)/L = a0 + a1(x/L ) + a2(x/L )2. (24) Seo et al. [44] give a set of parameters to define the carangiform fish movement with a0 = 0 .02 ,
+
+a1 = −0.08 , a2 = 0 .16 . Since the wavelength λ is close to the body length L [44, 45], it is set to λ = L.
+
+Figure 6: Fish geometry and the surface mesh The mesh motion is prescribed in a purely explicit ALE form by updating only the z component of each mesh vertex, while keeping the streamwise and spanwise coordinates unchanged. We first define a clamped axial coordinate with the initial mesh positions (x0, y 0, z 0):
+
+˜x = min  1, max(0 , x 0),
+
+and construct an effective distance to a rigid core of radius Rrigid via 
+
+deff = max 
+
+q 
+
+(x0 − ˜x)2 + y20 + z20 − Rrigid , 0
+
+
+
+.
+
+14 The spatial blending function B is then defined as 
+
+B(deff ) = exp  −βdecay d2eff 
+
+,
+
+and the local oscillation amplitude is 
+
+A(˜ x) = a0 + a1 ˜x + a2 ˜x2, ϕ(x0, t ) = k x 0 − ωt. 
+
+This blending function transmits the boundary movement to the mesh. To avoid an impulsive start, a cosine ramp S(t) is applied: 
+
+S(t) = 
+
+ 
+
+> 12
+
+(1 − cos( πt/T ramp )) , t < T ramp ,
+
+1, t ≥ Tramp ,
+
+˙S(t) = 
+
+ 
+
+> π
+> 2Tramp
+
+sin( πt/T ramp ) , t < T ramp ,
+
+0, t ≥ Tramp .
+
+Hence the imposed displacement and mesh-velocity field are 
+
+h(x0, y 0, z 0, t ) = A(˜ x) sin ϕ B R, wz (x0, y 0, z 0, t ) = ∂h ∂t =
+
+h
+
+−A(˜ x) ω cos ϕ B 
+
+i
+
+S +
+
+h
+
+A(˜ x) sin ϕ B 
+
+i ˙S, 
+
+with wx = wy = 0 , which yields a smooth, spatially localized fish-induced deformation with a controlled temporal ramp-up. For the simulations, Tramp is selected as one tail-beat period, the rigid core is selected as Rrigid = 0 .5 with the decay rate βdecay = 10 .0.The simulations are performed in various Reynolds number regimes with a corresponding Strouhal number defined as St = f A f /U , where Af is the peak to peak tail beat amplitude which becomes 
+
+Af /L = 0 .2 with the selected motion parameters. The investigation of the model is through the force coefficients in the flow direction with a set of flow conditions adapted from [44]. The coefficients are calculated as 
+
+Cp = Fp 
+
+> 12
+
+ρu 2A , Cv = Fv 
+
+> 12
+
+ρu 2A ,
+
+where the subscript p represents the pressure force contribution and v represents the viscous force contributions. The frontal area of the fish, A, is approximately 0.039 L2 with the geometry used in this study. The contributions of pressure and viscous forces are separated for the body and the caudal fin of the fish. The force coefficients for various flow conditions are tabulated in Table 5. These solutions are obtained with K = 324165 elements and polynomial order N = 4 . Perfectly matched layers are used to damp out the oscillations from the boundaries. The negative values in Table 5 indicates thrust and positive values indicate drag. In the body of the fish, viscous drag forces dominate the pressure thrust. On the contrary, the fin produces thrust from pressure forces, dominating the viscous drag on the fin, physically consistent with the results from the literature [44, 46]. The wake region of the carangiform fish for Re = 2400 and Re = 5800 is shown in Figure 7. The vortical structures are visualized using the second invariant of the velocity gradient defined as Q-criterion Q = 12
+
+ || Ω|| 2 − || S|| 2, where S and Ω are symmetric and anti-symmetric components of the velocity gradient. The ring type vortical structures are observed in the wake region starting from the caudal fin. As these structures are convected in the flow direction, they organize into a staggered array of interconnected vortex rings. Notably, at the higher Reynolds number Re = 5800 , the wake exhibits a faster transition to finer, more chaotic scales compared to Re = 2400 . While the far-wake region is not fully resolved down to the smallest turbulent scales, the clean shedding and initial roll-up of the primary vortex rings demonstrate the robustness of the high-order ALE-DG method in handling complex, large-amplitude boundary deformations without suffering from grid-induced instabilities. 15 Table 5: Time averaged force coefficients of the carangiform fish for different flow conditions. The individual contributions of the body and the fin are presented separately. 
+
+Re St Cp, body Cv, body Cp, fin Cv, fin 
+
+20 0.56 -0.35 1.14 -0.78 0.39 2400 0.42 -0.10 0.51 -0.35 0.14 5800 0.34 -0.02 0.30 -0.19 0.07 17000 0.29 0.004 0.17 -0.12 0.038 36000 0.28 -0.009 0.12 -0.094 0.027                   
+
+> (a) Re = 2400 ,t/T = 0 (b) Re = 2400 ,t/T = 1 /2
+> (c) Re = 5800 ,t/T = 0 (d) Re = 5800 ,t/T = 1 /2
+
+Figure 7: Vortex structures behind the plunging airfoil. The vortical structures are visualized with iso-surface of Q-criterion at Q = 0 .02 .16 8 Conclusion and Future Work 
+
+We have presented an ALE form of the Boltzmann equations, discretized with high-order discontinuous Galerkin method and semi-analytic Runge-Kutta methods with simplex elements. The resulting equa-tions are used to simulate flows in nearly incompressible regime. The mesh movement is performed such that the elements remain straight sided and affine mapping is preserved. The geometric conservation law is satisfied by consistent updates of geometric factors with the mesh movement. The numerical results show that the geometric conservation law is satisfied in a free stream preservation test. The presented form is implemented for multi-GPU systems and tested with several numerical test cases. The results are satisfactory to model moving boundary problems in nearly incompressible regime with Galerkin-Boltzmann equations. The future work will include efficient mesh movement algorithms for complex boundary motions and fluid-structure interactions in nearly incompressible regime. 
+
+# Acknowledgments 
+
+The numerical calculations reported in this paper were fully performed using the EuroHPC Joint Undertaking (EuroHPC JU) supercomputer MareNostrum 5, hosted by the Barcelona Supercomputing Center (BSC). Access to MareNostrum 5 was provided through a national access call coordinated by the Scientific and Technological Research Council of Turkey (TÜBİTAK). 
+
+# References 
+
+[1] Y. Bazilevs, V. M. Calo, Y. Zhang, and T. Hughes, “Isogeometric fluid–structure interaction analysis with applications to arterial blood flow,” Computational Mechanics , vol. 38, no. 4, pp. 310– 322, 2006. [2] T. L. Horváth and S. Rhebergen, “A conforming sliding mesh technique for an embedded-hybridized discontinuous Galerkin discretization for fluid-rigid body interaction,” International Journal for Numerical Methods in Fluids , vol. 94, no. 11, pp. 1784–1809, 2022. [3] P. O. Persson, J. Bonet, and J. Peraire, “Discontinuous Galerkin solution of the Navier–Stokes equations on deformable domains,” Computer Methods in Applied Mechanics and Engineering ,vol. 198, no. 17, pp. 1585–1595, 2009. [4] G. Fu, “Arbitrary Lagrangian–Eulerian hybridizable discontinuous Galerkin methods for incom-pressible flow with moving boundaries and interfaces,” Computer Methods in Applied Mechanics and Engineering , vol. 367, p. 113158, 2020. [5] F. Zhang and J. Cheng, “A bound-preserving and positivity-preserving high-order arbitrary Lagrangian-Eulerian discontinuous Galerkin method for compressible multi-medium flows,” SIAM Journal on Scientific Computing , pp. B254–B279, 2024. [6] R. Glowinski, T.-W. Pan, T. I. Hesla, D. D. Joseph, and J. Periaux, “A fictitious domain ap-proach to the direct numerical simulation of incompressible viscous flow past moving rigid bodies: application to particulate flow,” Journal of Computational Physics , vol. 169, no. 2, pp. 363–426, 2001. [7] N. Moës, J. Dolbow, and T. Belytschko, “A finite element method for crack growth without remeshing,” International Journal for Numerical Methods in Engineering , vol. 46, no. 1, pp. 131– 150, 1999. [8] C. S. Peskin, “The immersed boundary method,” Acta numerica , vol. 11, pp. 479–517, 2002. [9] C. W. Hirt, A. A. Amsden, and J. Cook, “An arbitrary Lagrangian-Eulerian computing method for all flow speeds,” Journal of Computational Physics , vol. 14, no. 3, pp. 227–253, 1974. 17 [10] T. J. R. Hughes, W. K. Liu, and T. K. Zimmermann, “Lagrangian-Eulerian finite element formula-tion for incompressible viscous flows,” Computer Methods in Applied Mechanics and Engineering ,vol. 29, no. 3, pp. 329–349, 1981. [11] I. Lomtev, R. M. Kirby, and G. E. Karniadakis, “A discontinuous Galerkin ALE method for compressible viscous flows in moving domains,” Journal of Computational Physics , vol. 155, no. 1, pp. 128–159, 1999. [12] S. Étienne, A. Garon, and D. Pelletier, “Perspective on the geometric conservation law and finite element methods for ALE simulations of incompressible flow,” Journal of Computational Physics ,vol. 228, no. 7, pp. 2313–2333, 2009. [13] C. A. A. Minoli and D. A. Kopriva, “Discontinuous Galerkin spectral element approximations on moving meshes,” Journal of Computational Physics , vol. 230, no. 5, pp. 1876–1902, 2011. [14] C. Klingenberg, G. Schnücke, and Y. Xia, “An arbitrary Lagrangian–Eulerian local discontinuous Galerkin method for Hamilton–Jacobi equations,” Journal of Scientific Computing , vol. 73, no. 2, 2017. [15] P. Fu, G. Schnücke, and Y. Xia, “Arbitrary Lagrangian-Eulerian discontinuous Galerkin method for conservation laws on moving simplex meshes,” Mathematics of Computation , vol. 88, no. 319, pp. 2221–2255, 2019. [16] P. D. Thomas and C. K. Lombard, “Geometric conservation law and its application to flow com-putations on moving grids,” AIAA Journal , vol. 17, no. 10, pp. 1030–1037, 1979. Publisher: American Institute of Aeronautics and Astronautics. [17] N. Fehn, J. Heinz, W. A. Wall, and M. Kronbichler, “High-order arbitrary Lagrangian–Eulerian discontinuous Galerkin methods for the incompressible Navier–Stokes equations,” Journal of Com-putational Physics , vol. 430, p. 110040, 2021. [18] S. Patel, P. Fischer, M. Min, and A. Tomboulides, “A characteristic-based spectral element method for moving-domain problems,” Journal of Scientific Computing , vol. 79, no. 1, pp. 564–592, 2019. [19] P. Fischer, M. Schmitt, and A. Tomboulides, “Recent Developments in Spectral Element Sim-ulations of Moving-Domain Problems,” in Recent Progress and Modern Challenges in Applied Mathematics, Modeling and Computational Science (R. Melnik, R. Makarov, and J. Belair, eds.), pp. 213–244, New York, NY: Springer, 2017. [20] E. Gaburro, W. Boscheri, S. Chiocchetti, C. Klingenberg, V. Springel, and M. Dumbser, “High order direct Arbitrary-Lagrangian-Eulerian schemes on moving Voronoi meshes with topology changes,” Journal of Computational Physics , vol. 407, p. 109167, 2020. [21] E. Gaburro and S. Chiocchetti, “High-order Arbitrary-Lagrangian-Eulerian schemes on crazy mov-ing Voronoi meshes,” in Advances in Numerical Methods for Hyperbolic Balance Laws and Related Problems (G. Albi, W. Boscheri, and M. Zanella, eds.), pp. 99–119, Springer Nature Switzerland, 2023. [22] P.-O. Persson, D. Willis, and J. Peraire, “Numerical simulation of flapping wings using a panel method and a high-order Navier–Stokes solver,” International Journal for Numerical Methods in Engineering , vol. 89, no. 10, 2012. [23] D. Costa, G. Palmieri, M.-C. Palpacelli, D. Scaradozzi, and M. Callegari, “Design of a carangiform swimming robot through a multiphysics simulation environment,” Biomimetics , vol. 5, no. 4, p. 46, 2020. [24] Y. Wang, A. Quaini, and S. Čanić, “A higher-order discontinuous Galerkin/Arbitrary Lagrangian Eulerian partitioned approach to solving fluid–structure interaction problems with incompressible, viscous fluids and elastic structures,” Journal of Scientific Computing , vol. 76, no. 1, pp. 481–520, 2018. [25] S. Chapman and T. G. Cowling, The mathematical theory of non-uniform gases: An account of the kinetic theory of viscosity, thermal conduction and diffusion in gases . Cambridge university press, 1990. 18 [26] C. K. Aidun and J. R. Clausen, “Lattice-Boltzmann method for complex flows,” Annual Review of Fluid Mechanics , vol. 42, no. 1, pp. 439–472, 2010. [27] J. Tölke, M. Krafczyk, M. Schulz, and E. Rank, “Discretization of the Boltzmann equation in velocity space using a Galerkin approach,” Computer Physics Communications , vol. 129, no. 1, pp. 91–99, 2000. [28] A. Karakus, N. Chalmers, J. S. Hesthaven, and T. Warburton, “Discontinuous Galerkin discretiza-tions of the Boltzmann–BGK equations for nearly incompressible flows: Semi-analytic time step-ping and absorbing boundary layers,” Journal of Computational Physics , vol. 390, pp. 175–202, 2019. [29] M. H. Saadat and I. V. Karlin, “Arbitrary Lagrangian–Eulerian formulation of lattice Boltzmann model for compressible flows on unstructured moving meshes,” Physics of Fluids , vol. 32, no. 4, 2020. [30] M. Meldi, E. Vergnault, and P. Sagaut, “An arbitrary Lagrangian–Eulerian approach for the simulation of immersed moving solids with lattice Boltzmann method,” Journal of Computational Physics , vol. 235, pp. 182–198, 2013. [31] Y. Wang, C. Shu, L. Yang, and Y. Sun, “On the immersed boundary-lattice Boltzmann simulations of incompressible flows with freely moving objects,” International Journal for Numerical Methods in Fluids , vol. 83, no. 4, pp. 331–350, 2017. [32] B. Wu, J. Lu, H. Lee, C. Shu, and M. Wan, “An efficient explicit immersed boundary-reconstructed lattice Boltzmann flux solver for isothermal fluid-structure interaction problems with large defor-mations and complex geometries,” Applied Mathematical Modelling , vol. 114, pp. 627–645, 2023. [33] O. Ata, A. Aygun, T. Warburton, and A. Karakus, “Implicit large eddy simulation of nearly incompressible flows with a discontinuous Galerkin–Boltzmann formulation,” Physics of Fluids ,vol. 38, no. 5, p. 055134, 2026. [34] T. Warburton, “An explicit construction of interpolation nodes on the simplex,” Journal of Engi-neering Mathematics , vol. 56, no. 3, pp. 247–262, 2006. [35] C. Förster, W. A. Wall, and E. Ramm, “On the geometric conservation law in transient flow cal-culations on deforming domains,” International Journal for Numerical Methods in Fluids , vol. 50, no. 12, pp. 1369–1379, 2006. [36] N. Chalmers, A. Karakus, A. P. Austin, K. Swirydowicz, and T. Warburton, “libParanumal: a performance portable high-order finite element library,” 2022. Release 0.5.0. [37] D. S. Medina, A. St-Cyr, and T. Warburton, “Occa: A unified approach to multi-threading lan-guages,” arXiv:1403.0968 , 2014. [38] V.-T. Nguyen, “An arbitrary Lagrangian–Eulerian discontinuous Galerkin method for simulations of flows over variable geometries,” Journal of Fluids and Structures , vol. 26, no. 2, pp. 312–329, 2010. [39] W. M. Van Rees, A. Leonard, D. I. Pullin, and P. Koumoutsakos, “A comparison of vortex and pseudo-spectral methods for the simulation of periodic vortical flows at high Reynolds numbers,” 
+
+Journal of Computational Physics , vol. 230, no. 8, pp. 2794–2805, 2011. [40] C. A. Pereira and B. C. Vermeire, “Spectral properties of high-order element types for implicit large eddy simulation,” Journal of Scientific Computing , vol. 85, no. 2, p. 48, 2020. [41] K. Jones, C. Dohring, and M. Platzer, “Experimental and computational investigation of the Knoller-Betz effect,” AIAA journal , vol. 36, no. 7, pp. 1240–1246, 1998. [42] C. Liang, K. Ou, S. Premasuthan, A. Jameson, and Z. Wang, “High-order accurate simulations of unsteady flow past plunging and pitching airfoils,” Computers & Fluids , vol. 40, no. 1, pp. 236–248, 2011. [43] P. P. A. Valdivia y Alvarado, Design of biomimetic compliant devices for locomotion in liquid environments . PhD thesis, Massachusetts Institute of Technology, 2007. 19 [44] J.-H. Seo, J. Zhou, and R. Mittal, “Scaling laws for caudal fin swimmers incorporating hydrody-namics, kinematics, morphology and scale effects,” Journal of Fluid Mechanics , vol. 1030, p. A25, 2026. [45] J. Videler and F. Hess, “Fast continuous swimming of two pelagic predators, saithe (Pollachius virens) and mackerel (Scomber scombrus): a kinematic analysis,” Journal of Experimental Biology ,vol. 109, no. 1, pp. 209–228, 1984. [46] S. Huang, D. Guo, J. Song, Y. Wang, G. Yang, and B. Yin, “Effect of bending kinematics for caudal fin on swimming performance with varying undulation wavelengths,” Ocean Engineering ,vol. 311, p. 118907, 2024. 20

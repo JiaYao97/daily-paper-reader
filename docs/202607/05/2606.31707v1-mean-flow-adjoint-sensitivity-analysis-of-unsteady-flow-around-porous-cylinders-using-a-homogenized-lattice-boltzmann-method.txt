@@ -1,0 +1,1089 @@
+Title: Mean-Flow Adjoint Sensitivity Analysis of Unsteady Flow Around Porous Cylinders Using a Homogenized Lattice Boltzmann Method
+
+URL Source: https://arxiv.org/pdf/2606.31707v1
+
+Published Time: Wed, 01 Jul 2026 01:30:00 GMT
+
+Number of Pages: 24
+
+Markdown Content:
+# Mean-Flow Adjoint Sensitivity Analysis of Unsteady Flow Around Porous Cylinders Using a Homogenized Lattice Boltzmann Method 
+
+Shota Ito a,b , Johannes L. Grafen a,b , Fedor Bukreev a,b , Adrian Kummerländer b,c , Mathias J. Krause a,b,c 
+
+> aInstitute for Mechanical Process Engineering and Mechanics, Karlsruhe Institute of Technology, Karlsruhe, Germany
+> bLattice Boltzmann Research Group, Karlsruhe Institute of Technology, Karlsruhe, Germany
+> cInstitute of Applied and Numerical Mathematics, Karlsruhe Institute of Technology, Karlsruhe, Germany
+
+Abstract 
+
+Adjoint-based sensitivity analysis is an indispensable tool for large-scale fluid-dynamic design and distributed control problems, yet its application to unsteady and turbulent flows is frequently hindered by the prohibitive memory footprint of transient checkpointing and the divergence of gradients in chaotic regimes. To address these computational bottlenecks, this paper presents a mean-flow adjoint sensitivity analysis framework for unsteady flows around porous cylinders using the homogenized lattice Boltzmann method (HLBM). Within this framework, solid structures are efficiently modeled as local porous media utilizing a Brinkman penalization approach. We systematically investigate HLBM-based adjoint gradients for drag and energy dissipation objective functionals, transitioning from steady laminar to unsteady, and finally to turbulent flow regimes. For the turbulent case at Re = 3900, a proof-of-concept is conducted where the framework relies on automatic differentiation to automatically generate adjoint kernels containing subgrid-scale (SGS) turbulence models for large eddy simulations (LES), circumventing manual derivation and allowing for a direct comparison against the frozen turbulence assumption (FTA). 
+
+1. Introduction 
+
+The optimization of fluid dynamic design and the optimal control of flow problems pose key disciplines in aerodynamic engineering [1, 2, 3]. Therein, it is an established procedure to couple methods of mathematical optimization and computational fluid dynamics (CFD) simulations to perform design improvements in an automated manner, while enforcing physicality of the optimized solution by numerically approximating the governing partial differential equations of the underlying flow phenomenon [4, 5]. Therein, gradient-based optimization (GBO) is of particular interest as the iterative execution of CFD simulations for industrial-scale problems dominates the computational cost, where GBO, utilizing local gradient information, in general outperforms other approaches in terms of convergence rates [6, 7]. Adjoint-based sensitivity analysis has established itself as an indispensable tool for solving large-scale gradient-based fluid-dynamic design and flow control problems [8, 9]. Because the computational cost of evaluating an objective gradient via the adjoint method remains independent of the number of design variables, it is suited for distributed control problems such as fluid topology optimization [10, 11, 12, 13] or shape optimization [14, 15]. Within this context, the lattice Boltzmann method (LBM) represents a highly attractive discretization scheme due to its great suitability for parallel computing [16, 17, 18]. Beyond offering remarkable computational efficiency within iterative optimization loops, LBM is highly compatible with the adjoint analysis, as the corresponding adjoint problem can be again discretized by an LBM, providing the same performance benefits [19]. To incorporate the solid body in the fluid topology optimization, a Brinkman penalization approach is often applied, where the pressure drop is modeled by a local porous medium imitating the immersed solid structure [9, 12, 20]. By controlling the permeability of the porous medium, the topology can be optimized regarding different objective functionals such as drag or pressure drop. Krause et al. [21] proposed the 
+
+homogenized lattice Boltzmann method (HLBM), extended by Kummerländer et al. [18], which efficiently 
+
+> arXiv:2606.31707v1 [physics.flu-dyn] 30 Jun 2026
+
+employs the Brinkman penalization to model solid structures in the fluid. In prior works, the HLBM method has been successfully applied for topology optimization problems, such as in [9, 20]. The application of adjoint sensitivity analysis to transient flow control, especially in LBM, remains very limited in the existing literature. In the realm of unsteady flows, standard transient adjoint simulations require checkpointing or storing the entire forward state history to be traversed in reverse time, creating an often prohibitive memory bottleneck [22, 23]. Prior work reports efficient checkpointing approaches such as the local-in-time method , in which checkpointing is combined with approximations of unsteady adjoint solutions to reduce the memory footprint in the adjoint simulation [8, 24] . However, for large-scale simulations, especially for three-dimensional problems, the storage of the primal state solution becomes quickly computationally unfeasible [25]. Especially for turbulent flows, computational resources become prohibitively large when resolving transient structures. Furthermore, the chaotic flow dynamics lead to diverging solution trajectories and thus to failure of conventional gradient computation, requiring more sophisticated and numerically expensive approaches, such as the least squares shadowing method [23, 26]. In classical approaches, the adjoint analysis is applied to mean flow solutions of turbulent flows by combining it with Reynolds averaged Navier-Stokes (RANS) simulations to circumvent the diverging gradi-ents [27, 28, 29]. Additionally, by driving the reversed-time adjoint equations using the time-averaged primal flow field rather than instantaneous transient snapshots, Dwight et al. demonstrated that computationally tractable and physically meaningful surface sensitivities could be recovered [30]. Meliga et al. investigated the adjoint 2D squared cylinder flow using a finite element method for Reynolds numbers up to 22000 . A RANS model is applied in the primal simulation, where the adjoint problem is constructed on the averaged solutions to handle the chaotic flow behavior in the turbulent case [23]. In LBM, Cheylan et al. proposed the mean-flow adjoint-based sensitivity analysis for aerodynamic shape optimization to address drag mini-mization problems for a vehicle [1]. Therein, the primal state solution is averaged and used to evaluate the Jacobian expressions in the adjoint simulation, in which the controlled body shape is incorporated into the flow field via adjoint curvature-capturing boundary conditions. To the best of the authors’ knowledge, the investigation of mean-flow-based adjoint sensitivities for LBM simulations is not yet applied in the context of topology optimization, e.g., for a Brinkman penalization model such as HLBM. Therefore, the present work systematically investigates HLBM-based adjoint gradients for a porous cylinder with drag-type functionals, from steady laminar to unsteady and finally turbulent flow regimes. Both works [1] and [23], neglect the subgrid-scale (SGS) turbulence model in the adjoint sensitivity analysis by employing the frozen turbulence assumption (FTA) due to the challenging manual derivation of the non-linear adjoint large eddy simulation (LES) based on the Smagorinsky model, despite the loss in gradient accuracy [1, 29]. So far, the comparison of computed gradients from fully differentiated turbulence models and those obtained by the FTA has been reported only for RANS models [27, 29]. This manuscript demonstrates preliminary comparison results of adjoint Smagorinsky-LES models and the FTA for the turbulent flow past a 3D cylinder. The framework developed by Ito et al. is used, where the adjoint kernels, containing SGS turbulence models, are automatically generated from their primal implementations using 
+
+automatic differentiation (AD), omitting the need for manual derivation [19]. The research questions of the present work are formulated as follows: 1. Can HLBM adjoints compute accurate drag-type sensitivities for a porous cylinder flow? 2. How do mean-flow adjoint gradients behave for unsteady vortex shedding using the HLBM setting? 3. Can the same framework be extended to 3D and to LES-level turbulent flow as a proof of concept? And, how does the FTA alter the adjoint sensitivities for the present LES simulation? Consequently, the primary novelties of this paper consists of the first sensitivity evaluation of an HLBM-adjoint for porous cylinder flow, the first application of HLBM mean-flow adjoints to unsteady flows across multiple distinct objective functionals, and the demonstration of a 3D turbulent adjoint cylinder flow at a Reynolds number of 3900 .The remainder of this paper is structured as follows: Sec. 2 introduces the governing primal physical models for laminar and turbulent regimes. Sec. 3 details the steady and unsteady mean-flow adjoint sensi-tivity frameworks. Sec. 4 defines the investigated drag and dissipation objective functionals. Finally, Sec. 5 2presents the results containing numerical validation and evaluation studies, followed by concluding remarks in Sec. 6. 
+
+2. Primal modeling 
+
+This section provides the used primal physical models first for the laminar flow in Sec. 2.1 and then for the turbulent flow in Sec. 2.2. 
+
+2.1. Laminar model 
+
+For the laminar case, the incompressible Navier-Stokes equations describe the motion of fluid. To incor-porate the solid cylinder, the Brinkman-type Navier-Stokes equation [31] is used 
+
+(
+
+∇ · u = 0 , in Ω × I,  
+
+> ∂u
+> ∂t
+
++ u · ∇u = − ∇pρ + ν∇2u − νK u, in Ω × I, (1) where u is the velocity, t the time, p the pressure, ρ the density, ν the molecular viscosity, and K the permeability modeling the porous medium submerged in the fluid. The above equation holds in the d-dimensional spatial domain Ω ⊆ Rd for the time duration I ⊆ R>0. The HLBM [21] with the Bhatnagar-Groos-Krook (BGK) [32] collision model approximate (1) in the hydrodynamic limit, given as 
+
+fi(x + ξi△t, t + △t) = fi(x, t ) − △tτ (fi(x, t ) − f eq  
+
+> i
+
+(x, t )) , in Ω△x × I△t, (2) where fi ∈ R is the particle distribution function transported along q ∈ N>0 discrete velocity directions with the particle velocity ξi ∈ Rd corresponding to the chosen DdQq discretization model [33]. The D2Q9 stencil and the D3Q19 stencil have been used for the numerical experiments in 2D and 3D, respectively. Therein, the particle velocity is given such that on a regular lattice Ω△x ⊆ Ω with the grid spacing △x ∈ R>0, the particle distribution function is advected exactly to its neighbor position after a single time step △t ∈ I△t ⊆ I. The equilibrium distribution is given as 
+
+f eq  
+
+> i
+
+(x, t ) = ωiρ
+
+
+
+1 + ξi · ˜u
+
+c2
+
+> s
+
++ ( ˜ u · ξi)2
+
+2c4
+
+> s
+
+− ˜u · ˜u
+
+2c2
+
+> s
+
+
+
+, (3) where ωi ∈ R are corresponding weights of the velocity discretization model, ˜u = d · u is the modified velocity with d = 1 − △x2τ ν K being the lattice porosity linked to the permeability [20, 34], and cs = 1√3
+
+> △t
+> △x
+
+is the lattice speed of sound [35]. The statistic moments connect the particle distribution functions to the fluid density and velocity via 
+
+ρ =
+
+> q−1
+
+X
+
+> i=0
+
+fi, (4) 
+
+u = 1
+
+ρ
+
+> q−1
+
+X
+
+> i=0
+
+ξifi. (5) Finally, the fluid viscosity is recovered via 
+
+ν = c2
+
+> s
+
+
+
+τ − △t
+
+2
+
+
+
+. (6) 32.2. Turbulent model 
+
+In the turbulent case, a SGS model for LES is added to the incompressible Brinkman-type Navier-Stokes equations, given as 
+
+(
+
+∇ · u = 0 , in Ω × I,  
+
+> ∂u
+> ∂t
+
++ u · ∇u = − ∇pρ + νmo ∇2u − νmo  
+
+> K
+
+u − ∇ · Tsgs , in Ω × I, (7) where the term ∇ · Tsgs models the subgrid scale turbulence using the Smagorinsky-LES model [36] via 
+
+Tsgs = −2νturb S, (8) 
+
+νturb = ( CS△x)2 |S| , (9) where CS ∈ R>0 is the Smagorinsky constant, △x is the filter width, and S is the strain rate tensor: 
+
+Sαβ = 12
+
+ ∂u α
+
+∂x β
+
++ ∂u β
+
+∂x α
+
+
+
+, (10) with α, β ∈ 1, 2, 3 being the spatial indices. To discretize (7), the HLBM method is extended by the ho-mogenized regularized recursive lattice Boltzmann method with Smagorinsky LES model (HRRLBM-LES) proposed by Kummerländer et al. [17], which is based on a third-order recursive regularized collision model [37, 38], given as 
+
+fi(x + ξi△t, t + △t) = f eq  
+
+> i
+
+(x, t ) + 
+
+
+
+1 − 1
+
+τeff (x, t )
+
+
+
+f (1)  
+
+> i
+
+(x, t ), in Ω△x × I△t, (11) where ˜f (1)  
+
+> i
+
+is the non-equilibrium distribution expanded in terms of Hermite polynomials H(n) 
+
+> i
+
+of the discrete velocity ξi, given as 
+
+f (1)  
+
+> i
+
+(x, t ) = ωiN =3 X
+
+> n=0
+
+1
+
+c2n 
+
+> s
+
+n! H(n) 
+
+> i
+
+: a(n)1 (x, t ), (12) where the Hermite expansion coefficients are defined as 
+
+a(n)1 (x, t ) = 
+
+> q−1
+
+X
+
+> i=0
+
+H(n) 
+
+> i
+
+f (1)  
+
+> i
+
+(x, t ). (13) The equilibrium distribution is given as 
+
+f eq  
+
+> i
+
+(x, t ) = ωi ρ + ξi · ρ ˜u
+
+c2s
+
++ H(2)  
+
+> i
+
+: ba(2) 0
+
+2c4s
+
++ H(3)  
+
+> i
+
+: ba(3) 0
+
+6c6s
+
+!
+
+(14) using Hermite coefficients ba(0) 0 = ρ(x, t ) and ba(n)0 = ba(n−1) 0 ˜u(x, t ). Finally, the SGS turbulence is accounted for by locally computing the effective relaxation time τeff (x, t ) using the Smagorinsky BGK model [39] 
+
+τeff (x, t ) = νmo + νturb (x, t )
+
+c2s
+
+△t
+
+△x2 + 12 . (15) 43. Adjoint sensitivity analysis 
+
+In this section, the optimization problem is formulated in Sec. 3.1 for which the adjoint problem delivers the sensitivities. The first-discretize-then-differentiate approach is employed in this work [40]. For clarity, we separate the explanation for the adjoint-based sensitivity computation for the steady case and unsteady case in Sec. 3.2 and Sec. 3.3, respectively. Note that in the present work, we do not solve optimization problems numerically using optimization algorithms. However, we do compute objective gradients with an adjoint-based approach, for which the formulation of an optimization problem is necessary. 
+
+3.1. Optimization problem formulation 
+
+The optimization problem is formulated as 
+
+min  
+
+> α
+
+J (α, f ) while G(α, f ) = 0 , (16) where α ∈ Ωα contains the time-invariant permeability distribution including the porous cylinder in the design domain Ωα ⊆ Ω△x, f is the flow state, J the objective functional, and G the optimization constraints being either the residual of (2) or (11), depending on the used primal model. The objective gradients regarding the controls are given as 
+
+dJ
+
+dα = ∂J
+
+∂α + ∂J
+
+∂f ∂f ∂α , (17) where the explicit computation of ∂f /∂ α is cumbersome, especially when the number of control variables is high, as in topology optimization. To avoid this, the Lagrangian function is used here as an augmented objective functional instead, given as 
+
+L = J + φTG, (18) where φ is the Lagrangian multiplier. They are obtained by solving ∂L/∂f = 0, which is a linear system solved independently of the number of control variables [1]. Finally, the total derivative of the objective regarding the controls can then be computed via 
+
+dL
+
+dα = dJ
+
+dα = ∂J
+
+∂α + φT ∂G
+
+∂α . (19) 
+
+3.2. Steady case 
+
+In the steady case, the discrete objective functional is evaluated for the converged primal steady state solution f ∗(·) via J = J(α, f ∗(·)) . The adjoint LBM model is given as 
+
+φi(x − ξi△t, t − △ t) = 
+
+> q−1
+
+X
+
+> j=0
+
+∂Cj (x, t )
+
+∂f i(x, t ) fi=f ∗ 
+
+> i(x)
+
+!T
+
+φj (x, t ) − ∂J ∂f i(x, t ) fi=f ∗ 
+
+> i(x)
+
+, (20) where Ci is the substitution of the local evolution operator on the right-hand side of (2) or (11). Note that the adjoint problem traverses in reverse time and would require the primal state variables in reverse time order to evaluate the Jacobian matrices. In (20), we only use the primal state of the converged state following the work of Krause et al. [5], who proposed this valid simplification for steady state problems. The objective sensitivities are computed as 5dJ
+
+dα = ∂J ∂α fi=f ∗ 
+
+> i(x)
+
+− X
+
+> x∈Ωα
+> q−1
+
+X
+
+> i=0
+
+∂Ci(x, t )
+
+∂α fi=f ∗ 
+
+> i(x)
+
+!T
+
+φ∗ 
+
+> i
+
+(x), (21) where φ∗ 
+
+> i
+
+(x) is the converged mean-flow adjoint steady state solution. To obtain the explicit formulation of the Jacobian matrices, the framework proposed by Ito et al. [19] using automatic differentiation (AD) is used to omit the tedious derivations. For more detailed explanations, the readers are referred to that work to keep the methodology section in the present paper concise. 
+
+3.3. Unsteady case 
+
+In the unsteady case, the objective functional is defined as a tracking average-type functional: 
+
+J = J(α, f (·, t )) = 1
+
+te − tsteX
+
+> t=ts
+
+J(α, f (·, t )) , (22) where ts, t e ∈ I△t are the start and end time steps of the averaging duration, respectively. In the present work, we employ the approach proposed by Cheylan et al. [1], namely the mean-flow adjoint LBM . That is, in the unsteady adjoint problem, one would need to store the entire primal solution history to access it in the reverse order during the adjoint simulation to evaluate the Jacobian matrices in (20). Instead, in the mean-flow adjoint approach, we compute the tracking average of the primal populations f (·, t ) as in (22) and evaluate the Jacobian matrices for the primal mean-flow solution, i.e.: 
+
+φi(x − ξi△t, t − △ t) = 
+
+> q−1
+
+X
+
+> j=0
+
+∂Cj (x, t )
+
+∂f i(x, t ) fi=fi(x,t )
+
+!T
+
+φj (x, t ) − ∂J ∂f i(x, t ) fi=fi(x,t )
+
+, (23) where the adjoint source term gives the average partial derivative of the objective regarding the particle distribution functions, again computed as in (22). The objective sensitivities are computed as 
+
+dJ
+
+dα = ∂J ∂α fi=fi(x,t )
+
+− X
+
+> x∈Ωα
+> q−1
+
+X
+
+> i=0
+
+∂Ci(x, t )
+
+∂α fi=fi(x,t )
+
+!T
+
+φ∗ 
+
+> i
+
+(x). (24) Note, that if the objective functional is linear regarding f , then the following equality of J(α, f ) = J(α, f )
+
+holds, which omits the need for evaluating the objective every t ∈ [ts, t e] [23]. Similarly, if J and C are linear regarding f , then the same equality holds for the terms ∂J/∂f , ∂J/∂ α, ∂C/∂f , and ∂C/∂ α. If J or C
+
+are quadratic regarding f , then the identity is only valid for the partial derivatives regarding the state. All objective functionals and collision operators which have a higher non-linearity than the second order would need to track the average of the above listed terms every time step during the averaging window. The full explanation for this is given in Appendix A. For both collision operators given in the previous section, the temporal averaging of their partial derivatives required in (23) and (24) would be necessary. However, this would necessitate the storage of full Jacobian matrices of the collision operators on every grid position in the entire simulation domain, leading to a critical increase of the memory bandwidth during the primal and adjoint simulation. Therefore, we propose to track the averaged entities for the scalar objective functional terms only as given in the algorithms above. 6Algorithm 1 Adjoint-based sensitivity computation  
+
+> 1:
+
+procedure Compute (dJ /dα) 
+
+> 2:
+
+Choose a convergence tolerance ε 
+
+> 3:
+
+Solve primal problem G(α, f ) ▷ (2) or (11)  
+
+> 4:
+
+if Steady then  
+
+> 5:
+
+Terminate simulation when steady state solution is reached ▷ state update < ε  
+
+> 6:
+
+Solve adjoint problem ▷ (20)  
+
+> 7:
+
+else  
+
+> 8:
+
+Start computing tracking average after t > t s ▷ E.g.: (22)  
+
+> 9:
+
+Terminate simulation when fluctuation of averaged entities is below ε 
+
+> 10:
+
+Solve mean-flow based adjoint problem ▷ (23)  
+
+> 11:
+
+end if  
+
+> 12:
+
+Terminate adjoint simulation when steady state solution is reached ▷ state update < ε  
+
+> 13:
+
+if Steady then  
+
+> 14:
+
+Compute objective sensitivities using primal and adjoint results ▷ (21)  
+
+> 15:
+
+else  
+
+> 16:
+
+Compute objective sensitivities using primal and mean-flow adjoint results ▷ (24)  
+
+> 17:
+
+end if  
+
+> 18:
+
+end procedure 
+
+3.4. Algorithm 
+
+This section briefly summarizes the entire workflow to compute the adjoint-based objective sensitivities regarding the control variables for the steady and unsteady cases. The algorithm in 1 illustrates the process employed in the current work. The workflow is fundamentally split into three phases: the primal evaluation, the adjoint evaluation, and the final gradient assembly. First, the primal LBM is solved forward in time. For steady problems, the simulation simply runs until the local state updates fall below a prescribed convergence tolerance ε. For unsteady or turbulent configurations, the simulation undergoes an initial transient spin-up phase ( t ≤ ts). Afterward, a time-averaging process is initiated, and the primal simulation terminates only when the statistical fluctuations of these averaged quantities satisfy a user-defined convergence criterion. Once the primal flow field is obtained, the adjoint simulation is executed. In the steady case, the adjoint equations are evaluated using the converged primal steady state. For the unsteady case, to circumvent the massive memory footprint associated with exact transient checkpointing, the algorithm employs a mean-flow-based adjoint approach as described in Sec. 3.3. Here, the adjoint equations are driven by the time-averaged primal flow field and solved until the adjoint variables themselves reach a steady state. Finally, the objective sensitivities are assembled by coupling the control-dependent Jacobians with the corresponding converged primal and adjoint states. All described methods and conducted numerical experiments are realized within the open-source C++ library OpenLB [16]. 
+
+4. Objective functionals 
+
+This section specifies the three investigated objective functionals for the cylinder flow. Depending on the flow regime, these instantaneous objective functionals J(t) are either evaluated at the converged steady state or time-averaged over a specific duration, as outlined in Sec. 3. 
+
+4.1. Drag (Momentum exchange algorithm) 
+
+The first functional evaluates the drag force exerted on the cylinder using the momentum exchange algorithm (MEA) [41, 42]. The algorithm calculates the force based on the momentum variation of the particle distribution functions hitting the solid boundaries. The instantaneous objective functional is defined as 7JMEA (t) = 
+
+ 1
+
+AΓ△x, s
+
+X
+
+> x∈Γ△x, s
+> q−1
+
+X
+
+> i=0
+
+ξi (fi(x + ξi△t, t ) − f¯i(x, t )) 
+
+ · n, in Γ△x, s, (25) where AΓ△x, s represents the surface area (or the perimeter in 2D) of the cylinder, Γ△x, s ⊆ Ω△x denotes the boundary nodes associated with the cylinder surface, ¯i indicates the discrete velocity direction opposite to i
+
+(i.e., ξ¯i = −ξi), and n gives the normal vector to get the drag force component in the main flow direction. 
+
+4.2. Drag (Far field approximation) 
+
+Alternatively, the drag can be computed using a far-field approximation (FFA) based on a control volume approach as proposed by Onorato et al. [43]. Instead of evaluating the forces directly at the obstacle surface, this functional calculates the momentum deficit and pressure drop across a boundary Γ△x,J ⊆ Ω△x,J 
+
+enclosing the objective domain Ω△x,J ⊆ Ω△x:
+
+JFFA (t) = X
+
+> x∈Γ△x,J
+
+ρ(x, t ) ux(x, t )u0 − ux(x, t )2 + X
+
+> x∈Γ△x,J
+
+(p0 − p(x, t )) , in Γ△x,J , (26) where ux is the macroscopic velocity component in the primary flow direction, u0 is the reference free-stream velocity, and p0 is the reference far-field pressure. 
+
+4.3. Dissipation (Porous and Viscous contribution) 
+
+The third functional evaluates the total energy dissipation within the objective domain Ω△x,J ⊆ Ω△x,following the formulation by Wang et al. [44]. This functional accounts for both the viscous dissipation of the fluid and the porous dissipation induced by the Brinkman penalization term: 
+
+JDISS (t) = X
+
+> x∈ΩJ
+
+h
+
+2ν(S(x, t ) : S(x, t )) + νK u(x, t ) · u(x, t )
+
+i
+
+, in Ω△x,J , (27) where S is the macroscopic strain rate tensor. In the LBM framework, the strain rate components Sαβ 
+
+can be locally recovered from the non-equilibrium part of the particle distribution functions, defined as 
+
+f neq  
+
+> i
+
+= fi − f eq  
+
+> i
+
+, without the need for finite-difference approximations: 
+
+Sαβ (x, t ) = − 12τ c 2
+
+> sq−1
+
+X
+
+> i=0
+
+ξiα ξiβ f neq  
+
+> i
+
+(x, t ). (28) 
+
+5. Results 
+
+The 2D and 3D flow around a cylinder is investigated, where the cylinder is modeled via the Brinkman-penalization. First, the validity of the HLBM is demonstrated by comparing the results with no-slip bound-ary conditions applied on the cylinder surface for the 2D Schäfer-Turek benchmark case [45] in Sec. 5.1. Sec. 5.2 present the validation results of the adjoint sensitivities for the steady laminar case at Re = 20 in 2D and Re = 40 in 3D with the Reynolds number defined as Re = ux, ∞Dν , where ux, ∞ is the inflow velocity and D the diameter of the cylinder. Then, Sec. 5.3 contains the results for the laminar but unsteady case at 
+
+Re = 100 , where the gradients are computed by the mean-flow adjoint approach. Finally, Sec. 5.4 demon-strates preliminary results for the unsteady turbulent case at Re = 3900 , where the adjoint HRRLBM-LES model is compared with the FTA [27]. 85.1. Validation of the primal model: Drag of a 2D porous cylinder flow 
+
+To demonstrate the feasibility of the primal problem with the HLBM approach for drag-type objective functionals, the 2D Schäfer-Turek benchmark case [45] is studied. The simulation parameters and domain sizes are chosen identically as defined in the benchmark case. The cylinder diameter D is resolved by N = 20 
+
+cells, and the lattice porosity in the cylinder is set to d = 0 and d = 1 in the fluid bulk. The results are compared regarding the drag coefficient, defined as 
+
+cD = 2Fx
+
+ρu 2
+
+> x, ∞
+
+D . (29) Additionally to the benchmark reference, no-slip boundary conditions on the cylinder surface realized by the bounce back method and interpolated bounce back approach [46] are added in the comparison study. 
+
+0 2 4 6 8 10 12 14 16 
+
+0
+
+2
+
+4
+
+6
+
+t
+
+> cD
+
+HLBM BGK+BounceBack BGK+Bouzidi Schäfer et al. [45]    
+
+> (a) Comparison of the drag force over time for different incorpo-ration of the solid cylinder in the flow. The cylinder diameter is resolved by N= 20 .
+
+20 40 80 
+
+10 −3
+
+10 −2
+
+10 −1 slope = −1  
+
+> slope =−2
+
+N           
+
+> cD −c∗
+> D
+> c∗
+> D
+> (b) Grid convergence study of the drag force for the different ap-proaches. The relative error of the final drag force at t=16
+> compared to the reference force from Schäfer et al. [45] has been computed for increasing resolutions of N={20 ,40 ,80 }.
+> Figure 1: Validation of the drag force for the cylinder modeled as a porous medium by HLBM.
+
+Fig. 1 presents the results of the validation study of the primal model. In Fig. 1a, the drag force is shown over the simulation duration for the different models. All three solutions approach the reference value of 
+
+c∗ 
+
+> D
+
+= 5 .58 by reaching a steady level at t = 16 s. To ensure that the results are mesh-independent, a grid convergence study is conducted, in which the experimental order of convergence (EOC) has been evaluated in Fig. 1b. Therein, the HLBM model achieves second-order convergence regarding the drag coefficient as the interpolated bounce back case. The accuracy of the HLBM model lies between the bounce back and the interpolated bounce back method. 
+
+5.2. Validation of the adjoint sensitivities: Steady laminar free flow around cylinder 
+
+Next, the free flow around a cylinder is simulated for the 2D and 3D cases in the steady laminar regime. The adjoint sensitivities are computed and validated against gradients computed via finite difference quotients (FDQ) and forward AD. 
+
+5.2.1. 2D case at Re = 20 
+
+The 2D free flow around a cylinder, as illustrated in Fig. 2, is investigated. The flow domain spans over Lx × Ly and the cylinder center is positioned at (xc, y c) with a cylinder radius of r. At the inflow, a Dirichlet velocity boundary condition with u∞ = (0 .2, 0.0) T
+
+m/s and at the outlet a Dirichlet pressure boundary condition with pout = 0 is applied. On the lateral walls, periodic boundary conditions are applied. The Reynolds number is set to Re = 20 . All relevant simulation parameters on the simulation domain and parameters regarding the setup are summarized in Tab. 1. The primal velocity distribution is shown in Fig. 3a. For the validation of the adjoint gradients, the sample points illustrated in Fig. 3b on the cylinder surface are chosen, on which additionally FDQ and forward AD 9Inflow        
+
+> Outflow
+> y
+> x
+> Lx= 3 .6
+> Ly = 0 .8
+> xc= 1 .2
+> yc= 0 .4r= 0 .05
+> periodic in ydirection Figure 2: Schematic illustration of the simulation setup in 2D with the used domain sizes and cylinder positions. Table 1: Simulation parameters for the produced results in Sec. 5.2.1.
+
+Parameter Value Unit 
+
+Domain extent ( Lx, Ly ) (3.6, 0.8) mCylinder center ( xc, yc) (1.2, 0.4) mRadius cylinder ( r) 0.05 mResolution over cylinder diameter ( N ) 21 -Lattice relaxation time ( τ ) 0.55 -Inflow velocity ( u∞) (0.2, 0.0) m/s Permeability of cylinder ( K) 10 −6 m2
+
+Fluid density ( ρ) 1 kg/ m3
+
+Max simulation time ( T ) 32 sCenter of Γ△x,J for JFFA (1.7, 0.4) mExtent of Γ△x,J for JFFA (0.00476, 0.8) mCenter of Ω△x,J for JDISS (1.2, 0.4) mExtent of Ω△x,J for JDISS (2.2, 0.8) msensitivities are computed. Fig. 3c, Fig. 3e, and Fig. 3g picture the adjoint velocity distribution with the corresponding gradient comparison in Fig. 3d, Fig. 3f, and Fig. 3h for the three objective functionals (25), (26), and (27), respectively. In the adjoint simulation for the drag objective functional based on the MEA, we observe instabilities in the cylinder wall vicinity as well as deviating adjoint gradients from those computed by the other two approaches. This coincides with the observations made in the work of Stück et al. [3] that the control domain and objective domain for controlled body shapes in a free flow setting should be chosen in a way that they are not only defined on the body surface. Instead, the control domain and the objective domain should be separated, leading to fewer instabilities and smoother adjoint solutions as we observe in Fig. 3e and Fig. 3g. For the drag objective based on the FFA and the dissipation objective, the adjoint gradients match the sensitivities obtained from FDQ and forward AD, except for small deviations around the sample positions close to the flow separation points. Those deviations align with the results in the work of Cheylan et al. [1] who refer to prior works of Nadarajah [47] stating that this observation is commonly reported in adjoint cylinder flow literature. In the following numerical experiments, we focus on the drag objective based on the FFA and the dissipation objective. 
+
+5.2.2. 3D case at Re = 40 
+
+Now the 3D case of 5.2.1 is investigated for a slightly higher Reynolds number of Re = 40 . To save computation time for the 3D cases, the simulations are conducted with single floating-point precision. The influence of the floating point precision has been evaluated and showed no visible difference for the validation results, cf. Appendix B. Fig. 4 illustrates the simulation setup for the 3D case. Along the z-axis, periodic boundary conditions are applied. For all the other boundaries, the identical boundary treatment is applied as in the 2D case. Again, all relevant simulation parameters and parameters 10 (a) Primal velocity field.                         
+
+> (b) Sample positions for the gradient com-parison.
+> (c) Adjoint velocity field for the drag MEA objective. 0246810 12 14
+> 0
+> 2
+> 4
+> ·10 4
+> i
+> dJ
+> dα Adjoints
+> Forward AD
+> FDQ (d) Surface gradient comparison.
+> (e) Adjoint velocity field for the drag FFA objective. 0246810 12 14
+> −1
+> −0.5
+> 0
+> 0.5
+> ·10 −4
+> i
+> dJ
+> dα Adjoints
+> Forward AD
+> FDQ (f) Surface gradient comparison.
+> (g) Adjoint velocity field for the dissipation objective. 0246810 12 14
+> −0.2
+> −0.1
+> 0
+> 0.1
+> i
+> dJ
+> dα Adjoints
+> Forward AD
+> FDQ (h) Surface gradient comparison.
+
+Figure 3: Validation of the adjoint gradients for the different objective functionals. The surface gradients are compared for adjoint-based, forward AD, and FDQ. 
+
+regarding the setup are listed in Tab. 2. The validation of the adjoint sensitivities is demonstrated in Fig. 5. The same sample point distribution as shown in Fig. 3b is used on the x-y-plane at z = 0 .2. For the FFA and dissipation objective, the adjoint gradients have a similar accuracy as in the 2D case. Similarly, there are slight discrepancies between the adjoint and forward AD gradients for the points close to the top and bottom sides of the cylinder, but for the remaining positions, the gradients match very well. 
+
+5.3. Mean-flow adjoint sensitivities: Unsteady laminar free flow around cylinder 
+
+In this section, the laminar unsteady case for the 2D cylinder flow at Re = 100 is investigated. This well-studied case is known to develop the von Kármán vortex street triggered by the Helmholtz instabilities occurring in the wake of the cylinder [48]. The simulation setup is identical to that illustrated in Fig. 2. Besides the Reynolds number and the maximal simulation time of T = 300 s, all other simulation parameters remain identical as given in Tab. 1. The tracking average of the particle distribution function, objective functional, and the derivatives of the objective functionals required to evaluate (22), (23), and (24), are computed starting after 80% of the maximum simulation time is passed. Fig. 6 shows the results for the laminar unsteady case. In Fig. 6a, a snapshot of the primal velocity field is visualized, where the fully-developed von Kármán vortex street can be observed. This oscillating nature enforces this case to be unsteady while being in the fully laminar regime. Fig. 6b shows the averaged 11 Inflow Outflow             
+
+> x
+> y
+> zLx= 3 .6
+> Ly = 0 .8
+> Lz= 0 .4xc= 1 .2
+> yc= 0 .4r= 0 .05
+> periodic in yand zdirection Figure 4: Schematic illustration of the simulation setup in 3D with the used domain sizes and cylinder positions. Table 2: Simulation parameters for the produced results in Sec. 5.2.2.
+
+Parameter Value Unit 
+
+Domain extent ( Lx, Ly , Lz ) (3.6, 0.8, 0.4) mCylinder center axis along ( xc, yc) (1.2, 0.4) mRadius cylinder ( r) 0.05 mResolution over cylinder diameter ( N ) 21 -Lattice relaxation time ( τ ) 0.55 -Inflow velocity ( u∞) (0.2, 0.0, 0.0) m/s Permeability of cylinder ( K) 10 −6 m2
+
+Fluid density ( ρ) 1 kg/ m3
+
+Max simulation time ( T ) 32 sCenter of Γ△x,J for JFFA (1.7, 0.4, 0.2) mExtent of Γ△x,J for JFFA (0.00476, 0.8, 0.4) mCenter of Ω△x,J for JDISS (1.2, 0.4, 0.2) mExtent of Ω△x,J for JDISS (2.2, 0.8, 0.4) mdistribution of the particle distribution function at the end of the primal simulation. Therein, the vortex street is smoothed out, and the symmetrical distribution along the axis y = 0 .2m of the flow domain indicates a sufficiently long averaging time interval to remove any influences or bias due to the unsteady fluctuations. Fig. 6c shows the mean-flow adjoint velocity distribution. Compared to the steady laminar case in Fig. 3e, high adjoint velocities are concentrated in the vicinity of the cylinder with a more pronounced "wake" in the upstream direction. For the dissipation objective in Fig. 6d, similar observations can be made. The jet upstream of the cylinder is now much more prominent compared to the laminar case. Furthermore, the main activity of the adjoint velocity happens upstream of the cylinder compared to Fig. 3g, indicating the sensitive region in the flow regarding the objective. The adjoint velocity distribution shows now higher spatial gradients for this case with a higher Reynolds number, and as the adjoint problem is fed only by the mean-flow primal solution, the adjoint state field is again symmetrical. The surface gradients are sampled again on the positions given in Fig. 3b and show symmetrical distributions for both objective functionals. The obtained surface gradients and adjoint velocity distributions based on the mean-flow adjoint match the results observed in the work of Cheylan et al. [1] very well. Note that for this unsteady laminar flow, the mean-flow adjoint-based sensitivities yielded stable results, while those computed via forward AD had serious limitations in the gradient accuracy as reported in [26, 49]. The observations on this issue are presented in Appendix C, where the gradients based on forward AD were not feasible for practical use due to bloating of the sensitivities caused by the Helmholtz instability and accumulating gradient errors due to diverging solution trajectories. Those results, together with those presented in Sec. 5.2.1, Sec. 5.2.2, and the current section, demonstrate that the mean-flow-based adjoint approach is a practical solution compromising numerical efficiency, memory footprint, stability of the computed gradients, and their accuracy. 12 0 2 4 6 8 10 12 14         
+
+> −4
+> −2
+> 0
+> 2
+> 4
+> ·10 −9
+> i
+> dJ
+> dα
+> Adjoints
+> Forward AD (a) Surface gradient comparison for the FFA objective. 0246810 12 14
+> −0.5
+> 0
+> 0.5
+> 1
+> ·10 −3
+> i
+> dJ
+> dα(b) Surface gradient comparison for the dissipation objective.
+
+Figure 5: Validation of the adjoint gradients for the different objective functionals. The surface gradients are compared for adjoint-based, forward AD, and FDQ. In the 3D case, the simulation has been conducted with single floating-point precision to save computational resources.                   
+
+> (a) Snapshot of the primal velocity field. (b) Averaged distribution of the particle distribution function.
+> (c) Adjoint velocity field for the drag FFA objective. (d) Adjoint velocity field for the dissipation objective. 0246810 12 14
+> 0
+> 2
+> 4
+> ·10 −7
+> i
+> dJ
+> dα
+> (e) Surface gradient comparison for the FFA objective. 0246810 12 14
+> −2
+> 0
+> 2·10 −2
+> i
+> dJ
+> dα(f) Surface gradient comparison for the dissipation objective.
+
+Figure 6: Mean-flow adjoint of unsteady laminar 2D cylinder flow at Re = 100 .
+
+5.4. Proof-of-concept: Turbulent free flow around cylinder 
+
+To further explore the capabilities and extendibility of the current approach, the 3D turbulent cylinder flow at Re = 3900 is computed with the mean-flow adjoint approach. The 3D cylinder flow at Re = 3900 
+
+is an established LES benchmark case, where the turbulent flow around the cylinder is in the transient regime [50, 51]. To the author’s knowledge, it remains an open question if accurate gradients can be computed for turbulent flows with chaotic solutions with respect to the initial conditions. It is generally acknowledged that the gradients become inaccurate due to the fact that, by the chaotic features of the flow, the trajectories of the solution state diverge over time [26, 49]. Mathematically, this can be quantified by the Lyapunov exponent, e.g., if the exponent exceeds one for any dynamic system, the sensitivities computed by conventional methods diverge [49]. It is not the current scope of the present work to assess what is possible to retrieve accurate gradients for turbulent flows in general, but we will compare the obtained surface gradients for a fully differentiated LES model (here HRRLBM-LES) and the gradients computed via the FTA, where the turbulence model is ignored in the adjoint simulation. The FTA corresponds to setting 
+
+∂τ turb /∂f i = 0 [27] and uses the averaged value for τturb as a constant in the adjoint HRRLBM collision operator without the differentiated LES model. Moreover, it is also not the scope of the current paper to 13 Figure 7: Contour plot of the Q-criterion at Q = 2 for the primal velocity. 
+
+deliver dedicated turbulence statistics evaluation for the current cylinder flow, as the primal model has been validated in the turbulent regime against experimental results in several previous works [17, 18, 37, 38, 52]. The simulation setup for the turbulent case is identical to Sec. 5.2.2 as sketched in Fig. 4 with slightly different simulation parameters as listed in Tab. 3. The averaging window is set between [100 , 800] s to track the averaged entities required for the evaluation of the adjoint Jacobian expressions. The drag functional based on the FFA is used for the adjoint simulations. 
+
+> Table 3: Simulation parameters for the produced results in Sec. 5.4.
+
+Parameter Value Unit 
+
+Domain extent ( Lx, Ly , Lz ) (4.0, 1.0, 0.4) mCylinder center axis along ( xc, yc) (0.7, 0.5) mRadius cylinder ( r) 0.05 mResolution over cylinder diameter ( N ) 21 -Lattice relaxation time ( τ ) 0.501 -Inflow velocity ( u∞) (0.2, 0.0, 0.0) m/s Permeability of cylinder ( K) 3.85 × 10 −8 m2
+
+Fluid density ( ρ) 1 kg/ m3
+
+Max simulation time ( T ) 800 sSmagorinsky constant ( Cs) 0.1 sCenter of Γ△x,J for JFFA (1.2, 0.5, 0.2) mExtent of Γ△x,J for JFFA (0.004, 0.6, 0.4) mFig. 7 visualizes the iso-surface for Q = 2 of the turbulent cylinder flow with the projected primal velocity magnitude. As clearly visible, the flow is fully transient and chaotic, where conventional methods for gradient computation would fail according to [26]. By employing the mean-flow-based adjoint approach, the adjoint velocity distributions are obtained and shown in Fig. 8. Therein, Fig. 8a shows the adjoint velocity field for the fully differentiated HRRLBM-LES model, and Fig. 8b contains the solution with the FTA. In both cases, the middle x-y plane has been visualized. We can clearly observe that the adjoint velocity fields differ for the two cases and that in the solution with FTA, the distribution looks smoother compared to the fully differentiated case. Especially, in the vicinity of the cylinder, the adjoint velocity magnitude is overall lower in the FTA case. To achieve convergence in the adjoint solver for the highly turbulent regime, we employed a regularization approach that adds numerical diffusion in the adjoint simulation to suppress spurious oscillations originating in the high-shear region close to the cylinder. This is a commonly applied measure to stabilize adjoint simulations in turbulent flows, as stated by [1, 53]. In the current work, this is realized by increasing the lattice relaxation time in the adjoint simulation, which has been set to τadj = 0 .6
+
+in both cases shown in Fig. 8. 14 (a) Adjoint velocity field for the drag FFA objective. (b) Adjoint velocity field for the drag FFA objective with the FTA. 
+
+Figure 8: Comparison of the adjoint solutions for the adjoint HHRR-LES model and the FTA.           
+
+> (a) Adjoint HRRLBM-LES model with τadj = 0 .6.(b) Adjoint HRRLBM-LES model with τadj = 0 .65 .
+> (c) Adjoint HRRLBM model with FTA with τadj = 0 .6.(d) Adjoint HRRLBM model with FTA with τadj = 0 .65 .
+
+Figure 9: Surface gradients computed by the mean-flow adjoint approach for the turbulent cylinder case at Re = 3900 projected onto the surface normals. 
+
+The adjoint surface gradients are projected onto the normal vectors of the cylinder in Fig. 9. In Fig. 9a and Fig. 9b, the gradients are visualized for the completely differentiated primal model for the adjoint lattice relaxation times of τadj = 0 .6 and τadj = 0 .65 . Analogously, in Fig. 9c and Fig. 9d, the gradients are visualized for the adjoint simulation with the FTA again for the adjoint lattice relaxation times of 
+
+τadj = 0 .6 and τadj = 0 .65 . The adjoint simulation with the FTA at τadj = 0 .55 still produced smooth surface gradients, while for the fully differentiated case, the adjoint simulation diverged. This matches the literature reports, stating that the fully differentiated non-linear LES models may raise stability concerns in the adjoint simulations [27, 53]. Looking at the HRRLBM-LES equation in (11) and the adjoint update scheme in (23), the adjoint LBM is obtained by differentiating the primal model by the particle distribution function. Due to the present LES model, the effective relaxation time is dependent on f such that computing 
+
+∂C/∂f gives 15 ∂Cj
+
+∂f i
+
+= ∂f eq 
+
+> j
+
+∂f i
+
++
+
+
+
+1 − 1
+
+τeff 
+
+ ∂f (1) 
+
+> j
+
+∂f i
+
++
+
+ 1
+
+τeff 
+
+2 ∂τ eff 
+
+∂f i
+
+f (1)  
+
+> j
+
+. (30) The last term on the right-hand side is an additional source term, emerging in the adjoint LBM due to the present LES model. It is proportional to the non-equilibrium parts, which become more dominant in regions with high shear rates in the primal problem, such as in the vicinity of the cylinder surface. Therefore, depending on the LES model, this term possibly inserts energy in the high-shear regions of the flow, destabilizing the adjoint simulation. This matches our observations, as in adjoint simulations, where stability issues occurred, the source of spurious oscillations was the close vicinity of the cylinder surface. This example shows that a LES model, which generally exhibits stabilizing effects in the primal model, does not necessarily stabilize the adjoint problem. Comparing Fig. 9a and Fig. 9b, as well as Fig. 9c and Fig. 9d, shows that the regularization mainly influences the magnitude of the surface gradients while the distribution on the surface remains similar. In all cases displayed in Fig. 9, the surface gradients suggest changes in the cylinder topology such that the upstream face becomes more aligned to the fluid flow to reduce the drag. Comparing the results for the fully differentiated LES model and the FTA, differences in the surface gradients regarding the magnitude as well as the distribution are observable. At the top and bottom side of the cylinder, the FTA gradients suggest to increase the hydraulic diameter by adding material outwards, which is not visible for the gradients obtained by the fully differentiated LES model. This corresponds to the observations made for RANS-based adjoint sensitivity analysis, that the FTA might lead to strong deviations in the computed gradients as demonstrated in [29]. As the comparison of the surface gradients for this case with FDQ or forward AD is not reasonable, a feasibility study of those sensitivities performing topology optimization is the target of future work. 
+
+6. Conclusion 
+
+In this work, an adjoint sensitivity analysis was conducted for steady and unsteady flow around porous cylinders modeled via the HLBM. The first-discretize-then-differentiate approach utilizes AD for the Jaco-bian expressions in the adjoint problem and was successfully evaluated across different flow regimes. The validation studies in the steady laminar regime at Re = 20 (2D) and Re = 40 (3D) demonstrated that the computed adjoint sensitivities match the gradients obtained from FDQ and forward AD with high accuracy. Reducing the floating-point precision in the 3D cases showed no visible difference in the validation results, while drastically reducing the numerical cost. Regarding the investigated objective functionals, the drag evaluation based on the FFA and the energy dissipation functional yielded robust and accurate gradients. In contrast, the drag evaluation using the MEA suffered from instabilities and gradient deviations close to the cylinder wall, which aligns with literature recommendations to separate the control and objective domains from the solid body boundaries. For the unsteady laminar regime at Re = 100 , where the flow develops a transient von Kármán vortex street, the mean-flow adjoint LBM approach proposed by Cheylan et al. was successfully applied. By utilizing the time-averaged primal particle distribution functions to evaluate the local evolution operators, the framework circumvented the massive memory footprint of exact transient checkpointing. The resulting mean-flow adjoint velocity distributions and surface sensitivities showed sym-metrical profiles and matched the structural observations reported in prior mean-flow literature very well. This demonstrates the applicability of combining mean-flow adjoints with the Brinkman-penalization-based porous cylinder model. Finally, a proof-of-concept study was performed for a chaotic, turbulent free flow around a 3D cylinder at Re = 3900 utilizing the HRRLBM-LES model. To counteract the inherent tra-jectory divergence caused by positive Lyapunov exponents in chaotic regimes, the mean-flow-based adjoint gradient computation is applied. A comparison between the completely differentiated LES operator and the FTA revealed that the FTA requires less artificial numerical diffusion to stabilize the adjoint simulation. An additional source term emerges due to the LES model being dependent on the state variable, where we observed spurious oscillations appeared around the cylinder in case the adjoint simulation was unstable. Regularization measures by adding numerical diffusion are applied to stabilize the adjoint simulation by 16 increasing the adjoint lattice relaxation time ( τadj = 0 .6 and 0.65 ). They mainly scaled the magnitude of the surface gradients while the change in gradient distribution was small. A definitive feasibility study of these turbulent sensitivities should be conducted in future work by implementing the computed gradients directly into a gradient-based optimizer to perform fluid topology optimization. 
+
+Author contributions statement 
+
+Conceptualization: SI; Methodology: SI, FB; Software: SI, AK; Validation: SI; Formal analysis: SI; Investigation: SI; Resources: MJK; Data Curation: SI; Writing - Original Draft: SI; Writing - Review & Editing: SI, JLG; Visualization: SI; Supervision: MJK; Project administration: MJK; Funding acquisition: MJK. All authors read and approved the final version of the paper. 
+
+Funding 
+
+This work has received funding from the European Union’s Horizon Europe research and innovation program under grant agreement No 101138305. 
+
+Acknowledgments 
+
+This work was performed on the HoreKa supercomputer funded by the Ministry of Science, Research and the Arts Baden-Württemberg and by the Federal Ministry of Education and Research. The authors thank Nicolas R. Gauger and Max Sagebaum from the RPTU University Kaiserslautern-Landau and Is-abelle Cheylan from the Aix-Marseille University for fruitful discussions on the adjoint-based sensitivity computation under turbulence. 
+
+Competing interests statement 
+
+The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. 
+
+Data availability 
+
+The results in this paper were produced with OpenLB [16] (published under GNU General Public License V.2 (GPL2), version 1.9 [54]). The computational data are available upon reasonable request. 
+
+Appendix A. Temporal average of objective functionals and collision operators 
+
+Let F(α, f ) an arbitrary function dependent on a time-invariant control vector α and time dependent state function f . The state function is split into temporal average and fluctuations as f = f ′
+
++ f with 
+
+f ′ = 0 . The Taylor-series expansion of the function F around the time-invariant state gives: 
+
+F(α, f ) = F(α, f ) + ∂F(α, f )
+
+∂f f =f
+
+f ′
+
++ 12
+
+∂2F(α, f )
+
+∂f 2 f =f
+
+(f ′
+
+)2 + O(( f ′
+
+)3). (A.1) Applying temporal averaging over the series expansion, it yields 
+
+F(α, f ) = F(α, f ) + 12
+
+∂2F(α, f )
+
+∂f 2 f =f
+
+(f ′ )2 + O(( f ′
+
+)3). (A.2) This shows, that if F is linear regarding f , the equality F(α, f ) = F(α, f ) holds. Replacing F with ∂J/∂f ,
+
+∂J/∂ α, ∂C/∂f , and ∂C/∂ α gives the explanation of the statement given in Sec. 3.3. 17 Appendix B. Influence of the floating point precision 
+
+To assess the impact of the floating point precision, the validation case in Sec. 5.2.2 is computed for single and double precision. Fig. B.10 demonstrates that for both the adjoint and forward AD-based gradients, the results match perfectly for the different floating point precisions. 0 2 4 6 8 10 12 14  
+
+> −0.2
+> −0.1
+> 0
+> 0.1
+> i
+> dJ
+> dα
+> FP 32 Adjoints FP 32 Forward AD FP 64 Adjoints FP 64 Forward AD
+> Figure B.10: Comparison of adjoint gradients with forward AD for different floating-point precision for the case 5.2.2. FDQ yielded inaccurate results due to too large stencil widths.
+
+Appendix C. Divergence of exact transient sensitivities via forward AD 
+
+To further justify the necessity of the mean-flow adjoint approach for unsteady configurations, this ap-pendix analyzes the behavior of exact transient sensitivities computed via forward AD for the case from Sec. 5.3 at Re = 100 . When evaluating the exact transient sensitivity of a time-integrated objective func-tional (such as drag) over a simulation time horizon T , a well-known phenomenon of gradient explosion as in [50] is observed. 0 50 100 150 200 250 300 350 400 450 500                
+
+> 0
+> 2
+> 4
+> ·10 −4
+> t
+> J
+> (a) Dissipation objective functional over simulation time. The dashed red line indicates the start of the temporal averaging for the tracking average type objective functional. 050 100 150 200 250 300 350 400 450 500
+> 10 −16
+> 10 −4
+> 10 8
+> t
+> dJ/ dα
+> (b) Transient development of the forward AD gradients, where the initial seeding of the AD algorithm is performed at t= 0 .
+> Figure C.11: Exploding forward AD sensitivities for the 2D cylinder flow at Re = 100 .
+
+Fig. C.11a shows the temporal evolution of the dissipation objective over time from (27) by evaluating the function for the state at every time step t. Therein, between t ∈ [200 , 250] s, the Helmholtz instabilities trigger the periodic vortex street for t ≥ 250 s. In the same time span, the forward AD sensitivities mark an increase in the gradients of the magnitude of 10 9, as shown in Fig. C.11b. To verify this observation, the wake velocity component perpendicular to the main flow direction uy of two successive simulations with perturbation applied for the controlled permeability of a single cell on the cylinder surface with △α = 1 e − 6
+
+m2 are compared. Fig. C.12 illustrates that slight changes in the local permeability lead to significant temporal shifts in the onset of the periodic vortex street, which directly lead to the instabilities of the forward AD algorithm gradients. The same investigations are performed for the case, where the seeding of the forward AD algorithm takes place after the full development of the periodic vortex shredding, i.e., at t = 250 s. This means that the forward AD algorithm skips the critical part between t ∈ [200 , 250] s. Fig. C.13a visualizes the objective functional and the temporal average of the objective, where the averaged value matches the mean value of the oscillating fluctuations. However, in Fig. C.13b, we observe that the forward AD sensitivities slowly increase over time. This is confirmed by comparing the derivative of 18 0 50 100 150 200 250 300 350 400 450 500        
+
+> −0.1
+> −5·10 −2
+> 0
+> 5·10 −2
+> 0.1
+> t
+> uy
+> uy(α)
+> uy(α+ ∆ α)
+
+Figure C.12: Comparison of the wake velocity y-component for slightly perturbed cylinder topologies to demonstrate the shift in the onset of the Helmholtz instabilities. 260 280 300 320 340 360 380 400 420 440 460 480 500 
+
+3.72 
+
+3.74 
+
+3.76 
+
+·10 −4
+
+t
+
+> J
+
+J(t)
+
+J(t)   
+
+> (a) Dissipation objective functional over simulation time after t= 250 s. The solid green line shows the temporal average of the objective functional.
+
+260 280 300 320 340 360 380 400 420 440 460 480 500 
+
+0
+
+2
+
+4
+
+6
+
+·10 −3
+
+t
+
+> dJ/ dα
+
+dJ(t)/dα
+
+dJ(t)/dα
+
+dJ(t)/dα  
+
+> (b) Transient development of the forward AD gradients, where the initial seeding of the AD algorithm is performed after the full development of the periodic vortex shredding (at t= 250 s). The blue line gives the objective derivative of the tracking-type temporal average, whereas the green line gives the average of the objective sensitivities as plotted in black.
+
+Figure C.13: Exploding forward AD sensitivities for the 2D cylinder flow at Re = 100 .
+
+the averaged objective functional computed by (22) and the average of the derivatives plotted by the black solid line in the current figure. We observe here the exact behavior reported by [26] that 
+
+∂∂α
+
+
+
+J(α, f (·, t )) 
+
+̸
+
+=
+
+ ∂J (α, f (·, t )) 
+
+∂α
+
+
+
+, (C.1) even for this laminar unsteady case for the cylinder flow at Re = 100 . A minute change in frequency leads to perturbed and unperturbed flow trajectories that become increasingly out of phase as time progresses. The forward AD gradients track these diverging trajectories by experiencing oscillatory growth where the magnitude increases monotonically with the time horizon T .Summarized, the divergence of the forward AD gradients is primarily triggered by two coupled mecha-nisms: 1. Minor variations in the local lattice porosity or solid boundary definitions induce a temporal shift in the physical onset of the Helmholtz instabilities behind the cylinder. 2. The design variables inherently alter the shedding frequency (Strouhal number) and the phase of the transient vortex street, leading to accumulating contributions for the objective sensitivities. 19 References 
+
+[1] I. Cheylan, G. Fritz, D. Ricot, P. Sagaut, Shape Optimization Using the Adjoint Lattice Boltzmann Method for Aerodynamic Applications, AIAA Journal 57 (7) (2019) 2758–2773, publisher: American Institute of Aeronautics and Astronautics _eprint: https://doi.org/10.2514/1.J057955. doi:10.2514/ 1.J057955 .URL https://doi.org/10.2514/1.J057955 
+
+[2] H. Jalali Khouzani, R. Kamali-Moghadam, Airfoil inverse design based on laminar compressible adjoint lattice Boltzmann method, International Journal for Numerical Methods in Fluids 95 (8) (2023) 1197– 1219, _eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1002/fld.5192. doi:10.1002/fld.5192 .URL https://onlinelibrary.wiley.com/doi/abs/10.1002/fld.5192 
+
+[3] A. Stück, Adjoint Navier-Stokes methods for hydrodynamic shape optimisation, Technische Universität Hamburg, 2012. [4] F. Dugast, Y. Favennec, C. Josset, Y. Fan, L. Luo, Topology optimization of thermal fluid flows with an adjoint Lattice Boltzmann Method, Journal of Computational Physics 365 (2018) 376–404. 
+
+doi:10.1016/j.jcp.2018.03.040 .URL https://www.sciencedirect.com/science/article/pii/S0021999118302067 
+
+[5] M. J. Krause, G. Thäter, V. Heuveline, Adjoint-based fluid flow control and optimisation with lattice Boltzmann methods, Computers & Mathematics with Applications 65 (6) (2013) 945–960. doi:10. 1016/j.camwa.2012.08.007 .URL https://www.sciencedirect.com/science/article/pii/S0898122112005421 
+
+[6] Łaniewski-Wołłk, Ł. and Rokicki, J., Adjoint Lattice Boltzmann for topology optimization on multi-GPU architecture, Computers & Mathematics with Applications 71 (3) (2016) 833–848. doi:10.1016/ j.camwa.2015.12.043 .URL https://www.sciencedirect.com/science/article/pii/S0898122115006215 
+
+[7] S. Ito, J. Jeßberger, S. Simonis, F. Bukreev, A. Kummerländer, A. Zimmermann, G. Thäter, G. R. Pesch, J. Thöming, M. J. Krause, Identification of reaction rate parameters from uncertain spatially distributed concentration data using gradient-based PDE constrained optimization, Computers & Math-ematics with Applications 167 (2024) 249–263. doi:10.1016/j.camwa.2024.05.026 .URL https://www.sciencedirect.com/science/article/pii/S0898122124002451 
+
+[8] C. Chen, K. Yaji, T. Yamada, K. Izui, S. Nishiwaki, Local-in-time adjoint-based topology optimization of unsteady fluid flows using the lattice Boltzmann method, Mechanical Engineering Journal 4 (3) (2017) 17–00120, num Pages: 17-00120. doi:10.1299/mej.17-00120 .[9] S. Ito, A. Zimmermann, J. Jeßberger, S. Simonis, A. Kummerländer, F. Bukreev, J. Thöming, G. Pesch, M. J. Krause, Geometry reconstruction from magnetic resonance velocimetry measurements via solving an inverse fluid flow problem, Journal of Computational Physics (2026) 115151 doi:10.1016/j.jcp. 2026.115151 .URL https://www.sciencedirect.com/science/article/pii/S0021999126005036 
+
+[10] T. Borrvall, J. Petersson, Topology optimization of fluids in stokes flow, International Journal for Numerical Methods in Fluids 41 (1) (2003) 77–107. arXiv:https://onlinelibrary.wiley.com/doi/ pdf/10.1002/fld.426 , doi:https://doi.org/10.1002/fld.426 .URL https://onlinelibrary.wiley.com/doi/abs/10.1002/fld.426 
+
+[11] G. Pingen, A. Evgrafov, K. Maute, Adjoint parameter sensitivity analysis for the hydrodynamic lattice Boltzmann method with applications to design optimization, Computers & Fluids 38 (4) (2009) 910– 923. doi:10.1016/j.compfluid.2008.10.002 .URL https://www.sciencedirect.com/science/article/pii/S0045793008001989 
+
+20 [12] K. Yaji, T. Yamada, M. Yoshino, T. Matsumoto, K. Izui, S. Nishiwaki, Topology optimization in thermal-fluid flow using the lattice Boltzmann method, Journal of Computational Physics 307 (2016) 355–377. doi:10.1016/j.jcp.2015.12.008 .URL https://www.sciencedirect.com/science/article/pii/S0021999115008244 
+
+[13] G. Liu, M. Geier, Z. Liu, M. Krafczyk, T. Chen, Discrete adjoint sensitivity analysis for fluid flow topology optimization based on the generalized lattice Boltzmann method, Computers & Mathematics with Applications 68 (10) (2014) 1374–1392. doi:10.1016/j.camwa.2014.09.002 .URL https://www.sciencedirect.com/science/article/pii/S0898122114004507 
+
+[14] B. Mohammadi, O. Pironneau, Shape optimization in fluid mechanics, Annu. Rev. Fluid Mech. 36 (1) (2004) 255–279. [15] K. Yaji, T. Yamada, M. Yoshino, T. Matsumoto, K. Izui, S. Nishiwaki, Topology optimization using the lattice boltzmann method incorporating level set boundary expressions, Journal of Computational Physics 274 (2014) 158–181. doi:https://doi.org/10.1016/j.jcp.2014.06.004 .URL https://www.sciencedirect.com/science/article/pii/S0021999114004112 
+
+[16] M. J. Krause, A. Kummerländer, S. J. Avis, H. Kusumaatmaja, D. Dapelo, F. Klemens, M. Gaedtke, N. Hafen, A. Mink, R. Trunk, J. E. Marquardt, M.-L. Maier, M. Haussmann, S. Simonis, OpenLB—Open source lattice Boltzmann code, Computers & Mathematics with Applications 81 (2021) 258–288. doi:10.1016/j.camwa.2020.04.033 .URL https://www.sciencedirect.com/science/article/pii/S0898122120301875 
+
+[17] A. Kummerländer, B. Tur, M. Haase, F. Bukreev, M. Döllinger, M. J. Krause, S. Kniesburges, Efficient fluid structure interaction simulation of vocal fold oscillations using a homogenized Lattice Boltzmann Method, Computer Methods in Applied Mechanics and Engineering 457 (2026) 119009. doi:10.1016/ j.cma.2026.119009 .URL https://www.sciencedirect.com/science/article/pii/S0045782526002823 
+
+[18] A. Kummerländer, S. Ito, M. Schecher, D. Dapelo, S. Simonis, M. J. Krause, F. Bukreev, Ef-ficient wall-modelled large eddy simulation of rotors using homogenized lattice Boltzmann meth-ods, International Journal of Numerical Methods for Heat & Fluid Flow 36 (7) (2026) 2649–2673. 
+
+doi:10.1108/HFF-09-2025-0724 .URL https://doi.org/10.1108/HFF-09-2025-0724 
+
+[19] S. Ito, A. Kummerländer, J. Jeßberger, J. L. Grafen, E. Öz, N. R. Gauger, M. Sagebaum, M. J. Krause, Generation of efficient adjoint lattice Boltzmann methods with algorithmic differentiation (Apr. 2026). 
+
+doi:10.2139/ssrn.6505987 .URL https://papers.ssrn.com/abstract=6505987 
+
+[20] F. Klemens, B. Förster, M. Dorn, G. Thäter, M. J. Krause, Solving fluid flow domain identification problems with adjoint lattice Boltzmann methods, Computers & Mathematics with Applications 79 (1) (2020) 17–33. doi:10.1016/j.camwa.2018.07.010 .URL https://www.sciencedirect.com/science/article/pii/S0898122118303754 
+
+[21] M. J. Krause, F. Klemens, T. Henn, R. Trunk, H. Nirschl, Particle flow simulations with homogenised lattice boltzmann methods, Particuology 34 (2017) 1–13. doi:https://doi.org/10.1016/j.partic. 2016.11.001 .URL https://www.sciencedirect.com/science/article/pii/S167420011730041X 
+
+[22] S. Nørgaard, O. Sigmund, B. Lazarov, Topology optimization of unsteady flow problems using the lattice boltzmann method, Journal of Computational Physics 307 (2016) 291–307. doi:https://doi. org/10.1016/j.jcp.2015.12.023 .URL https://www.sciencedirect.com/science/article/pii/S0021999115008426 
+
+21 [23] P. Meliga, E. Boujo, G. Pujals, F. Gallaire, Sensitivity of aerodynamic forces in laminar and turbulent flow past a square cylinder, Physics of Fluids 26 (10) (2014) 104101. arXiv:https://pubs.aip.org/ aip/pof/article-pdf/doi/10.1063/1.4896941/13799256/104101_1_online.pdf , doi:10.1063/1. 4896941 .URL https://doi.org/10.1063/1.4896941 
+
+[24] N. K. Yamaleev, B. Diskin, E. J. Nielsen, Local-in-time adjoint-based method for design optimization of unsteady flows, Journal of Computational Physics 229 (14) (2010) 5394–5407. doi:https://doi. org/10.1016/j.jcp.2010.03.045 .URL https://www.sciencedirect.com/science/article/pii/S0021999110001646 
+
+[25] K. Yaji, M. Ogino, C. Chen, K. Fujita, Large-scale topology optimization incorporating local-in-time adjoint-based method for unsteady thermal-fluid problem, Structural and Multidisciplinary Optimiza-tion 58 (2) (2018) 817–822. [26] P. J. Blonigan, Q. Wang, E. J. Nielsen, B. Diskin, Least-squares shadowing sensitivity analysis of chaotic flow around a two-dimensional airfoil, AIAA Journal 56 (2) (2018) 658–672. arXiv:https: //doi.org/10.2514/1.J055389 , doi:10.2514/1.J055389 .URL https://doi.org/10.2514/1.J055389 
+
+[27] A. C. Marta, S. Shankaran, On the handling of turbulence equations in rans adjoint solvers, Computers & Fluids 74 (2013) 102–113. doi:https://doi.org/10.1016/j.compfluid.2013.01.012 .URL https://www.sciencedirect.com/science/article/pii/S0045793013000303 
+
+[28] E. M. Papoutsis-Kiachagias, K. C. Giannakoglou, Continuous adjoint methods for turbulent flows, ap-plied to shape and topology optimization: industrial applications, Archives of Computational Methods in Engineering 23 (2) (2016) 255–299. [29] M. Schramm, B. Stoevesandt, J. Peinke, Optimization of airfoils using the adjoint approach and the influence of adjoint turbulent viscosity, Computation 6 (1) (2018). doi:10.3390/computation6010005 .URL https://www.mdpi.com/2079-3197/6/1/5 
+
+[30] R. P. Dwight, J. Brezillon, Effect of approximations of the discrete adjoint on gradient-based op-timization, AIAA Journal 44 (12) (2006) 3022–3031. arXiv:https://doi.org/10.2514/1.21744 ,
+
+doi:10.2514/1.21744 .URL https://doi.org/10.2514/1.21744 
+
+[31] S. Simonis, N. Hafen, J. Jeßberger, D. Dapelo, G. Thäter, M. J. Krause, Homogenized lattice boltzmann methods for fluid flow through porous media–part i: kinetic model derivation, ESAIM: Mathematical Modelling and Numerical Analysis 59 (2) (2025) 789–813. [32] P. L. Bhatnagar, E. P. Gross, M. Krook, A model for collision processes in gases. i. small amplitude processes in charged and neutral one-component systems, Physical Review 94 (3) (1954) 511–525. 
+
+doi:10.1103/PhysRev.94.511 .[33] Y. H. Qian, D. D’Humières, P. Lallemand, Lattice bgk models for navier-stokes equation, Europhysics Letters (EPL) 17 (6) (1992) 479–484. doi:10.1209/0295-5075/17/6/001 .[34] M. A. Spaid, F. R. Phelan Jr, Lattice boltzmann methods for modeling microscale flow in fibrous porous media, Physics of fluids 9 (9) (1997) 2468–2474. [35] T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E. M. Viggen, The Lattice Boltzmann Method: Principles and Practice, Graduate Texts in Physics, Springer International Publishing and Imprint and Springer, Cham, 2017. [36] J. Smagorinsky, General circulation experiments with the primitive equations: I. the basic experiment, Monthly weather review 91 (3) (1963) 99–164. 22 [37] C. Coreixas, G. Wissocq, G. Puigt, J.-F. Boussuge, P. Sagaut, Recursive regularization step for high-order lattice boltzmann methods, arXiv preprint arXiv:1704.04413 (2017). [38] J. Jacob, O. Malaspinas, P. Sagaut, A new hybrid recursive regularised bhatnagar–gross–krook collision model for lattice boltzmann method-based large eddy simulation, Journal of Turbulence 19 (11-12) (2018) 1051–1076. [39] O. Malaspinas, P. Sagaut, Consistent subgrid scale modelling for lattice boltzmann methods, Journal of Fluid Mechanics 700 (2012) 514–542. doi:10.1017/jfm.2012.155 .[40] M. D. Gunzburger, Perspectives in Flow Control and Optimization, Society for Industrial and Applied Mathematics, 2002. arXiv:https://epubs.siam.org/doi/pdf/10.1137/1.9780898718720 , doi:10. 1137/1.9780898718720 .URL https://epubs.siam.org/doi/abs/10.1137/1.9780898718720 
+
+[41] A. J. C. Ladd, Numerical simulations of particulate suspensions via a discretized Boltzmann equation. Part 1. Theoretical foundation 271 285–309. doi:10.1017/S0022112094001771 .URL https://www.cambridge.org/core/product/identifier/S0022112094001771/type/ journal_article 
+
+[42] A. J. C. Ladd, Numerical simulations of particulate suspensions via a discretized Boltzmann equation. Part 2. Numerical results 271 311–339. doi:10.1017/S0022112094001783 .URL https://www.cambridge.org/core/product/identifier/S0022112094001783/type/ journal_article 
+
+[43] M. Onorato, A. Costelli, A. Garrone, L. Viassone, Experimental analysis of vehicle wakes, Journal of Wind Engineering and Industrial Aerodynamics 22 (2) (1986) 317–330, special Issue 6th Colloquium on Industrial Aerodynamics Vehicle Aerodynamics. doi:https://doi.org/10.1016/0167-6105(86) 90094-2 .URL https://www.sciencedirect.com/science/article/pii/0167610586900942 
+
+[44] C.-H. Wang, J.-R. Ho, A lattice boltzmann approach for the non-newtonian effect in the blood flow, Computers & Mathematics with Applications 62 (2011) 75–86. doi:10.1016/j.camwa.2011.04.051 .[45] M. Schäfer, S. Turek, F. Durst, E. Krause, R. Rannacher, Benchmark computations of laminar flow around a cylinder, in: Flow simulation with high-performance computers II: DFG priority research programme results 1993–1995, Springer, 1996, pp. 547–566. [46] M. Bouzidi, M. Firdaouss, P. Lallemand, Momentum transfer of a boltzmann-lattice fluid with bound-aries, Physics of fluids 13 (11) (2001) 3452–3459. [47] S. K. Nadarajah, The discrete adjoint approach to aerodynamic shape optimization, stanford university, 2003. [48] F. H. Abernathy, R. E. Kronauer, The formation of vortex streets, Journal of Fluid Mechanics 13 (1) (1962) 1–20. [49] Q. Wang, J.-H. Gao, The drag-adjoint field of a circular cylinder wake at reynolds numbers 20, 100 and 500, Journal of Fluid Mechanics 730 (2013) 145–161. doi:10.1017/jfm.2013.323 .[50] B. N. Rajani, A. Kandasamy, S. Majumdar, Les of flow past circular cylinder at re = 3900, Journal of Applied Fluid Mechanics 9 (3) (2016) 1421–1435. arXiv:https://www.jafmonline.net/article_ 1718_fc6709bfdf0572f183c1a84ce5276e96.pdf , doi:10.18869/acadpub.jafm.68.228.24178 .URL https://www.jafmonline.net/article_1718.html 
+
+23 [51] J. Franke, W. Frank, Large eddy simulation of the flow past a circular cylinder at red=3900, Journal of Wind Engineering and Industrial Aerodynamics 90 (10) (2002) 1191–1206, 3rd European-African Conference on Wind Engineering. doi:https://doi.org/10.1016/S0167-6105(02)00232-5 .URL https://www.sciencedirect.com/science/article/pii/S0167610502002325 
+
+[52] D. Teutscher, F. Bukreev, A. Kummerländer, S. Simonis, P. Bächler, A. Rezaee, M. Hermansdorfer, M. J. Krause, A digital urban twin enabling interactive pollution predictions and enhanced planning, Building and Environment 281 (2025) 113093. doi:10.1016/j.buildenv.2025.113093 .URL https://www.sciencedirect.com/science/article/pii/S0360132325005748 
+
+[53] P. Blonigan, R. Chen, Q. Wang, J. Larsson, Towards adjoint sensitivity analysis of statistics in turbulent flow simulation, in: Proceedings of the Summer Program, Vol. 229, Center for Turbulence Research, Stanford Univ., 2012. [54] A. Kummerländer, T. Bingert, S. Bock, F. Bukreev, D. Castroviejo, L. E. Czelusniak, D. Dapelo, C. Gaul, M. Dorn, L. Dorneles, J. Grafen, M. Grinschewski, S. Ito, J. Jeßberger, F. Kaiser, D. Khaza-eipoul, T. Krüger, A. Kumbhat, H. Kusumaatmaja, A. Nettekoven, A. Raeli, T. Riazantsev, M. Rennick, G. Prakash, F. Prinz, L. Sauterleute, M. Schecher, A. Schneider, Y. Shimojima, S. Simonis, P. Spel-ten, A. Tacques, M. J. Krause, Openlb release 1.9: Open source lattice boltzmann code (Dec. 2025). 
+
+doi:10.5281/zenodo.17899765 .URL https://doi.org/10.5281/zenodo.17899765 
+
+24
