@@ -1,0 +1,732 @@
+Title: Unveiling Transferability in Trajectory Prediction via Latent Scene Embeddings
+
+URL Source: https://arxiv.org/pdf/2606.30777v1
+
+Published Time: Wed, 01 Jul 2026 00:05:05 GMT
+
+Number of Pages: 31
+
+Markdown Content:
+# Unveiling Transferability in Trajectory Prediction via Latent Scene Embeddings 
+
+Theodor Westny 1 , David Axelsson 1 , Björn Olofsson 1,2 , and Erik Frisk 1 
+
+> 1
+
+Division of Vehicular Systems, Linköping University, Linköping, Sweden 
+
+{theodor.westny, david.axelsson, erik.frisk}@liu.se  
+
+> 2
+
+Department of Automatic Control, Lund University, Lund, Sweden 
+
+bjorn.olofsson@control.lth.se 
+
+Abstract. The growing availability of trajectory datasets has fueled major advances in data-driven motion prediction. Yet, models trained on one dataset often fail to generalize beyond their training domain as a result of differences in scene layouts, agent behaviors, and sensing conditions. A framework that learns latent representations of datasets and quantifies their similarity using distributional metrics is presented. This large-scale study covers 24 major datasets, including the most widely used motion-prediction benchmarks, and shows that the resulting transferability scores strongly correlate with cross-dataset model performance. The results provide practical guidance for dataset selection, pretraining, and large-scale foundation models for motion prediction, paving the way toward more generalizable and robust predictive systems. 
+
+1 Introduction 
+
+Trajectory prediction plays an important role in applications such as autonomous driving, robotics, and human behavior analysis [24, 47, 92]. It involves forecasting the future states of agents based on past observations and interactions with their surroundings. The topic has gained significant attention in recent years, driven by advances in deep-learning methods, increased availability of trajectory datasets [7, 9, 10, 12 – 14, 23, 44, 54, 55, 57, 58, 67, 73, 79, 90, 91, 102, 104, 109, 111], and open-source tools [26, 50, 60, 99]. However, this progress has also highlighted an important challenge: trajectory datasets differ significantly in terms of agent types, environmental complexity, and sensing modalities. This diversity offers valuable opportunities for comprehensive model development, but it also poses difficulties for transferring models across different domains. A key open question is how well a model trained on one dataset generalizes to another—and whether such transferability can be predicted. Advances in large foundation models demonstrate that training on diverse datasets can yield highly transferable representations [11,30,92,113]. Theoretically, this could be applied to trajectory prediction by pooling all available data. However, several factors limit the practicality of this approach. First, real-time systems such as autonomous vehicles operate under strict computational and latency constraints, making it impractical to deploy models at the scale and  
+
+> arXiv:2606.30777v1 [cs.CV] 29 Jun 2026 2T. Westny et al.
+
+with the inference costs of current foundation models. Furthermore, while model compression and distillation techniques alleviate these issues [25,37,41,43], recent work shows that more data are not always better; low-quality or irrelevant data can degrade performance [56, 80, 88, 114]. These observations motivate prioritizing the most relevant datasets for pretraining, rather than indiscriminately aggregating all available data. A natural first step toward addressing this challenge is to compare datasets based on their surface-level features [4, 50, 82]. These analyses can highlight differences in statistical properties, including agent densities, speed profiles, and map structures. However, they do not inherently capture emergent behavioral characteristics, such as interaction patterns, social norms, or task intent, which are defining features of multi-agent motion-prediction problems [87]. In this work, transferability is studied through a learned latent space that captures behavioral characteristics across datasets, as illustrated in Fig. 1. This space is obtained by jointly training a single embedding model on all datasets under investigation to project scenarios into a representation where distances reflect structural and behavioral patterns in addition to surface-level feature similarities. This learned representation provides a more meaningful basis for assessing dataset transferability by leveraging the capacity of deep models to cap-ture complex interactions. Once trained, the embedding model enables querying at the dataset level, supporting data-driven recommendations of suitable source datasets for pretraining or adaptation. In practice, transferability is estimated using the Kullback–Leibler (KL) divergence between Gaussian approximations of the latent dataset distributions. It is demonstrated that smaller latent distribution divergences correspond to improved transfer performance. 
+
+1.1 Contributions 
+
+The primary contributions of this paper are: – Dataset-level representation learning for trajectory prediction. Alatent embedding framework is introduced, modeling trajectory datasets as distributions in a shared latent space to enable comparison through their distributional geometry. – A directional probabilistic measure of transferability. A divergence-based transferability metric is proposed to capture asymmetric transfer success, demonstrating that latent distances predict both zero-shot and fine-tuned performance. – A systematic large-scale study of cross-dataset transfer. A compre-hensive evaluation across 24 trajectory datasets and 552 transfer pairs is conducted, revealing underutilized datasets that improve performance on popular motion-prediction benchmarks. Implementations are available at https://github.com/westny/transferatlas .Unveiling Transferability in Trajectory Prediction 3inD highD INTERACTION US-101 AD4CHE WOMD ETH  
+
+> Fig. 1: t-SNE projection of learned scenario embeddings (contours indicate density). Dataset proximity ( e.g ., ETH/inD, INTERACTION/WOMD) indicates potential for cross-dataset pretraining or knowledge transfer.
+
+2 Related work 
+
+2.1 Trajectory prediction 
+
+Trajectory prediction remains an active area of research as a result of its central role in domains such as autonomous driving and robotics [24, 47, 92]. Advances in deep learning and increased data availability have made learning-based methods the dominant approach. A wide range of architectures have been explored, including recurrent networks [2, 19, 72, 100], convolutional encoders [18, 19, 112], Transformer-based models [35, 48, 64, 69], and graph neural networks (GNNs) [21, 33, 59, 61, 84, 94, 101]. A substantial portion of the literature focuses on modeling interactivity, i.e ., how agents influence one another and how they are affected by their surrounding environment. This includes pooling-based methods [2, 19, 40, 72, 112], as well as approaches that explicitly model interactions using GNNs or Transformer-based architectures [21, 33, 59, 69, 84, 101, 108]. Environmental context is processed using specialized modules and usually incorporated through either rasterized scene encodings [18, 59, 70, 71, 77, 84, 112, 115] or as vectorized maps [20, 31, 33, 62, 115]. Further, probabilistic modeling is widely used to capture the inherent uncer-tainty of future behavior. These models can be broadly categorized as discrimina-tive , which directly predict multi-modal trajectory distributions [19, 45, 63, 71, 72, 101,115], or generative , which aim to learn the underlying distribution from which future trajectories can be sampled [3, 6, 16, 39, 40, 52, 59, 69, 83, 84, 98, 103, 108, 112]. 
+
+2.2 Domain adaptation and generalization 
+
+Improving model robustness across environments often involves either domain adaptation or domain generalization. Domain adaptation aims to reduce the discrepancy between the source and target data distributions, while domain gen-eralization seeks models that perform well on unseen domains without additional tuning. In the field of trajectory prediction, several works explore these themes. Recent approaches propose architectural adaptations such as ensemble-based methods [97], or specialized modules [93, 110] to improve generalization. Other 4 T. Westny et al. 
+
+strategies tackle this problem by learning shared representations across datasets [6, 76, 86], or by designing dataset-agnostic input abstractions that reduce reliance on domain-specific cues [26, 34, 46, 50, 51, 106, 114]. On the domain adaptation side, recent work proposes techniques such as attention-based adaptation [105], feature alignment [32], and instance-level aug-mentations [53]. Other approaches adapt pre-trained models to new domains [89] or introduce meta-learning strategies for online or few-shot adaptation [49]. While domain adaptation and generalization are central themes in this work, the focus is not on developing new methods to improve these properties, but rather on understanding whether they can be predicted. Furthermore, evaluations are typically restricted to a limited set of source–target pairs. This leaves a clear gap for research that investigates transferability across a broader, more diverse spectrum of datasets. 
+
+2.3 Dataset similarity and transferability metrics 
+
+Quantifying dataset similarity is important for anticipating transfer learning success [1, 17, 22, 95, 107]. A closely related approach to ours is presented in [17], where methods to estimate transferability between time-series datasets are pro-posed. A shared autoencoder embeds source and target data into a common latent space, from which metrics such as the L1 distance between dataset centroids are derived and shown to correlate with transfer learning gains. In contrast, this work focuses on trajectory prediction, where spatio-temporal structure, interaction dynamics, and map-based context require specialized modeling [24, 47, 92]. In addition, probabilistic and non-symmetric measures, such as KL divergence, are considered to capture the inherently directional nature of transferability. Related work on latent representations of trajectory datasets includes Scenar-ioNet [60], which utilizes TrafficGen [27] to obtain scenario embeddings that are then projected onto a lower-dimensional manifold. These projections highlight differences between synthetic and real data as well as residual variation across datasets. While primarily used for visualization, such an approach also highlights the potential of using latent space analyses to identify distributional gaps. 
+
+3 Problem definition 
+
+The problem of learning the approximate distributions of multiple trajectory datasets and using these distributions to quantify pairwise transferability is considered. Each dataset consists of interactive scenes , where a scene is defined as a set of agents ( e.g ., vehicles, pedestrians) and their associated features ( e.g ., position, velocity) that evolves over time. The temporal span of a scene is divided into a historical segment and a future segment. Each time instant in the scene is modeled as an undirected graph G = ( V, E), where V is the set of agents (nodes) and E is the set of edges representing the interactions between said agents. Let 
+
+N = |V| be the number of agents, H the length of the historical segment, and F
+
+the length of the future segment. The node input features are summarized in a Unveiling Transferability in Trajectory Prediction 5   
+
+> Fig. 2: Latent embedding model architecture. An encoder maps input features to node-level latent variables, which are aggregated into scene- and dataset-level embeddings. Two decoder heads handle feature reconstruction (predicting X) and future state forecasting (predicting Y). Training optimizes a combined reconstruction and forecasting loss.
+
+tensor X ∈ RN ×H×D, and the output features in Y ∈ RN ×F ×D , where D = 5 ,corresponding to 2D position, 2D velocity, and orientation. When available, the map M is also incorporated, encoded as a lane graph with associated features, shared across all time instants of the scene. For brevity, the notation is overloaded, letting X implicitly denote the pair (X, M) whenever map information is available. Next, latent variables zi are introduced for each node i, summarized in a matrix Z ∈ RN ×L. Finally, for a scene S, the latent scene embedding ZS ∈ RL
+
+is defined, and for a dataset D, the corresponding latent dataset embedding 
+
+ZD ∈ RL, where L denotes the latent dimension. Unless otherwise stated, L = 32 
+
+in this work. The objective is two-fold: 1. Learn the latent dataset-level representations {ZD j }Kj=1 for datasets 
+
+D1, D2, . . . , DK and use them to quantify pairwise transferability based on distributional (dis)similarity. 2. Empirically validate the inferred transferability by training a trajectory prediction model  X 7 → Y on dataset  Di and evaluating it on a different dataset  Dj , for multiple pairs  (Di, Dj ).
+
+4 Latent embedding model 
+
+To construct compact and comparable representations of the datasets under consideration, a deep latent embedding model is employed, designed to learn expressive codes of the individual samples (scenes) comprising each dataset. To learn representations that capture all aspects of the data under a setting relevant to trajectory prediction, the model is trained using two complementary supervision signals: reconstruction of observed inputs and prediction of future states. The predictive objective reflects the trajectory forecasting setting, where past motion is observed and future motion is unknown, while reconstruction promotes information preservation. Latent regularization is used to encourage informative and stable representations [8, p. 564]. In particular, a normalization constraint is applied on the latent variables,  ∥z∥22 = 1  that restricts them to the 6 T. Westny et al. 
+
+surface of a unit sphere, encouraging comparability across samples and datasets while preventing degenerate solutions. 
+
+4.1 Model architecture 
+
+The latent embedding model follows an encoder–decoder architecture, illustrated in Fig. 2. The encoder maps input features to node-level latent variables, used to compute scene- and dataset-level embeddings. Two decoder heads are em-ployed: one reconstructs input features, and the other predicts future states. The main building blocks of both networks are graph-gated recurrent units (Graph-GRUs) [101]. 
+
+Graph-gated recurrent unit The Graph-GRU enables spatio-temporal inter-actions to be captured by replacing the linear mappings in the gated recurrent unit (GRU) [15] with GNN components. The original Graph-GRU design is simplified by using a minimal mechanism based on the minGRU [28], reducing model complexity with minor performance trade-offs. At each time step  k, a message-passing operation incorporates information from node  i and its neighborhood  N(i), producing intermediate vectors: 
+
+h
+
+v(i) 
+
+> k
+
+, w(i)
+
+> k
+
+i
+
+= GNN 
+
+
+
+x(i) 
+
+> k
+
+, {x(j) 
+
+> k
+
+}j∈N(i)
+
+
+
+, (1) where GNN (·) is the graph neural network operator from [75]. These are then used to update the hidden state  h(i) 
+
+> k
+
+using the following gating mechanism: 
+
+z(i) 
+
+> k
+
+= σ(v(i) 
+
+> k
+
++ bz ), (2a) 
+
+˜h(i) 
+
+> k
+
+= tanh( w(i) 
+
+> k
+
++ bh), (2b) 
+
+h(i) 
+
+> k
+
+= (1 − z(i) 
+
+> k
+
+) ⊙ h(i) 
+
+> k−1
+
++ z(i) 
+
+> k
+
+⊙ ˜h(i) 
+
+> k
+
+, (2c) where  bz and  bh are learnable bias terms,  ⊙ denotes the Hadamard product, and 
+
+σ is the sigmoid function. 
+
+4.2 Training objective 
+
+The model is trained to minimize a combined objective of reconstruction and prediction losses. Node-level latent variables zi are inferred from input features 
+
+Xi using an encoder module Enc . To ensure the representation captures structural data properties and relevant forecasting features, the total loss L is defined as 
+
+L = ∥ Rec (Z) − X∥2 + ∥ Pred (Z) − Y∥2 (3) where Rec and Pred denote the reconstruction and prediction heads, respectively. Note that the decoder heads are solely used during training to shape the latent space and are discarded during inference. Unveiling Transferability in Trajectory Prediction 7
+
+4.3 Aggregating node- and scene-level representations 
+
+Let zs,i ∈ RL denote the representation of agent i in scene s, where scene s
+
+contains ns agents. The scene-level mean and covariance are computed as 
+
+μs = 1
+
+nsnsX
+
+> i=1
+
+zs,i , Σs = 1
+
+ns − 1
+
+> ns
+
+X
+
+> i=1
+
+(zs,i − μs) ( zs,i − μs)T . (4) The aggregated dataset-level mean and covariance for a dataset D consisting of S scenes are defined as 
+
+¯μD = 1
+
+S
+
+> S
+
+X
+
+> s=1
+
+μs, ΣD = 1
+
+S
+
+> S
+
+X
+
+> s=1
+
+(μs − ¯μD ) ( μs − ¯μD )T
+
+| {z }
+
+> Between-scene cov.
+
++ 1
+
+S
+
+> S
+
+X
+
+> s=1
+
+Σs
+
+| {z }
+
+> Within-scene cov.
+
+. (5) The first covariance term captures variation between scene-level means, whereas the second captures the average variation among agents within each scene. Together, these terms provide a characterization of the dataset’s latent structure and enable direct comparisons between datasets using probabilistic measures. However, the empirical covariance may be ill-conditioned or singular, particu-larly in high-dimensional latent spaces with limited data. To improve numerical stability, a low-rank approximation with additive jitter regularization is used. Let 
+
+ΣD = UΛU⊤ denote the eigendecomposition of the covariance matrix, where the columns of U are the eigenvectors and Λ is a diagonal matrix containing the corresponding eigenvalues in descending order. The regularized covariance is defined as 
+
+eΣD = Ur diag ( λ1, . . . , λ r ) U⊤ 
+
+> r
+
++ εI, ε = α tr( ΣD )
+
+L , (6) where Ur contains the eigenvectors associated with the r largest eigenvalues. The jitter parameter ε is scaled according to the average marginal variance, where α
+
+is a hyperparameter set to 3 × 10 −3 and r is set to 16 , both values chosen based on empirical results (see the supplementary material for more details). 
+
+5 Evaluation and results 
+
+This section evaluates the proposed framework. The datasets are introduced in Sec. 5.1, followed by implementation details in Sec. 5.2. The embedding model is assessed in Sec. 5.3 through complementary quantitative and qualitative latent space analyses. Section 5.4 investigates how well latent distances predict cross-dataset generalization under zero-shot and fine-tuning settings. Finally, an ablation on the latent dimension L analyzes its influence on transferability prediction accuracy. 8 T. Westny et al. 
+
+5.1 Datasets 
+
+The investigations are conducted on a diverse set of trajectory-prediction datasets spanning pedestrian, vehicle, and mixed-traffic domains, covering both map-based and map-free settings, and collected using static cameras, drones, or instrumented vehicles. An overview is provided in Tab. 1, where datasets are grouped by collection method and listed chronologically by release year. All datasets are converted to a unified format using the Dronalize toolbox [99], including resampling to 10 Hz and adopting a common feature representation. Official train/validation/test splits are used when available; otherwise, the split-ting protocol in Dronalize is applied. For cross-dataset evaluation, all models are evaluated using a common 3 s prediction horizon, determined by the short-est fixed horizon among datasets with official test splits ( e.g ., View-of-Delft). During training, however, models predict up to a maximum horizon of 8 s, with supervision provided where future trajectories are available. Following common practice [2, 40], the ETH and UCY datasets are organized into the five standard evaluation subsets: eth , hotel , univ , zara1 , and zara2 . Each subset is treated as a separate dataset throughout the experiments. Accordingly, the evaluation comprises 24 datasets in total. 
+
+Table 1: Overview of the 24 trajectory-prediction datasets used in the experiments. Locations are condensed to country. Map info indicates whether HD maps ( ✓), no maps ( ✗), or partial map data are provided. The datasets balance prevalence in the literature with complementary characteristics, including geographic coverage and agent composition.                                                                                                                                                        
+
+> Name Year Location Agents Sensor Map Info Size
+> I-80 [90] 2006 USA Vehicles Camera Lane lines 23 480
+> US-101 [91] 2007 USA Vehicles Camera Lane lines 18 683
+> univ [57] 2007 Cyprus Pedestrians Camera ✗4196
+> zara1 [57] 2007 Cyprus Pedestrians Camera ✗4096
+> zara2 [57] 2007 Cyprus Pedestrians Camera ✗4103
+> eth [79] 2009 Switzerland Pedestrians Camera ✗4013
+> hotel [79] 2009 Switzerland Pedestrians Camera ✗4040
+> ApolloScape [67] 2019 China Mixed Vehicle ✗49 361
+> Argoverse [14] 2019 USA Mixed Vehicle ✓323 557
+> nuScenes [13] 2020 USA, Singapore Mixed Vehicle ✓195 103
+> Lyft Level 5 [44] 2021 USA Mixed Vehicle ✓292 329
+> WOMD [23] 2021 USA Mixed Vehicle ✓576 012
+> Argoverse 2 [102] 2023 USA Mixed Vehicle ✓249 880
+> View-of-Delft [10] 2024 Netherlands Mixed Vehicle ✓10 486
+> highD [54] 2018 Germany Vehicles Drone Lane lines 129 786
+> INTERACTION [109] 2019 USA, China, Germany, Bulgaria Mixed Drone ✓62 022
+> inD [9] 2020 Germany Mixed Drone ✓155 609
+> rounD [55] 2020 Germany Mixed Drone ✓111 973
+> openDD [12] 2020 Germany Mixed Drone ✓370 073
+> exiD [73] 2022 Germany Vehicles Drone ✓311 309
+> SIND [104] 2022 China Mixed Drone ✓260 484
+> AD4CHE [111] 2023 China Vehicles Drone Images 41 333
+> uniD [58] 2024 Germany Mixed Drone ✓189 023
+> A43 [7] 2024 Germany Vehicles Drone Lane lines 44 565 Unveiling Transferability in Trajectory Prediction 9
+
+5.2 Implementation details 
+
+The embedding model was implemented in PyTorch [78] and PyTorch Geo-metric [29]. It was trained on a single NVIDIA A100 GPU using the AdamW optimizer [66] with a batch size of 512 . To mitigate the imbalance in dataset sizes when jointly training on all datasets, mini-batches were constructed using weighted sampling, with each sample j ∈ D i assigned the weight 
+
+wj ∝ 1
+
+|D i|α , (7) where Di denotes the i-th dataset. Here, α = 0 corresponds to sampling propor-tional to dataset size and α = 1 to uniform sampling across datasets. A value of α = 0 .5 is used, reducing the dominance of larger datasets while preserving a moderate bias toward them. Training was conducted for 100 epochs, with an initial learning rate of 10 −3, which was decayed to 10 −5 using a cosine annealing schedule [65]. Teacher forcing was used for both heads during the first 25 epochs, with the probability annealed linearly from 1 to 0. The final models used in all the experiments were selected based on minimum ADE performance on the validation set. 
+
+5.3 Embedding evaluation 
+
+In the latent space, each dataset is modeled as a multivariate Gaussian distribution defined by its dataset-level mean and covariance. Let I = {1, . . . , K } index the datasets D1, . . . , DK . For i, j ∈ I , the directed dissimilarity of Di from Dj is defined as the KL divergence between their corresponding Gaussian distributions: 
+
+DKL (Di∥D j ) = DKL 
+
+
+
+N
+
+
+
+¯μDi , eΣDi
+
+
+
+N
+
+
+
+¯μDj , eΣDj
+
+ 
+
+, i, j ∈ I , (8) where DKL (Di∥D j ) measures how well the distribution of dataset Dj approxi-mates that of dataset Di. Since the KL divergence is asymmetric, the resulting dissimilarity captures directional differences in dataset coverage and variability. Figure 3 presents a heatmap of the KL divergence between embedding distri-butions for each dataset pair, where lower values indicate greater latent similarity. Several interesting patterns emerge. For example, nuScenes appears easier to approximate using other instrumented-vehicle datasets such as Lyft L5, WOMD, Argoverse, and Argoverse 2 than vice versa. For instance, 
+
+DKL (nuScenes ∥WOMD ) = 358 , DKL (WOMD ∥nuScenes ) = 36602 , (9) indicating that these datasets contain information that transfers to nuScenes more effectively than nuScenes transfers to them. This asymmetry aligns with the empirical findings in both [26] and [34], where models pretrained on WOMD, Argoverse, or Argoverse 2 and evaluated on nuScenes achieve notably stronger performance than the reverse. The t-SNE [68] projection of scene latents in Fig. 4a supports this: nuScenes occupies a distinct subregion within the other datasets’ 10 T. Westny et al. inD rounD openDD SIND uniD INTERACTION Argoverse Argoverse 2 nuScenes Lyft ApolloScape WOMD View-of-Delft highD exiD A43 AD4CHE I-80 US-101 ETH hotel univ zara1 zara2 inD rounD openDD SIND uniD INTERACTION Argoverse Argoverse 2 nuScenes Lyft ApolloScape WOMD View-of-Delft highD exiD A43 AD4CHE I-80 US-101 ETH hotel univ zara1 zara2 
+
+268 152 66.9 303 249 366 302 44.5 170 91.6 285 378 6.86k 2.81k 12.4k 313 820 840 12.0k 6.38k 6.62k 5.91k 5.83k 1.16k 128 1.03k 1.87k 568 864 602 1.30k 473 682 1.30k 2.14k 16.5k 6.13k 12.0k 1.63k 2.02k 1.70k 25.3k 18.5k 19.0k 18.1k 17.6k 698 118 632 1.13k 540 785 630 763 407 417 1.21k 1.53k 13.5k 5.86k 11.0k 1.23k 1.58k 1.37k 22.2k 15.8k 16.2k 15.3k 15.1k 57.3 149 87.6 201 190 363 292 65.7 151 91.9 296 408 7.36k 3.35k 11.3k 533 951 903 9.01k 5.97k 6.07k 5.80k 5.67k 41.6 568 131 106 310 843 608 49.8 411 74.1 655 316 9.48k 4.27k 12.3k 442 734 825 2.84k 1.91k 1.91k 1.83k 1.78k 9.89k 2.50k 3.50k 9.09k 13.6k 395 592 8.35k 2.73k 4.89k 276 13.5k 13.5k 6.50k 10.5k 3.62k 5.13k 4.60k 57.7k 41.7k 40.3k 41.9k 41.4k 28.7k 8.00k 10.5k 26.4k 38.5k 870 1.43k 23.6k 6.20k 13.0k 588 35.8k 18.5k 12.6k 15.8k 8.43k 12.8k 11.9k 136k 102k 97.4k 104k 101k 7.75k 1.87k 2.82k 7.20k 11.1k 624 406 6.40k 1.71k 3.57k 1.39k 10.1k 13.3k 6.73k 13.5k 2.62k 4.05k 3.86k 48.0k 36.0k 34.7k 36.0k 35.0k 69.5 236 129 72.0 201 190 315 275 134 50.6 358 263 6.32k 2.87k 11.7k 297 643 660 10.5k 6.10k 6.38k 5.70k 5.61k 731 887 754 1.02k 2.20k 392 216 647 549 306 535 1.54k 6.72k 3.28k 11.5k 555 1.41k 1.47k 61.2k 29.2k 31.2k 26.6k 26.6k 246 462 305 241 630 394 432 654 153 297 970 653 7.73k 4.37k 9.25k 519 975 965 25.4k 14.0k 14.7k 13.1k 12.8k 43.9k 9.52k 15.0k 40.8k 59.5k 670 367 1.96k 36.6k 8.91k 20.4k 55.6k 34.7k 18.3k 25.1k 13.3k 19.9k 18.2k 171k 140k 132k 144k 141k 172 204 154 150 175 209 249 380 133 173 72.5 330 5.39k 2.86k 10.9k 255 470 492 4.95k 2.87k 2.87k 2.75k 2.65k 12.1k 13.3k 16.9k 16.5k 42.4k 10.7k 8.92k 9.73k 22.2k 7.31k 9.13k 4.53k 42.0k 155 65.7 3.95k 14.1k 18.9k 396k 337k 334k 359k 341k 8.39k 10.5k 12.9k 12.7k 31.5k 6.62k 7.67k 6.85k 14.2k 4.81k 6.26k 3.17k 31.6k 1.21k 874 2.40k 7.79k 10.6k 380k 256k 262k 264k 257k 7.10k 9.77k 11.1k 11.5k 26.8k 5.64k 4.97k 5.89k 11.3k 3.56k 5.32k 2.33k 23.3k 402 474 1.74k 6.74k 9.16k 380k 231k 241k 233k 227k 917 1.74k 1.31k 1.23k 2.42k 485 540 1.24k 769 352 379 473 2.23k 2.05k 1.93k 2.13k 71.6 68.7 116k 47.7k 54.1k 43.9k 44.4k 688 1.11k 805 834 1.59k 601 523 784 653 516 251 944 1.51k 2.44k 3.23k 1.28k 71.7 20.2 71.1k 35.8k 39.6k 33.4k 33.6k 1.23k 3.30k 2.27k 2.47k 4.20k 777 520 978 1.05k 293 606 870 3.43k 2.02k 2.04k 715 64.3 32.2 234k 94.4k 109k 85.9k 87.7k 64.6 389 134 114 42.6 253 547 409 47.2 296 81.6 458 161 7.06k 2.70k 12.6k 185 348 450 2.70 3.11 3.41 3.72 62.6 450 137 121 40.8 271 613 459 47.2 334 80.2 516 164 7.61k 2.89k 12.8k 195 348 463 12.3 0.68 0.62 0.70 58.9 478 139 120 36.7 273 643 470 45.7 351 84.3 525 166 8.14k 3.06k 13.3k 203 386 507 14.6 0.61 1.38 1.60 60.8 356 123 101 40.9 238 505 383 45.2 272 78.0 426 158 6.68k 2.55k 12.5k 169 329 424 13.1 0.55 1.30 1.12 67.6 465 136 126 42.7 273 619 491 48.9 340 75.2 541 170 7.69k 2.93k 12.7k 200 326 449 16.3 0.61 1.48 1.05 
+
+Fig. 3: KL divergence DKL (row ∥col ) between dataset embedding distributions. Entries indicate how well column datasets approximate row datasets. Lower values denote closer alignment, typically correlating with stronger zero-shot transfer from column training datasets to row evaluation datasets. Matrix asymmetry reflects directional differences in dataset coverage and variability. 
+
+broader clusters. This indicates that the asymmetric relationship observed in the high-dimensional latent space is also reflected in a low-dimensional projection. Highway datasets are more similar to each other than to urban datasets, though asymmetrically. The t-SNE projection in Fig. 4b clearly shows overlap among highD, exiD, and A43, all collected in Germany, likely reflecting regional driving patterns. Furthermore, AD4CHE, I-80, and US-101 cluster together, suggesting the latent space encodes shared behavioral or traffic-flow characteristics beyond geographic proximity. Another important observation is the large divergence between the pedestrian-focused datasets and the rest. The results indicate that the pedestrian datasets are substantially different from the others, suggesting low potential for direct transferability. Partial exceptions are uniD and View-of-Delft, which are heavily pedestrian-oriented and appear to be closer in the embedding space. Most interestingly, the embedding space also uncovers relationships between datasets that do not share presumed commonalities, such as acquisition method or agent type. For instance, several drone-acquired datasets, including inD, openDD, SIND, INTERACTION, exhibit low KL divergence with instrumented-vehicle datasets such as nuScenes, Argoverse 2, and WOMD. This suggests that cross-domain transfer is possible even between heterogeneous datasets. This is significant, as trajectory-prediction research often suffers from scarce, domain-Unveiling Transferability in Trajectory Prediction 11 Argoverse 2 WOMD Lyft nuScenes    
+
+> (a) Urban datasets highD exiD AD4CHE I-80 US-101 A43 (b) Highway datasets
+
+Fig. 4: Two-dimensional t-SNE visualization of the learned scenario embeddings for (a) a subset of the urban datasets (acquired with instrumented vehicles) and (b) highway datasets, with contour lines indicating density. 
+
+specific data [92], indicating untapped potential in leveraging datasets that are comparatively underused in the motion prediction literature. 
+
+5.4 Transferability evaluation 
+
+To evaluate the interpretation of closeness in the latent space as a measure of transferability, a series of experiments is conducted in which a trajectory-prediction model is trained on one dataset and evaluated on another. Motivated by its state-of-the-art performance and its architectural dissimilarity to the proposed embedding model, QCNet [115] is adopted as the baseline predictor, following the original training objectives and inference procedure. To ensure com-parability across datasets, a lightweight input transformation layer is introduced, and model capacity is reduced to maintain computational feasibility across all datasets (see the supplementary material for more details). Model performance is reported using the minimum average positional displacement error for the best of K = 6 predicted trajectories (minADE 6) over a 3-second horizon. 
+
+Zero-shot transferability To evaluate cross-dataset generalization, a model is trained on one dataset and is evaluated, without any adaptation, on all remaining datasets. With 24 datasets, this yields 24 × 23 = 552 transfer pairs. Using the divergence introduced in (8) , it is investigated how well this measure predicts zero-shot transfer performance. To this end, minADE 6 is examined against DKL (De∥D t), where De and Dt denote evaluation and training datasets, respectively. As shown in Fig. 5, pairs with larger divergence exhibit consistently higher minADE 6, indicating poorer transfer. A Spearman’s rank correlation analysis confirms a strong positive association: increasing divergence aligns with reduced zero-shot performance. Overall, the KL divergence achieves a rank correlation of ρ = 0 .811 , with a 95% confidence interval of (0 .782 , 0.840) .
+
+Transferability under fine-tuning Beyond zero-shot performance, it is im-portant to understand how datasets support transfer when used for fine-tuning 12 T. Westny et al. 1 10 100 1000 10000 100000  
+
+> DKL (log scale)
+> 0.1
+> 1
+> 10
+> minADE 6 (log scale)
+
+Fig. 5: KL divergence versus zero-shot minADE 6 transfer performance across all 552 
+
+dataset pairs. Larger divergence correlates with worse transferability. 20000 30000 40000 50000 60000    
+
+> Training steps
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> 0.9
+> 1
+> 1.1
+> 1.2
+> 1.3
+> minADE 6
+> DKL = 588
+> DKL = 38 .5kDKL = 13 .0k
+> WOMD pretraining uniD pretraining ApolloScape pretraining No pretraining
+
+Fig. 6: Argoverse fine-tuning from differ-ent sources. Sources with lower divergence scores yield better adaptation. 100 1000 10000  
+
+> DKL (Di‖D j) (log scale)
+> 0.1
+> 1
+> ∆M (Di, Dj ) (log scale)
+
+Fig. 7: KL divergence versus performance degradation after fine-tuning. Higher di-vergence generally corresponds to greater forgetting of the source dataset. 
+
+toward a target domain, as this has direct practical utility. This is studied from two complementary perspectives: whether the latent divergence can guide pre-training source selection, and whether it predicts how much source knowledge is lost during adaptation. 
+
+Pretraining source selection. As a practical case study, Argoverse is used as the target dataset. Models pretrained on a set of candidate source datasets are subsequently fine-tuned on Argoverse, and target performance is recorded after adaptation. As shown in Fig. 6, sources with lower KL divergence to Argoverse generally yield stronger post-fine-tuning performance on the target domain, indicating that the latent metric can serve as a practical guide for pretraining source selection, even before any task-specific training is conducted. 
+
+Catastrophic forgetting. A complementary concern when fine-tuning is catas-trophic forgetting [36]: the tendency for adaptation to a new domain to overwrite previously acquired source knowledge. To examine this, models pretrained on Unveiling Transferability in Trajectory Prediction 13 
+
+Table 2: Spearman’s rank correlation coefficient ρ for different dataset dissimilarity measures and latent dimensions. Bold denotes the best measure for each task–dimension combination, where higher is better. For KL divergence, 95% confidence intervals are shown below the corresponding estimates.                                           
+
+> Zero-shot transfer Post-fine-tuning degradation Measure L= 16 L= 32 L= 64 L= 128 L= 16 L= 32 L= 64 L= 128
+> L1 0.475 0.468 0.470 0.425 0.136 0.254 0.226 0.145
+> Wasserstein 0.489 0.482 0.482 0.448 0.269 0.296 0.335 0.257
+> MMD 0.410 0.412 0.410 0.362 0.136 0.245 0.193 0.185
+> KL 0.781
+> (.750 , . 810)
+> 0.811
+> (.782 , . 840)
+> 0.746
+> (.711 , . 783)
+> 0.736
+> (.681 , . 760)
+> 0.504
+> (.045 , . 792)
+> 0.729
+> (.403 , . 913)
+> 0.794
+> (.578 , . 922)
+> 0.874
+> (.639 , . 970)
+
+a source dataset Di are fine-tuned on a target dataset Dj , and performance is subsequently evaluated on Di. Let mDi 
+
+> org
+
+and mDj 
+
+> ft
+
+denote the original and fine-tuned models, respectively. The performance change is defined as: 
+
+∆M (Di, Dj ) = M (mDj 
+
+> ft
+
+, Di) − M (mDi
+
+> org
+
+, Di), (10) where M (·, ·) denotes minADE 6 evaluated on a specific dataset. Lower ∆M 
+
+indicates less forgetting, and it is expected to correlate with DKL (Di∥D j ).Experiments across five datasets, AD4CHE, nuScenes, rounD, View-of-Delft, and WOMD, produce 20 transfer pairs. Figure 7 indicates a positive trend: larger divergence between datasets generally coincides with stronger forgetting. Spearman’s rank correlation is ρ = 0 .729 , with a 95 % confidence interval of 
+
+(0 .403 , 0.913) , confirming a strong positive association. Taken together, the two results show that the latent divergence is predictive of fine-tuning behavior from both directions: it anticipates adaptation quality before training, and captures the degree of source knowledge loss afterward. 
+
+Motivation for the Gaussian assumption To assess the Gaussian modeling assumption, Tab. 2 compares the predictive performance of the KL divergence with alternative similarity measures, including the non-parametric maximum mean discrepancy (MMD) [38] computed directly on scene-level embeddings. The KL divergence consistently achieves the highest rank correlation across all evaluated latent dimensionalities in both zero-shot and fine-tuning tasks, empirically justifying the Gaussian approximation. 
+
+Ablation on latent dimension size Finally, an ablation study examines how the latent dimensionality L influences the predictive quality of the learned embeddings. Models with L ∈ { 16 , 32 , 64 , 128 } are evaluated on both zero-shot transfer and post-fine-tuning degradation tasks. As shown in Tab. 2, the two tasks exhibit opposing trends. For zero-shot transfer, the correlation decreases from ρ = 0 .811 at L = 32 to ρ = 0 .736 at L = 128 , indicating that the more compact representation better preserves the ordering of cross-dataset transfer 14 T. Westny et al. 
+
+Table 3: Definitions of dataset characteristics and derived correction terms γ(ℓ) 
+
+> i,j
+
+for transfer from source Di to target Dj . Scalar corrections are computed as the ratio of source to target values, whereas the agent class distribution p ∈ R2 use L1 distance.                              
+
+> Term Description Symbol Calculation of γ(ℓ)
+> i,j
+> Size Total number of samples in the dataset NNi/ N j
+> Speed Mean agent speed across samples and time steps ¯v¯vi/¯vj
+> #agents Mean number of agents present in each sample ¯n¯ni/¯nj
+> Types Mean empirical distribution over agent classes ¯p∥¯pi−¯pj∥1
+> Time Mean duration of the observed input sequence ¯t¯ti/¯tj
+
+performance. In contrast, the correlation for post-fine-tuning degradation increases from ρ = 0 .729 to ρ = 0 .874 , suggesting that larger latent spaces may better capture differences associated with adaptation and forgetting. However, the wide and overlapping confidence intervals, together with the smaller number of fine-tuning pairs, warrant a more cautious interpretation of this trend. 
+
+5.5 Investigation into latent space quality 
+
+To evaluate whether latent dataset embeddings capture complex discrepancies beyond basic statistical heuristics, transfer performance Ti,j from source dataset 
+
+Di to target Dj is modeled using the KL divergence and a set of candidate explicit heuristic metrics γ(ℓ)
+
+> i,j
+
+Ti,j ≈ a D KL (Dj ∥D i) + X
+
+> ℓ∈S
+
+bℓ γ(ℓ) 
+
+> i,j
+
++ c.  (11) Here, S encompasses five dataset differences, with definitions and correction ratios detailed in Tab. 3. To isolate the most informative predictors, this model is optimized using Lasso regularization, applying an L1 penalty to the coefficients a
+
+and bℓ. Formally, the parameters θ = {a, {bℓ}ℓ∈S , c } are estimated by minimizing 
+
+min 
+
+> θ
+
+X
+
+> i,j
+
+
+
+Ti,j − a D KL (Dj ∥D i) − X
+
+> ℓ∈S
+
+bℓ γ(ℓ) 
+
+> i,j
+
+− c
+
+2
+
++ λ
+
+
+
+|a| + X
+
+> ℓ∈S
+
+|bℓ|
+
+
+
+. (12) This formulation enforces sparsity. Coefficients driven to zero correspond to predictors that do not contribute substantially to explaining transfer performance. The regression results in Fig. 8 demonstrate the representational capacity of the learned latent space. In Fig. 8b, the KL divergence coefficient remains nonzero for much higher values of the regularization strength λ compared to the other coefficients, indicating that the learned representation captures these underlying patterns. The exception is average agent speed, as its coefficient remains nonzero under stronger regularization. Nevertheless, using the speed factor by itself achieves a lower rank correlation, ρ = 0 .624 , with a 95% confidence interval of (0 .561 , 0.669) ,Unveiling Transferability in Trajectory Prediction 15 0.1 1 10 100      
+
+> λ(log scale)
+> 0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1
+> R2, ρ
+> R2
+> ρNc
+> 0246810
+> Nc
+> (a) 0.1 110
+> λ(log scale)
+> 1e-05
+> 0.0001
+> 0.001
+> 0.01
+> 0.1
+> 1
+> Absolute Coefficient (log scale)  KL Size Speed #agents Types Time (b)
+
+Fig. 8: (a) Evolution of coefficient of determination R2, Spearman’s ρ, and the number of selected correction terms Nc against the regularization parameter λ. (b) Coefficient paths for all terms in (11). 
+
+compared with ρ = 0 .811 for the KL divergence, with a 95% confidence interval of (0 .782 , 0.840) . This further indicates that the latent representation captures discrepancies that are not adequately described by the considered statistical heuristics. 
+
+6 Conclusion 
+
+A latent embedding framework that systematically characterizes trajectory datasets and quantifies their transferability was introduced. The framework reveals structured relationships between datasets and offers guidance on select-ing effective pretraining sources. Empirical results across 24 diverse datasets show that distances in the latent space strongly correlate with both zero-shot generalization and fine-tuning outcomes, demonstrating that transferability can be predicted rather than discovered through exhaustive experimentation. The analysis further identifies datasets that are less commonly used in prior work but still hold potential to improve performance on widely used motion-prediction benchmarks. These findings offer practical guidance for dataset selection and model development, contributing toward more robust and generalizable motion prediction systems. 
+
+Acknowledgments 
+
+This research was supported by the Strategic Research Area at Linköping-Lund in Information Technology (ELLIIT) and the Wallenberg AI, Autonomous Systems and Software Program (WASP) funded by the Knut and Alice Wallenberg Foundation. Computations were enabled by the Berzelius resource provided by the Knut and Alice Wallenberg Foundation at the National Supercomputer Centre. 16 T. Westny et al. 
+
+References 
+
+1. Achille, A., Lam, M., Tewari, R., Ravichandran, A., Maji, S., Fowlkes, C.C., Soatto, S., Perona, P.: Task2Vec: Task embedding for meta-learning. In: IEEE/CVF Int. Conf. Comput. Vision. pp. 6430–6439 (2019) 2. Alahi, A., Goel, K., Ramanathan, V., Robicquet, A., Fei-Fei, L., Savarese, S.: Social LSTM: Human trajectory prediction in crowded spaces. In: IEEE Conf. Comput. Vision Pattern Recog. pp. 961–971 (2016) 3. Amirian, J., Hayet, J.B., Pettré, J.: Social ways: Learning multi-modal distributions of pedestrian trajectories with GANs. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. (2019) 4. Amirian, J., Zhang, B., Castro, F.V., Baldelomar, J.J., Hayet, J.B., Pettré, J.: OpenTraj: Assessing prediction complexity in human trajectories datasets. In: Asian Conf. Comput. Vision (2020) 5. Ba, J.L., Kiros, J.R., Hinton, G.E.: Layer normalization. arXiv preprint arXiv:1607.06450 (2016) 6. Bae, I., Park, Y.J., Jeon, H.G.: SingularTrajectory: Universal trajectory predictor using diffusion model. In: IEEE/CVF Conference on Computer Vision and Pattern Recognition (2024) 7. Berghaus, M., Lamberty, S., Ehlers, J., Kalló, E., Oeser, M.: Vehicle trajectory dataset from drone videos including off-ramp and congested traffic–analysis of data quality, traffic flow, and accident risk. Communic. in Transport. Research 4,100133 (2024) 8. Bishop, C.M., Bishop, H.: Deep learning. Springer (2024) 9. Bock, J., Krajewski, R., Moers, T., Runde, S., Vater, L., Eckstein, L.: The inD dataset: A drone dataset of naturalistic road user trajectories at German intersections. In: IEEE Intell. Veh. Symp. pp. 1929–1934 (2020) 10. Boekema, H.J.H., Martens, B.K., Kooij, J.F., Gavrila, D.M.: Multi-class trajectory prediction in urban traffic using the view-of-delft prediction dataset. IEEE Robot. Automat. Lett. 9(5), 4806–4813 (2024) 11. Bommasani, R., Hudson, D.A., Adeli, E., Altman, R., Arora, S., von Arx, S., Bernstein, M.S., Bohg, J., Bosselut, A., Brunskill, E., et al.: On the opportunities and risks of foundation models. arXiv preprint arXiv:2108.07258 (2021) 12. Breuer, A., Termöhlen, J.A., Homoceanu, S., Fingscheidt, T.: openDD: A large-scale roundabout drone dataset. In: IEEE Intell. Transport. Syst. Conf. pp. 1–6. IEEE (2020) 13. Caesar, H., Bankiti, V., Lang, A.H., Vora, S., Liong, V.E., Xu, Q., Krishnan, A., Pan, Y., Baldan, G., Beijbom, O.: nuScenes: A multimodal dataset for autonomous driving. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 11621–11631 (2020) 14. Chang, M.F., Lambert, J., Sangkloy, P., Singh, J., Bak, S., Hartnett, A., Wang, D., Carr, P., Lucey, S., Ramanan, D., et al.: Argoverse: 3D tracking and forecasting with rich maps. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 8748– 8757 (2019) 15. Cho, K., van Merriënboer, B., Bahdanau, D., Bengio, Y.: On the properties of neural machine translation: Encoder–decoder approaches. In: SSST-8, Eighth Workshop on Syntax, Semantics and Structure in Statistical Translation. pp. 103–111 (2014) 16. Choi, Y., Mercurius, R.C., Shabestary, S.M.A., Rasouli, A.: DICE: Diverse diffusion model with scoring for trajectory prediction. In: IEEE Intell. Veh. Symp. pp. 3023– 3029 (2024) Unveiling Transferability in Trajectory Prediction 17 17. Clark, R.: Predicting Transfer Learning Performance Using Dataset Similarity for Time Series Classification of Human Activity Recognition. Ph.D. thesis, McMaster University (2022) 18. Cui, H., Radosavljevic, V., Chou, F.C., Lin, T.H., Nguyen, T., Huang, T.K., Schneider, J., Djuric, N.: Multimodal trajectory predictions for autonomous driving using deep convolutional networks. In: IEEE Int. Conf. Robot. Automat. pp. 2090– 2096 (2019) 19. Deo, N., Trivedi, M.M.: Convolutional social pooling for vehicle trajectory predic-tion. In: IEEE Conf. Comput. Vision Pattern Recog. pp. 1468–1476 (2018) 20. Deo, N., Wolff, E., Beijbom, O.: Multimodal trajectory prediction conditioned on lane-graph traversals. In: Conf. on Robot Learn. pp. 203–212. PMLR (2022) 21. Diehl, F., Brunner, T., Le, M.T., Knoll, A.: Graph neural networks for modelling traffic participant interaction. In: IEEE Intell. Veh. Symp. pp. 695–701 (2019) 22. Ehrig, C., Sonnleitner, B., Neumann, U., Cleophas, C., Forestier, G.: The impact of data set similarity and diversity on transfer learning success in time series forecasting. arXiv preprint arXiv:2404.06198 (2024) 23. Ettinger, S., Cheng, S., Caine, B., Liu, C., Zhao, H., Pradhan, S., Chai, Y., Sapp, B., Qi, C.R., Zhou, Y., et al.: Large scale interactive motion forecasting for autonomous driving: The Waymo open motion dataset. In: IEEE/CVF Int. Conf. Comput. Vision. pp. 9710–9719 (2021) 24. Fang, J., Wang, F., Xue, J., Chua, T.S.: Behavioral intention prediction in driving scenes: A survey. IEEE Transactions on Intelligent Transportation Systems 25 (8), 8334–8355 (2024) 25. Feng, K., Li, C., Ren, D., Yuan, Y., Wang, G.: On the road to portability: Compressing end-to-end motion planner for autonomous driving. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 15099–15108 (2024) 26. Feng, L., Bahari, M., Amor, K.M.B., Zablocki, É., Cord, M., Alahi, A.: UniTraj: A unified framework for scalable vehicle trajectory prediction. In: Eur. Conf. Comput. Vision. pp. 106–123. Springer (2024) 27. Feng, L., Li, Q., Peng, Z., Tan, S., Zhou, B.: TrafficGen: Learning to generate diverse and realistic traffic scenarios. In: IEEE Int. Conf. Robot. Automat. pp. 3567–3575. IEEE (2023) 28. Feng, L., Tung, F., Ahmed, M.O., Bengio, Y., Hajimirsadegh, H.: Were RNNs All We Needed? arXiv preprint arXiv:2410.01201 (2024) 29. Fey, M., Lenssen, J.E.: Fast graph representation learning with PyTorch Geometric. In: ICLR Workshop on Representation Learn. on Graphs and Manifolds (2019) 30. Gao, H., Wang, Z., Li, Y., Long, K., Yang, M., Shen, Y.: A survey for foundation models in autonomous driving. arXiv preprint arXiv:2402.01105 (2024) 31. Gao, X., Jia, X., Li, Y., Xiong, H.: Dynamic scenario representation learning for motion forecasting with heterogeneous graph convolutional recurrent networks. IEEE Robot. Automat. Lett. 8(5), 2946–2953 (2023) 32. Geng, M., Li, J., Li, C., Xie, N., Chen, X., Lee, D.H.: Adaptive and simultane-ous trajectory prediction for heterogeneous agents via transferable hierarchical transformer network. IEEE Trans. Intell. Transport. Syst. 24 (10), 11479–11492 (2023) 33. Gilles, T., Sabatini, S., Tsishkou, D., Stanciulescu, B., Moutarde, F.: GOHOME: Graph-oriented heatmap output for future motion estimation. In: IEEE Int. Conf. Robot. Automat. pp. 9107–9114. IEEE (2022) 34. Gilles, T., Sabatini, S., Tsishkou, D., Stanciulescu, B., Moutarde, F.: Uncertainty estimation for cross-dataset performance in trajectory prediction. In: Workshop on 18 T. Westny et al. Fresh Perspectives on the Future of Autonomous Driving, IEEE Int. Conf. Robot. Automat. (2022) 35. Giuliari, F., Hasan, I., Cristani, M., Galasso, F.: Transformer networks for trajec-tory forecasting. In: 25th international conference on pattern recognition (ICPR). pp. 10335–10342. IEEE (2021) 36. Goodfellow, I.J., Mirza, M., Xiao, D., Courville, A., Bengio, Y.: An empirical investigation of catastrophic forgetting in gradient-based neural networks. arXiv preprint arXiv:1312.6211 (2013) 37. Gou, J., Yu, B., Maybank, S.J., Tao, D.: Knowledge distillation: A survey. Inter-national journal of computer vision 129 (6), 1789–1819 (2021) 38. Gretton, A., Borgwardt, K.M., Rasch, M.J., Schölkopf, B., Smola, A.: A kernel two-sample test. The Journal of Machine Learning Research 13 (1), 723–773 (2012) 39. Gu, T., Chen, G., Li, J., Lin, C., Rao, Y., Zhou, J., Lu, J.: Stochastic trajectory prediction via motion indeterminacy diffusion. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 17113–17122. IEEE/CVF (2022) 40. Gupta, A., Johnson, J., Fei-Fei, L., Savarese, S., Alahi, A.: Social GAN: Socially ac-ceptable trajectories with generative adversarial networks. In: IEEE Conf. Comput. Vision Pattern Recog. (2018) 41. Hegde, D., Yasarla, R., Cai, H., Han, S., Bhattacharyya, A., Mahajan, S., Liu, L., Garrepalli, R., Patel, V.M., Porikli, F.: Distilling multi-modal large language models for autonomous driving. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 27575–27585 (2025) 42. Hendrycks, D., Gimpel, K.: Gaussian error linear units (GELUs). arXiv preprint arXiv:1606.08415 (2016) 43. Hinton, G., Vinyals, O., Dean, J.: Distilling the knowledge in a neural network. arXiv preprint arXiv:1503.02531 (2015) 44. Houston, J., Zuidhof, G., Bergamini, L., Ye, Y., Chen, L., Jain, A., Omari, S., Iglovikov, V., Ondruska, P.: One thousand and one hours: Self-driving motion prediction dataset. In: Conference on Robot Learning (CoRL). pp. 409–418. PMLR (2021) 45. Hu, Y., Zhan, W., Tomizuka, M.: Probabilistic prediction of vehicle semantic intention and motion. In: IEEE Intell. Veh. Symp. pp. 307–313 (2018) 46. Hu, Y., Zhan, W., Tomizuka, M.: Scenario-transferable semantic graph reasoning for interaction-aware probabilistic prediction. IEEE Trans. Intell. Transport. Syst. 
+
+23 (12), 23212–23230 (2022) 47. Huang, Y., Du, J., Yang, Z., Zhou, Z., Zhang, L., Chen, H.: A survey on trajectory-prediction methods for autonomous driving. IEEE Trans. Intell. Veh. 7(3), 652–674 (2022) 48. Huang, Z., Mo, X., Lv, C.: Multi-modal motion prediction with transformer-based neural network for autonomous driving. In: IEEE Int. Conf. Robot. Automat. pp. 2605–2611 (2022) 49. Ivanovic, B., Harrison, J., Pavone, M.: Expanding the deployment envelope of be-havior prediction via adaptive meta-learning. In: IEEE Int. Conf. Robot. Automat. pp. 7786–7793. IEEE (2023) 50. Ivanovic, B., Song, G., Gilitschenski, I., Pavone, M.: trajdata: A unified interface to multiple human trajectory datasets. In: Thirty-seventh Conference on Neural Information Processing Systems Datasets and Benchmarks Track (2023) 51. Jaipuria, N., Habibi, G., How, J.P.: Learning in the curbside coordinate frame for a transferable pedestrian trajectory prediction model. In: IEEE Intell. Transport. Syst. Conf. pp. 3125–3131 (2018) Unveiling Transferability in Trajectory Prediction 19 52. Jiang, C., Cornman, A., Park, C., Sapp, B., Zhou, Y., Anguelov, D., et al.: MotionDiffuser: Controllable multi-agent motion prediction using diffusion. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 9644–9653 (2023) 53. Kong, H., Xu, J., Gong, S., Yang, J., Zhang, S.: Adaptive pedestrian trajectory prediction via target-directed angle augmentation. In: IEEE Int. Conf. Acoust., Speech, Signal Processing. pp. 4065–4069. IEEE (2024) 54. Krajewski, R., Bock, J., Kloeker, L., Eckstein, L.: The highD dataset: A drone dataset of naturalistic vehicle trajectories on German highways for validation of highly automated driving systems. In: IEEE Intell. Transport. Syst. Conf. pp. 2118–2125 (2018) 55. Krajewski, R., Moers, T., Bock, J., Vater, L., Eckstein, L.: The rounD dataset: A drone dataset of road user trajectories at roundabouts in Germany. In: IEEE Intell. Transport. Syst. Conf. pp. 1–6 (2020) 56. Lee, K., Ippolito, D., Nystrom, A., Zhang, C., Eck, D., Callison-Burch, C., Carlini, N.: Deduplicating training data makes language models better. arXiv preprint arXiv:2107.06499 (2021) 57. Lerner, A., Chrysanthou, Y., Lischinski, D.: Crowds by example. In: Computer graphics forum. vol. 26, pp. 655–664. Wiley Online Library (2007) 58. leveLXData: The uniD Dataset: A university drone dataset. https://levelxdata. com/unid-dataset/ (2024), accessed: September 8, 2024 59. Li, J., Ma, H., Zhang, Z., Li, J., Tomizuka, M.: Spatio-temporal graph dual-attention network for multi-agent prediction and tracking. IEEE Trans. Intell. Transport. Syst. 23 (8), 10556–10569 (2022) 60. Li, Q., Peng, Z.M., Feng, L., Liu, Z., Duan, C., Mo, W., Zhou, B.: ScenarioNet: Open-source platform for large-scale traffic scenario simulation and modeling. Advances in Neural Information Processing Systems (NeurIPS) 36 , 3894–3920 (2023) 61. Li, X., Ying, X., Chuah, M.C.: GRIP++: Enhanced graph-based interaction-aware trajectory prediction for autonomous driving. arXiv preprint arXiv:1907.07792 (2019) 62. Liang, M., Yang, B., Hu, R., Chen, Y., Liao, R., Feng, S., Urtasun, R.: Learning lane graph representations for motion forecasting. In: Eur. Conf. Comput. Vision. pp. 541–556 (2020) 63. Liu, M., Cheng, H., Yang, M.Y.: Tracing the influence of predecessors on trajectory prediction. In: Int. Conf. on Comput. Vision Worksh. (ICCVW). pp. 3245–3255. IEEE/CVF (2023) 64. Liu, Y., Zhang, J., Fang, L., Jiang, Q., Zhou, B.: Multimodal motion prediction with stacked transformers. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 7577–7586 (2021) 65. Loshchilov, I., Hutter, F.: SGDR: Stochastic gradient descent with warm restarts. In: International Conference on Learning Representations (ICLR) (2017) 66. Loshchilov, I., Hutter, F.: Decoupled weight decay regularization. In: International Conference on Learning Representations (ICLR) (2019) 67. Ma, Y., Zhu, X., Zhang, S., Yang, R., Wang, W., Manocha, D.: Trafficpredict: Trajectory prediction for heterogeneous traffic-agents. In: Proceedings of the AAAI conference on artificial intelligence. vol. 33, pp. 6120–6127 (2019) 68. Maaten, L.v.d., Hinton, G.: Visualizing data using t-SNE. Journal of Machine Learning Research 9, 2579–2605 (2008) 69. Mao, W., Xu, C., Zhu, Q., Chen, S., Wang, Y.: Leapfrog diffusion model for stochastic trajectory prediction. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 5517–5526 (2023) 20 T. Westny et al. 70. Marchetti, F., Becattini, F., Seidenari, L., Bimbo, A.D.: MANTRA: Memory augmented networks for multiple trajectory prediction. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 7143–7152 (2020) 71. Messaoud, K., Deo, N., Trivedi, M.M., Nashashibi, F.: Trajectory prediction for autonomous driving based on multi-head attention with joint agent-map representation. In: IEEE Intell. Veh. Symp. pp. 165–170 (2021) 72. Messaoud, K., Yahiaoui, I., Verroust-Blondet, A., Nashashibi, F.: Attention based vehicle trajectory prediction. IEEE Trans. Intell. Veh. 6(1), 175–185 (2021) 73. Moers, T., Vater, L., Krajewski, R., Bock, J., Zlocki, A., Eckstein, L.: The exiD dataset: A real-world trajectory dataset of highly interactive highway scenarios in Germany. In: IEEE Intell. Veh. Symp. pp. 958–964 (2022) 74. Mohamed, A., Zhu, D., Vu, W., Elhoseiny, M., Claudel, C.: Social-Implicit: Re-thinking trajectory prediction evaluation and the effectiveness of implicit maximum likelihood estimation. In: Eur. Conf. Comput. Vision. pp. 463–479 (2022) 75. Morris, C., Ritzert, M., Fey, M., Hamilton, W.L., Lenssen, J.E., Rattan, G., Grohe, M.: Weisfeiler and leman go neural: Higher-order graph neural networks. In: AAAI Conference on Artificial Intelligence. pp. 4602–4609 (2019) 76. Park, D., Jeong, J., Yoon, K.J.: Improving transferability for cross-domain trajec-tory prediction via neural stochastic differential equation. In: Proceedings of the AAAI Conference on Artificial Intelligence. vol. 38, pp. 10145–10154 (2024) 77. Park, S.H., Lee, G., Seo, J., Bhat, M., Kang, M., Francis, J., Jadhav, A., Liang, P.P., Morency, L.P.: Diverse and admissible trajectory forecasting through multimodal context understanding. In: Eur. Conf. Comput. Vision. pp. 282–298 (2020) 78. Paszke, A., Gross, S., Massa, F., Lerer, A., Bradbury, J., Chanan, G., Killeen, T., Lin, Z., Gimelshein, N., Antiga, L., et al.: PyTorch: An imperative style, high-performance deep learning library. In: Int. Conf. Adv. in Neural Inf. Process. Syst. (2019) 79. Pellegrini, S., Ess, A., Schindler, K., Van Gool, L.: You’ll never walk alone: Modeling social behavior for multi-target tracking. In: International Conference on Computer Vision (ICCV). pp. 261–268. IEEE (2009) 80. Penedo, G., Kydlíček, H., Lozhkov, A., Mitchell, M., Raffel, C.A., Von Werra, L., Wolf, T., et al.: The fineweb datasets: Decanting the web for the finest text data at scale. Advances in Neural Information Processing Systems 37 , 30811–30849 (2024) 81. Rong, Y., Huang, W., Xu, T., Huang, J.: DropEdge: Towards deep graph convolu-tional networks on node classification. In: International Conference on Learning Representations (ICLR) (2020) 82. Rudenko, A., Palmieri, L., Huang, W., Lilienthal, A.J., Arras, K.O.: The atlas benchmark: An automated evaluation framework for human motion prediction. In: Int. Conf. on Robot. and Hum. Interact. Comm. (RO-MAN). pp. 636–643. IEEE (2022) 83. Sadeghian, A., Kosaraju, V., Sadeghian, A., Hirose, N., Rezatofighi, H., Savarese, S.: SoPhie: An attentive GAN for predicting paths compliant to social and physical constraints. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 1349–1358 (2019) 84. Salzmann, T., Ivanovic, B., Chakravarty, P., Pavone, M.: Trajectron++: Dynamically-feasible trajectory forecasting with heterogeneous data. In: Eur. Conf. Comput. Vision. pp. 683–700 (2020) 85. Schöller, C., Aravantinos, V., Lay, F., Knoll, A.: What the constant velocity model can teach us about pedestrian motion prediction. IEEE Robot. Automat. Lett. 
+
+5(2), 1696–1703 (2020) Unveiling Transferability in Trajectory Prediction 21 86. Shi, X., Zhang, H., Yuan, W., Shibasaki, R.: MetaTraj: Meta-learning for cross-scene cross-object trajectory prediction. IEEE Trans. Intell. Transport. Syst. 
+
+24 (12), 14000–14009 (2023) 87. Tolstaya, E., Mahjourian, R., Downey, C., Vadarajan, B., Sapp, B., Anguelov, D.: Identifying driver interactions via conditional behavior prediction. In: IEEE Int. Conf. Robot. Automat. pp. 3473–3479 (2021) 88. Touvron, H., Lavril, T., Izacard, G., Martinet, X., Lachaux, M.A., Lacroix, T., Rozière, B., Goyal, N., Hambro, E., Azhar, F., et al.: Llama: Open and efficient foundation language models. arXiv preprint arXiv:2302.13971 (2023) 89. Ullrich, L., McMaster, A., Graichen, K.: Transfer learning study of motion transformer-based trajectory predictions. In: IEEE Intell. Veh. Symp. pp. 110–117 (2024) 90. U.S. Department of Transportation Federal Highway Administration: Next generation simulation (ngsim) vehicle trajectories and supporting data. i-80. 
+
+http://doi.org/10.21949/1504477 (2016), dataset provided by ITS DataHub through Data.transportation.gov. Accessed 2025-06-09 91. U.S. Department of Transportation Federal Highway Administration: Next gen-eration simulation (ngsim) vehicle trajectories and supporting data. us-101. 
+
+http://doi.org/10.21949/1504477 (2016), dataset provided by ITS DataHub through Data.transportation.gov. Accessed 2025-06-09 92. Wang, L., Lavoie, M.A., Papais, S., Nisar, B., Chen, Y., Ding, W., Ivanovic, B., Shao, H., Abuduweili, A., Cook, E., et al.: Deployable and generalizable motion prediction: Taxonomy, open challenges and future directions. arXiv preprint arXiv:2505.09074 (2025) 93. Wang, Z., Guo, J., Zhang, H., Wan, R., Zhang, J., Pu, J.: Bridging the gap: Improving domain generalization in trajectory prediction. IEEE Trans. Intell. Veh. 
+
+9(1), 1780–1791 (2023) 94. Wang, Z., Zhang, J., Chen, J., Zhang, H.: Spatio-temporal context graph trans-former design for map-free multi-agent trajectory prediction. IEEE Trans. Intell. Veh. 9(1), 1369–1381 (2024) 95. Wang, Z., Dai, Z., Póczos, B., Carbonell, J.: Characterizing and avoiding negative transfer. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 11293–11302 (2019) 96. Weng, E., Hoshino, H., Ramanan, D., Kitani, K.: Joint metrics matter: A better standard for trajectory forecasting. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 20315–20326 (2023) 97. Westny, T., Frisk, E., Olofsson, B.: Vehicle behavior prediction and generalization using imbalanced learning techniques. In: IEEE Intell. Transport. Syst. Conf. pp. 2003–2010 (2021) 98. Westny, T., Olofsson, B., Frisk, E.: Diffusion-based environment-aware trajectory prediction. arXiv preprint arXiv:2403.11643 (2024) 99. Westny, T., Olofsson, B., Frisk, E.: Toward unified practices in trajectory prediction research on bird’s eye view datasets. In: IEEE Intell. Veh. Symp. (2025) 100. Westny, T., Oskarsson, J., Olofsson, B., Frisk, E.: Evaluation of differentially constrained motion models for graph-based trajectory prediction. In: IEEE Intell. Veh. Symp. (2023) 101. Westny, T., Oskarsson, J., Olofsson, B., Frisk, E.: MTP-GO: Graph-based proba-bilistic multi-agent trajectory prediction with neural ODEs. IEEE Trans. Intell. Veh. 8(9), 4223–4236 (2023) 22 T. Westny et al. 102. Wilson, B., Qi, W., Agarwal, T., Lambert, J., Singh, J., Khandelwal, S., Pan, B., Kumar, R., Hartnett, A., Pontes, J.K., Ramanan, D., Carr, P., Hays, J.: Argoverse 2: Next generation datasets for self-driving perception and forecasting. In: Neural Inform. Proc. Syst. Track on Datasets and Benchmarks (2021) 103. Xu, P., Hayet, J.B., Karamouzas, I.: SocialVAE: Human trajectory prediction using timewise latents. In: Eur. Conf. Comput. Vision. pp. 511–528 (2022) 104. Xu, Y., Shao, W., Li, J., Yang, K., Wang, W., Huang, H., Lv, C., Wang, H.: SIND: A drone dataset at signalized intersection in China. In: IEEE Intell. Transport. Syst. Conf. pp. 2471–2478 (2022) 105. Xu, Y., Wang, L., Wang, Y., Fu, Y.: Adaptive trajectory prediction via transferable GNN. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 6520–6531 (2022) 106. Ye, L., Zhou, Z., Wang, J.: Improving the generalizability of trajectory predic-tion models with frenet-based domain normalization. In: IEEE Int. Conf. Robot. Automat. pp. 11562–11568. IEEE (2023) 107. Yosinski, J., Clune, J., Bengio, Y., Lipson, H.: How transferable are features in deep neural networks? Advances in Neural Information Processing Systems (NeurIPS) 27 (2014) 108. Yuan, Y., Weng, X., Ou, Y., Kitani, K.M.: Agentformer: Agent-aware transformers for socio-temporal multi-agent forecasting. In: IEEE/CVF Int. Conf. Comput. Vision. pp. 9813–9823 (2021) 109. Zhan, W., Sun, L., Wang, D., Shi, H., Clausse, A., Naumann, M., Kümmerle, J., Königshof, H., Stiller, C., de La Fortelle, A., Tomizuka, M.: INTERACTION Dataset: An INTERnational, Adversarial and Cooperative moTION Dataset in Interactive Driving Scenarios with Semantic Maps. arXiv preprint arXiv:1910.03088 (2019) 110. Zhang, C., Ni, Z., Berger, C.: Spatial-Temporal-Spectral LSTM: A transferable model for pedestrian trajectory prediction. IEEE Trans. Intell. Veh. 9(1), 2836– 2849 (2024) 111. Zhang, Y., Wang, C., Yu, R., Wang, L., Quan, W., Gao, Y., Li, P.: The AD4CHE dataset and its application in typical congestion scenarios of traffic jam pilot systems. IEEE Trans. Intell. Veh. 8(5), 3312–3323 (2023) 112. Zhao, T., Xu, Y., Monfort, M., Choi, W., Baker, C., Zhao, Y., Wang, Y., Wu, Y.N.: Multi-agent tensor fusion for contextual trajectory prediction. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 12126–12134 (2019) 113. Zhou, X., Liu, M., Yurtsever, E., Zagar, B.L., Zimmer, W., Cao, H., Knoll, A.C.: Vision language models in autonomous driving: A survey and outlook. IEEE Trans. Intell. Veh. (2024) 114. Zhou, Y., Shao, H., Wang, L., Waslander, S.L., Li, H., Liu, Y.: SmartPretrain: Model-agnostic and dataset-agnostic representation learning for motion prediction. In: Int. Conf. Learning Representations (ICLR) (2025) 115. Zhou, Z., Wang, J., Li, Y.H., Huang, Y.K.: Query-centric trajectory prediction. In: IEEE/CVF Conf. Comput. Vision Pattern Recog. pp. 17863–17873 (2023) Unveiling Transferability in Trajectory Prediction 23 
+
+A Latent embedding model 
+
+This section expands on the latent embedding model and provides additional details on its architecture and hyperparameters. 
+
+A.1 Network configuration 
+
+As shown in Fig. 2, the latent embedding model comprises five main components: 1. Graph-GRU encoder for agent features and interactions 2. GNN-based map encoder for processing the lane graph 3. Feed-forward module that fuses agent and map features into the latent embedding Z
+
+4. Graph-GRU decoder head for reconstructing the input 5. Graph-GRU decoder head for trajectory forecasting All modules use a hidden dimension of 128 , and all graph operations rely on the GNN operator of [75]. Following a simple embedding layer that includes agent type information, the Graph-GRU encoder processes agent features sequentially for each instance, per-forming message passing between neighboring agents. The map encoder operates in two stages. First, it performs message passing on the lane-graph to compute node-level map embeddings. The raw map inputs consist of node positions and dataset-defined lane-graph connectivity. Edge features include the map-node type specified by the Dronalize toolbox [99]; these are one-hot encoded, projected through a linear layer, and processed by a three-layer GNN. Second, a directed three-layer GNN propagates information from map nodes to agents. The resulting map features are then passed through a LayerNorm layer [5]. The outputs of the Graph-GRU encoder and the map encoder are concatenated and passed through a two-layer feed-forward network with SiLU activations [42] to produce the latent embedding Z, followed by normalization. This embedding initializes the hidden state of the two Graph-GRU decoder heads, which autore-gressively reconstruct the input and predict future trajectories. At each step, the decoders take their own previous prediction, transformed by a two-layer feed-forward network with SiLU activations, as the next input. 
+
+A.2 Graph construction 
+
+Graphs are constructed on a per-sample basis using heuristic rules tailored to capture relevant spatial and semantic structure. Inter-agent graphs are built by connecting each agent to others within a 150 m radius, limited to a maximum of 10 neighbors per node. All edges are undirected, with edge weights computed as the exponential of the negative relative distance. Map-agent graphs are con-structed from the lane graph, if available, which is initially represented as a set of polylines with distinctive types. These polylines are discretized into graph nodes by sampling points at approximately 3 m intervals. Agents are then connected to nearby map nodes using a nearest-neighbor criterion, allowing up to 50 directed edges from map nodes to agents. For both graph types, edge dropout [81] is applied during training with a probability of 0.25. 24 T. Westny et al. 
+
+B Trajectory prediction model 
+
+QCNet [115] serves as the baseline predictor for the transferability experiments. While the original implementation is largely followed, a few modifications were made to adapt it to this work. 
+
+B.1 Network configuration 
+
+The only functional modification concerns the map encoder, which was adapted to match the input format defined by the Dronalize toolbox [99]. In practice, this required adjusting the architecture to accommodate a different set of map-node types and edge definitions. To reduce computational demands and training time across the extensive experimental suite, several hyperparameters of the original QCNet model were scaled down. Table 4 summarizes the modified settings alongside the original values. These adjustments lower the model size from roughly 7.66 million parameters to 1.35 million, yielding substantial reductions in memory usage and training duration. Initial studies showed that these changes had only minor effects on performance and, where differences appeared, they followed the same trends observed with the full-size model, making the compact configuration sufficient for the purposes of the transferability analyses of this work. 
+
+B.2 Training details 
+
+Models are trained for up to 50 epochs using AdamW [66]. Batch sizes and learning rates are selected separately for each dataset (see Tab. 5). Early stopping is applied based on the validation minADE 6, with a patience of 5 epochs. Given the number of datasets and total runs, learning-rate tuning is limited. The reported values represent stable, workable settings rather than the result of an extensive hyperparameter search. As for the latent embedding model, the final QCNet models used in all experiments were selected based on minADE 6 performance on the validation set.              
+
+> Table 4: Modified hyperparameters of the QCNet trajectory prediction model.
+> Hyperparameter Original 1Modified
+> Hidden dimension 128 48
+> Number of heads 86
+> Head dimension 16 12
+> Frequency bands 64 48
+> Number of parameters 7.66 M1.35 M
+> 1As reported in the original QCNet paper [115] (Argoverse 2 version).
+
+Unveiling Transferability in Trajectory Prediction 25 
+
+Table 5: Dataset-specific training configurations for the QCNet trajectory prediction model. Batch sizes are determined by memory constraints, and learning rates are selected based on preliminary experiments to ensure stable convergence.                                                                                                                                            
+
+> Dataset Batch LR Epochs Dataset Batch LR Epochs
+> A43 46 7.5×10 −541 Lyft 24 5×10 −433 AD4CHE 85×10 −450 nuScenes 60 1×10 −416 ApolloScape 34 5×10 −412 openDD 36 7.5×10 −516 Argoverse 16 1×10 −426 rounD 200 5×10 −350 Argoverse 2 81×10 −420 SIND 12 5×10 −420 eth 54 1×10 −426 uniD 55 1×10 −424 exiD 96 1.25 ×10 −429 univ 128 1×10 −450 highD 64 1×10 −450 US-101 85×10 −420 hotel 54 1×10 −440 View-of-Delft 64 5×10 −450 I-80 95×10 −522 WOMD 42 1×10 −437 inD 26 7.5×10 −534 zara1 54 1×10 −450 INTERACTION 64 1×10 −450 zara2 54 1×10 −450
+
+C Experiments 
+
+This section presents additional experiments that complement the main results. These include extended analyses, alternative evaluation settings, and further qualitative examples that provide additional insight into the behavior of the proposed framework. 
+
+C.1 Recommender system 
+
+One objective of the latent embedding model is to provide a principled, data-driven mechanism for identifying suitable source datasets for pre-training or adaptation. When a new dataset becomes available, its compatibility with existing sources can be assessed by computing its embedding and comparing it with the existing embeddings. To illustrate this process, an unseen-data scenario is simulated by training a new embedding model after removing WOMD, exiD, and uniD from the training set. The resulting KL divergence heatmap from this model is shown in Fig. 9. Despite the exclusion, the model positions WOMD near Argoverse, uniD near inD, and exiD near highD—relationships that closely match those in the full-training heatmap (Fig. 3). Although the similarity to the fully trained model may appear unsurprising, it is precisely this consistency that is meaningful: the embedding space recovers the same structural relationships even without direct exposure to the omitted datasets. This stability suggests that the learned embedding generalizes well to unseen data and that it can reliably support both transferability assessment and source-dataset recommendation. 
+
+C.2 Effect of latent dimensionality on correlation dynamics 
+
+Figure 10 illustrates how the latent dimensionality L influences the evolution of the learned correlations during training. The L = 32 model achieves the highest 26 T. Westny et al. inD rounD openDD SIND 
+
+> uniD
+> INTERACTION Argoverse Argoverse 2 nuScenes Lyft ApolloScape
+> WOMD
+> View-of-Delft highD
+> exiD
+> A43 AD4CHE I-80 US-101 ETH hotel univ zara1 zara2
+
+inD rounD openDD SIND 
+
+uniD 
+
+INTERACTION Argoverse Argoverse 2 nuScenes Lyft ApolloScape 
+
+WOMD 
+
+View-of-Delft highD 
+
+exiD 
+
+A43 AD4CHE I-80 US-101 ETH hotel univ zara1 zara2 
+
+113 107 46.1 311 63.1 131 124 34.7 88.3 65.3 130 192 5.94k 1.20k 6.15k 238 522 595 10.5k 7.58k 7.11k 8.32k 7.70k 843 72.7 733 1.44k 352 655 1.01k 768 760 518 630 2.17k 7.88k 3.96k 9.27k 1.20k 1.77k 1.73k 31.7k 21.5k 20.3k 23.3k 21.6k 558 80.8 474 993 238 541 863 493 596 339 523 1.49k 6.36k 3.85k 7.59k 891 1.37k 1.32k 30.0k 19.5k 18.7k 21.4k 19.8k 47.7 86.9 75.5 165 41.8 141 130 43.9 99.1 75.7 132 227 5.64k 1.49k 5.82k 326 527 531 10.4k 6.90k 6.50k 7.56k 7.03k 43.3 274 108 73.4 143 350 321 36.1 254 48.6 394 140 4.22k 2.13k 3.99k 143 280 441 4.54k 2.63k 2.51k 2.94k 2.72k 193 182 181 209 1.04k 271 333 220 178 196 240 500 4.48k 2.69k 3.89k 512 822 793 37.2k 24.4k 23.5k 27.0k 25.1k 2.55k 635 796 2.28k 4.59k 978 356 2.31k 201 492 145 3.07k 5.88k 2.36k 5.95k 1.33k 2.16k 2.37k 60.6k 44.5k 41.8k 48.9k 45.5k 592 231 316 598 1.48k 275 90.4 587 74.2 132 96.6 829 6.17k 1.59k 6.70k 499 961 1.05k 29.2k 20.7k 19.6k 22.8k 21.3k 41.0 104 70.1 37.3 140 53.6 118 136 81.8 41.4 134 148 5.34k 1.35k 5.52k 198 401 453 11.2k 7.21k 6.92k 8.00k 7.41k 395 225 278 451 1.83k 191 61.0 167 334 122 84.0 670 5.56k 1.35k 6.18k 625 1.29k 1.36k 46.4k 33.9k 32.4k 37.4k 34.7k 302 205 137 272 678 161 153 180 208 134 225 392 4.25k 2.41k 3.94k 402 703 729 28.3k 17.6k 16.7k 19.5k 18.1k 1.01k 382 527 1.02k 2.65k 393 70.3 157 968 85.5 341 1.35k 6.96k 1.77k 7.02k 840 1.89k 2.00k 43.3k 33.3k 31.2k 36.3k 33.8k 99.2 108 62.2 76.3 139 40.2 93.0 125 56.8 67.3 43.3 103 4.06k 1.17k 4.29k 134 245 266 6.37k 3.48k 3.31k 3.87k 3.59k 20.9k 7.20k 8.85k 16.6k 19.6k 5.05k 1.93k 5.33k 15.5k 2.37k 10.3k 1.97k 20.1k 214 57.8 1.47k 5.23k 6.45k 393k 308k 283k 341k 318k 14.6k 4.59k 6.00k 11.5k 14.2k 3.14k 1.10k 3.29k 10.9k 1.42k 6.90k 1.11k 13.8k 685 956 915 3.28k 4.16k 328k 247k 232k 273k 254k 11.4k 4.04k 5.22k 9.30k 15.1k 2.81k 1.14k 2.98k 8.47k 1.34k 5.69k 1.18k 12.0k 319 863 767 3.22k 3.72k 320k 240k 226k 266k 247k 342 390 543 441 2.73k 103 420 339 354 315 254 440 893 1.70k 4.27k 694 57.6 67.8 98.6k 63.5k 62.4k 70.9k 66.2k 661 551 773 483 1.51k 217 839 462 581 571 367 831 911 1.95k 7.55k 526 111 27.4 81.6k 50.4k 49.8k 56.3k 52.6k 642 547 802 710 5.01k 190 427 312 515 282 320 465 1.49k 1.68k 3.96k 285 79.8 24.5 179k 118k 117k 131k 123k 59.7 214 95.4 75.8 30.7 127 256 247 39.6 201 55.9 292 118 4.53k 1.23k 4.59k 86.1 146 311 1.44 1.80 1.57 1.82 58.8 235 95.0 78.4 30.8 131 287 277 39.8 228 54.6 327 128 4.39k 1.34k 4.40k 87.7 148 321 20.7 0.39 0.37 0.42 56.5 245 99.8 79.9 29.5 134 302 290 39.4 239 54.9 342 135 4.61k 1.38k 4.63k 87.9 154 336 24.7 0.38 0.77 0.89 57.2 191 86.8 68.0 30.1 112 229 219 36.8 182 52.3 259 108 4.55k 1.13k 4.66k 80.6 136 288 21.3 0.31 0.68 0.67 65.5 244 95.5 84.1 32.7 135 298 290 41.7 235 55.7 342 130 4.28k 1.37k 4.27k 89.8 147 322 26.0 0.39 0.77 0.67 
+
+Fig. 9: KL divergence DKL (row ∥col ) between latent embedding distributions of all dataset pairs when WOMD, exiD, and uniD are excluded from training. Each entry measures how well the column dataset can approximate the row dataset in latent space, where lower values indicate better approximation. Datasets excluded from training are highlighted. 
+
+and most stable Spearman’s ρ, while the L = 16 model performs slightly worse. Increasing the latent dimension to L = 64 or L = 128 does not provide additional benefit and results in lower final correlations. In particular, the L = 128 model exhibits a downward trend, which may indicate overfitting. These results suggest that increasing the latent capacity beyond L = 32 may amplify noise rather than improving the learned representation. 
+
+C.3 Transferability results 
+
+For completeness, the full zero-shot transferability results are provided in Fig. 11, showing minADE 6 performance over a 3 s prediction horizon. Several patterns emerge. First, transferring from urban sources to highway targets is noticeably more difficult than the reverse. Although transferring from urban sources to highway targets is challenging, highway prediction itself is inherently easier once trained on in-domain data. This is reflected in the relatively low displacement errors observed for highway-to-highway transfer ( e.g ., exiD, highD, A43). In contrast, urban-to-urban transfer proves substantially more difficult, with datasets such as rounD and openDD showing markedly higher errors despite the within-domain setting. This aligns Unveiling Transferability in Trajectory Prediction 27 0 20 40 60 80 100     
+
+> Training epoch
+> 0.65
+> 0.70
+> 0.75
+> 0.80
+> Correlation coefficient
+> L= 16
+> L= 32
+> L= 64
+> L= 128
+
+Fig. 10: Evolution of Spearman’s rank correlation coefficient ρ over training epochs for models with latent dimensionalities L ∈ { 16 , 32 , 64 , 128 }, illustrating how capacity influences the stability and growth of learned correlations. 
+
+with prior empirical findings [100], which similarly report that highway scenarios are generally easier to predict. One row that stands out is WOMD, which appears to be one of the most challenging target datasets. Only Argoverse and Lyft achieve reasonably com-petitive zero-shot performance. On the other hand, WOMD is a strong source dataset, offering solid transfer to many targets. Lyft and Argoverse 2 show similar behavior. As noted in the main text, these datasets are also among the largest in the study, covering broad regions of the latent space and thus providing strong potential for pre-training. Finally, several datasets transfer surprisingly well to the pedestrian-centric ones. This should, however, be interpreted with caution, as these are predom-inantly low-speed scenarios where best-of-K metrics tend to overestimate per-formance [74, 85, 96]. Regardless, it is noteworthy that pre-training on highway datasets can serve as an effective starting point for zero-shot or fine-tuned pedestrian prediction. 
+
+C.4 Single-source selection for zero-shot transfer 
+
+To assess the practical utility of the proposed KL-based similarity measure, a single-source selection experiment is conducted using the zero-shot transfer matrix in Fig. 11. For each target dataset, one source dataset is selected according to each selection rule. The oracle source is defined as the candidate source achieving the lowest minADE 6 on the target dataset. The quality of a selected source is evaluated using four metrics. First, its rank is determined by ordering all candidate sources according to their actual minADE 6
+
+on the target dataset. Second, the top-3 rate measures the fraction of targets for which the selected source is among the three best-performing candidate sources. Third, the absolute performance gap is computed as the difference between the minADE 6 obtained using the selected source and that obtained using the oracle 28 T. Westny et al. inD rounD openDD SIND uniD INTERACTION Argoverse Argoverse 2 nuScenes Lyft ApolloScape WOMD View-of-Delft highD exiD A43 AD4CHE I-80 US-101 ETH hotel univ zara1 zara2 inD rounD openDD SIND uniD INTERACTION Argoverse Argoverse 2 nuScenes Lyft ApolloScape WOMD View-of-Delft highD exiD A43 AD4CHE I-80 US-101 ETH hotel univ zara1 zara2 
+
+0.07 0.16 0.26 0.15 0.24 0.46 0.29 0.14 0.19 0.17 0.46 0.26 0.53 0.29 0.30 1.27 0.23 0.45 0.35 1.14 0.92 0.96 0.91 1.03 1.01 0.21 1.15 0.94 1.34 1.48 1.51 0.85 1.37 1.52 2.04 1.77 2.54 1.84 2.00 2.20 1.66 2.98 2.43 5.77 4.25 4.40 4.70 5.08 0.98 0.91 0.26 1.08 1.23 1.49 1.27 0.67 0.91 0.83 1.54 1.13 1.73 1.35 1.38 1.76 1.20 2.04 1.75 4.69 3.52 3.38 3.52 3.95 0.28 0.32 0.45 0.11 0.29 0.75 0.44 0.19 0.29 0.24 0.62 0.40 0.75 0.39 0.43 1.93 0.39 0.60 0.49 2.00 1.55 1.59 1.50 1.74 0.17 0.16 0.20 0.15 0.06 0.69 0.43 0.13 0.16 0.14 0.44 0.41 0.50 0.30 0.22 0.80 0.22 0.41 0.34 1.13 0.91 0.82 0.87 0.99 0.41 0.48 0.71 0.28 0.53 0.09 0.56 0.30 0.52 0.49 1.07 0.29 0.97 0.60 0.62 1.00 0.67 1.04 0.93 3.87 3.09 2.91 3.08 3.36 2.06 2.46 2.01 1.83 2.50 2.42 0.53 1.63 1.63 0.72 1.78 1.07 1.97 2.09 2.51 3.43 2.24 1.89 1.80 5.46 4.65 4.58 4.58 4.98 0.65 0.81 0.87 0.55 0.83 0.92 0.81 0.29 0.68 0.57 0.94 2.72 1.12 0.84 0.88 2.77 0.75 0.89 0.84 3.14 2.63 2.59 2.59 2.88 0.37 0.41 0.52 0.35 0.41 0.59 0.45 0.29 0.24 0.28 0.56 0.38 0.55 0.47 0.51 1.89 0.43 0.45 0.42 1.45 1.17 1.19 1.11 1.31 0.90 1.16 1.14 0.84 1.26 1.29 1.05 0.64 0.62 0.28 1.03 0.60 1.08 0.94 1.22 2.93 1.00 0.86 0.77 3.71 3.14 3.13 3.08 3.41 1.10 1.15 0.96 0.94 1.22 1.13 0.85 0.93 0.98 0.78 0.57 0.86 1.20 1.70 1.76 2.94 1.43 1.29 1.20 2.95 2.10 2.37 2.05 2.48 4.21 4.63 4.69 4.36 4.71 4.62 0.93 4.08 4.30 0.83 4.67 0.18 4.73 4.35 4.46 6.61 4.33 4.41 4.38 6.69 6.25 6.29 6.23 6.46 0.76 0.80 0.55 0.55 0.79 0.82 0.43 0.55 0.34 0.31 0.58 0.36 0.28 0.50 1.31 13.35 0.84 0.56 0.58 1.15 0.92 0.80 0.88 0.99 10.48 21.08 24.96 20.61 27.27 12.91 2.16 3.93 18.78 4.82 20.11 5.47 21.72 0.22 0.58 0.55 13.74 8.26 9.83 36.50 34.44 34.14 34.16 35.05 6.17 14.92 20.37 13.32 22.62 7.58 2.85 2.50 12.04 3.37 15.30 4.71 17.26 0.47 0.12 0.66 7.76 5.96 5.63 32.19 29.91 29.74 29.60 30.73 3.84 8.93 11.84 7.76 14.87 5.18 2.99 1.62 7.33 1.91 9.47 3.03 11.43 0.26 0.23 0.08 4.45 3.46 3.77 26.30 24.23 23.88 23.84 24.87 0.35 0.82 1.29 0.33 0.59 1.34 0.94 0.31 0.40 0.35 1.11 0.95 1.33 0.24 0.42 0.32 0.11 0.46 0.45 5.81 4.47 4.39 4.36 5.00 0.87 1.16 1.68 1.21 1.42 1.64 1.60 0.62 0.76 0.58 1.57 1.14 2.00 1.01 1.10 1.18 1.21 0.44 0.57 7.27 5.60 5.72 5.49 6.44 0.87 1.55 2.63 1.53 2.01 1.79 2.44 0.55 0.72 0.53 1.86 1.23 2.62 1.04 1.13 1.16 1.22 0.58 0.40 12.91 11.02 11.00 10.93 11.99 0.35 0.28 0.20 0.22 0.40 0.36 0.26 0.18 0.40 0.22 0.47 0.35 0.38 0.69 0.98 5.39 0.31 0.46 0.44 0.15 0.15 0.16 0.15 0.15 0.36 0.28 0.21 0.23 0.42 0.36 0.27 0.19 0.42 0.23 0.48 0.37 0.38 0.69 0.98 5.12 0.32 0.46 0.45 0.16 0.15 0.17 0.16 0.16 0.36 0.25 0.17 0.19 0.39 0.37 0.25 0.16 0.41 0.19 0.47 0.39 0.37 0.70 1.12 5.95 0.31 0.41 0.43 0.13 0.13 0.14 0.14 0.14 0.35 0.28 0.21 0.23 0.41 0.36 0.26 0.19 0.39 0.21 0.46 0.35 0.38 0.70 0.98 5.52 0.31 0.46 0.44 0.15 0.15 0.17 0.15 0.15 0.38 0.30 0.22 0.25 0.43 0.39 0.29 0.21 0.44 0.24 0.49 0.39 0.39 0.69 0.92 4.77 0.34 0.49 0.47 0.17 0.16 0.18 0.17 0.17 
+
+Fig. 11: Cross-dataset zero-shot minADE 6 results for a 3 s prediction horizon. Columns indicate training datasets, and rows indicate evaluation datasets. Lower values reflect better transferability. 
+
+source. Finally, the relative gap normalizes this difference by the oracle minADE 6.The reported values are averaged across the target datasets. As shown in Tab. 6, the KL-based rule selects one of the three best-performing sources for 83 .3% of the target datasets and achieves a mean selected-source rank of 3.00 . It also produces the smallest mean absolute and relative minADE 6 gaps, outperforming selection based on mean speed, source-dataset size, and random sampling. These results indicate that the proposed similarity measure can provide a useful criterion for selecting a source dataset when target-domain performance measurements are unavailable. The experiment is restricted to single-source zero-shot transfer and does not consider multi-source training or target-domain fine-tuning. The effectiveness of the proposed measure in these more general and complex transfer settings therefore remains to be investigated. 
+
+C.5 Covariance estimation ablation 
+
+The covariance estimation ablation considers two design choices: the source of the covariance matrix and the estimator applied to it. The covariance source is either the within-scene covariance, the between-scene covariance, or their sum, with the latter defined in (5) . The evaluated estimators range from the raw empirical covariance to regularized and low-rank approximations. Unveiling Transferability in Trajectory Prediction 29 
+
+Table 6: Single-source selection performance averaged across target datasets. Rank and top-3 rate are based on the achieved minADE 6 of the selected source. The absolute and relative gaps are measured with respect to the oracle source.                        
+
+> Selection rule Mean selected source rank ↓
+> Selected source in top 3 ↑
+> Mean absolute minADE 6gap ↓
+> Mean relative minADE 6gap ↓
+> KL divergence 3.00 83.3% 0.100 21.0%
+> Closest mean speed 6.29 37.5% 0.335 69.5% Largest source dataset 9.08 20.8% 0.984 243.2% Random selection 11.9 13.2% 2.59 667.4%
+
+Covariance estimators. Consider the decomposition of the empirical covariance matrix, 
+
+Σ = UΛUT,
+
+where U contains the eigenvectors and Λ = diag (λ1, . . . , λ d) contains the corre-sponding eigenvalues. The four covariance estimators are defined as 
+
+bΣraw = Σ, (13) 
+
+bΣjitter = Σ + tr( Σ)
+
+L I, (14) 
+
+bΣfloor = U diag  max {λ1, α }, . . . , max {λd, α }UT, (15) 
+
+bΣLR = Ur diag( λ1, . . . , λ r )UT 
+
+> r
+
++ α tr( Σ)
+
+L I, (16) where r denotes the retained rank and α controls the regularization strength. Performance was assessed primarily using Spearman’s rank correlation coef-ficient, while the median KL divergence was used as a secondary diagnostic of distributional discrepancy and sensitivity to covariance regularization. For each latent dimension, the selected configuration was defined as the one with the lowest median KL among those retaining at least 99% of the maximum correlation. Table 7 compares the maximum-correlation and selected configurations. All optima use a low-rank estimate of the summed covariance source. The selected configurations preserve near-maximal correlation while generally exhibiting sub-stantially lower median and upper-tail KL divergence. At 32 dimensions, the selected configuration retains 99.3% of the maximum correlation while reducing the median and 95th-percentile KL divergences by factors of approximately 875 and 596, respectively. Figure 12 shows the relationship between correlation and median KL under the selection convention of maximizing correlation while preferring lower KL among near-optimal configurations. Each frontier contains configurations that are nondominated within the same latent dimension; moving along a frontier changes the balance between correlation and KL. The 32-dimensional frontier extends to the highest correlation and contains a strongly regularized solution close to its maximum-correlation endpoint. Specifically, the selected configuration achieves ρ = 0 .811 , compared with the maximum value of 0.817, while reducing the median KL by approximately 875 ×.30 T. Westny et al. 
+
+Table 7: Maximum-correlation and selected covariance configurations. The selected configuration minimizes the median KL divergence among candidates retaining at least 99% of the maximum ρ for the corresponding latent dimension. LR denotes low-rank covariance, and Sum denotes the summed covariance source.                                                                                           
+
+> Latent dim. Candidate Est. / source Rank αρKL median KL p95 16 Max. LR / Sum 81×10 −30.781 4.15 ×10 27.10 ×10 4
+> Selected LR / Sum 81×10 −30.781 4.15 ×10 27.10 ×10 4
+> 32 Max. LR / Sum 16 1×10 −70.817 1.21 ×10 65.71 ×10 7
+> Selected LR / Sum 16 1×10 −40.811 1.38 ×10 39.58 ×10 4
+> 64 Max. LR / Sum 48 1×10 −70.758 1.25 ×10 47.02 ×10 5
+> Selected LR / Sum 48 3×10 −70.753 5.12 ×10 33.16 ×10 5
+> 128 Max. LR / Sum 64 1×10 −70.736 3.92 ×10 35.42 ×10 5
+> Selected LR / Sum 64 1×10 −70.736 3.92 ×10 35.42 ×10 5
+
+Overall, the ablation reveals a clear interaction between covariance estimation and latent dimension. The best correlation is obtained at 32 dimensions, while both lower and higher-dimensional representations perform worse. This non-monotonic trend suggests that 32 dimensions provide a favorable balance between representational capacity and reliable covariance estimation. Since the selected 32-dimensional configuration preserves 99.3% of the maximum correlation while avoiding the extreme KL values observed for the weakly regularized estimate, it was adopted as the main covariance configuration. Unveiling Transferability in Trajectory Prediction 31 10 2 10 3 10 4 10 5 10 6
+
+median i6 =j (DKL (Di, Dj )) (log scale) 
+
+> 0.55
+> 0.6
+> 0.65
+> 0.7
+> 0.75
+> 0.8
+> ρ
+> Latent dimension 16D 32D 64D 128D
+
+Fig. 12: Relationship between Spearman’s rank correlation coefficient ρ and median KL divergence across the evaluated covariance sources, estimators, ranks, and regularization strengths. The displayed frontiers are nondominated under the reporting convention of maximizing ρ and minimizing KL. Stars denote maximum-correlation configurations, while diamonds denote the selected configurations.

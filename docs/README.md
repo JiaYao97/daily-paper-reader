@@ -6,80 +6,57 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-05
-- 运行时间：2026-07-05 21:45:45 UTC
+- 最新运行日期：2026-07-06
+- 运行时间：2026-07-06 22:04:52 UTC
 - 运行状态：成功
-- 本次总论文数：20
-- 精读区：7
-- 速读区：13
+- 本次总论文数：11
+- 精读区：4
+- 速读区：7
 
 ### 今日简报（AI）
-今日精读7篇，最高分9.0的《贝叶斯滤波学习拉格朗日动力学》与《傅里叶神经算子模拟瑞利-贝纳德对流》是核心亮点。前者从噪声测量中高效辨识动力学，后者用算子网络加速对流模拟，值得优先阅读。建议普通读者先掌握神经算子和贝叶斯滤波基础，再深入这两篇高分工作。
-- 详情：[/202607/05/README](/202607/05/README)
+今日11篇论文，精读聚焦潜变量动力学与双向自回归扩散方法。
+
+最值得关注的两个方向：利用潜变量状态动力学对涡扇发动机退化进行可解释建模，以及双向自回归潜扩散同时求解磁流体正反问题。
+
+建议读者重点看潜变量方法在物理建模中的可解释性优势，以及分布鲁棒框架在逆问题中的泛化能力。
+- 详情：[/202607/06/README](/202607/06/README)
 
 ### 精读区论文标签
-1. [A Bayesian Filtering Approach for Learning Lagrangian Dynamics from Noisy Measurements](/202607/05/2606.31137v1-a-bayesian-filtering-approach-for-learning-lagrangian-dynamics-from-noisy-measurements)  
+1. [Liquid Latent State Dynamics for Interpretable Turbofan Degradation Modeling](/202607/06/2607.01986v1-liquid-latent-state-dynamics-for-interpretable-turbofan-degradation-modeling)  
    标签：评分：9.0/10、query:pc-latent
-   evidence：通过拉格朗日力学和贝叶斯滤波进行物理约束的潜在动力学学习
-2. [Fourier Neural Operators for Rayleigh-Bénard Convection](/202607/05/2607.02088v1-fourier-neural-operators-for-rayleigh-bnard-convection)  
-   标签：评分：9.0/10、query:flow-pred
-   evidence：傅里叶神经算子用于瑞利-贝纳德对流
-3. [A Multi-Resolution Finite-Volume Inspired Deep Learning Framework for Spatiotemporal Dynamics Prediction](/202607/05/2607.00460v1-a-multi-resolution-finite-volume-inspired-deep-learning-framework-for-spatiotemporal-dynamics-prediction)  
+   evidence：使用液体神经网络作为潜在动力学模型
+2. [Bidirectional Autoregressive Latent Diffusion for Forward and Inverse Magnetohydrodynamics](/202607/06/2606.29620v1-bidirectional-autoregressive-latent-diffusion-for-forward-and-inverse-magnetohydrodynamics)  
+   标签：评分：8.0/10、query:pc-latent
+   evidence：双向自回归潜在扩散用于磁流体动力学预测与自监督不确定性估计
+3. [Verified residual-specific explicit derivative kernels for physics-informed learning and discretized PDE adjoints](/202607/06/2606.29702v1-verified-residual-specific-explicit-derivative-kernels-for-physics-informed-learning-and-discretized-pde-adjoints)  
    标签：评分：8.0/10、query:flow-pred
-   evidence：用于时空动力学预测的深度学习框架，直接适用于流场预测
-4. [Goal-oriented space-time adaptivity for the Navier--Stokes equations based on the dual weighted residual method](/202607/05/2607.00686v1-goal-oriented-space-time-adaptivity-for-the-navier--stokes-equations-based-on-the-dual-weighted-residual-method)  
+   evidence：面向物理信息学习和CFD伴随的显式导数核
+4. [Self-explainable Operator Learning for Discovering Spatial Patterns in Functional Data](/202607/06/2607.02203v1-self-explainable-operator-learning-for-discovering-spatial-patterns-in-functional-data)  
    标签：评分：8.0/10、query:flow-pred
-   evidence：面向目标的时空自适应Navier-Stokes方法，属于流场预测方法
-5. [LSR-Net: Long-Short-Range Operator Learning for Pattern Dynamics on Manifolds](/202607/05/2607.00750v1-lsr-net-long-short-range-operator-learning-for-pattern-dynamics-on-manifolds)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：适用于流体力学的流形上模式动力学算子学习框架
-6. [Generative Model Proposal based Particle Filtering for Data Assimilation](/202607/05/2607.01012v1-generative-model-proposal-based-particle-filtering-for-data-assimilation)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：基于生成模型的粒子滤波数据同化方法
-7. [A spectral-subspace-augmented POD-Galerkin method for parametrized PDEs with limited snapshot data](/202607/05/2607.01534v1-a-spectral-subspace-augmented-pod-galerkin-method-for-parametrized-pdes-with-limited-snapshot-data)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：谱子空间增强的POD-Galerkin方法用于有限快照参数化PDE，直接针对稀疏数据流场重建
+   evidence：自解释算子学习框架用于空间模式发现，可迁移到流场预测
 
 ### 速读区论文标签
-1. [Conditional Normalizing Flow for Gas-Surface Scattering from Thermal to Hypersonic Velocities](/202607/05/2606.31928v1-conditional-normalizing-flow-for-gas-surface-scattering-from-thermal-to-hypersonic-velocities)  
+1. [A second-order unified gas-kinetic wave-particle method with enhanced mesh independence for hypersonic flows](/202607/06/2606.29853v1-a-second-order-unified-gas-kinetic-wave-particle-method-with-enhanced-mesh-independence-for-hypersonic-flows)  
    标签：评分：7.0/10、query:sfc
-   evidence：面向高超声速热保护的气体-表面散射模型
-2. [TRIE: An Evaluation Framework for Stochastic PDE Surrogates](/202607/05/2607.00196v1-trie-an-evaluation-framework-for-stochastic-pde-surrogates)  
+   evidence：与热防护相关的高超声速流数值方法
+2. [A Distributionally Robust Framework for Learned Reconstructions in Inverse Problems](/202607/06/2606.30230v1-a-distributionally-robust-framework-for-learned-reconstructions-in-inverse-problems)  
    标签：评分：7.0/10、query:flow-pred
-   evidence：面向随机PDE代理模型的评估框架，与流场预测相关
-3. [A High-Order Arbitrary Lagrangian-Eulerian Discontinuous Galerkin Method for the Boltzmann Equation in Nearly Incompressible Flows](/202607/05/2607.00199v1-a-high-order-arbitrary-lagrangian-eulerian-discontinuous-galerkin-method-for-the-boltzmann-equation-in-nearly-incompressible-flows)  
-   标签：评分：7.0/10、query:flow-pred
-   evidence：高阶数值方法用于流场预测
-4. [Tropical Geometry as a Restricted Architecture for Physics-Informed Neural Networks: Applications in Nonlinear Fluid-Structure Examples](/202607/05/2607.00237v1-tropical-geometry-as-a-restricted-architecture-for-physics-informed-neural-networks-applications-in-nonlinear-fluid-structure-examples)  
-   标签：评分：7.0/10、query:flow-pred
-   evidence：热带几何约束的PINNs用于包括冲击波的非线性流体-结构问题
-5. [Learning dynamical systems from noisy data with Weak-form Kernel Ridge Regression](/202607/05/2607.00257v1-learning-dynamical-systems-from-noisy-data-with-weak-form-kernel-ridge-regression)  
-   标签：评分：7.0/10、query:flow-pred
-   evidence：从噪声数据学习动力系统的核方法
-6. [Data-Adaptive Learning of Dynamical Systems by Matching Transfer Operators and Invariant Measures](/202607/05/2607.00391v1-data-adaptive-learning-of-dynamical-systems-by-matching-transfer-operators-and-invariant-measures)  
-   标签：评分：7.0/10、query:flow-pred
-   evidence：通过传递算子进行动力系统的数据驱动学习
-7. [Convolutional Symmetric AutoEncoders: enhancing latent stability via differential geometry](/202607/05/2607.00669v1-convolutional-symmetric-autoencoders-enhancing-latent-stability-via-differential-geometry)  
+   evidence：针对逆问题的分布鲁棒重建
+3. [Unveiling Transferability in Trajectory Prediction via Latent Scene Embeddings](/202607/06/2606.30777v1-unveiling-transferability-in-trajectory-prediction-via-latent-scene-embeddings)  
    标签：评分：7.0/10、query:pc-latent
-   evidence：通过微分几何增强潜在空间稳定性用于PDE降阶建模
-8. [The PICNN-Assisted Physics-Preserving Scheme for Thermodynamically Consistent Two-Phase Flow in Porous Media](/202607/05/2607.01020v1-the-picnn-assisted-physics-preserving-scheme-for-thermodynamically-consistent-two-phase-flow-in-porous-media)  
+   evidence：用于轨迹预测可迁移性的潜在场景嵌入
+4. [Convolutional Symmetric AutoEncoders: enhancing latent stability via differential geometry](/202607/06/2607.00669v1-convolutional-symmetric-autoencoders-enhancing-latent-stability-via-differential-geometry)  
+   标签：评分：7.0/10、query:pc-latent
+   evidence：卷积对称自编码器增强参数PDE潜在稳定性，与带物理约束的潜在空间方法相关
+5. [The PICNN-Assisted Physics-Preserving Scheme for Thermodynamically Consistent Two-Phase Flow in Porous Media](/202607/06/2607.01020v1-the-picnn-assisted-physics-preserving-scheme-for-thermodynamically-consistent-two-phase-flow-in-porous-media)  
    标签：评分：7.0/10、query:flow-pred
-   evidence：物理信息CNN用于多孔介质两相流
-9. [A Bayesian latent Gaussian process framework for aerodynamic uncertainty quantification](/202607/05/2606.28871v1-a-bayesian-latent-gaussian-process-framework-for-aerodynamic-uncertainty-quantification)  
-   标签：评分：6.0/10、query:flow-pred
-   evidence：用于稀疏数据气动不确定性量化的贝叶斯潜在高斯过程
-10. [Interventional Flow Matching: Prospective Dose-Response Forecasting with Velocity-Field Jacobian Regularization](/202607/05/2606.29386v1-interventional-flow-matching-prospective-dose-response-forecasting-with-velocity-field-jacobian-regularization)  
+   evidence：物理信息卷积神经网络预测两相流，保证能量稳定和质量守恒
+6. [Geometry-Aware R-Structured Kolmogorov-Arnold Networks](/202607/06/2607.01449v1-geometry-aware-r-structured-kolmogorov-arnold-networks)  
+   标签：评分：7.0/10、query:pc-latent
+   evidence：将几何约束编码到神经网络，类似于物理约束学习
+7. [Patch-PODiff-ViT: Structured Latent Diffusion with Patchwise POD for Super-Resolution and Uncertainty Quantification](/202607/06/2606.31290v1-patch-podiff-vit-structured-latent-diffusion-with-patchwise-pod-for-super-resolution-and-uncertainty-quantification)  
    标签：评分：6.0/10、query:pc-latent
-   evidence：生理约束下的潜在空间流匹配
-11. [Joint discovery of governing partial differential equations from multi-source datasets by competitive optimization](/202607/05/2606.30699v1-joint-discovery-of-governing-partial-differential-equations-from-multi-source-datasets-by-competitive-optimization)  
-   标签：评分：6.0/10、query:flow-pred
-   evidence：从数据发现控制PDE，可用于流场建模
-12. [Mean-Flow Adjoint Sensitivity Analysis of Unsteady Flow Around Porous Cylinders Using a Homogenized Lattice Boltzmann Method](/202607/05/2606.31707v1-mean-flow-adjoint-sensitivity-analysis-of-unsteady-flow-around-porous-cylinders-using-a-homogenized-lattice-boltzmann-method)  
-   标签：评分：6.0/10、query:flow-pred
-   evidence：基于格子玻尔兹曼方法的非定常流伴随敏感性分析
-13. [Physics Informed Neural Networks for Nonlinear Delay Differential Equations](/202607/05/2607.00380v1-physics-informed-neural-networks-for-nonlinear-delay-differential-equations)  
-   标签：评分：6.0/10、query:flow-pred
-   evidence：物理信息神经网络用于时滞微分方程，方法可迁移至流场预测
+   evidence：基于分片POD的结构化潜在扩散用于超分辨率，与潜在空间方法相关
 
 
 <div class="dpr-home-promo-card">
