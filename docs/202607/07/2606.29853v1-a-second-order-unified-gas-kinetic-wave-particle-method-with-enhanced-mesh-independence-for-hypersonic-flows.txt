@@ -1,0 +1,2122 @@
+Title: A second-order unified gas-kinetic wave-particle method with enhanced mesh independence for hypersonic flows
+
+URL Source: https://arxiv.org/pdf/2606.29853v1
+
+Published Time: Tue, 30 Jun 2026 02:07:22 GMT
+
+Number of Pages: 36
+
+Markdown Content:
+# A second-order unified gas-kinetic wave-particle method with enhanced mesh independence for hypersonic flows 
+
+Junzhe Cao a , Rui Zhang b , Wenpei Long a , Chengwen Zhong b , Kun Xu acd ∗
+
+> aDepartment of Mathematics, The Hong Kong University of Science and Technology, Hong Kong, China
+> bSchool of Aeronautics, Northwestern Polytechnical University, Xi’an, Shaanxi 710072, China
+> cDepartment of Mechanical and Aerospace Engineering, The Hong Kong University of Science and Technology, Hong Kong, China
+> dHKUST Shenzhen Research Institute, Shenzhen, 518057, China
+
+Abstract 
+
+Benefiting from the direct modeling of physical laws in a discretized space and the automatic decomposition of the gas distribution function into hydrodynamic waves and particles, the uni-fied gas-kinetic wave-particle (UGKWP) method offers significant advantages for multiscale flows such as hypersonic flows, plasma transport, and radiation transport. In this study, the parti-cle sampling accuracy in the UGKWP method is improved from first order to second order, so that the second-order spatial and temporal accuracy is preserved across the full scheme. Specif-ically, the modifications include second-order particle sampling based on local macroscopic gra-dients, a weighted least-squares gradient reconstruction that incorporates wall values, a revised Venkatakrishnan limiter for highly stretched cells, and conservation corrections after particle sam-pling. Moreover, the first-order Chapman–Enskog term is considered in the free-transport part of the hydrodynamic wave flux, enabling better recovery of the gas-kinetic scheme (GKS) in the near-continuum regime. Based on these improvements, the mesh-independence behavior of the UGKWP method is notably enhanced, which is more consistent with the performance of the unified gas-kinetic scheme (UGKS), validated by a detailed hypersonic cylinder flow test case. Furthermore, systematic comparisons with the single-scale direct simulation Monte Carlo (DSMC) method are performed for two-dimensional hypersonic flow over a cylinder and three-dimensional flow over a blunt cone. Wall pressure, shear stress, and heat flux coefficients ( CP , CF , and CQ) are examined in the cylinder case, while the overall aerodynamic coefficients ( CL, CD, and L/D ) are assessed in the cone case. The multiscale UGKWP method exhibits significantly better mesh-independence performance than DSMC for mesh-sensitive quantities such as CF , CQ, CD, and L/D , which are critical for aerodynamic and thermal protection design of near-space hypersonic vehicles. 
+
+Keywords: Unified gas-kinetic wave-particle method; multiscale flow; hypersonic flow; mesh independence; second-order spatial accuracy           
+
+> Email addresses: jcaobb@connect.ust.hk (Junzhe Cao a), zhangruinwpu@mail.nwpu.edu.cn (Rui Zhang b),
+> wlongab@connect.ust.hk (Wenpei Long a), zhongcw@nwpu.edu.cn (Chengwen Zhong b), makxu@ust.hk (Kun Xu acd ∗)
+> Preprint submitted to Elsevier June 30, 2026
+> arXiv:2606.29853v1 [physics.flu-dyn] 29 Jun 2026
+
+1. Introduction 
+
+Multiscale phenomena play a prominent role in a wide range of physical processes. By intro-ducing an observation scale into the numerical scheme, physical laws can be modeled directly in a discretized space [1, 2]. Built on the integral solution of the kinetic equation, the unified gas-kinetic scheme (UGKS) [3] and the unified gas-kinetic wave-particle (UGKWP) method [4, 5] have demonstrated substantial advantages in diverse multiscale problems, including hypersonic flows [6– 8], gas-solid two-phase flows [9, 10], radiation transport [11, 12], plasma transport [13, 14], and turbulent flows [15]. In recent years, both methods have been successfully extended to increasingly complex physical settings [16–20]. For continuum-rarefied multiscale flows, the UGKS and UGKWP methods can recover the gas-kinetic scheme (GKS) [21] as a Navier–Stokes solver in the continuum regime, and serve as a Boltzmann solver in the rarefied regime. In the transitional regime, high accuracy can be achieved because the flux is constructed from the characteristic integral solution. For hypersonic flows, the continuum-rarefied multiscale transition extends from the intensely compressed region at the vehicle head to the strong expansion at the leeward side, accompanied by an increasingly thickened Knudsen (Kn) layer. As shown in Ref. [22], near the surface of an X-38-like vehicle, the local Knudsen number Kn GLL can span four to five orders of magnitude. When simulating such flows, the computational efficiency depends strongly on the height of the first mesh layer. On one hand, the local time step is limited by the cell size due to the Courant–Friedrichs–Lewy (CFL) condition, and the total number of mesh cells increases with smaller cell sizes within the boundary layer. On the other hand, to simplify the mesh topology for complex vehicle geometries, the first-layer heights are often kept uniform, determined by the most continuum-like region, such as the stagnation point on the windward side. A key advantage of multiscale methods is that they enable physically resolved meshes in the near-continuum flow regime [23], without being restricted by the molecular mean free path and mean collision time. As a result, the mesh-independent performance of multiscale methods is essential for improving computational efficiency. A detailed study on mesh independence can also provide valuable guidance for engineering applications. Currently, relatively few studies have addressed this issue [24, 25], and previous UGKS studies have been limited to low-speed and one-dimensional cases [3, 26]. In this paper, we first conduct a detailed study on the mesh independence of the UGKWP method for hypersonic flows, incorporating results from the UGKS and the direct simulation Monte Carlo (DSMC) method [27] for comparison. From another perspective, for hypersonic flows, deterministic methods such as the UGKS are constrained by the high computational cost of velocity space discretization. This is because when constructing the velocity space mesh, both high-temperature and low-temperature regions must be considered simultaneously. High-temperature regions require a wide velocity space window, whereas low-temperature regions require local refinements. Using unstructured meshes [28] or adaptive Cartesian meshes [29], recent extensions [30–32] have reduced the velocity space mesh to about 5000 points for three-dimensional hypersonic problems. Although the number of iterations can also be decreased by 1 to 3 orders of magnitude through implicit methods [33, 34] and multigrid methods [35], the achievable simulation size remains limited by an excessively large velocity space due to memory constraints, which grow further for multispecies mixtures and thermal nonequilib-rium flows. In contrast, this problem is naturally mitigated in stochastic particle methods. Only 100 to 400 particles are required per cell, which automatically provide the necessary velocity-space resolution. Moreover, particles offer additional flexibility in modifying microscopic velocities and 2free-transport times [36]. However, the implicit treatment of the UGKWP method is considerably more complicated because of randomness [37], and particle noise makes it difficult to maintain spatial reconstruction accuracy. This paper focuses on the latter problem. By enhancing parti-cle sampling, second-order accuracy is preserved across the full scheme, leading to substantially better mesh-independent performance in hypersonic tests. Additionally, the limiter and wave flux calculations are improved. The remainder of this paper is organized as follows. The basis of gas kinetic theory is introduced in Sec. 2. Section 3 introduces the modified UGKWP method. Numerical test cases are presented in Sec. 4, and concluding remarks are provided in Sec. 5. 
+
+2. Gas kinetic theory 
+
+In gas-kinetic theory, the microscopic gas distribution function f (ρ, x, u, ξ, t ) is used to de-scribe the physical system, where x denotes the position, t denotes the time, ρ is the macroscopic density, u is the molecular velocity vector, and the internal energy is represented by the equivalent velocity ξ. The distribution function at the equilibrium state is entirely determined by macroscopic variables, known as the Maxwellian distribution function: 
+
+g = ρ
+
+( 1
+
+2πRT 
+
+)D+3 
+
+> 2
+
+exp 
+
+(
+
+−|c|2 + |ξ|2
+
+2RT 
+
+)
+
+, (1) where R is the specific gas constant, T is the macroscopic temperature, D denotes the number of internal degrees of freedom associated with rotational and vibrational modes, c = u − U is the peculiar velocity, and U is the macroscopic velocity vector. The macroscopic conservative variables 
+
+W = ( ρ, ρ U , ρE )T are obtained from the distribution function f as follows: 
+
+W =
+
+∫
+
+> RD
+
+∫
+
+> R3
+
+Ψf dudξ,
+
+Ψ =
+
+(
+
+1, u, 1
+
+2 |u|2 + 1
+
+2 |ξ|2
+
+)T
+
+.
+
+These integrals are referred to as “moments” in gas-kinetic theory. The heat flux vector Q can also be obtained by calculating moments: 
+
+Q = 1
+
+2
+
+∫
+
+> RD
+
+∫
+
+> R3
+
+c
+
+[1
+
+2
+
+(|c|2 + |ξ|2) f
+
+]
+
+dudξ.
+
+In this paper, the Shakhov model [38] is used, which can recover both the viscosity coefficient μ
+
+and Prandtl number Pr in the continuum flow regime, as follows: 
+
+∂f 
+
+∂t + u · ∂f 
+
+∂x = gS − f
+
+τ ,gS = g
+
+[
+
+1 + (1 − Pr) c · Q
+
+5pRT 
+
+(
+
+|c|2
+
+RT − 5
+
+)] 
+
+,
+
+(2) where p = ρRT is the macroscopic pressure and τ = μ/p is the relaxation time. The Shakhov model reduces to the Bhatnagar-Gross-Krook (BGK) model [39] at Pr = 1. 3Additionally, in this paper, the molecular mean free path λ is defined by the variable soft sphere (VSS) model: 
+
+λ = 1
+
+βμ
+
+p
+
+√ RT 
+
+2π ,β = 5( α + 1)( α + 2) 
+
+4α(5 − 2ω)(7 − 2ω),
+
+(3) where α is the molecular scattering factor and ω is the viscosity index. The variable hard sphere (VHS) model is used in this study to calculate viscosity as μ ∼ T ω, and α is taken as unity to calculate λ. The farfield Knudsen number is defined as Kn ∞ = λ∞/L , where L is the reference length. 
+
+3. Unified gas-kinetic wave-particle method 
+
+Within the general FVM framework, the conservation of both macroscopic variables and mi-croscopic gas distribution functions is considered: 
+
+W n+1  
+
+> i
+
+= W ni − 1
+
+Ωi
+
+∑
+
+> j∈M (i)
+
+F j sj ,f n+1  
+
+> i
+
+= f ni − 1
+
+Ωi
+
+∑
+
+> j∈M (i)
+
+∫ ∆t
+
+> 0
+
+u · nj fj sj dt +
+
+∫ ∆t
+
+> 0
+
+J (f, f ) d t, 
+
+where “ i” denotes the cell index, M (i) is the collection of interfaces surrounding cell “ i”, Ω i is the area or volume of cell “ i”, sj is the length or area of interface “ j”, and nj is the outer unit normal vector. In the Shakhov model equation, Eq. (2), the collision term is modeled as J (f, f ) = gS −f 
+
+> τ
+
+.The macroscopic flux F j is calculated as: 
+
+F j =
+
+∫
+
+> RD
+
+∫
+
+> R3
+
+∫ ∆t
+
+> 0
+
+u · nj fj Ψdtdudξ, (4) where ∆ t is the time step. Setting the coordinate origin at the center of an interface, the integral solution along the characteristic line can be derived as: 
+
+f (0, t ) = 1
+
+τ
+
+∫ t
+
+> 0
+
+gS [−u (t − ˜t) , ˜t] e ˜t−t 
+
+> τ
+
+d˜t + e−t/τ f (−ut, 0) . (5) In this equation, both collision and free transport are considered. The first term denotes the accumulation of the equilibrium state, while the second term denotes the transport of the non-equilibrium initial state. Expanding gS and f as: 
+
+gS (x, t ) = gS 
+
+> 0
+
++ ∂g S
+
+∂x · x + ∂g S
+
+∂t t, f (x, 0) = f0 + ∂f 
+
+∂x · x,
+
+it can be derived from Eq. (5) that: 
+
+f (0, t ) = εagS 
+
+> 0
+
++ εb
+
+∂g S
+
+∂x · u + εc
+
+∂g S
+
+∂t + εdf0 + εe
+
+∂f 
+
+∂x · u, (6) 4where, 
+
+εa = 1 − e−t/τ ,εb = te −t/τ − τ (1 − e−t/τ ) ,εc = t − τ (1 − e−t/τ ) ,εd = e−t/τ ,εe = −te −t/τ .
+
+The flux can then be obtained by substituting Eq. (6) into Eq. (4): 
+
+F = F eq + F f r , (7) where, 
+
+F eq =
+
+∫
+
+> RD
+
+∫
+
+> R3
+
+Ψ
+
+(
+
+δagS 
+
+> 0
+
++ δb
+
+∂g S
+
+∂x · u + δc
+
+∂g S
+
+∂t 
+
+)
+
+(u · n) d udξ,
+
+F f r =
+
+∫
+
+> RD
+
+∫
+
+> R3
+
+Ψ
+
+(
+
+δdf0 + δe
+
+∂f 
+
+∂x · u
+
+)
+
+(u · n) d udξ,
+
+(8) and, 
+
+δa = ∆ t − τ (1 − e−∆t/τ ) ,δb = 2 τ 2 (1 − e−∆t/τ ) − τ ∆t − τ ∆te −∆t/τ ,δc = ∆t2
+
+2 − τ ∆t + τ 2 (1 − e−∆t/τ ) ,δd = τ (1 − e−∆t/τ ) ,δe = τ ∆te −∆t/τ − τ 2 (1 − e−∆t/τ ) .
+
+The F eq term in Eq. (7) plays a dominant role in the continuum flow regime, where the gas evolution is governed by deterministic hydrodynamic waves. Conversely, the F f r term gradually dominates the gas evolution as the flow becomes more rarefied. Numerical particles are employed to simulate this latter part. 
+
+3.1. Wave evolution 
+
+As the first term in Eq. (7), F eq can be calculated using the GKS framework [21], where the first step is to calculate gS 
+
+> 0
+
+and its derivatives ∂g S 
+
+> ∂x
+
+and ∂g S 
+
+> ∂t
+
+. It has been shown in Ref. [7] that ∂g S
+
+> ∂x
+
+and ∂g S 
+
+> ∂t
+
+can be simplified using ∂g  
+
+> ∂x
+
+and ∂g  
+
+> ∂t
+
+. For simplicity, g0 is used instead of gS 
+
+> 0
+
+, in conjunction with the Prandtl correction method in the GKS [40]. Here, g0 denotes the equilibrium state at the interface, which is calculated assuming sufficient collisions as follows: 
+
+∫
+
+> RD
+
+∫
+
+> R3
+
+Ψg0dudξ = W 0 =
+
+∫
+
+> RD
+
+∫
+
+> u·n>0
+
+ΨgLdudξ +
+
+∫
+
+> RD
+
+∫
+
+> u·n<0
+
+ΨgRdudξ,
+
+where gL, gR, and g0 are calculated from the macroscopic variables W L, W R, and W 0 through Eq. (1). W L and W R are the left-hand and right-hand limits at the interface after reconstruction. Meanwhile, the spatial derivative ∂g  
+
+> ∂x
+
+and temporal derivative ∂g  
+
+> ∂t
+
+are derived as: 
+
+∂g 
+
+∂x = ag, ∂g 
+
+∂t = Ag, 
+
+5where, 
+
+a = 1
+
+g∂g 
+
+∂x = ∂ [ln( g)] 
+
+∂x ,A = 1
+
+g∂g 
+
+∂t = ∂ [ln( g)] 
+
+∂t .
+
+For the spatial derivative, a is written in the form: 
+
+a = a0 + a1u1 + a2u2 + a3u3 + a4
+
+|u|2 + |ξ|2
+
+2 ,
+
+and, 
+
+a0 = 2 ∂ρ  
+
+> ∂x
+
+Λ + ρ [−4Λ 2U · ∂U 
+
+> ∂x
+
++ (3 + D − 2|U |2Λ) ∂Λ
+
+> ∂x
+
+]
+
+2ρΛ ,
+
+a1 = 2 
+
+(∂U 1
+
+∂x Λ + U1
+
+∂Λ
+
+∂x
+
+)
+
+,
+
+a2 = 2 
+
+(∂U 2
+
+∂x Λ + U2
+
+∂Λ
+
+∂x
+
+)
+
+,
+
+a3 = 2 
+
+(∂U 3
+
+∂x Λ + U3
+
+∂Λ
+
+∂x
+
+)
+
+,
+
+a4 = −2 ∂Λ
+
+∂x ,
+
+where Λ = 1 
+
+> 2RT
+
+. When using the Prandtl correction method, the derivative of Λ is modified as follows: ∂Λ
+
+∂x ⇒ ∂Λ
+
+∂x /Pr .
+
+On the other hand, the time derivative is determined by enforcing the conservation relation on the right-hand side of the BGK-type model: 
+
+∫
+
+> RD
+
+∫
+
+> R3
+
+gA Ψdudξ = −
+
+∫
+
+> RD
+
+∫
+
+> R3
+
+ga · uΨdudξ = b.
+
+Expanding A as A = A0 + A1u1 + A2u2 + A3u3 + A4 |u|2+|ξ|2 
+
+> 2
+
+, it is rewritten as: 
+
+Aβ Mαβ = bα,
+
+where subscripts α and β denote components, and the Einstein summation convention is used. For example, in the two-dimensional case: 
+
+M =
+
+
+
+1 U1 U2 B1
+
+U1 U21 + 1 
+
+> 2Λ
+
+U1U2 B2
+
+U2 U1U2 U22 + 1 
+
+> 2Λ
+
+B3
+
+B1 B2 B3 B4
+
+ ,
+
+6where 
+
+B1 = 1
+
+2
+
+(
+
+U21 + U22 + D + 3 
+
+2Λ 
+
+)
+
+,B2 = 1
+
+2
+
+(
+
+U31 + U1U22 + D + 5 
+
+2Λ U1
+
+)
+
+,B3 = 1
+
+2
+
+(
+
+U32 + U21 U2 + D + 5 
+
+2Λ U2
+
+)
+
+,B4 = 1
+
+4
+
+[(U21 + U22
+
+)2 + D + 5 
+
+Λ
+
+(U21 + U22
+
+) + D2 + 8 D + 15 
+
+4Λ 2
+
+]
+
+.
+
+The resulting coefficients are: 
+
+A4 = 8Λ 2
+
+D + 3 
+
+[b4 − U1b2 − U2b3 − (B1 + U21 + U22 )b1
+
+] ,A3 = 2Λ( b3 − U2b1) − U2A4,A2 = 2Λ( b2 − U1b1) − U1A4,A1 = b1 − U1A2 − U2A3 − B1A4.
+
+Further details on calculating g0, ∂g  
+
+> ∂x
+
+, and ∂g  
+
+> ∂t
+
+are provided in Refs. [21, 41]. By substituting these into Eq. (8), the wave flux F eq is obtained. To improve accuracy and robustness in flow regions with drastic scale variations, the scale-related coefficient δ is evaluated separately on the left and right sides of the interface “ j”. Consequently, δa,L/R , δb,L/R , and δc,L/R are calculated within the cell rather than directly at the interface. When sampling particles, the scale-related coefficient e−∆t/τ is computed at the same location. This treatment aligns the wave flux with the particle evolution, preventing discrepancies in regions where scales change rapidly. Additional details can be found in Ref. [42]. 
+
+F eq j =
+
+∫
+
+> RD
+
+∫ 
+
+> u·nj>0
+
+Ψ
+
+(
+
+δa,L g0 + δb,L 
+
+∂g 
+
+∂x · u + δc,L 
+
+∂g 
+
+∂t 
+
+)
+
+(u · nj ) d udξ
+
++
+
+∫
+
+> RD
+
+∫ 
+
+> u·nj<0
+
+Ψ
+
+(
+
+δa,R g0 + δb,R 
+
+∂g 
+
+∂x · u + δc,R 
+
+∂g 
+
+∂t 
+
+)
+
+(u · nj ) d udξ,
+
+(9) 7where the integration components are evaluated as: 
+
+∫
+
+> R
+
+( 1
+
+2πRT 
+
+)1
+
+> 2
+
+exp 
+
+(
+
+−|u − U|2
+
+2RT 
+
+)
+
+du = 1 ,
+
+∫
+
+> R
+
+u
+
+( 1
+
+2πRT 
+
+)1
+
+> 2
+
+exp 
+
+(
+
+−|u − U|2
+
+2RT 
+
+)
+
+du = U, 
+
+∫
+
+> u> 0
+
+( 1
+
+2πRT 
+
+)1
+
+> 2
+
+exp 
+
+(
+
+−|u − U|2
+
+2RT 
+
+)
+
+du = 1
+
+2erfc 
+
+(
+
+−√ΛU 
+
+)
+
+,
+
+∫
+
+> u> 0
+
+u
+
+( 1
+
+2πRT 
+
+) 1
+
+> 2
+
+exp 
+
+(
+
+−|u − U|2
+
+2RT 
+
+)
+
+du = U
+
+2 erfc 
+
+(
+
+−√ΛU 
+
+)
+
++ 1
+
+2e−ΛU 2
+
+√πΛ ,
+
+∫
+
+> u< 0
+
+( 1
+
+2πRT 
+
+)1
+
+> 2
+
+exp 
+
+(
+
+−|u − U|2
+
+2RT 
+
+)
+
+du = 1
+
+2erfc 
+
+(√ΛU 
+
+)
+
+,
+
+∫
+
+> u< 0
+
+u
+
+( 1
+
+2πRT 
+
+) 1
+
+> 2
+
+exp 
+
+(
+
+−|u − U|2
+
+2RT 
+
+)
+
+du = U
+
+2 erfc 
+
+(√ΛU 
+
+)
+
+− 1
+
+2e−ΛU 2
+
+√πΛ ,
+
+and, ∫
+
+> R/u> 0/u< 0
+
+un+2 
+
+( 1
+
+2πRT 
+
+) 1
+
+> 2
+
+exp 
+
+(
+
+−|u − U|2
+
+2RT 
+
+)
+
+du 
+
+=U
+
+∫
+
+> R/u> 0/u< 0
+
+un+1 
+
+( 1
+
+2πRT 
+
+)1
+
+> 2
+
+exp 
+
+(
+
+−|u − U|2
+
+2RT 
+
+)
+
+du 
+
++ n + 1 
+
+2Λ 
+
+∫
+
+> R/u> 0/u< 0
+
+un
+
+( 1
+
+2πRT 
+
+) 1
+
+> 2
+
+exp 
+
+(
+
+−|u − U|2
+
+2RT 
+
+)
+
+du, 
+
+where erfc() = 1 − erf() is the complementary error function. 
+
+3.2. Particle evolution 
+
+In this method, numerical particles are employed to describe the nonequilibrium part of the distribution function. The particle parameters are mass m, position x, velocity u, and specific internal thermal energy e = 0 .5 |ξ|2. As shown in Eq. (5), the distribution function after a time step ∆ t is a combination of the initial state f0 and the equilibrium state gS . For a particle from the initial state, the probability of undergoing free transport without collision is e− ∆t 
+
+> τ
+
+; otherwise, it collides and relaxes into gS . Thus, the cumulative distribution of a free-transport particle is 
+
+e− ∆t 
+
+> τ
+
+. By drawing a random number ǫ uniformly distributed in (0 , 1), the free-transport time tf of a particle is calculated as: 
+
+tf = min ( −τ ln ( ǫ) , ∆t) . (10) The position of particle “ k” is then updated by: 
+
+xk ⇒ xk + uktf,k , (11) and the contribution of all particles to the macroscopic conserved variables is given by: 
+
+W f r,p i = W p, + 
+
+> i
+
+− W p, − 
+
+> i
+
+, (12) 8where, 
+
+W p, +/− 
+
+> i
+
+= 1
+
+Ωi
+
+∑ 
+
+> k∈N +/−(i)
+
+mp,k Ψk,
+
+and N (i) is the collection of particles within cell “ i”. Superscripts “ −” and “+” denote the states before and after free transport, respectively. Following the calculation of W f r,p i , if tf < ∆t, the particle is relaxed into gS (collisional particles). If tf = ∆ t, the particle is retained (collisionless particles). According to Eq. (5), a fraction e− ∆t 
+
+> τ
+
+of particles must be sampled from the hydrodynamic wave part, W hi = W i − W pi , with tf set to ∆ t. The total mass density of the sampled collisionless particles is: 
+
+ρhp i = e− ∆t 
+
+> τi
+
+ρhi .
+
+Unless ρhi = 0 (where no particles are sampled), the number of sampled particles is: 
+
+Nhp i = ⌈ρhp i
+
+ρi
+
+Nhp, ref ⌉,
+
+where Nhp, ref is a specified reference number. The corresponding mass of each particle is: 
+
+mp,k = ρhp i Ωi
+
+Nhp i
+
+. (13) The particle positions are uniformly distributed within cell “ i”. The velocities are obtained via acceptance-rejection sampling. First, a velocity sample is drawn from the Maxwellian distribution: 
+
+uk, 1 = Ui, 1 + √2RT icos(2 πǫ a1)√−ln( ǫa2),uk, 2 = Ui, 2 + √2RT icos(2 πǫ b1)√−ln( ǫb2),uk, 3 = Ui, 3 + √2RT icos(2 πǫ c1)√−ln( ǫc2),
+
+(14) where ǫ is a random number uniformly distributed in (0 , 1). For the internal thermal energy associated with molecular rotational and vibrational motions, two reduced functions of the Shakhov model are derived: 
+
+∫
+
+> RD
+
+gS dξ =
+
+[
+
+1 + (1 − Pr) c · Q
+
+5pRT 
+
+(
+
+|c|2
+
+RT − 5
+
+)] 
+
+ρ
+
+( 1
+
+2πRT 
+
+) 3
+
+> 2
+
+e− |c|2 
+
+> 2RT
+
+,
+
+∫
+
+> RD
+
+|ξ|2 gS dξ = DRT 
+
+[
+
+1 + (1 − Pr) c · Q
+
+5pRT 
+
+(
+
+|c|2
+
+RT − 5
+
+)] 
+
+ρ
+
+( 1
+
+2πRT 
+
+)3
+
+> 2
+
+e− |c|2 
+
+> 2RT
+
+.
+
+Consequently, the acceptance-rejection criterion is defined as: 1 + (1 − Pr) ck ·Qi
+
+> 5piRT i
+
+(|ck |2 
+
+> RT i
+
+− 5
+
+)
+
+1 + (1 − Pr) 20 |Qi|
+
+> pi
+> √RT i
+
+, (15) and the specific internal thermal energy is: 
+
+ek = DRT i. (16) 9These steps are summarized by the sampling function: (mp,k , uk, e k) = SgS 1st 
+
+(
+
+ρhp i , Ωi, N hp i , U i, T i, Qi
+
+)
+
+, (17) which samples a particle from the distribution gS . Briefly, the workflow of SgS 1st (· · · ) is as follows: the particle mass mp,k is calculated from the target sampling density ρhp i , cell volume Ωi, and particle number Nhp i using Eq. (13). Then, the acceptance-rejection method is used to determine the particle velocity uk. A proposal sample is generated from U i and Ti via Eq. (14), and the acceptance criterion is evaluated using Eq. (15), incorporating the heat flux Qi. Finally, the specific internal thermal energy ek is calculated using Eq. (16). Because the inputs ρhp i , U i,and Ti are cell-averaged values, the spatial accuracy of this sampling is only first order. To improve this, local gradients are incorporated: (mp,k , uk, e k) = SgS 2nd 
+
+(
+
+ρhp i , Ωi, N hp i , U i, T i, Qi, ρ i, ∇ρi, ∇U i, ∇Ti, xi, xk
+
+)
+
+, (18) where xi is the cell center coordinate and xk is the particle coordinate, which is sampled from a uniform distribution in cell “ i”. The local macroscopic variables with second-order spatial accuracy are calculated as: ρk = ρi + ∇ρi · (xk − xi) ,
+
+U k = U i + ∇U i · (xk − xi) ,Tk = Ti + ∇Ti · (xk − xi) .
+
+To achieve second-order consistency in density, we use: 
+
+mp,k = ρk
+
+ρi
+
+ρhp i Ωi
+
+Nhp i
+
+, (19) instead of Eq. (13). For second-order velocity U k and temperature Tk, we use: 
+
+uk, 1 = Uk, 1 + √2RT kcos(2 πǫ a1)√−ln( ǫa2),uk, 2 = Uk, 2 + √2RT kcos(2 πǫ b1)√−ln( ǫb2),uk, 3 = Uk, 3 + √2RT kcos(2 πǫ c1)√−ln( ǫc2),
+
+(20) instead of Eq. (14). When calculating the acceptance criterion and specific internal thermal energy, 
+
+U i and Ti are replaced by U k and Tk:1 + (1 − Pr) ck ·Qi 
+
+> 5pkRT k
+
+(|ck |2 
+
+> RT k
+
+− 5
+
+)
+
+1 + (1 − Pr) 20 |Qi|
+
+> pk
+> √RT k
+
+, (21) and the specific internal thermal energy becomes: 
+
+ek = DRT k.
+
+10 After sampling second-order particles, conservation must be enforced due to stochastic variations. We examine all particles within cell “ i”: ˜ρpi = 1
+
+Ωi
+
+∑ 
+
+> k∈N (i)
+
+mp,k 6 = ρhp i + ρpi ,
+
+˜U i = 1
+
+˜ρpi Ωi
+
+∑ 
+
+> k∈N (i)
+
+mp,k uk 6 = U i,
+
+˜Ein −tra ,i = 1
+
+˜ρpi Ωi
+
+∑ 
+
+> k∈N (i)
+
+1
+
+2mp,k |ck|2 6 = 3
+
+2 RT i,
+
+˜Ein −rot+vib ,i = 1
+
+˜ρpi Ωi
+
+∑ 
+
+> k∈N (i)
+
+mp,k ek 6 = D
+
+2 RT i.
+
+(22) These inequalities arise from three factors. First, when using the acceptance-rejection method in Eq. (21), the accepted samples do not fully represent the Shakhov distribution because the negative tail is omitted. Thus, conservation is not strictly achieved when the Q-related term is large enough to produce negative regions in gS . Second, randomness in sampling uk (Eqs. (20) to (21)) prevents exact momentum and energy conservation. Third, while first-order sampling (Eq. (13)) ensures exact mass conservation, second-order sampling (Eq. (19)) introduces stochastic mass fluctuations. Because conservation is critical, the mass and velocity of each particle are adjusted as follows: 
+
+mp,k ⇒ mp,k 
+
+ρhp i + ρpi
+
+˜ρpi
+
+,
+
+uk ⇒ U i +
+
+(
+
+uk − ˜U i
+
+) √
+
+3RT i/2
+
+˜Ein −tra ,i 
+
+,ek ⇒ ek
+
+DRT i/2
+
+˜Ein −rot+vib ,i 
+
+.
+
+(23) Similar conservation corrections are widely used in stochastic particle methods (e.g., Ref. [43]). To calculate macroscopic gradients, the weighted least-squares method [44] and the Venkatakr-ishnan limiter [45, 46] are formulated as: 
+
+∇ϕi = σi ˜∇ϕi, (24) where ϕi is an arbitrary macroscopic variable in cell “ i”, and ˜∇ϕi is computed using the weighted least-squares method: 
+
+AT A ˜∇ϕi = AT b, (25) where Ajℓ = wj (xj,ℓ − xi,ℓ ), bj = wj (ϕj − ϕi), and the weight is wj = 1 / |xj − xi|. Here, “ j” is the index of the adjacent cell to target cell “ i”, and ℓ is the spatial dimension. Results in Fig. 12 of Sec. 4 show that coarse-mesh accuracy is improved if the wall value is also considered: 
+
+∫
+
+> RD
+
+∫
+
+> R3
+
+Ψgwdudξ = W w =
+
+∫
+
+> RD
+
+∫
+
+> u·n>0
+
+ΨgLdudξ +
+
+∫
+
+> RD
+
+∫
+
+> u·n<0
+
+ΨgRdudξ, (26) 11 where gL is calculated from the reconstruction in the previous step and gR is the corresponding Maxwellian distribution function at the wall. In Eq. (24), σi is calculated using the Venkatakrishnan limiter: 
+
+σi = min 
+
+> j
+
+
+
+L (ϕMi − ϕi, ∆ij 
+
+) , ∆ij > 0,
+
+L (ϕmi − ϕi, ∆ij ) , ∆ij < 0,
+
+1, ∆ij = 0 .
+
+(27) Here, “ j” is the index of the adjacent cell to target cell “ i”, and: 
+
+L (a, b ) = a2 + 2 ab + ε2
+
+a2 + ab + 2 b2 + ε2 ,
+
+∆ij = ˜∇ϕi · (xij − xi) .
+
+(28) The terms ϕMi = max  
+
+> j
+
+(ϕi, ϕ j ) and ϕmi = min  
+
+> j
+
+(ϕi, ϕ j ) are the maximum and minimum values, respectively, in the stencil of cell “ i” and its neighbors. Here, xij denotes the coordinate of the interface center between cell “ i” and cell “ j”. ε2 is set to (ζ√Ωi
+
+)3 for two-dimensional cases and 
+
+(ζ 3
+
+√Ωi
+
+)3 for three-dimensional cases, with the global parameter ζ = 0 .01. The limiter is modified to reduce the coupling effect of particle noise in highly stretched boundary-layer cells. Consider the condition where ϕMi = ϕi. When calculating σi using Eq. (27), it may still select the branch ∆ ij > 0 due to a deviation in ˜∇ϕi. The formulation then becomes: 
+
+L (ϕMi − ϕi, ∆ij 
+
+) = L (0 , ∆ij ) = ε2
+
+2
+
+[ ˜∇ϕi · (xij − xi)
+
+]2
+
++ ε2
+
+.
+
+For deterministic methods, the deviation in ˜∇ϕi is small, meaning: 
+
+˜∇ϕi · xij − xi
+
+|xij − xi| → 0,
+
+so that, 
+
+L (ϕMi − ϕi, ∆ij 
+
+) → ε2
+
+ε2 = 1 .
+
+However, with particle noise, this deviation is no longer negligible. When xij − xi is aligned with the long edge of a highly stretched cell, ˜∇ϕi · (xij − xi) can be much larger than ε, leading to: 
+
+L (ϕMi − ϕi, ∆ij 
+
+) = ε2
+
+2
+
+[ ˜∇ϕi · (xij − xi)
+
+]2
+
++ ε2
+
+→ 0.
+
+This causes a severe loss of spatial accuracy. To prevent this, the amplification effect of xij − xi
+
+is restricted by modifying the definition of ∆ ij in Eq. (28) to: ∆ij = ˜∇ϕi · (xij − xi)min  
+
+> 
+
+|xi − xi|
+
+|xij − xi| , (29) 12 where “ ” is an index considering all cells adjacent to cell “ i”. This modification reduces order reduction along the long edge without affecting the limiter’s performance along the short edge. Without modifying the limiter, second-order particle sampling yields almost no benefit. Results in Sec. 4 demonstrate the effectiveness of second-order particle sampling with these modifications. Additionally, in the original UGKWP method, because the analytical macroscopic flux of newly sampled particles corresponds to the second-order discrete velocity method (DVM), the free trans-port fluxes contributed by the collisional particles of (W h − W hp ) can be calculated as: 
+
+F f r,wave = F f r 
+
+> UGKS
+
+(W h) − F f r 
+
+> DVM
+
+(W hp )
+
+=
+
+∫
+
+> RD
+
+∫
+
+> R3
+
+Ψ
+
+(
+
+δdgh 
+
+> 0
+
++ δe
+
+∂g h
+
+∂x · u
+
+)
+
+(u · n) d udξ
+
+−e− ∆t
+
+> τ
+
+∫ ∆t
+
+> 0
+
+∫
+
+> RD
+
+∫
+
+> R3
+
+Ψ
+
+(
+
+gh 
+
+> 0
+
+− t∂g h
+
+∂x · u
+
+)
+
+(u · n) d udξdt
+
+=
+
+∫
+
+> RD
+
+∫
+
+> R3
+
+Ψ
+
+[(
+
+δd − ∆te − ∆t
+
+> τ
+
+)
+
+gh 
+
+> 0
+
++
+
+(
+
+δe + ∆t2
+
+2 e− ∆t
+
+> τ
+
+) ∂g h
+
+∂x · u
+
+]
+
+(u · n) d udξ.
+
+(30) Following the treatment in Eq. (9), the scale-related coefficient δ is evaluated separately on the left and right sides of interface “ j” to ensure consistency with the sampled particles. In the original UGKWP method, the free-transport contribution of the hydrodynamic wave is approximated using the local Maxwellian distribution function g. As discussed in Ref. [47], this is a highly accurate approximation because molecules in the wave undergo frequent collisions and closely follow local equilibrium. While in the near-continuum regime, this approximation can be further improved by incorporating the first-order Chapman–Enskog expansion term. In the GKS [21], this term is implemented in the reconstruction of the initial conditions as fL = gL [1 + aL · x − τ (aL · u + AL)] and fR = gR [1 + aR · x − τ (aR · u + AR)] to recover viscous effects. This does not adversely affect rarefied-flow simulations because W h → 0 when ∆ t ≪ τ . Consequently, the modification of Eq. (30) is formulated as follows. The effect of including the δf term is examined in Figs. 10 and 11 of Sec. 4. 
+
+F f r,wave j =
+
+∫
+
+> RD
+
+∫ 
+
+> u·nj>0
+
+Ψ
+
+[(
+
+δd,L − ∆te − ∆t
+
+> τL
+
+)
+
+gh 
+
+> 0
+
++
+
+(
+
+δe,L + ∆t2
+
+2 e− ∆t
+
+> τL
+
+) ∂g h
+
+∂x · u
+
++ δf,L 
+
+(∂g h
+
+∂x · u + ∂g h
+
+∂t 
+
+)] 
+
+(u · nj ) d udξ
+
++
+
+∫
+
+> RD
+
+∫ 
+
+> u·nj<0
+
+Ψ
+
+[(
+
+δd,R − ∆te − ∆t
+
+> τR
+
+)
+
+gh 
+
+> 0
+
++
+
+(
+
+δe,R + ∆t2
+
+2 e− ∆t
+
+> τR
+
+) ∂g h
+
+∂x · u
+
++ δf,R 
+
+( ∂g h
+
+∂x · u + ∂g h
+
+∂t 
+
+)] 
+
+(u · nj ) d udξ,
+
+(31) where, 
+
+δf = −τ 2
+
+(
+
+1 − e− ∆t
+
+> τ
+
+)
+
+.
+
+Finally, the macroscopic update equation for the UGKWP method is: 
+
+W n+1  
+
+> i
+
+= W ni − 1
+
+Ωi
+
+∑
+
+> j∈M (i)
+
+F eq j Sj − 1
+
+Ωi
+
+∑
+
+> j∈M (i)
+
+F f r,wave j Sj + W f r,p i . (32) 13 3.3. Algorithm of UGKWP 
+
+In this paper, the primary methodological improvements include second-order particle sampling (Eq. (18)), the modified limiter (Eq. (29)), and the implementation of the first-order Chapman– Enskog expansion term (Eq. (31)). Details regarding particle conservation (Eqs. (22) and (23)) and gradient calculations (Eqs. (24) and (25)) are also provided. Figure 1 summarizes the UGKWP algorithm: 
+
+Step (1) Initial state. As a result of the previous time step n − 1 (Fig. 1(d)), numerical particles 
+
+W p coexist with the hydrodynamic wave W h. Gradients of macroscopic variables are cal-culated using Eqs. (24), (25), and (27). Collisionless particles W hp are then sampled with second-order spatial accuracy using Eq. (18). For the first step, W p = 0 (Fig. 1(a)). 
+
+Step (2) Free transport. First, particles W p are divided into two parts according to Eq. (10). In Fig. 1(b), collisionless particles are denoted by hollow circles and collisional particles by solid circles. All particles are transported using Eq. (11), and their contributions to the macroscopic conserved variables are summed via Eq. (12). Meanwhile, the free transport flux 
+
+F f r,wave j contributed by the collisional particles of (W h − W hp ) is calculated using Eq. (31). Finally, the collisional particles (solid circles) are deleted. 
+
+Step (3) Collision. Compute the F eq j term in Eq. (9) using the formulations in Sec. 3.1. Then, update W n+1 using Eq. (32). 
+
+Step (4) If the simulation continues, return to Step (1), where collisionless particles W hp will be sampled.          
+
+> W h
+> 1-e -Δt/ τe-Δt/ τ
+> (a)
+> 1-e -Δt/ τe-Δt/ τ
+> W h
+> W p
+> tf<Δttf=Δt
+> (b)
+> W h
+> W p
+> Feq
+> Ffr,wave
+> (c)
+> W h
+> W p
+> 1-e -Δt/ τe-Δt/ τ
+> (d) Figure 1: Diagram illustrating the algorithm of the UGKWP method: (a) Initial state at n= 0, (b) Step 2, (c) Step 3, and (d) initial state at subsequent steps.
+
+4. Test cases 
+
+Hypersonic flow around a cylinder is considered as a typical two-dimensional case, and hy-personic flow around a cone is conducted as a three-dimensional case. For the cylinder flow, the Ma ∞ = 5, Kn ∞ = 0 .01 condition is selected as a classical multiscale case, and the mesh-independent performance of UGKWP, UGKS, and DSMC is examined. Modifications to the UGKWP method are validated, including second-order particle sampling (Eq. (18)) and the implementation of the first-order Chapman–Enskog expansion term (Eq. (31)). The effect of the reference particle num-ber Nhp, ref is also tested. A more rarefied case at Kn ∞ = 0 .1 is considered as well. For the cone 14 flow, experimental conditions from the literature [48, 49] are used for validation, and a condition at a 70km altitude is used for mesh independence comparisons between the UGKWP and DSMC methods. Full accommodation is applied for the isothermal walls as the boundary condition. The CFL number is set to NCFL = 1 .0 in all cases, defined as follows [46]: ∆t = NCFL min 
+
+> i
+
+Ωi
+
+> 1
+> 2
+
+∑
+
+> ℓ=1 ,2,3
+
+[(|Ui,ℓ | + 3 √RT i
+
+) ∑
+
+> j∈M (i)
+
+sj |nj,ℓ |
+
+], (33) where ℓ is the dimension index and M (i) is the collection of interfaces surrounding cell “ i”. 
+
+4.1. Hypersonic flow around a cylinder at Kn ∞ = 0 .01 and Kn ∞ = 0 .1Hypersonic flow around a cylinder at Ma ∞ = 5, Kn ∞ = 0 .01 represents a typical multiscale case spanning the continuum to rarefied regimes. Here, the cylinder radius is set as the reference length. As shown in Fig. 2, the bow shock strongly compresses the flow near the stagnation region, driving the local flow toward the continuum regime, while the flow in the wake region is more rarefied due to expansion. These features are representative of hypersonic flows around near-space vehicles. Consequently, a mesh independence study on this case can directly evaluate the advantages of the numerical method and provide practical guidance for engineering applications. In this case, the inflow temperature T is set equal to the wall temperature, Nhp, ref is set to 200, ω is set to 0 .81, and the gas is monatomic. Except for the comparison with the DSMC method, Pr = 1 is used. Regarding the multiscale phenomenon, the contour of the local Knudsen number Kn GLL [50–52] is used to characterize the local scale variation, defined as: Kn GLL = λ
+
+ρ/ ∆ρ. (34) The value of Kn GLL increases significantly from the post-shock region to the leeward region by over three orders of magnitude, and there is a large region on the leeward side where Kn GLL > 0.05, which is widely used as a criterion for the breakdown of the linear constitutive relations of the Navier-Stokes equations. 15 (a) (b) Figure 2: Contours of hypersonic cylinder flow at Ma ∞ = 5, Kn ∞ = 0 .01, Pr = 1: (a) Temperature, (b) Kn GLL .
+
+For the mesh independence study, a series of meshes with increasing first-layer heights h are implemented. The variation of h compared with the local λ and λ/ 3 along the wall is shown in Fig. 3. The value of λ varies across over two orders of magnitude from the stagnation point to around θ = 140 ◦. The smallest h value is lower than λ/ 3 at the stagnation point, and the largest is close to the maximum of λ. The relation between ∆ t and τ is also shown because ∆ t/τ is always less than h/λ . Additionally, 140 cells are set around the circumference. 
+
+φ
+
+> λ λ
+> λ
+> (a)
+
+φ      
+
+> τ ∆
+> τ
+> τ
+> (b) Figure 3: Scale-related variables at the wall of hypersonic cylinder flow at Ma ∞= 5, Kn ∞= 0 .01, Pr = 1: (a) λ
+> and h, (b) τand ∆ t.
+
+The improvement of second-order particle sampling is shown in Figs. 4, 5, and 6. While CP
+
+exhibits weak mesh sensitivity, CF and CQ are highly sensitive to mesh resolution. In Fig. 4, 16 the second-order sampling (Eq. (18)) in the UGKWP method is compared with the first-order sampling (Eq. (17)). For CF , to achieve similar accuracy, the h2nd of second-order sampling can be 2 to 4 times larger than the h1st of first-order sampling. For CQ, comparable accuracy is achieved with h2nd up to 4 to 8 times larger than h1st . This allows substantial computational savings by using coarser near-wall meshes. In Fig. 5, the UGKWP method with second-order particle sampling is compared with the UGKS. The results for CF are analogous between the two multiscale methods, while CQ is more sensitive, showing better performance for the UGKS. This is because the gradients in the UGKS are more reliable without particle noise. Figure 6 provides a clearer comparison among the three approaches by focusing on the peak values. The improvement in particle sampling brings the UGKWP profile much closer to the UGKS. 
+
+φ
+
+> (a)
+
+φ
+
+> (b)
+
+φ
+
+> (c)
+
+φ           
+
+> (d) Figure 4: Comparisons of second-order particle sampling UGKWP with first-order particle sampling UGKWP on hypersonic cylinder flow at Ma ∞= 5, Kn ∞= 0 .01, Pr = 1: (a) Pressure coefficient at the wall CP, (b) shear stress coefficient CFand heat flux coefficient CQat the wall, (c) enlarged view of CF, (d) enlarged view of CQ.
+
+17 φ
+
+(a) 
+
+φ
+
+(b) 
+
+φ
+
+(c) 
+
+φ
+
+(d) Figure 5: Comparisons of UGKWP with UGKS on hypersonic cylinder flow at Ma ∞ = 5, Kn ∞ = 0 .01, Pr = 1: (a) Pressure coefficient at the wall CP , (b) shear stress coefficient CF and heat flux coefficient CQ at the wall, (c) enlarged view of CF , (d) enlarged view of CQ.
+
+18 (a) (b) Figure 6: Comparisons among second-order particle sampling UGKWP, first-order particle sampling UGKWP, and UGKS on hypersonic cylinder flow at Ma ∞ = 5, Kn ∞ = 0 .01, Pr = 1: (a) Peak value of shear stress coefficient CF ,(b) peak value of heat flux coefficient CQ.
+
+Furthermore, the multiscale UGKWP method is compared with the single-scale DSMC method. For this comparison, Pr = 2 /3 is adopted. As shown in Figs. 7 and 8, the UGKWP method shows significantly better mesh-independent behavior. At h = 0 .032, the CF peak value predicted by the UGKWP method deviates by about 35% relative to the finest-mesh solution, whereas for DSMC the deviation is about 130%. The CQ peak value predicted by the UGKWP method deviates by less than 6%, while for DSMC it exceeds 85%. The deviation of DSMC rises rapidly when h and ∆t increase beyond the microscopic scales λ and τ (see Refs. [53–56] for details). Apart from h,the UGKWP method also requires fewer cells around the circumference, as shown in Fig. 9. Based on the results of Fig. 9, in the mesh-independence study with respect to h, c = 140 is set for the UGKWP method and c = 200 is set for the DSMC method. 19 φ
+
+(a) 
+
+φ
+
+(b) 
+
+φ
+
+(c) 
+
+φ
+
+(d) Figure 7: Comparisons of UGKWP with DSMC on hypersonic cylinder flow at Ma ∞ = 5, Kn ∞ = 0 .01, Pr = 2 /3: (a) Pressure coefficient at the wall CP , (b) shear stress coefficient CF and heat flux coefficient CQ at the wall, (c) enlarged view of CF , (d) enlarged view of CQ.
+
+20 (a) (b) Figure 8: Comparisons of UGKWP with DSMC on hypersonic cylinder flow at Ma ∞ = 5, Kn ∞ = 0 .01, Pr = 2 /3: (a) Peak value of shear stress coefficient CF , (b) peak value of heat flux coefficient CQ.
+
+> φ
+
+(a) 
+
+> φ
+
+(b) 
+
+> φ
+
+(c) 
+
+> φ
+
+(d) 
+
+> φ
+
+(e) 
+
+> φ
+
+(f) Figure 9: Comparisons of cell number c around the circumference: (a) CP of UGKWP, (b) CF of UGKWP, (c) CQ
+
+of UGKWP, (d) CP of DSMC, (e) CF of DSMC, (f) CQ of DSMC. 
+
+Regarding the modification in F f r,wave , the performance is tested with and without the Chapman– 21 Enskog expansion term ( δf term in Eq. (31)). As shown in Figs. 10 and 11, when h increases, the CF and CQ profiles of UGKWP without the δf term first decrease and then increase again. This occurs because the viscous contribution associated with the Chapman–Enskog expansion is omitted, whose influence is larger than that of the coarser mesh. Consequently, introducing this term yields more reliable results. 
+
+φ
+
+> δ
+> δ
+> δ
+> δ
+> δ
+> δ
+> δ
+> δ
+> δ
+> δ
+> δ
+> δ
+> δ
+> δ
+> δ
+> δ
+> δ
+> δ
+
+(a) 
+
+φ
+
+(b) 
+
+φ
+
+(c) 
+
+φ
+
+(d) Figure 10: Effect of the δf term on UGKWP solutions on hypersonic cylinder flow at Ma ∞ = 5, Kn ∞ = 0 .01, Pr = 1: (a) Pressure coefficient at the wall CP , (b) shear stress coefficient CF and heat flux coefficient CQ at the wall, (c) enlarged view of CF , (d) enlarged view of CQ.
+
+22 δ
+
+> δ
+
+(a) 
+
+> δ
+> δ
+
+(b) Figure 11: Effect of the δf term on UGKWP solutions on hypersonic cylinder flow at Ma ∞ = 5, Kn ∞ = 0 .01, Pr = 1: (a) Peak value of shear stress coefficient CF , (b) peak value of heat flux coefficient CQ.
+
+The modification in the gradient calculation, specifically whether the wall value is considered (Eq. (26)) or not, is also tested as shown in Fig. 12. The influence is negligible at low h values, but accuracy is improved at large h values. 23 φ
+
+(a) 
+
+φ
+
+(b) 
+
+φ
+
+(c) 
+
+φ
+
+(d) Figure 12: Comparisons of UGKWP method with and without wall values in gradient calculations on hypersonic cylinder flow at Ma ∞ = 5, Kn ∞ = 0 .01, Pr = 1: (a) Pressure coefficient at the wall CP , (b) shear stress coefficient 
+
+CF and heat flux coefficient CQ at the wall, (c) enlarged view of CF , (d) enlarged view of CQ.
+
+Additionally, the Nhp, ref independence is studied for h = 0 .001 and h = 0 .008 cases. As shown in Fig. 13, the performances at both large h and small h are similar. Good consistency is achieved at Nhp, ref = 200 and Nhp, ref = 100. The deviation increases when Nhp, ref is further reduced. 24 φ
+
+(a) 
+
+> φ
+
+(b) 
+
+> φ
+
+(c) 
+
+> φ
+
+(d) 
+
+> φ
+
+(e) 
+
+> φ
+
+(f) Figure 13: N hp, ref independence study on hypersonic cylinder flow at Ma ∞ = 5, Kn ∞ = 0 .01, Pr = 1: (a) CP at 
+
+h = 0 .001, (b) CF at h = 0 .001, (c) CQ at h = 0 .001, (d) CP at h = 0 .008, (e) CF at h = 0 .008, (f) CQ at h = 0 .008. 
+
+A more rarefied case is conducted by increasing Kn ∞ to 0 .1. The temperature and Kn GLL 
+
+contours are shown in Fig. 14. The shock wave is much thicker than in the Kn ∞ = 0 .01 case, and the value of Kn GLL is much larger. As shown in Fig. 15, the results of the UGKWP method match well with those of the UGKS. 25 (a) (b) Figure 14: Contours of hypersonic cylinder flow at Ma ∞ = 5, Kn ∞ = 0 .1, Pr = 1: (a) Temperature, (b) Kn GLL .
+
+26 φ
+
+> (a)
+
+φ
+
+> (b)
+
+φ
+
+> (c)
+
+φ           
+
+> (d) Figure 15: Comparisons of UGKWP with UGKS on hypersonic cylinder flow at Ma ∞= 5, Kn ∞= 0 .1, Pr = 1: (a) Pressure coefficient at the wall CP, (b) shear stress coefficient CFand heat flux coefficient CQat the wall, (c) enlarged view of CF, (d) enlarged view of CQ.
+
+4.2. Hypersonic flow around a blunt cone at Ma ∞ = 10 .15 In this section, three-dimensional cases are considered to assess the mesh independence of the UGKWP method for overall aerodynamic force coefficients, including the lift coefficient ( CL), drag coefficient ( CD), and lift-to-drag ratio ( L/D ). The results are also compared with the DSMC method. The geometric shape of the blunt cone is taken from Refs. [48, 49, 57], as shown in Fig. 16 along with the mesh. When calculating aerodynamic force coefficients and farfield dimensionless quantities, the reference length is set to the base diameter, the reference area is set to the base area, and the moment reference center is set to the origin. First, the experimental condition [48] is selected for validation of the solver and surface mesh: Ma ∞ = 10 .15, Kn HS ,∞ = 0 .065, T∞ =143 .5K, and Tw = 600K. The subscript “HS” in Kn HS ,∞ indicates that the hard sphere (HS) model 27 is used to calculate λHS . Equation (3) is used with ω = 0 .5. The gas is nitrogen ( N2) with D = 2 and Pr = 0 .72, and the viscosity coefficient is calculated using the power-law model in the VHS model with ω = 0 .74. According to Ref. [58], if the base diameter of the actual vehicle is 0 .4m, the corresponding altitude is approximately 93km. For the numerical simulation, the height of the first layer mesh is set to 0 .0001m and Nhp, ref is set to 100. The CP contours at the surface and temperature contours at the symmetry plane are shown in Figs. 17 and 18, respectively. For the aerodynamic force coefficients at different angles of attack, the UGKWP results match well with the DSMC [49] and experimental data [48], as shown in Fig. 19. 
+
+> °
+
+(a) 
+
+> X
+> Y
+> Z
+
+(b) Figure 16: (a) Geometric shape (dimensions in millimeters) and (b) mesh of the blunt cone ( N2, Ma ∞ = 10 .15, Kn ∞,HS = 0 .065, H ≈ 93km). 
+
+> X
+> Y
+> Z
+
+(a) 
+
+> X
+> Y
+> Z
+
+(b) 
+
+> X
+> Y
+> Z
+
+(c) 
+
+> X
+> Y
+> Z
+
+(d) Figure 17: CP contours on the surface of hypersonic flow over a blunt cone at four angles of attack ( N2, Ma ∞ = 10 .15, Kn HS ,∞ = 0 .065, H ≈ 93km): (a) 0 ◦, (b) 10 ◦, (c) 20 ◦, (d) 25 ◦.
+
+(a) (b) (c) (d) Figure 18: Temperature contours at the symmetry plane of hypersonic flow over a blunt cone at four angles of attack ( N2, Ma ∞ = 10 .15, Kn HS ,∞ = 0 .065, H ≈ 93km, dimensions in meters): (a) 0 ◦, (b) 10 ◦, (c) 20 ◦, (d) 25 ◦.
+
+28 θ        
+
+> (a)
+> θ
+> (b)
+> θ
+> (c) Figure 19: Aerodynamic force coefficients of hypersonic flow over a blunt cone ( N2, Ma ∞= 10 .15, Kn HS ,∞= 0 .065,
+> H≈93km): (a) CL, (b) CD, (c) L/D .
+
+After validation against literature data, a more continuum-like multiscale case is conducted to examine mesh-independent performance. At an altitude of approximately 70km, Kn HS ,∞ is decreased to 0 .002, and the gas is argon ( Ar ) with D = 0, Pr = 0 .667, and ω = 0 .81. Other parameters remain unchanged. The surface mesh is also identical to the previous case. As shown in Fig. 20, the nonequilibrium regions mainly lie in the shock region, the leeward-side expansion region at approximately x = 0 .002m, and the wake flow region at x > 0.035941m. The windward side is more continuum-like, so the particle fraction is significantly reduced. The CP contours at the surface and temperature contours at the symmetry plane are shown in Figs. 21 and 22, respectively. For the aerodynamic force coefficients, UGKWP and DSMC simulations are performed on identical meshes for each value of h. Because CD is more influenced by friction drag, it is more sensitive than 
+
+CL, which in turn makes L/D highly sensitive. For CD and L/D , the UGKWP method exhibits substantially better mesh-independence behavior than DSMC, as shown in Fig. 23. Taking L/D at an angle of attack of 25 ◦ as an example, relative to the mesh-independent solution, the UGKWP deviation is within 5% at h = 0 .0002m, whereas the DSMC deviation is close to 20%.        
+
+> (a) (b) Figure 20: Contours at the symmetry plane of hypersonic flow over a blunt cone ( Ar , Ma ∞= 10 .15, Kn HS ,∞= 0 .002,
+> H≈70km, angle of attack 25 ◦,h= 0 .0002m): (a) Ratio of particles, (b) Kn GLL .
+
+29 X
+
+> Y
+> Z
+
+(a) 
+
+> X
+> Y
+> Z
+
+(b) 
+
+> X
+> Y
+> Z
+
+(c) 
+
+> X
+> Y
+> Z
+
+(d) Figure 21: CP contours on the surface of hypersonic flow over a blunt cone at four angles of attack ( Ar , Ma ∞ = 10 .15, Kn HS ,∞ = 0 .002, H ≈ 70km): (a) 0 ◦, (b) 10 ◦, (c) 20 ◦, (d) 25 ◦.
+
+(a) (b) (c) (d) Figure 22: Temperature contours at the symmetry plane of hypersonic flow over a blunt cone at four angles of attack ( Ar , Ma ∞ = 10 .15, Kn HS ,∞ = 0 .002, H ≈ 70km, dimensions in meters): (a) 0 ◦, (b) 10 ◦, (c) 20 ◦, (d) 25 ◦.
+
+> θ
+
+(a) 
+
+> θ
+
+(b) 
+
+> θ
+
+(c) Figure 23: Aerodynamic force coefficients of hypersonic flow over a blunt cone ( Ar , Ma ∞ = 10 .15, Kn HS ,∞ = 0 .002, 
+
+H ≈ 70km): (a) CL, (b) CD , (c) L/D .
+
+5. Conclusions 
+
+In this work, the mesh-independence behavior of the UGKWP method is systematically investi-gated for hypersonic multiscale flows. Several algorithmic improvements are introduced to preserve second-order spatial and temporal accuracy in the presence of particle noise. These include second-order particle sampling based on local macroscopic gradients, a revised Venkatakrishnan limiter for highly stretched boundary-layer cells, and conservation corrections after particle sampling. Moreover, the first-order Chapman–Enskog term is incorporated into the flux function of the wave part, enabling better recovery of the GKS in the near-continuum regime. A detailed validation of these modifications is conducted for hypersonic flow over a cylinder at Ma ∞ = 5 and Kn ∞ = 0 .01. The mesh-independent performance is notably enhanced by the second-order particle sampling 30 and the inclusion of the first-order Chapman–Enskog term in the wave flux function. Conversely, incorporating wall values in the weighted least-squares gradient reconstruction improves accuracy in coarse mesh cases. The mesh-independent behavior of the improved UGKWP method is highly consistent with the UGKS, although the heat flux coefficient remains more sensitive due to the effect of particle noise on gradient reconstruction. The influence of the reference particle number is also examined. For a comprehensive comparison with the single-scale DSMC method, both two-dimensional hypersonic flow over a cylinder and three-dimensional flow over a blunt cone are analyzed. In the cylinder case at Ma ∞ = 5 and Kn ∞ = 0 .01, wall pressure, shear stress, and heat flux coefficients (CP , CF , and CQ) are examined. The results show that the multiscale UGKWP method exhibits significantly better mesh-independence behavior than DSMC for the mesh-sensitive quantities 
+
+CF and CQ. At h = 0 .032, the peak CF value predicted by UGKWP deviates by about 35% from the finest-mesh solution, whereas the corresponding DSMC deviation is about 130%. The peak CQ value deviates by less than 6% for UGKWP, but by more than 85% for DSMC. The deviation of DSMC increases rapidly when the first-layer mesh height and time step exceed the local microscopic scales λ and τ . In addition, apart from the first-layer height h, UGKWP requires fewer circumferential cells than DSMC to achieve a similar level of accuracy. In the three-dimensional blunt-cone case at Ma ∞ = 10 .15 and Kn HS ,∞ = 0 .002 (at an altitude of approximately 70km), UGKWP provides substantially better mesh-independence performance than DSMC for CD and 
+
+L/D . For example, at an angle of attack of 25 ◦ and h = 0 .0002 m, the deviation of L/D from the mesh-independent solution is within 5% for UGKWP, whereas the DSMC deviation is close to 20%. Overall, this study demonstrates that the proposed improvements significantly enhance the mesh-independence performance of the UGKWP method for hypersonic multiscale flows. Com-pared with DSMC, the improved UGKWP method allows coarser near-wall meshes and fewer circumferential cells without sacrificing accuracy in mesh-sensitive quantities such as CF , CQ, CD,and L/D . This makes UGKWP a highly efficient and robust tool for hypersonic flow simula-tions around near-space vehicles, providing practical guidance for mesh design in aerodynamic and thermal protection applications. 
+
+Acknowledgements 
+
+The current research is supported by the National Key R&D Program of China (Grant No. 2022YFA1004500), the National Natural Science Foundation of China (92371107), and the Hong Kong Research Grants Council (16208324). 
+
+Declaration of competing interest 
+
+The authors declare that they have no known competing financial interests or personal rela-tionships that could have appeared to influence the work reported in this paper. 
+
+Data availability 
+
+The data that support the findings of this study are available from the corresponding author upon reasonable request. 31 References 
+
+[1] K. Xu, Direct modeling for computational fluid dynamics: Construction and application of unified gas-kinetic schemes, World Scientific, 2015. [2] K. Xu, A unified computational fluid dynamics framework from rarefied to continuum regimes, Cambridge University Press, 2021. [3] K. Xu, J.-C. Huang, A unified gas-kinetic scheme for continuum and rar-efied flows, Journal of Computational Physics 229 (20) (2010) 7747–7764. 
+
+doi:https://doi.org/10.1016/j.jcp.2010.06.032 .[4] C. Liu, Y. Zhu, K. Xu, Unified gas-kinetic wave-particle methods I: Contin-uum and rarefied gas flow, Journal of Computational Physics 401 (2020) 108977. 
+
+doi:https://doi.org/10.1016/j.jcp.2019.108977 .[5] Y. Zhu, C. Liu, C. Zhong, K. Xu, Unified gas-kinetic wave-particle methods. II. Multiscale simulation on unstructured mesh, Physics of Fluids 31 (2019) 067105. 
+
+doi:https://doi.org/10.1063/1.5097645 .[6] S. Liu, P. Yu, K. Xu, C. Zhong, Unified gas-kinetic scheme for diatomic molecular simulations in all flow regimes, Journal of Computational Physics 259 (2014) 96–113. 
+
+doi:https://doi.org/10.1016/j.jcp.2013.11.030 .[7] X. Xu, Y. Chen, C. Liu, Z. Li, K. Xu, Unified gas-kinetic wave-particle meth-ods V: Diatomic molecular flow, Journal of Computational Physics 442 (2021) 110496. 
+
+doi:https://doi.org/10.1016/j.jcp.2021.110496 .[8] W. Long, Y. Wei, K. Xu, Nonequilibrium flow simulations using unified gas-kinetic wave-particle method, AIAA Journal 62 (4) (2024) 1411–1433. 
+
+doi:https://doi.org/10.2514/1.J063641 .[9] C. Liu, Z. Wang, K. Xu, A unified gas-kinetic scheme for continuum and rarefied flows VI: Dilute disperse gas-particle multiphase system, Journal of Computational Physics 386 (2019) 264–295. doi:https://doi.org/10.1016/j.jcp.2018.12.040 .[10] X. Yang, C. Liu, X. Ji, W. Shyy, K. Xu, Unified gas-kinetic wave-particle methods VI: Disperse dilute gas-particle multiphase flow, Communications in Computational Physics 31 (3) (2022) 669–706. doi:https://doi.org/10.4208/cicp.OA-2021-0153 .[11] L. Mieussens, On the asymptotic preserving property of the unified gas kinetic scheme for the diffusion limit of linear kinetic models, Journal of Computational Physics 253 (2013) 138–156. 
+
+doi:https://doi.org/10.1016/j.jcp.2013.07.002 .[12] W. Li, C. Liu, Y. Zhu, J. Zhang, K. Xu, Unified gas-kinetic wave-particle methods III: Multiscale photon transport, Journal of Computational Physics 408 (2020) 109280. 
+
+doi:https://doi.org/10.1016/j.jcp.2020.109280 .32 [13] C. Liu, K. Xu, A unified gas kinetic scheme for continuum and rarefied flows V: Multiscale and multi-component plasma transport, Communications in Computational Physics 22 (5) (2017) 1175–1223. doi:https://doi.org/10.4208/cicp.OA-2017-0102 .[14] C. Liu, K. Xu, Unified gas-kinetic wave-particle methods IV: multi-species gas mixture and plasma transport, Advances in Aerodynamics 3 (2021) 9. 
+
+doi:https://doi.org/10.1186/s42774-021-00062-1 .[15] X. Yang, K. Xu, Wave-particle based multiscale modeling and simulation of non-equilibrium turbulent flows, Computers & Fluids 317 (2026) 107162. 
+
+doi:https://doi.org/10.1016/j.compfluid.2026.107162 .[16] X. Yang, Y. Zhu, C. Liu, K. Xu, Unified gas-kinetic wave-particle method for frequency-dependent radiation transport equation, Journal of Computational Physics 522 (2025) 113587. 
+
+doi:https://doi.org/10.1016/j.jcp.2024.113587 .[17] Z. Pu, K. Xu, Unified gas-kinetic wave-particle method for multiscale flow simula-tion of partially ionized plasma, Journal of Computational Physics 530 (2025) 113918. 
+
+doi:https://doi.org/10.1016/j.jcp.2025.113918 .[18] M. Quan, X. Yang, Y. Wei, K. Xu, Radiative hydrodynamic equations with nonequilibrium radiative transfer, Physics Review D 111 (2025) 103038. 
+
+doi:https://doi.org/10.1103/PhysRevD.111.103038 .[19] Y. Wei, J. Cao, K. Xu, Unified gas-kinetic scheme for reactive flow with multi-scale trans-port and chemical non-equilibrium, Journal of Computational Physics 546 (2026) 114514. 
+
+doi:https://doi.org/10.1016/j.jcp.2025.114514 .[20] Z. Pu, K. Xu, Electromagnetic flow control in hypersonic rarefied environment, Journal of Fluid Mechanics 1033 (2026) A37. doi:https://doi.org/10.1017/jfm.2026.11462 .[21] K. Xu, A gas-kinetic BGK scheme for the Navier-Stokes equations and its connection with artificial dissipation and Godunov method, Journal of Computational Physics 171 (1) (2001) 289–335. doi:https://doi.org/10.1006/jcph.2001.6790 .[22] D. Jiang, M. Mao, J. Li, X. Deng, An implicit parallel UGKS solver for flows covering various regimes, Advances in Aerodynamics 1 (2019) 8. 
+
+doi:https://doi.org/10.1186/s42774-019-0008-5 .[23] C. Liu, G. Zhou, W. Shyy, K. Xu, Limitation principle for computational fluid dynamics, Shock Waves 29 (2019) 1083–1102. doi:https://doi.org/10.1007/s00193-018-0881-6 .[24] M. Pfeiffer, F. Garmirian, T. Ott, Crank-Nicolson Bhatnagar-Gross-Krook integrator for multiscale particle-based kinetic simulations, Physics of Fluids 37 (2) (2025) 023616. 
+
+doi:https://doi.org/10.1063/5.0251345 .[25] J. Kim, E. Jun, A second-order particle Fokker-Planck-Master method for diatomic gas flows, Physics of Fluids 37 (11) (2025) 117117. doi:https://doi.org/10.1063/5.0292414 .33 [26] S. Chen, K. Xu, A comparative study of an asymptotic preserving scheme and unified gas-kinetic scheme in continuum flow limit, Journal of Computational Physics 288 (2015) 52–65. 
+
+doi:https://doi.org/10.1016/j.jcp.2015.02.014 .[27] G. A. Bird, Molecular gas dynamics and the direct simulation of gas flows, Clarendon Press, 1994. [28] V. A. Titarev, Numerical modeling of high-speed rarefied gas flows over blunt bodies us-ing model kinetic equations, European Journal of Mechanics - B/Fluids 64 (2017) 112–117. 
+
+doi:https://doi.org/10.1016/j.euromechflu.2016.12.005 .[29] S. Chen, K. Xu, C. Lee, Q. Cai, A unified gas kinetic scheme with moving mesh and velocity space adaptation, Journal of Computational Physics 231 (20) (2012) 6643–6664. 
+
+doi:https://doi.org/10.1016/j.jcp.2012.05.019 .[30] Y. Wei, W. Long, K. Xu, Adaptive unified gas-kinetic scheme for diatomic gases with rota-tional and vibrational nonequilibrium, Computer Physics Communications 305 (2024) 109324. 
+
+doi:https://doi.org/10.1016/j.cpc.2024.109324 .[31] R. Zhang, S. Liu, J. Chen, H. Jin, C. Zhuo, C. Zhong, Implicit unified gas-kinetic scheme for steady state solution of hypersonic thermodynamic non-equilibrium flows, Communications in Nonlinear Science and Numerical Simulation 140 (2025) 108367. 
+
+doi:https://doi.org/10.1016/j.cnsns.2024.108367 .[32] J. Chen, S. Liu, R. Zhang, C. Zhuo, Y. Yang, C. Zhong, A global adaptive discretization of velocity space for discrete velocity methods in predictions of rarefied and multi-scale flows, Physics of Fluids 36 (8) (2024) 086104. doi:https://doi.org/10.1063/5.0216574 .[33] Y. Zhu, C. Zhong, K. Xu, Implicit unified gas-kinetic scheme for steady state so-lutions in all flow regimes, Journal of Computational Physics 315 (2016) 16–38. 
+
+doi:https://doi.org/10.1016/j.jcp.2016.03.038 .[34] Y. Zhu, C. Zhong, K. Xu, An implicit unified gas-kinetic scheme for unsteady flow in all Knudsen regimes, Journal of Computational Physics 386 (2019) 190–217. 
+
+doi:https://doi.org/10.1016/j.jcp.2019.01.033 .[35] Y. Zhu, C. Zhong, K. Xu, Unified gas-kinetic scheme with multigrid con-vergence for rarefied flow study, Physics of Fluids 29 (9) (2017) 096102. 
+
+doi:https://doi.org/10.1063/1.4994020 .[36] X. Xu, Y. Chen, K. Xu, Modeling and computation for non-equilibrium gas dynamics: Beyond single relaxation time kinetic models, Physics of Fluids 33 (1) (2021) 011703. 
+
+doi:https://doi.org/10.1063/5.0036203 .[37] C. Liu, W. Li, Y. Wang, P. Song, K. Xu, An implicit unified gas-kinetic wave-particle method for radiative transport process, Physics of Fluids 35 (11) (2023) 112013. 
+
+doi:https://doi.org/10.1063/5.0174774 .34 [38] E. M. Shakhov, Generalization of the Krook kinetic relaxation equation, Fluid Dynamics 3 (1968) 95–96. doi:https://doi.org/10.1007/BF01029546 .[39] P. L. Bhatnagar, E. P. Gross, M. Krook, A model for collision processes in gases. I. Small amplitude processes in charged and neutral one-component systems, Physical Review Journals Archive 94 (1954) 511–525. doi:https://doi.org/10.1103/PhysRev.94.511 .[40] G. May, B. Srinivasan, A. Jameson, An improved gas-kinetic BGK finite-volume method for three-dimensional transonic flow, Journal of Computational Physics 220 (2) (2007) 856–878. 
+
+doi:https://doi.org/10.1016/j.jcp.2006.05.027 .[41] K. Xu, Gas-kinetic schemes for unsteady compressible flow simulations, in: 29th CFD Lecture Series 1998-03 von K´ arman Institute for Fluid Dynamics, Belgium, 1998. [42] J. Cao, Y. Wei, W. Long, C. Zhong, K. Xu, Adaptive criterion and modification of wave-particle decomposition in UGKWP method for high-speed flow simulation, Computers & Fluids 305 (2026) 106896. doi:https://doi.org/10.1016/j.compfluid.2025.106896 .[43] M. Pfeiffer, Particle-based fluid dynamics: Comparison of different Bhatnagar-Gross-Krook models and the direct simulation Monte Carlo method for hypersonic flows, Physics of Fluids 30 (10) (2018) 106106. doi:https://doi.org/10.1063/1.5042016 .[44] J. A. White, H. Nishikawa, R. A. Baurle, Weighted least-squares cell-average gradient construction methods for the VULCAN-CFD second-order accurate unstructured grid cell-centered finite-volume solver, 2019. [45] V. Venkatakrishnan, Convergence to steady state solutions of the Euler equations on un-structured grids with limiters, Journal of Computational Physics 118 (1) (1995) 120–130. 
+
+doi:https://doi.org/10.1006/jcph.1995.1084 .[46] J. Blazek, Computational fluid dynamics: Principles and applications, Elsevier, 2005. [47] Z. Guo, Y. Zhu, K. Xu, Kinetic representation of the unified gas-kinetic wave-particle method and beyond, Communications in Computational Physics 39 (5) (2026) 1512–1535. 
+
+doi:https://doi.org/10.4208/cicp.OA-2024-0192 .[48] D. E. Boylan, J. L. Potter, Aerodynamics of typical lifting bodies under con-ditions simulating very high altitudes, AIAA Journal 2 (2) (1967) 226–232. 
+
+doi:https://doi.org/10.2514/3.3946 .[49] J. Padilla, I. Boyd, Assessment of rarefied hypersonic aerodynamics modeling and windtunnel data, 2006. doi:https://doi.org/10.2514/6.2006-3390 .[50] D. B. Hash, H. A. Hassan, Assessment of schemes for coupling Monte Carlo and Navier-Stokes solution methods, Journal of Thermophysics and Heat Transfer 10 (1996) 242–249. 
+
+doi:https://doi.org/10.2514/3.781 .[51] Q. Sun, I. D. Boyd, G. V. Candler, A hybrid continuum/particle approach for model-ing subsonic, rarefied gas flows, Journal of Computational Physics 194 (2004) 256–277. 
+
+doi:https://doi.org/10.1016/j.jcp.2003.09.005 .35 [52] T. E. Schwartzentruber, L. C. Scalabrin, I. D. Boyd, A modular particle-continuum numerical method for hypersonic non-equilibrium gas flows, Journal of Computational Physics 225 (2007) 1159–1174. doi:https://doi.org/10.1016/j.jcp.2007.01.022 .[53] F. J. Alexander, A. L. Garcia, B. J. Alder, Cell size dependence of transport coef-ficients in stochastic particle algorithms, Physics of Fluids 10 (6) (1998) 1540–1542. 
+
+doi:https://doi.org/10.1063/1.869674 .[54] N. G. Hadjiconstantinou, Analysis of discretization in the direct simulation Monte Carlo, Physics of Fluids 12 (10) (2000) 2634–2638. doi:https://doi.org/10.1063/1.1289393 .[55] A. L. Garcia, W. Wagner, Time step truncation error in direct simulation Monte Carlo, Physics of Fluids 12 (10) (2000) 2621–2633. doi:https://doi.org/10.1063/1.1289691 .[56] M. Gallis, J. Torczynski, D. Rader, G. A. Bird, Convergence behavior of a new DSMC algorithm, Journal of Computational Physics 228 (12) (2009) 4532–4548. 
+
+doi:https://doi.org/10.1016/j.jcp.2009.03.021 .[57] R. Zhang, S. Liu, J. Chen, C. Zhuo, C. Zhong, A conservative implicit scheme for three-dimensional steady flows of diatomic gases in all flow regimes using unstructured meshes in the physical and velocity spaces, Physics of Fluids 36 (1) (2024) 016114. 
+
+doi:https://doi.org/10.1063/5.0186520 .[58] United States Committee on Extension to the Standard Atmosphere (COESA), U.S. Standard Atmosphere, 1976, Tech. Rep. NASA-TM-X-74335, National Oceanic and Atmospheric Ad-ministration, National Aeronautics and Space Administration, and United States Air Force, Washington, D.C. (1976). 36

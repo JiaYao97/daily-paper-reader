@@ -1,0 +1,747 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-07T21:21:35.187533+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 3,
+    "deep_divecandidates": 7,
+    "deep_cap": 8,
+    "deep_selected": 7,
+    "quick_candidates": 11,
+    "quick_skim_target": 13,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2607.03683v1",
+      "source": "arxiv",
+      "title": "SCoReT: Super-Resolution Compression and Reconstruction of Turbulent Flows",
+      "abstract": "High-fidelity simulations of the Navier--Stokes equations (NSE) generate massive amounts of data, motivating the need for efficient compression and reconstruction strategies for turbulent flows. At the same time, reconstructing flow fields from sparse measurements while retaining spectral content, turbulence statistics, and coherent structures remains a major challenge. This work investigates two complementary paradigms for turbulent flow reconstruction: supervised reconstruction and physics-informed reconstruction, in the context of transition to turbulence induced by three-dimensional distributed roughness elements. We introduce a vorticity-augmented supervised approach and a physics-informed approach, implemented through a partially assisted compressible PINN formulation based on the three-dimensional unsteady compressible Navier--Stokes equations. Reconstruction performance is evaluated at different sparsity levels using instantaneous velocity fields, mean-squared error, energy spectra, Reynolds stresses, turbulent kinetic energy, and Q-criterion isosurfaces. Rather than establishing a universal winner, the present study characterises the respective strengths, limitations, and operating regimes of these two approaches. The results indicate that at lower sparsity levels, the vorticity-augmented supervised model yields the lowest reconstruction error, recovers key statistical and spectral features, and enables substantial data compression. The PINN shows potential to reconstruct turbulent flows from sparse measurements without high-resolution labels and exhibits comparatively stable held-out extrapolation behaviour at higher sparsity. These results suggest the potential of combining data-driven and physics-informed learning for flow data compression and physics-informed reconstruction of turbulent flows from sparse data.",
+      "authors": [
+        "Royyuru Sai Prasanna Gangadhar",
+        "Shishir Srivastava",
+        "Nagabhushana Rao Vadlamani",
+        "Arvind Easwaran"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-04T03:25:33+00:00",
+      "link": "https://arxiv.org/pdf/2607.03683v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:sfc"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "turbulent flow reconstruction from sparse measurements",
+      "llm_evidence_cn": "从稀疏测量中重建湍流场",
+      "llm_evidence": "从稀疏测量中重建湍流场",
+      "canonical_evidence": "从稀疏测量中重建湍流场",
+      "llm_tldr_en": "SCoReT introduces supervised and physics-informed approaches for super-resolution reconstruction of turbulent flows from sparse data, retaining spectral content and coherent structures.",
+      "llm_tldr_cn": "针对高保真湍流模拟数据量大且从稀疏测量中重建流场困难的挑战，本文提出SCoReT框架，结合涡度增强监督方法和物理信息方法，实现湍流场的超分辨率压缩与重建。在三维粗糙元诱导转捩的背景下，该方法能有效保留频谱内容、湍流统计和相干结构，为流场重建提供了有效范式。",
+      "llm_tldr": "针对高保真湍流模拟数据量大且从稀疏测量中重建流场困难的挑战，本文提出SCoReT框架，结合涡度增强监督方法和物理信息方法，实现湍流场的超分辨率压缩与重建。在三维粗糙元诱导转捩的背景下，该方法能有效保留频谱内容、湍流统计和相干结构，为流场重建提供了有效范式。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "flow field reconstruction from sparse data",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.04516v1",
+      "source": "arxiv",
+      "title": "Near-real-time, meter-scale 3D urban wind modeling for low-altitude micrometeorology: numerical verification of a GPU-accelerated lattice Boltzmann framework",
+      "abstract": "This study presents a near-real-time, meter-scale three-dimensional urban wind simulation framework for low-altitude flight events in complex urban meteorological environments. It reconstructs high-resolution wind fields by combining sparse observations with efficient microscale flow modeling. The framework integrates lattice Boltzmann method large-eddy simulation (LBM-LES), high-fidelity urban morphology reconstruction that explicitly resolves real building details, and observation-driven boundary assimilation into a rapid end-to-end pipeline for realistic urban domains. Multi-site Doppler lidar measurements from dense urban Guangzhou, China, are used for evaluation. The system reconstructs three-dimensional wind fields at 5 m resolution over kilometer-scale domains within minutes. Robustness and accuracy are tested through controlled observation reduction, independent validation against withheld lidar stations, and sensitivity analyses of grid resolution and precursor domain extent. Results show stable reproduction of vertical wind structures and key local flow features under complex morphology and limited observations, providing a scalable pathway for near-real-time urban wind reconstruction.",
+      "authors": [
+        "Shuai Han",
+        "Huanxia Wei",
+        "Yue Cao",
+        "Dalin Liu",
+        "Lin Wen",
+        "Chao Xia",
+        "Shuolin Xiao",
+        "Yingying Xing",
+        "Qing Jia",
+        "Wenguang Liang",
+        "Zhigang Yang"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn",
+        "physics.geo-ph"
+      ],
+      "published": "2026-07-05T21:39:16+00:00",
+      "link": "https://arxiv.org/pdf/2607.04516v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "wind field reconstruction from sparse observations",
+      "llm_evidence_cn": "基于稀疏观测的风场重建",
+      "llm_evidence": "基于稀疏观测的风场重建",
+      "canonical_evidence": "基于稀疏观测的风场重建",
+      "llm_tldr_en": "Develops a GPU-accelerated LBM-LES framework that reconstructs high-resolution urban wind fields from sparse lidar measurements, directly addressing sparse sensor flow reconstruction.",
+      "llm_tldr_cn": "本文提出了一种基于GPU加速的格子玻尔兹曼大涡模拟框架，用于近实时重建米级分辨率的三维城市风场。该框架整合了稀疏多普勒激光雷达观测数据与高精度城市形态信息，通过观测驱动边界同化实现快速端到端风场重建。在广州密集城区的验证表明该方法能有效从稀疏数据中恢复高分辨率流场。",
+      "llm_tldr": "本文提出了一种基于GPU加速的格子玻尔兹曼大涡模拟框架，用于近实时重建米级分辨率的三维城市风场。该框架整合了稀疏多普勒激光雷达观测数据与高精度城市形态信息，通过观测驱动边界同化实现快速端到端风场重建。在广州密集城区的验证表明该方法能有效从稀疏数据中恢复高分辨率流场。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "flow field reconstruction from sparse data",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.04992v1",
+      "source": "arxiv",
+      "title": "Nanosecond DBD-Induced Shock and Thermal Perturbations on Blunt Bodies in Hypersonic Flow",
+      "abstract": "Nanosecond-pulsed dielectric barrier discharge (DBD) plasma actuators were investigated on a generic blunt body in a Mach 6 Ludwieg tube to characterize the pressure and thermal perturbations relevant to hypersonic boundary-layer transition control. Complementary quiescent experiments were also conducted over ambient pressures representative of those predicted in the model nose region to isolate the influence of local thermodynamic conditions on actuator operation. Pulse-energy measurements and schlieren imaging showed that decreasing pressure reduced the deposited electrical energy per pulse, weakened the actuator-generated shock, and increased the spatial extent of the residual heated region owing to energy deposition over a larger plasma volume. Under Mach 6 Ludwieg-tube conditions, the actuator-generated shock interacted with and reflected from the detached bow shock, temporarily increasing the bow-shock stand-off distance by approximately 11%, while the residual heated region was advected downstream along the body. The schlieren images further permitted the evolution of the thermal disturbance to be distinguished from that of the actuator-generated shock. The results demonstrate two distinct perturbation mechanisms -- a short-duration compression wave and a longer-lived thermal disturbance -- whose relative importance is governed by the local thermodynamic conditions and which may independently promote hypersonic boundary-layer transition.",
+      "authors": [
+        "Nadav Friedman",
+        "Kostiantyn Kuzmenko",
+        "Oshri Ifergan",
+        "David Greenblatt"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-06T12:27:49+00:00",
+      "link": "https://arxiv.org/pdf/2607.04992v1",
+      "tags": [
+        "keyword:sfc",
+        "query:sfc"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "hypersonic flow, thermal perturbations, shock interaction",
+      "llm_evidence_cn": "高超声速流动、热扰动、激波相互作用",
+      "llm_evidence": "高超声速流动、热扰动、激波相互作用",
+      "canonical_evidence": "高超声速流动、热扰动、激波相互作用",
+      "llm_tldr_en": "DBD plasma actuators in Mach 6 flow generate shock and thermal perturbations relevant to hypersonic boundary-layer transition control.",
+      "llm_tldr_cn": "针对高超声速热防护和激波相互作用需求，本文在Mach 6风洞中实验研究纳秒脉冲介质阻挡放电（DBD）激励器在钝头上引起的压力和热扰动。结果表明，压力降低会减弱激励器产生的激波并增大加热区域范围，为理解高超声速边界层转捩控制提供了关键数据，直接支持超/高超声速气膜冷却研究中的激波与热效应分析。",
+      "llm_tldr": "针对高超声速热防护和激波相互作用需求，本文在Mach 6风洞中实验研究纳秒脉冲介质阻挡放电（DBD）激励器在钝头上引起的压力和热扰动。结果表明，压力降低会减弱激励器产生的激波并增大加热区域范围，为理解高超声速边界层转捩控制提供了关键数据，直接支持超/高超声速气膜冷却研究中的激波与热效应分析。",
+      "llm_tags": [
+        "query:sfc"
+      ],
+      "matched_query_tag": "query:sfc",
+      "matched_query_text": "hypersonic thermal protection",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.01012v2",
+      "source": "arxiv",
+      "title": "Generative Model Proposal based Particle Filtering for Data Assimilation",
+      "abstract": "Data assimilation models state dynamics conditioned on sequential observations, and has wide-ranging scientific applications. In the filtering setting, the goal is to model the posterior over the current state given all observations so far. Classical solutions typically make simplifying distributional or functional assumptions, e.g., linear-Gaussian systems, which can be inaccurate in many scenarios. In principle, particle filters (PFs) remove these assumptions, yet often collapse in high dimensions. Recent generative approaches learn conditional state transitions, but without principled Bayesian updates they do not recover the correct filtering posterior and can accumulate error over long horizons. In this work, we introduce Flow Proposal Particle Filters (FPPF), which learn a conditional generative model based proposal approximating the variance-minimizing optimal proposal for particle propagation. Conditioning on observations steers particles toward high-likelihood regions before weighting, reducing weight variance and delaying degeneracy. Since our proposal admits tractable likelihood evaluation, FPPF computes accurate importance weights and retains a Bayesian update step. We further extend FPPF to high-dimensional problems through localization strategies, adressing another standard PF failure mode. Extensive experiments on a variety of dynamical systems show that FPPF outperforms statistical baselines and other generative methods in non-linear, non-Gaussian, and high-dimensional regimes.",
+      "authors": [
+        "Chandni Nagda",
+        "Mayank Shrivastava",
+        "Gudrun Thorkelsdottir",
+        "Gan Zhang",
+        "Morteza Mardani",
+        "Arindam Banerjee"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-01T14:48:32+00:00",
+      "link": "https://arxiv.org/pdf/2607.01012v2",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Particle filtering for data assimilation with generative proposals, applicable to sparse sensor flow reconstruction",
+      "llm_evidence_cn": "生成模型提议的粒子滤波数据同化，适用于稀疏传感器流场重建",
+      "llm_evidence": "生成模型提议的粒子滤波数据同化，适用于稀疏传感器流场重建",
+      "canonical_evidence": "生成模型提议的粒子滤波数据同化，适用于稀疏传感器流场重建",
+      "llm_tldr_en": "Proposes Flow Proposal Particle Filtering that uses generative models to propose particles, avoiding collapse in high dimensions and enabling principled Bayesian updates for data assimilation, applicable to flow reconstruction from limited observations.",
+      "llm_tldr_cn": "针对高维粒子滤波坍塌和生成模型缺乏贝叶斯更新导致误差累积的问题，提出流提议粒子滤波：利用生成模型生成提议粒子，结合有原则的贝叶斯更新。该方法可在高维空间中保持粒子多样性，适用于从稀疏传感器数据同化流场状态，为流场重建提供了一种鲁棒的概率框架。",
+      "llm_tldr": "针对高维粒子滤波坍塌和生成模型缺乏贝叶斯更新导致误差累积的问题，提出流提议粒子滤波：利用生成模型生成提议粒子，结合有原则的贝叶斯更新。该方法可在高维空间中保持粒子多样性，适用于从稀疏传感器数据同化流场状态，为流场重建提供了一种鲁棒的概率框架。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "sparse sensor flow reconstruction",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.03198v1",
+      "source": "arxiv",
+      "title": "Reduced-Order Models: The Mother of World Models",
+      "abstract": "World models -- compressed latent representations of an environment that support action-conditioned prediction and planning -- are typically presented as a product of modern self-supervised learning. This paper argues that the functional anatomy of a world model was independently developed, deployed, and formally analyzed decades earlier in the model-order-reduction (MOR) and control literature, under different names and for a different purpose: the real-time operation of physical systems. We trace the anatomy across three communities. Low-dimensional models of turbulence built on proper orthogonal decomposition (POD) supplied latent dynamics learned from data of a chaotic environment; eigenface methods in early computer vision supplied the encoder-decoder half, including a primitive runtime validity check; and measurement-based POD frameworks for facility thermal control assembled the complete loop -- POD coefficients as latent state, parametric dependence on actuator setpoints as action conditioning, modal reconstruction as decoding, and, critically, a priori analytical error bounds as a verification layer that certified when the model's predictions could be trusted in closed loop. We then examine what each tradition possesses that the other lacks: MOR contributes verification, physical grounding, and extreme data efficiency; learned world models contribute nonlinear representation, transferability, and horizon. We argue that the outstanding obstacle to deploying world models in systems that cannot fail -- power, thermal, process control -- is not predictive fidelity but verifiability, and we outline a research agenda for physics-grounded, verifiable world models that unifies the two lineages.",
+      "authors": [
+        "Rajat Ghosh"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "math-ph"
+      ],
+      "published": "2026-07-03T11:05:06+00:00",
+      "link": "https://arxiv.org/pdf/2607.03198v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "latent dynamics from turbulence data via POD; world model perspective",
+      "llm_evidence_cn": "从湍流数据通过POD学习潜在动力学；世界模型视角",
+      "llm_evidence": "从湍流数据通过POD学习潜在动力学；世界模型视角",
+      "canonical_evidence": "从湍流数据通过POD学习潜在动力学；世界模型视角",
+      "llm_tldr_en": "This paper reveals that reduced-order models (e.g., POD) pioneered latent dynamics learning from chaotic data, effectively functioning as world models.",
+      "llm_tldr_cn": "现有世界模型常被视为现代自监督学习产物，但本文指出其功能核心——从环境数据学习压缩潜在表示并支持预测——在数十年前的降阶模型（MOR）文献中已得到独立发展和应用。以湍流POD为例，低维模型提供了从混沌数据中学习的潜在动力学，控制领域也早已使用编码器-解码器结构，这些构成了世界模型的雏形。这一视角揭示了不同领域间的内在联系。",
+      "llm_tldr": "现有世界模型常被视为现代自监督学习产物，但本文指出其功能核心——从环境数据学习压缩潜在表示并支持预测——在数十年前的降阶模型（MOR）文献中已得到独立发展和应用。以湍流POD为例，低维模型提供了从混沌数据中学习的潜在动力学，控制领域也早已使用编码器-解码器结构，这些构成了世界模型的雏形。这一视角揭示了不同领域间的内在联系。",
+      "llm_tags": [
+        "query:pc-latent"
+      ],
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "latent dynamics",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.04491v1",
+      "source": "arxiv",
+      "title": "Generalizable turbulence closures across bluff-body shapes by PINN-based solver-agnostic training",
+      "abstract": "Data-driven turbulence closures are usually calibrated by inverse methods that place a CFD solver inside the optimization loop, tying the learned model to a particular discretization and requiring every intermediate iterate to converge. We instead train closures inside a physics-informed neural network (PINN): the RANS residual is imposed by automatic differentiation, making the inverse problem mesh-free, differentiable, and solver-agnostic. Because no forward solve runs during training, only the final closure must be solver-stable, arbitrary neural closures are admitted without deriving adjoints, and iterative solver costs are avoided. Each constitutive hypothesis trains in minutes on a single GPU, enabling rapid screening of closure forms. We develop four closures: three model the Reynolds stress on a tensor basis with built-in realizability (a local map, a non-local model transporting turbulent kinetic energy, and the same with a learned length scale l), while a fourth models the Reynolds force F = -\\nabla \\cdot τdirectly, free of realizability constraints. The closures are trained across six 2D bluff-body wakes at Re = 10^4 and deployed frozen in a finite-element solver. Coupled stability is enhanced by input-gradient smoothing and a Lipschitz constraint. We assess closures in-sample and under a strict leave-one-shape-out (LOSO) protocol. All four improve substantially on a steady SST k-ωbaseline. The learned-length-scale stress closure is most accurate on stress fields, while transporting kinetic energy is decisive for generalization. Notably, the force model generalizes best and attains the lowest out-of-sample error on mean velocity and drag (LOSO drag error ~8.5%). Finally, we show these closures can be efficiently trained on PIV data, enabling data-driven modeling for geometries intractable for DNS.",
+      "authors": [
+        "Zhen Zhang",
+        "Theo Käufer",
+        "Louise Ronglan",
+        "Michael S. Triantafyllou",
+        "George Em Karniadakis"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-05T20:31:44+00:00",
+      "link": "https://arxiv.org/pdf/2607.04491v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Data-driven turbulence closures via PINN for flow field prediction",
+      "llm_evidence_cn": "基于PINN的数据驱动湍流闭合模型用于流场预测",
+      "llm_evidence": "基于PINN的数据驱动湍流闭合模型用于流场预测",
+      "canonical_evidence": "基于PINN的数据驱动湍流闭合模型用于流场预测",
+      "llm_tldr_en": "Trains turbulence closures inside a PINN solver-agnostically, avoiding CFD-in-the-loop, enabling rapid screening of neural closures for RANS models.",
+      "llm_tldr_cn": "针对数据驱动湍流闭合模型训练依赖CFD求解器且离散格式耦合的问题，提出在物理信息神经网络（PINN）内训练闭合模型，通过自动微分施加RANS残差，实现无网格、可微、求解器无关的逆问题求解。每个假设可在单GPU上数分钟训练完成，支持快速筛选。该方法为流场预测提供了高效的数据驱动湍流建模工具。",
+      "llm_tldr": "针对数据驱动湍流闭合模型训练依赖CFD求解器且离散格式耦合的问题，提出在物理信息神经网络（PINN）内训练闭合模型，通过自动微分施加RANS残差，实现无网格、可微、求解器无关的逆问题求解。每个假设可在单GPU上数分钟训练完成，支持快速筛选。该方法为流场预测提供了高效的数据驱动湍流建模工具。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "data-driven approaches for flow field prediction",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.05045v1",
+      "source": "arxiv",
+      "title": "On the Genealogy of Machine Learning Weather Prediction",
+      "abstract": "Modern machine-learning weather prediction (MLWP) has largely inherited the initial-value-problem (IVP) framing of numerical weather prediction (NWP). This inheritance leads to a dominant paradigm of learned autoregressive time-stepping and constrains how the learning problem is defined and architectures are favored. In this study we make the inheritance explicit, contrast two philosophical traditions: \"scientific surrogate modeling,\" where machine learning (ML) is embedded within a physical system and must respect its structural constraints, and \"free-form data-driven modeling,\" where atmospheric fields are treated as spatiotemporal sequences and models learn latent dynamics without explicit physical constraints. By reviewing the governing primitive equations, surveying recent literature, and analyzing concrete physical examples, we map each modeling paradigm to either a state-conditioned or evolution operator formulation. We conclude that principled model selection requires explicitly aligning architecture and training objectives with either the physical system structure or the statistical structure of the data.",
+      "authors": [
+        "Mohammad Hassan Erfani"
+      ],
+      "primary_category": "physics.ao-ph",
+      "categories": [
+        "physics.ao-ph"
+      ],
+      "published": "2026-07-06T13:21:13+00:00",
+      "link": "https://arxiv.org/pdf/2607.05045v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "review of machine learning weather prediction, discussing data-driven and physics-constrained approaches for fluid flow modeling",
+      "llm_evidence_cn": "机器学习天气预报综述，讨论数据驱动和物理约束的流体流动建模方法",
+      "llm_evidence": "机器学习天气预报综述，讨论数据驱动和物理约束的流体流动建模方法",
+      "canonical_evidence": "机器学习天气预报综述，讨论数据驱动和物理约束的流体流动建模方法",
+      "llm_tldr_en": "Traces the genealogy of ML weather prediction, contrasting scientific surrogate modeling with free-form data-driven modeling and highlighting the role of latent dynamics.",
+      "llm_tldr_cn": "本文追溯了机器学习天气预报的谱系，系统区分了科学代理建模与自由形式数据驱动建模两种范式。通过回顾原始方程和调查当前实践，揭示了学习递推时间步进的主导地位以及潜在动力学在无显式物理约束建模中的作用。该综述为流场预测方法的发展提供了重要参考，并指出了未来研究方向。",
+      "llm_tldr": "本文追溯了机器学习天气预报的谱系，系统区分了科学代理建模与自由形式数据驱动建模两种范式。通过回顾原始方程和调查当前实践，揭示了学习递推时间步进的主导地位以及潜在动力学在无显式物理约束建模中的作用。该综述为流场预测方法的发展提供了重要参考，并指出了未来研究方向。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "Recent advances in data driven fluid flow modeling and prediction",
+      "matched_requirement_id": "req-14",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.01020v1",
+      "source": "arxiv",
+      "title": "The PICNN-Assisted Physics-Preserving Scheme for Thermodynamically Consistent Two-Phase Flow in Porous Media",
+      "abstract": "In this paper, we develop a physics-informed convolutional neural network (PICNN) assisted physics-preserving method for a thermodynamically consistent model of incompressible and immiscible two-phase flow in porous media. Following the physics-preserving prediction-correction scheme of Li et al. \\cite{li2025class}, the prediction step is performed by a PICNN trained with finite-volume residuals, where the interfacial fluxes are evaluated by the two-point flux approximation (TPFA) using two-point difference quotients of neighboring cell-centered unknowns to approximate interfacial normal gradients. The PICNN output is further corrected by a post-processing procedure to obtain energy-stable, mass-conservative, and bounds-preserving solutions. Numerical results show that the finite-volume residuals trained PICNN can replace the traditional prediction solver within the physics-preserving framework. Compared with conventional physics-informed neural networks (PINNs), the PICNN better captures local spatial interactions between each control volume and its neighboring cells, while the finite-volume residuals accommodate discontinuous permeability fields and interfacial flux continuity.",
+      "authors": [
+        "Yuanshuo Kong",
+        "Xue Wang",
+        "Yujing Yan"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn",
+        "math.NA"
+      ],
+      "published": "2026-07-01T14:53:08+00:00",
+      "link": "https://arxiv.org/pdf/2607.01020v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:sfc"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "physics-informed CNN for two-phase flow prediction with conservation laws",
+      "llm_evidence_cn": "物理信息CNN用于两相流预测并保持守恒律",
+      "llm_evidence": "物理信息CNN用于两相流预测并保持守恒律",
+      "canonical_evidence": "物理信息CNN用于两相流预测并保持守恒律",
+      "llm_tldr_en": "PICNN-assisted scheme combines physics-informed CNN with correction steps to ensure energy stability and mass conservation for two-phase flow.",
+      "llm_tldr_cn": "针对多孔介质两相流模型，现有方法难以同时保证热力学一致性和数值稳定性。本文提出PICNN辅助的预测-校正方案：预测步由PICNN基于有限体积残差训练，校正步通过后处理强制能量稳定、质量守恒和界保持。数值实验表明该方法在保持物理约束的同时具有较高精度，为物理信息深度学习在流动问题中的应用提供了可靠框架。",
+      "llm_tldr": "针对多孔介质两相流模型，现有方法难以同时保证热力学一致性和数值稳定性。本文提出PICNN辅助的预测-校正方案：预测步由PICNN基于有限体积残差训练，校正步通过后处理强制能量稳定、质量守恒和界保持。数值实验表明该方法在保持物理约束的同时具有较高精度，为物理信息深度学习在流动问题中的应用提供了可靠框架。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "data-driven approaches for flow field prediction",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.29853v1",
+      "source": "arxiv",
+      "title": "A second-order unified gas-kinetic wave-particle method with enhanced mesh independence for hypersonic flows",
+      "abstract": "Benefiting from the direct modeling of physical laws in a discretized space and the automatic decomposition of the gas distribution function into hydrodynamic waves and particles, the UGKWP method offers significant advantages for multiscale flows such as hypersonic flows, plasma transport, and radiation transport. In this study, the particle sampling accuracy in the UGKWP method is improved from first order to second order, so that the second-order spatial and temporal accuracy is preserved across the full scheme. Specifically, the modifications include second-order particle sampling based on local macroscopic gradients, a weighted least-squares gradient reconstruction that incorporates wall values, a revised Venkatakrishnan limiter for highly stretched cells, and conservation corrections after particle sampling. Moreover, the first-order Chapman--Enskog term is considered in the free-transport part of the hydrodynamic wave flux, enabling better recovery of the GKS in the near-continuum regime. Based on these improvements, the mesh-independence behavior of the UGKWP method is notably enhanced, which is more consistent with the performance of the UGKS, validated by a detailed hypersonic cylinder flow test case. Furthermore, systematic comparisons with the single-scale DSMC method are performed for two-dimensional hypersonic flow over a cylinder and three-dimensional flow over a blunt cone. Wall pressure, shear stress, and heat flux coefficients (CP, CF, and CQ) are examined in the cylinder case, while the overall aerodynamic coefficients (CL, CD, and L/D) are assessed in the cone case. The multiscale UGKWP method exhibits significantly better mesh-independence performance than DSMC for mesh-sensitive quantities such as CF, CQ, CD, and L/D, which are critical for aerodynamic and thermal protection design of near-space hypersonic vehicles.",
+      "authors": [
+        "Junzhe Cao",
+        "Rui Zhang",
+        "Wenpei Long",
+        "Chengwen Zhong",
+        "Kun Xu"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn",
+        "physics.comp-ph"
+      ],
+      "published": "2026-06-29T06:42:10+00:00",
+      "link": "https://arxiv.org/pdf/2606.29853v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "second-order unified gas-kinetic wave-particle method for hypersonic flows",
+      "llm_evidence_cn": "二阶统一气体动理学波粒子方法用于高超声速流动",
+      "llm_evidence": "二阶统一气体动理学波粒子方法用于高超声速流动",
+      "canonical_evidence": "二阶统一气体动理学波粒子方法用于高超声速流动",
+      "llm_tldr_en": "Proposes a second-order UGKWP method with enhanced mesh independence for hypersonic flows, improving accuracy in multiscale simulations.",
+      "llm_tldr_cn": "针对高超声速流动的多尺度模拟需求，本文发展了二阶精度的统一气体动理学波粒子(UGKWP)方法。通过基于局部宏观梯度的二阶粒子采样和加权最小二乘梯度重构，实现了全格式的二阶时空精度。该方法增强了网格独立性，在含壁面边界的高超声速流算例中展示了更低的数值耗散和更高的分辨率。该工作为高超声速热防护等工程应用提供了更精确的数值模拟工具。",
+      "llm_tldr": "针对高超声速流动的多尺度模拟需求，本文发展了二阶精度的统一气体动理学波粒子(UGKWP)方法。通过基于局部宏观梯度的二阶粒子采样和加权最小二乘梯度重构，实现了全格式的二阶时空精度。该方法增强了网格独立性，在含壁面边界的高超声速流算例中展示了更低的数值耗散和更高的分辨率。该工作为高超声速热防护等工程应用提供了更精确的数值模拟工具。",
+      "llm_tags": [
+        "query:sfc"
+      ],
+      "matched_query_tag": "query:sfc",
+      "matched_query_text": "hypersonic thermal protection",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.02203v1",
+      "source": "arxiv",
+      "title": "Self-explainable Operator Learning for Discovering Spatial Patterns in Functional Data",
+      "abstract": "Operator learning has emerged as a powerful tool for modeling complex physical systems in functional spaces. However, their neural network-based architectures make them opaque models, obscuring the reasoning behind their predictions. In this work, we introduce a self-explainable operator learning framework that overcomes this challenge by reformulating operator learning as a linear combination of generalized functional linear models expressed through integral equations. Exploiting the additive decomposability of these integral equations, we divide the input domain into subdomains and compute localized integrals to evaluate the contribution of each region to the final prediction. This decomposition enables direct interpretability where the model explains both inputs and outputs by linking specific input regions to corresponding output patterns, thereby revealing which spatial features drive predictions. We demonstrate the framework on function-to-scalar and function-to-function mappings in fluid flow problems involving blood flow and unsteady aerodynamics. The results show that the operator most often prioritizes regions with strong feature gradients, providing physically meaningful insight into the model's decision-making process. Comparisons with established post-hoc explainability methods demonstrate qualitative agreement while highlighting the key advantage of the proposed approach: explainability is embedded directly within the operator structure itself and does not require an external tool. Therefore, our framework provides a mathematically transparent and physically interpretable approach to uncover relationships within data, fostering trust in machine learning for scientific applications by enabling more informed data-driven analysis of physical systems.",
+      "authors": [
+        "Mojgan Alishiri",
+        "Amirhossein Arzani"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-02T14:11:20+00:00",
+      "link": "https://arxiv.org/pdf/2607.02203v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "operator learning for physical systems, interpretable model",
+      "llm_evidence_cn": "算子学习用于物理系统，可解释模型",
+      "llm_evidence": "算子学习用于物理系统，可解释模型",
+      "canonical_evidence": "算子学习用于物理系统，可解释模型",
+      "llm_tldr_en": "Self-explainable operator learning framework for discovering spatial patterns in functional data, applicable to fluid dynamics.",
+      "llm_tldr_cn": "针对神经网络算子模型黑箱问题，本文提出自解释算子学习框架，将算子学习重构为广义函数线性模型的线性组合，通过积分方程分解实现输入区域对预测贡献的可视化。该方法可推广至流体动力学等物理系统，为流场预测方法提供可解释性工具，但未直接应用于流场重建。",
+      "llm_tldr": "针对神经网络算子模型黑箱问题，本文提出自解释算子学习框架，将算子学习重构为广义函数线性模型的线性组合，通过积分方程分解实现输入区域对预测贡献的可视化。该方法可推广至流体动力学等物理系统，为流场预测方法提供可解释性工具，但未直接应用于流场重建。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "neural operators for fluid dynamics",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.31025v1",
+      "source": "arxiv",
+      "title": "Offline Reinforcement Learning for Fluid Controls: Data-based Multi-observational Policy Extraction",
+      "abstract": "Active flow control is a fundamental application in engineering. Recent advances in deep reinforcement learning have made progress in this field. However, the classical online RL approaches require extensive real-time interactions with the high fidelity environment, while each sensor configuration change necessitates whole policy retraining. All these factors result in prohibitive computational costs for real-world applications. In this work, we propose a novel offline RL framework that addresses both challenges through data-driven policy extraction. We develop a sensor position-conditioned architecture that enables a single policy network to adapt seamlessly to multiple sensor arrangements. The position-conditioned approach incorporated spatial relationship modeling through Point Attention layers to ensure the generalizability to varying sensor placements. We demonstrate the framework on two representative problems, mitigating chaoticity in the Kuramoto-Sivashinsky equation and flow control over airfoils governed by the Navier-Stokes equation. The result demonstrates that the policy extraction from the dataset provides unprecedented flexibility for sensor placement optimization. This approach represents a significant step towards adaptive, intelligent flow control systems.",
+      "authors": [
+        "Deepak Akhare",
+        "Luning Sun",
+        "Xin-Yang Liu",
+        "Xiantao Fan",
+        "Timo Bremer",
+        "Ben Zhu",
+        "Jian-Xun Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-30T01:46:48+00:00",
+      "link": "https://arxiv.org/pdf/2606.31025v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "data-driven offline RL for flow control, related to flow field prediction",
+      "llm_evidence_cn": "数据驱动的离线强化学习用于流体控制，与流场预测相关",
+      "llm_evidence": "数据驱动的离线强化学习用于流体控制，与流场预测相关",
+      "canonical_evidence": "数据驱动的离线强化学习用于流体控制，与流场预测相关",
+      "llm_tldr_en": "An offline RL framework for fluid controls extracts policies from data, adapting to multiple sensor configurations without retraining.",
+      "llm_tldr_cn": "本文提出离线强化学习框架用于主动流控制，通过数据驱动策略提取解决在线RL需要大量实时交互及传感器变化需重新训练的问题。开发了传感器位置条件架构，使单一策略网络适应多种传感器布局，为流体控制中的数据驱动方法提供了高效方案。",
+      "llm_tldr": "本文提出离线强化学习框架用于主动流控制，通过数据驱动策略提取解决在线RL需要大量实时交互及传感器变化需重新训练的问题。开发了传感器位置条件架构，使单一策略网络适应多种传感器布局，为流体控制中的数据驱动方法提供了高效方案。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.03301v1",
+      "source": "arxiv",
+      "title": "Accelerating droplet-laden Stokes flow simulations with hierarchical surrogate modeling",
+      "abstract": "We present a surrogate modeling strategy for Stokes flows with liquid droplets suspended in a carrier fluid. Our approach is based on a multi-fidelity framework. At the lowest fidelity, droplets are treated as passive tracers, neglecting their influence on the ambient flow field. Building on this approximation, we derive a PDE that represents the current modeling error. This error equation is then solved approximately to correct the flow field and the procedure is iterated. Two fidelities are employed in an alternating fashion: Stokes flow in the absence of droplets and flow around a single droplet in free space. By systematically combining these models, the method captures droplet-flow, droplet-boundary, and droplet-droplet interactions. For geometrically similar droplets, we further develop an efficient offline-online strategy that exploits this structure by reusing precomputed single-droplet solutions. Numerical experiments demonstrate the accuracy and efficiency of the proposed surrogate in a variety of tests, including scenarios with up to 10,000 droplets. Notably, we show that the proposed surrogate achieves substantially reduced computational cost compared to fully resolved multi-fluid simulations with state-of-the-art software.",
+      "authors": [
+        "Davide Pradovera",
+        "Thomas Frachon",
+        "Sara Zahedi"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA",
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-03T13:11:48+00:00",
+      "link": "https://arxiv.org/pdf/2607.03301v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "surrogate modeling for Stokes flow simulation",
+      "llm_evidence_cn": "Stokes流替代建模与仿真加速",
+      "llm_evidence": "Stokes流替代建模与仿真加速",
+      "canonical_evidence": "Stokes流替代建模与仿真加速",
+      "llm_tldr_en": "A hierarchical surrogate modeling strategy accelerates droplet-laden Stokes flow simulations by correcting low-fidelity passive tracer models with PDE-based error correction.",
+      "llm_tldr_cn": "本文针对含液滴的Stokes流提出了一种层次化替代建模策略。在最低保真度下将液滴视为被动示踪剂，并基于此推导表示当前建模误差的偏微分方程进行近似修正。通过交替使用无液滴Stokes流和单液滴自由空间流两种保真度，该方法有效捕捉了液滴-流场、液滴-边界及液滴-液滴相互作用，显著加速了仿真。",
+      "llm_tldr": "本文针对含液滴的Stokes流提出了一种层次化替代建模策略。在最低保真度下将液滴视为被动示踪剂，并基于此推导表示当前建模误差的偏微分方程进行近似修正。通过交替使用无液滴Stokes流和单液滴自由空间流两种保真度，该方法有效捕捉了液滴-流场、液滴-边界及液滴-液滴相互作用，显著加速了仿真。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.01275v1",
+      "source": "arxiv",
+      "title": "eXact-Prior Variational Autoencoder (X-VAE): Learning Data-Adaptive Gaussian Mixture Priors for Latent Distributions",
+      "abstract": "Variational Autoencoders (VAEs) commonly assume a standard isotropic Gaussian prior over the latent space, an assumption that often fails to capture the true distribution of latent representations for complex datasets. This mismatch can limit reconstruction accuracy, reduce sample quality, and constrain the expressive power of the learned latent space. We propose the eXact-Prior Variational Autoencoder (X-VAE), a framework that replaces the conventional standard normal prior with a Gaussian prior derived from the latent representations of a pretrained autoencoder (AE). Specifically, the empirical mean and standard deviation of the AE latent codes are used to parameterize a data-adaptive prior that more closely reflects the underlying structure of the training data. During generation, X-VAE introduces a latent scaling factor that enables explicit control over the variance of the sampled latent vectors, providing a simple mechanism for balancing sample diversity and fidelity. This flexibility makes the proposed approach particularly well suited for applications such as industrial and engineering design, where generated solutions must satisfy strict structural or functional constraints while still permitting meaningful design exploration. We present the mathematical formulation of well-suited X-VAE, derive the corresponding KL divergence objective for the proposed prior, and evaluate the method on standard benchmark datasets. Experimental results demonstrate that X-VAE preserves reconstruction quality while producing latent representations that better align with the empirical data distribution, leading to improved controllability and more realistic generated samples.",
+      "authors": [
+        "Qijun Chen",
+        "Shaofan Li"
+      ],
+      "primary_category": "stat.ML",
+      "categories": [
+        "stat.ML",
+        "cs.LG"
+      ],
+      "published": "2026-06-30T23:05:06+00:00",
+      "link": "https://arxiv.org/pdf/2607.01275v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Latent space prior learning with data-adaptive Gaussian mixture",
+      "llm_evidence_cn": "潜在空间先验学习与数据自适应高斯混合",
+      "llm_evidence": "潜在空间先验学习与数据自适应高斯混合",
+      "canonical_evidence": "潜在空间先验学习与数据自适应高斯混合",
+      "llm_tldr_en": "Proposes X-VAE that replaces standard normal prior with a data-adaptive Gaussian prior derived from autoencoder latent codes, improving reconstruction and sample quality.",
+      "llm_tldr_cn": "针对VAE标准正态先验与真实潜在分布不匹配的问题，提出精确先验变分自编码器（X-VAE），将预训练自编码器的潜在编码的均值和标准差作为数据自适应高斯先验。该方法提升了重建精度和样本质量，增强了潜在空间的表达能力，为潜在空间建模提供了更灵活的先验学习方案。",
+      "llm_tldr": "针对VAE标准正态先验与真实潜在分布不匹配的问题，提出精确先验变分自编码器（X-VAE），将预训练自编码器的潜在编码的均值和标准差作为数据自适应高斯先验。该方法提升了重建精度和样本质量，增强了潜在空间的表达能力，为潜在空间建模提供了更灵活的先验学习方案。",
+      "llm_tags": [
+        "query:pc-latent"
+      ],
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "latent dynamics",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.03692v1",
+      "source": "arxiv",
+      "title": "PIEFS: Physics-Informed Eigenfunction Features with Learnable Scaling",
+      "abstract": "Spectral methods are widely used to construct representations from the geometry of data, but they often rely on a fixed kernel, graph Laplacian, or manually selected feature scaling. We propose Physics-Informed Eigenfunction Features with Learnable Scaling (PIEFS), a supervised neural representation-learning framework with a spectral inductive bias, based on a modified Dirichlet energy. In PIEFS, scalar coordinate maps are trained under empirical Gram orthogonality, a supervised linear readout, and a Dirichlet penalty in which the input gradient is transformed by a learnable metric $A(x)=Λ(x)U(x)$. The diagonal factor $Λ(x)$ controls anisotropic scaling, while the orthogonal factor $U(x)$ is parameterized by a structured product of Givens rotations. This construction yields task-adaptive Dirichlet-regularized coordinates rather than eigenfunctions of a fixed supervision-independent operator. Experiments on synthetic, tabular, and image-based benchmarks study the effect of identity, diagonal, and rotation-scaling metrics, and compare the resulting coordinates with classical baselines and NeuralEF. The results support PIEFS as a compact supervised spectral representation method and identify optimization stability, validation on explicit operator eigenproblems, and richer metric parameterizations as the main directions for future work.",
+      "authors": [
+        "Varvara Nazarenkko",
+        "Timur Lidzhiev",
+        "Alexander Tarakanov"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "math.NA",
+        "math.ST"
+      ],
+      "published": "2026-07-04T03:55:40+00:00",
+      "link": "https://arxiv.org/pdf/2607.03692v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "physics constrained learning for latent space models",
+      "llm_evidence_cn": "物理约束的潜在空间学习",
+      "llm_evidence": "物理约束的潜在空间学习",
+      "canonical_evidence": "物理约束的潜在空间学习",
+      "llm_tldr_en": "PIEFS learns eigenfunction features with a physics-informed Dirichlet energy and learnable metric, enforcing orthogonality for latent representation learning.",
+      "llm_tldr_cn": "本文提出PIEFS框架，通过物理启发的Dirichlet能量和可学习度量，训练标量坐标映射，在经验Gram正交性和监督线性读出下学习潜在表示，适用于物理约束的表示学习。该方法克服了传统谱方法固定核或手动缩放的限制，为潜在空间中的物理约束学习提供了一种新途径。",
+      "llm_tldr": "本文提出PIEFS框架，通过物理启发的Dirichlet能量和可学习度量，训练标量坐标映射，在经验Gram正交性和监督线性读出下学习潜在表示，适用于物理约束的表示学习。该方法克服了传统谱方法固定核或手动缩放的限制，为潜在空间中的物理约束学习提供了一种新途径。",
+      "llm_tags": [
+        "query:pc-latent"
+      ],
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "physics constrained learning for latent space models",
+      "matched_requirement_id": "req-16",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.02726v1",
+      "source": "arxiv",
+      "title": "Mitigating Numerical Stiffness in Least-Squares Formulations of Elliptic PDEs for Physics-Informed Neural Networks",
+      "abstract": "We present theoretical insights into $H^{-1}$ residual loss formulations of physics-informed neural networks (PINNs) for learning solutions of partial differential equations (PDEs). Standard PINN formulations use a multi-term loss functional consisting of interior and boundary loss terms that are based on $L^2$-residuals and discretized as mean square errors (MSE). Imbalanced magnitudes of these terms cause numerical stiffness phenomena, resulting in ill-conditioning and slow convergence. In this work, we analyze discretizations of the $H^{-1}$-norm that are used in the context of elliptic PDEs with arbitrary, nonzero Dirichlet boundary conditions. We prove that these $H^{-1}$ discretizations rebalance the PDE loss, improve conditioning, and mitigate stiffness effects compared with the standard MSE discretization. We validate our theoretic results through operator-level experiments with randomly sampled residuals and PINN experiments for the Poisson and stationary incompressible Navier-Stokes equations. These experiments confirm the numerical effectiveness of the proposed rebalancing for elliptic PDEs and, more broadly, for problems with elliptic behavior.",
+      "authors": [
+        "Phil-Alexander Hofmann",
+        "Michael Hecht"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA"
+      ],
+      "published": "2026-07-02T19:28:19+00:00",
+      "link": "https://arxiv.org/pdf/2607.02726v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "physics-informed neural networks for PDE solving, applicable to flow field prediction",
+      "llm_evidence_cn": "物理信息神经网络用于PDE求解，可应用于流场预测",
+      "llm_evidence": "物理信息神经网络用于PDE求解，可应用于流场预测",
+      "canonical_evidence": "物理信息神经网络用于PDE求解，可应用于流场预测",
+      "llm_tldr_en": "Proposes H^{-1} residual loss to mitigate numerical stiffness in PINNs for elliptic PDEs, improving convergence and conditioning.",
+      "llm_tldr_cn": "针对物理信息神经网络(PINNs)求解椭圆型偏微分方程时数值刚度导致收敛缓慢的问题，本文提出了基于H^{-1}残差损失的改进方法。通过重新平衡内部和边界损失项，有效缓解了数值刚性和病态条件。理论分析和实验表明，该方法显著提升了PINNs的训练稳定性和收敛速度。该工作为利用PINNs进行高精度流场预测提供了更鲁棒的训练框架。",
+      "llm_tldr": "针对物理信息神经网络(PINNs)求解椭圆型偏微分方程时数值刚度导致收敛缓慢的问题，本文提出了基于H^{-1}残差损失的改进方法。通过重新平衡内部和边界损失项，有效缓解了数值刚性和病态条件。理论分析和实验表明，该方法显著提升了PINNs的训练稳定性和收敛速度。该工作为利用PINNs进行高精度流场预测提供了更鲁棒的训练框架。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "flow field prediction methods",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.04495v1",
+      "source": "arxiv",
+      "title": "U3DWind: A Low Altitude Wind Field Dataset and Benchmark for Urban Air Mobility",
+      "abstract": "Urban Air Mobility (UAM) requires reliable assessment of low-altitude wind hazards, because winds, gusts, and building-induced turbulence have been recognized as critical factors affecting vehicle stability, route feasibility, vertiport siting, and airspace management. While wind-tunnel experiments, computational fluid dynamics (CFD), multiscale downscaling, reduced-order models, and UAV planning datasets have advanced wind-aware analysis, public resources for data-driven, city-scale UAM planning remain limited in geographic coverage, scenario diversity, vertical extent, building realism, and task-oriented benchmarking. To address this gap, we introduce U3DWind, a building-resolved low-altitude wind-field dataset generated using our GPU-accelerated Lattice Boltzmann Method--Large-Eddy Simulation (LBM-LES) framework for rapid urban flow simulation. U3DWind covers five megacities in China: Beijing, Shanghai, Guangzhou, Shenzhen, and Hong Kong. It contains 720 simulations, with 16 inflow directions, three reference wind speeds, and three seasonal atmospheric scenarios (annual, summer, and winter) for each city. At a 10 m grid resolution, the dataset provides three-dimensional three-component (3D3C) velocity, turbulent kinetic energy (TKE), flow density, and fluid--solid masks. To support operationally relevant evaluation, we further define five baseline tasks: wind-field prediction, sparse-sensor wind-field reconstruction, site wind-exposure ranking, airworthiness wind-compliance risk scoring, and noise propagation modeling. As a multi-city, building-resolved 3D urban wind-field dataset, U3DWind enables systematic evaluation of wind-induced impacts in low-altitude traffic scenarios and provides an open benchmark for urban airspace management and data-driven high-fidelity urban flow simulation.",
+      "authors": [
+        "Shixiong Zhou",
+        "Huanxia Wei",
+        "Chao Xia",
+        "Yingying Xing",
+        "Changmin Jiang",
+        "Hai Yang",
+        "Shuai Jia"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn",
+        "physics.geo-ph"
+      ],
+      "published": "2026-07-05T20:42:09+00:00",
+      "link": "https://arxiv.org/pdf/2607.04495v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "dataset and benchmark for wind field prediction using GPU-accelerated CFD",
+      "llm_evidence_cn": "GPU加速CFD生成风场数据集和基准",
+      "llm_evidence": "GPU加速CFD生成风场数据集和基准",
+      "canonical_evidence": "GPU加速CFD生成风场数据集和基准",
+      "llm_tldr_en": "Introduces U3DWind, a building-resolved low-altitude wind field dataset generated using GPU-accelerated CFD, to support data-driven flow field prediction and reconstruction for urban air mobility.",
+      "llm_tldr_cn": "城市空中交通中低空风场预测面临数据稀缺问题。本文基于GPU加速计算流体力学方法，生成了包含真实建筑细节的城市尺度风场数据集U3DWind，覆盖多种气象场景和垂直层次。该数据集为基于深度学习的流场预测和重构方法提供了训练与基准测试平台，显著提升了数据驱动方法在城市场景中的适用性。",
+      "llm_tldr": "城市空中交通中低空风场预测面临数据稀缺问题。本文基于GPU加速计算流体力学方法，生成了包含真实建筑细节的城市尺度风场数据集U3DWind，覆盖多种气象场景和垂直层次。该数据集为基于深度学习的流场预测和重构方法提供了训练与基准测试平台，显著提升了数据驱动方法在城市场景中的适用性。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.04750v1",
+      "source": "arxiv",
+      "title": "FM-ChangeNet: Learning Change through Pathwise Feature Transport",
+      "abstract": "We present FM-ChangeNet, a pathwise-supervised framework for change detection that reformulates bi-temporal reasoning as continuous transport in feature space rather than static endpoint comparison. Given encoded pre and post-temporal representations, we construct intermediate latent states and learn a time-conditioned velocity field $\\hat{v}_θ(z_t,t)$ along the transformation trajectory. This pathwise formulation constrains the predictor over a continuum of intermediate states, providing a denser and less ambiguous supervision signal than conventional endpoint-only segmentation and enabling the model to capture temporal evolution explicitly. The learned velocity field is not only a transport mechanism but also an interpretable representation of change: its magnitude serves as a spatially localized change cue that helps distinguish true structural variation from nuisance effects such as illumination shifts and spatial misalignment. We develop a hierarchical multi-scale architecture with cross-temporal alignment, time-conditioned coarse-to-fine flow decoding, and a unified objective that couples flow supervision, trajectory consistency, spatial regularization, and segmentation loss. Experiments on remote sensing benchmarks show that the proposed framework produces more structured and robust change representations while achieving state-of-the-art performance.",
+      "authors": [
+        "Roie Kazoom",
+        "George Leifman",
+        "Genady Beryozkin"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CV"
+      ],
+      "published": "2026-07-06T07:42:58+00:00",
+      "link": "https://arxiv.org/pdf/2607.04750v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Pathwise feature transport with latent states",
+      "llm_evidence_cn": "路径特征传输与潜在状态",
+      "llm_evidence": "路径特征传输与潜在状态",
+      "canonical_evidence": "路径特征传输与潜在状态",
+      "llm_tldr_en": "Presents FM-ChangeNet for change detection using pathwise-supervised learning in latent space, learning a velocity field over intermediate latent states for temporal evolution reasoning.",
+      "llm_tldr_cn": "FM-ChangeNet将变化检测重新定义为特征空间中的连续传输，而非静态端点比较。通过编码前后表示构建中间潜在状态，并学习时变速度场。该路径监督方式提供了更密集的监督信号，显式捕捉时间演化，其速度场还可解释。该方法可用于序列数据中的潜在动态建模，但未涉及物理约束。",
+      "llm_tldr": "FM-ChangeNet将变化检测重新定义为特征空间中的连续传输，而非静态端点比较。通过编码前后表示构建中间潜在状态，并学习时变速度场。该路径监督方式提供了更密集的监督信号，显式捕捉时间演化，其速度场还可解释。该方法可用于序列数据中的潜在动态建模，但未涉及物理约束。",
+      "llm_tags": [
+        "query:pc-latent"
+      ],
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "latent dynamics",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.05271v1",
+      "source": "arxiv",
+      "title": "Target-Guided Selective Reweighting for Physics-Informed Neural Network Inverse Problems: A Transfer Learning Approach",
+      "abstract": "Physics-informed neural networks (PINNs) encounter ill-posed optimization, loss competition, and parameter compensation in partial differential equation (PDE) inverse problems. Transfer learning can reuse representations from source tasks, but direct fine-tuning may introduce negative transfer when dominant physical mechanisms, governing parameters, or observation noise differ between source and target domains: the model achieves low field error yet recovers incorrect target physical parameters. To mitigate, we propose Target-Guided Selective Reweighting PINN (TGSR-PINN), a target-evidence-driven representation correction method for PINN inverse transfer learning. TGSR-PINN transfers only the weights and biases from the source PINN, while target physical parameters are independently initialized; after a short target-adaptation phase, the method computes neuron target scores using first-order Taylor sensitivity and pre-activation variance on fixed scoring batches, and converts evidence associated with low-scoring neurons into continuous weak-adaptation signals via a Gaussian mixture model (GMM) with rank fallback. TGSR-PINN then applies selective soft decay to input weight rows and biases of low-scoring neurons instead of hard pruning or random resetting. In experiments, TGSR-PINN improves target parameter recovery while maintaining comparable field accuracy in the high-Péclet 2D advection-diffusion task and in the Allen--Cahn to Burgers cross-PDE-family transfer task; a 5%-noise reaction--diffusion case provides supplementary evidence under milder source-target mismatch. Ablation studies suggest that neuron target scoring, weak-adaptation signal estimation, layer protection, and selective soft decay jointly contribute to the benefits.",
+      "authors": [
+        "Qian Hu",
+        "Bin Fan",
+        "Yao Xiao",
+        "Zhicheng Lin",
+        "Meixin Xiong"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-06T16:20:19+00:00",
+      "link": "https://arxiv.org/pdf/2607.05271v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "physics-informed neural network with transfer learning for inverse problems",
+      "llm_evidence_cn": "物理信息神经网络与迁移学习用于逆问题",
+      "llm_evidence": "物理信息神经网络与迁移学习用于逆问题",
+      "canonical_evidence": "物理信息神经网络与迁移学习用于逆问题",
+      "llm_tldr_en": "Proposes TGSR-PINN, a target-guided selective reweighting method for PINN inverse transfer learning, mitigating negative transfer by correcting representation based on target evidence.",
+      "llm_tldr_cn": "该论文针对物理信息神经网络（PINN）在迁移学习中可能出现的负迁移问题，提出了目标引导选择性重加权PINN（TGSR-PINN）。该方法通过目标证据驱动的表示修正，只迁移相关权重，避免因物理机制差异导致的参数误恢复。在多个PDE逆问题上的实验表明，TGSR-PINN能够提高参数识别精度，减少负迁移影响。这项工作属于物理约束学习与优化的范畴，可为潜在空间中的物理约束优化提供借鉴。",
+      "llm_tldr": "该论文针对物理信息神经网络（PINN）在迁移学习中可能出现的负迁移问题，提出了目标引导选择性重加权PINN（TGSR-PINN）。该方法通过目标证据驱动的表示修正，只迁移相关权重，避免因物理机制差异导致的参数误恢复。在多个PDE逆问题上的实验表明，TGSR-PINN能够提高参数识别精度，减少负迁移影响。这项工作属于物理约束学习与优化的范畴，可为潜在空间中的物理约束优化提供借鉴。",
+      "llm_tags": [
+        "query:pc-latent:composite"
+      ],
+      "matched_query_tag": "query:pc-latent:composite",
+      "matched_query_text": "Papers central to 物理约束潜在空间学习与优化, especially work that connects or combines: latent dynamics; physics constrained learning for latent space models; latent space optimization under physical constraints; latent space methods with physical constraints; latent variable models with constraints from physics; learning latent space that satisfies physical laws; optimizing latent variables with physics constraints; physics constrained autoencoder training.",
+      "matched_requirement_id": "req-composite-pc-latent",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
