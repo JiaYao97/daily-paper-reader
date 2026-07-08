@@ -1,0 +1,924 @@
+Title: The Right Space for Dynamics: Numerics with Diffeomorphism Equivariance
+
+URL Source: https://arxiv.org/pdf/2607.06536v1
+
+Published Time: Wed, 08 Jul 2026 01:23:50 GMT
+
+Number of Pages: 34
+
+Markdown Content:
+# The Right Space for Dynamics: Numerics with Diffeomorphism Equivariance 
+
+Wolf-J¨ urgen Beyn ∗ Michail E. Kavousanakis † Yannis G. Kevrekidis ‡
+
+July 8, 2026 
+
+Abstract 
+
+Among many (equivalent, via invertible transformations) representa-tions of the evolution of a dynamical system, which one is to be pre-ferred? Here we show how the use of infinite-dimensional Lie group theory (and its numerical implementation) allows us to single out one represen-tation, by selecting an element of the group of diffeomorphisms acting on the dynamical system. We present and discuss several types of “phase conditions” defining the selected representation, and illustrate their com-putational implementation. Study of dynamics modulo diffeomorphisms “liberates” mathematical modeling of physical phenomena from a user’s preferred coordinates, and spontaneously selects a “right latent space” for the system. 
+
+Keywords: Dynamical systems, numerics of PDEs, diffeomorphism equivari-ance, phase conditions 
+
+MSC codes: 37C05, 37C80, 58D05, 58D19, 65M99 
+
+# 1 Introduction 
+
+This paper deals with the solution of evolution equations of the form 
+
+d
+
+dt u(t) = F (u(t)) , t ≥ 0, u(0) = u0, (1.1) where the state u(t) at time t and the initial data u0 are C∞-maps from a finite dimensional manifold M into some finite, d-dimensional space, i.e. u(t), u 0 ∈
+
+> ∗
+
+Department of Mathematics, Bielefeld University beyn@math.uni-bielefeld.de 
+
+> †
+
+School of Chemical Engineering, National Technical University, Zografou, Athens, 
+
+mihkavus@chemeng.ntua.gr 
+
+> ‡
+
+Department of Applied Mathematics and Statistics, Johns Hopkins University, 
+
+yannis@jhu.edu 
+
+1arXiv:2607.06536v1 [math.DS] 7 Jul 2026 C∞(M, Rd). The manifold M is the coordinate space, whose space carries the independent variables x. Whenever we speak of spatial derivatives we mean derivatives with respect to these coordinates on M .We assume that the system is equivariant with respect to transformations in coordinate space, i.e. the vector field F on the right-hand side of (1.1) com-mutes with the action a of the group of C∞-diffeomorphisms Diff( M ) defined by 
+
+a(g, u ) = u ◦ g−1, g ∈ Diff( M ), u ∈ C∞(M, Rd).
+
+We write the equivariance explicitly as 
+
+F (a(g, u )) = a(g, F (u)) , g ∈ Diff( M ), u ∈ C∞(M, Rd)and refer to Remark 2.2 for a more general form. Symmetries of this kind are abundant in mathematical physics and appear in quite a variety of field theories (see e.g. [26], [27, Ch.9] and the review [33]). The main reason for diffeomorphism equivariance of such theories is to formu-late physical laws in a coordinate free form. Certainly, the most prominent example is Einstein’s field equation of general relativity [12], [4], [10] which is written in spacetime geometry - and is thus more general than the evolution form (1.1). Further examples of diffeomorphism equivariant equations (1.1) are mean curvature flow ([9],[28]), the curve shortening equation ([1]), the vor-tex filament equation ([19]), Maxwell’s equation from electrodynamics and the Maxwell-Vlasov equation from plasma physics (see [26], [27, Ch.9], [33]). For the latter field equations, note that equivariance only holds with respect to an infinite dimensional subgroup of diffeomorphisms (gauge and canonical trans-formations). Suitable transformations of the underlying domain have also been used in numerical analysis to design so-called adaptive moving mesh methods; see [15]. Symmetries underly a large variety of methods for solving evolution equa-tions, both theoretically and numerically. They suggest special coordinate sys-tems or suitable phase spaces and lead to reduction procedures and conserved quantities (Noether invariants); see [12], [4, Ch.4]. They also play a prominent role in the bifurcation analysis of steady state equations [14], to mention just a few applications. Our goal in this paper is to develop a numerical approach which takes advan-tage of diffeomorphism equivariance by first reformulating (1.1) in an extended 2phase space and then discretizing afterwards. More precisely, we rewrite equa-tion (1.1) for a new state variable v(t) ∈ C∞(M, Rd) with 
+
+v(t) = a(g(t), u (t)) = u(t) ◦ g−1(t), g(t) ∈ Diff( M ),
+
+where g(t) is a time-dependent and a-priori unknown diffeomorphism. In section 2 we show that this is equivalent to solving an extended evolutionary system 
+
+d
+
+dt v(t) = F (v(t)) + ∂xv(t)μ(t), v(0) = u0, (1.2) 
+
+d
+
+dt g(t) = ∂xg(t)μ(t, ·), g(0) = 1. (1.3) for v(t) ∈ C∞(M, Rd), g(t) ∈ Diff( M ) along with still another time-dependent and unknown vector field μ(t) ∈ C∞(M, T M ). To fix these extra unknowns and thus to close the system (1.2), (1.3), we will derive a set of side constraints called phase conditions . These are based on minimization principles designed to facilitate the (numerical) solution of the system. In Section 3 we discuss two types of functionals which are either minimized with respect to the group variable g or with respect to the vector field μ. In both cases the phase con-ditions turn out to be an infinite set of pointwise constraints. Altogether, we arrive at a partial differential-algebraic equation (PDAE), the solution of which is expected to give better insight into the structure and/or into the longtime dynamics of the original system (1.1). On an abstract level, the approach generalizes the well-known concept of symmetry reduction which appears under various names and in various realiza-tions in the literature. We mention the concept of reduction and reconstruction by Rowley et.al. [31], the Freezing method by Beyn et.al. [7, 6] and the method of slices by Froehlich, Cvitanovi´ c [13]. The names reflect different aspects of the method, and for brevity in this paper we adopt the use of the single word “Freezing” (but please note that our primary concern is not to make dynamic features as stationary as possible, as the word colloquially suggests). The main goal of this paper is to go one step further from finite to infinite dimensional Lie groups . Since arbitrary coordinate systems are involved, this step turns out to be a major one, both theoretically and numerically. To illustrate the procedure we consider the simplest case of all, namely closed curves which evolve under the flow of a dynamical system and for which a parameterization is determined during the computation. Concretely, the state space is C∞(S1, Rd) where S1 is the unit circle in R2 and F is a Nemitzky 3-1 0 1
+
+> -1 01
+
+(a) (b) Figure 1.1: Evolution of a closed curve of initial values for the two-dimensional dynamical system (5.5); plot of 6 curves at times t = 0 , 0.5, 1, 1.5, 2 and 2 .5in a space-time diagram (left) and overlapping in a space diagram (right); see Figure 5.6 for more details on the numerical computation of the dotted lines in the right picture. operator, generated by a vector field f : Rd → Rd, i.e. 
+
+F (u)( x) = f (u(x)) , x ∈ S1, u ∈ C∞(S1, Rd). (1.4) Figure 1.1 shows the evolution of an initial circle for the two-dimensional dy-namical system ˙ u = f (u) representing the normal form of the Hopf bifurcation (5.5). The initial circle of radius 0 .6 with center at (0 .9, 0) intersects the periodic orbit of the system which happens to be the unit circle. Then, the dynamics of the system stretches the initial curve into a long, banana-like closed curve. This dynamics is followed by discretizing (1.2),(1.3) with a suitable phase condition, see Section 5.1 for more details. Of course, one can obtain a similar picture by solving the initial value prob-lem ˙ u = f (u) for a number of points on the initial circle and then connecting them by interpolation. However, as we will see, if the system’s dynamics drives the points apart/closer, the shape of the curve is quickly lost and interpolation becomes useless. Therefore, one aim of our reformulation is to preserve the con-nectedness of the initial manifold and to adapt the coordinate systems during integration so that the manifold’s evolution becomes visually clear. We achieve this by incorporating not only the time derivative, but also spatial derivatives of the solution into an energy-based functional , which is then minimized during time integration. 4In case of the Nemitzky operator (1.4) the additional term ∂xvμ turns the Freezing system (1.2),(1.3) into a first order hyperbolic system which we solve by the Lax-Wendroff method. If the operator F involves higher order spa-tial derivatives, for example the Laplace-Beltrami operator, then the additional term is of lower order and the type of the system remains unchanged. Applica-tions of this type will be briefly discussed in the Conclusion section 6. 
+
+# 2 Diffeomorphism equivariance and the Freezing sys-tem 
+
+In this section we define the abstract setting of spaces and operators. Our main aim is to derive the Freezing system (1.3), (1.4) in a formal manner. By “formal” we mean that we do not yet specify the topology on the respective spaces nor the smoothness properties of solutions and operators. We will also not detail the analysis on the infinite dimensional Lie group Diff( M ) and of its action on the phase space. In Appendix A we will indicate how all this can be done within the rigorous framework of global analysis with convenient vector spaces developed in [20]. A more extensive account of embedding our results into this abstract concept is laid out in [29]. 
+
+2.1 The setting and notations 
+
+In the following let M be a real compact p-dimensional orientable C∞-manifold with tangent bundle T M . For some d ∈ N our phase space is 
+
+Ud = C∞(M, Rd), (2.1) with the space of C∞-vector fields on M denoted by 
+
+V = C∞(M, T M ), (2.2) and the infinite-dimensional group of diffeomorphisms of M denoted by 
+
+G = Diff( M ). (2.3) As noted in the Introduction, whenever we speak of spatial derivatives we mean derivatives with respect to the coordinates on M .
+
+Remark 2.1 We use the normed linear space Rd as an image space which turns Ud into a vector space. It may be given the structure of a locally convex 
+
+5topological vector space; see Appendix A. This will simplify our considerations. It is possible to replace Rd by a d-dimensional C∞-manifold with a Riemannian structure, but we avoid the ensuing complications. 
+
+The right-hand side of (1.1) is defined by a vector field which maps Ud into its tangent bundle T Ud, i.e. 
+
+F : Ud → T Ud, where F (u) ∈ TuUd for u ∈ U d.
+
+Since Ud is a linear space we can identify for each u ∈ U d its tangent space 
+
+TuUd = {u} × U d with Ud itself. The image F (u) may involve spatial derivatives of u with respect to x in M of any order, but the examples mentioned in the introduction involve only derivatives of order at most two. For our model example from the introduction we have M = S1 and F is given by a Nemitzky operator (1.4), i.e. it involves no spatial derivatives. The underlying time interval is I = [0 , T ) where either T > 0 or T = ∞.The image of any function 
+
+u :
+
+
+
+I → Ud,t 7 → u(t)(2.4) is a function of x ∈ M itself. In accordance with standard PDE notation we may view u either as a mapping into a function space as in (2.4) or as a function 
+
+u : I × M → Rd and write [u(t)]( x) = u(t, x ) ∈ Rd, t ∈ I , x ∈ M. (2.5) By suppressing the x-dependence we abbreviate this as u(t) = u(t, ·), t ∈ I .When including smoothness properties of u, the identification (2.5) is already a subtle issue, called the exponential law in global analysis; see [20, Ch.I,IX] and the discussion in Appendix A. Correspondingly, the derivative d 
+
+> dt
+
+u(t) ∈ Tu(t)Ud = Ud of the function (2.4) may be written in two equivalent forms 
+
+[ d
+
+dt u(t)
+
+]
+
+(x) = ∂tu(t, x ), t ∈ I , x ∈ M, (2.6) where ∂tu(t, x ) ∈ Rd denotes the derivative (in time) of the curve t 7 → u(t, x ) ∈
+
+Rd for fixed x ∈ M . With these identifications the initial value problem (1.1) reads pointwise 
+
+∂tu(t, x ) = F (u(t, ·))( x), t ∈ I , x ∈ M. 
+
+6Our aim is to consider equivariance with respect to the group G of diffeo-morphisms (2.3). For g ∈ G we denote its tangent map (or total derivative) by 
+
+Txg : T M → T M. (2.7) It maps the tangent bundle into itself such that for each x ∈ M the map 
+
+Txg(x) : TxM → Tg(x)M
+
+is a linear homeomorphism. The group operation in G is composition g1 ◦ g2, g1, g 2 ∈ G with the unit element given by the identity 1, 1(x) = x, x ∈ M , and the inverse of g ∈ G
+
+denoted by g−1. With this, G becomes an infinite dimensional Lie group. The analysis on such manifolds is rather involved; see the monograph [20] and the discussion in Appendix A. The group G acts on Ud by composition, that is 
+
+a : G × U d → U d, a(g, u ) = u ◦ g−1, g ∈ G, u ∈ U d. (2.8) Note that a(g, u ) is linear with respect to u ∈ U d but nonlinear with respect to 
+
+g ∈ G, in general. If we have a time-dependent family of diffeomorphisms (cf. (2.4)) 
+
+g :
+
+
+
+I → G, t 7 → g(t),
+
+(2.9) then we use the same identification as in (2.5), i.e. [g(t)]( x) = g(t, x ) ∈ M, t ∈ I , x ∈ M. (2.10) Taking the (formal) t-derivative of g in (2.9), (2.10) then leads to the equation (cf. (2.6)) 
+
+[ d
+
+dt g(t)
+
+]
+
+(x) = ∂tg(t, x ) ∈ Tg(t,x )M, x ∈ M. (2.11) Thus we find that for every t ∈ I the map d 
+
+> dt
+
+g(t) : M → T M is an element of the space V of vector fields, defined by the relation (2.11). Since g depends on 
+
+t we now write the x-derivative (2.7) as a partial derivative, i.e. 
+
+∂xg(t, ·) : T M → T M, ∂xg(t, x ) : TxM → Tg(t,x )M. (2.12) 7Our main assumption is that the vector field F is equivariant with respect to the action a of the group G, i.e. 
+
+F (a(g, u )) = a(g, F (u)) , g ∈ G, u ∈ U d. (2.13) Note that both sides are elements of Ud since Ud is linear space. Equation (2.13) reads explicitly F (u ◦ g−1) = ( F (u)) ◦ g−1 for all g ∈ G, or by setting γ = g−1,
+
+F (u ◦ γ) = ( F (u)) ◦ γ for all γ ∈ G, u ∈ U d. (2.14) 
+
+Remark 2.2 If the image space Rd is a manifold as in Remark 2.1, then (2.13) 
+
+should be replaced by F (a(g, u )) = Tua(g, F (u)) where Tua denotes the tangent map of the action with respect to the second variable. 
+
+Example 2.3 As mentioned in the introduction, the simplest case of equivari-ance occurs if F (u) does not depend on spatial derivatives of u, i.e. if F is a Nemitzky operator (1.4) . Indeed, we then have for g ∈ G, u ∈ U d
+
+F (u ◦ g−1)( x) = f (u(g−1(x))) = [ F (u) ◦ g−1]( x), x ∈ M. (2.15) 
+
+We imagine that a vector field f : Rd → Rd is given, and define F by (1.4) .Then the differential equation (1.1) describes the motion of the initial manifold 
+
+u0(M ) induced by the flow of the dynamical system 
+
+˙v = f (v). (2.16) 
+
+Our aim is to endow M with a suitable coordinate system with favorable proper-ties still to be determined . The particular case M = S1 of flowing closed curves will be the test case for the numerical methods. 
+
+2.2 Derivation of the Freezing system 
+
+Following the approaches in [7], [31] we extend the method of Freezing to evo-lution equations that are equivariant with respect to the infinite dimensional Lie group of diffeomorphisms discussed above. The idea is to write the solution of (1.1) as the group action (2.8) of an unknown element g(t) ∈ G, t ≥ 0 applied to a just as unknown function v(t) ∈Ud, i.e. 
+
+u(t) = a(g(t), v (t)) , t ∈ I .
+
+Inverting g(t, ·) and using the notation u(t, ·) above leads to 
+
+v(t, ·) = u(t, g (t, ·)) , t ∈ I . (2.17) 8Differentiating (2.17) with respect to x ∈ M gives 
+
+∂xv(t, ·) = ∂xu(t, g (t, ·)) ∂xg(t, ·). (2.18) Note that ∂xg(t, ·) has a smooth inverse as in (2.11) since g is a smooth diffeo-morphim. Differentiating (2.17) with respect to t ∈ I and using equation (1.1) as well as equivariance (2.14) and (2.17), (2.18) yields 
+
+∂tv(t, ·) = ∂xu(t, g (t, ·)) ∂t g(t, ·) + ∂tu(t, g (t, ·)) =∂xu(t, g (t, ·)) ∂t g(t, ·) + [ F (u(t, ·))] ( g(t, ·)) =∂xv(t, ·)( ∂xg(t, ·)) −1∂tg(t, ·) + F (u(t, g (t, ·))) =∂xv(t, ·)( ∂xg(t, ·)) −1∂tg(t, ·) + F (v(t, ·)) .
+
+This equation suggests to introduce the vector field 
+
+μ(t, ·) = ( ∂xg(t, ·)) −1∂tg(t, ·) : M → T M, 
+
+where μ(t, x ) = ( ∂xg(t, x )) −1∂tg(t, x ) ∈ TxM for x ∈ M follows from (2.11) and (2.12). Then the Cauchy problem (1.1) is equivalent to finding solutions v : I → U d,
+
+g : I → G and a time-dependent vector field μ : I → V which solve the Freezing system 
+
+∂tv(t, ·) = F (v(t, ·)) + ∂xv(t, ·)μ(t, ·), v(0 , ·) = u0(·), (2.19) 
+
+∂tg(t, ·) = ∂xg(t, ·)μ(t, ·), g(0 , ·) = 1. (2.20) Writing this pointwise for x ∈ M we obtain a first order system for the functions 
+
+v : I × M → Rd, (t, x ) 7 → v(t, x ),g : I × M → M, (t, x ) 7 → g(t, x ),μ :I × M → T M, (t, x ) 7 → μ(t, x ) ∈ TxM. 
+
+(2.21) The type of the PDE (2.19) depends on the number of derivatives involved in the vector field F . If F derives from a Nemitzky operator as in (1.4), then the first order term ∂xvμ in (2.19) is dominant, and the system is of symmetric hyperbolic type. If F involves second order derivatives then the extra terms 
+
+∂xvμ are generally of lower order and will not change the type of F . Following [31], equation (2.20) is called the reconstruction equation , since it allows to determine the diffeomorphisms g(t, ·) a-posteriori , once the solutions v and μ
+
+have been computed. Because of the extra unknown vector field μ the system is not yet closed. In Section 3 we discuss several possibilities for closing the system by suitable phase conditions. 93 Phase conditions 
+
+3.1 Minimization principles 
+
+Phase conditions are usually derived from optimization principles which aim at efficient numerical computations and at understanding the longtime dynamics of a system. From now on we assume M to be a Riemannian manifold and a submanifold of some Rn. Further, we make use of the inner product on Ud given by (u, v )L2 (M, Rd) =
+
+∫
+
+> M
+
+(u(x), v (x)) Rd do( x), u, v ∈ U d,
+
+where ( ·, ·)Rd denotes the Euclidean inner product in Rd and the integral is defined with respect to the volume element induced by the metric tensor. The phase conditions which close the system (2.19), (2.20) are of the general form 
+
+ψ(v, μ, g ) = 0 , (3.1) with a given phase function 
+
+ψ : Ud × V × G → C∞(T M, R) =: Z. (3.2) Altogether, the system (2.19),(2.20) with the side constraint (3.1) constitutes a partial differential algebraic equation (PDAE) which is to be solved for the functions v, μ, g from (2.21). If the phase function ψ from (3.2) does not involve 
+
+g, then one may first solve the reduced PDAE (2.19), (3.1) and afterwards solve the reconstruction equation (2.20). Each of the following phase conditions is obtained from the necessary first order conditions for a local minimum of a phase functional 
+
+ρ : Ud × V × G → R, (w, ν, γ ) 7 → ρ(w, ν, γ ).
+
+We distinguish two types of phase conditions based on minimizing either with respect to ν ∈ V for v, g fixed, or with respect to γ ∈ G for v, μ fixed : 
+
+μ = argmin ν∈V ρ(v, ν, g ) type I ,
+
+1 = argmin γ∈Gρ(v, μ, γ ) type II .
+
+We consider four phase functionals defined for ( w, ν, γ ) ∈ U d × V × G as follows: (1) orthogonal phase functional (type I) 
+
+ρ1(w, ν, γ ) = ‖F (w) + ∂xwν ‖2
+
+> L2(M, Rd)
+
+.
+
+10 (2) fixed phase functional (type II) 
+
+ρ2(w, ν, γ ) = ‖w − ˆv ◦ γ‖2 
+
+> L2(M, Rd)
+
+,
+
+where ˆ v ∈ U d is a given template function. (3) energy based phase functional (type II) 
+
+ρ3(w, ν, γ ) = ‖∂x(w ◦ γ)‖2 
+
+> L2(M;T M, Rd)
+
+,
+
+which is the integral of the Frobenius (Hilbert-Schmidt) norm of the linear map ∂xw(x) : TxM → Rd with TxM considered as a subspace of Rn:
+
+‖∂xw‖2   
+
+> L2(M;T M, Rd)
+
+=
+
+∫
+
+> M
+
+‖∂xw(x)‖2 
+
+> F
+
+do( x) = 
+
+∫
+
+> Md
+
+∑
+
+> ℓ=1
+
+‖grad wℓ(x)‖2 
+
+> Rn
+
+do( x).
+
+We refer to [2, Ch.XI] for a representation of the gradient in local coordi-nates. (4) semi-discrete energy based phase functional (type I) 
+
+ρ4(w, ν, γ ) = ‖∂xw + ∆ t∂ x(F (w) + ∂xwν )‖2 
+
+> L2(M;T M, Rd)
+
+,
+
+where ∆ t is a small parameter, taken to be the time step of the numerical scheme. Our motivation behind these choices is as follows: The first two functionals are familiar from the finite dimensional case; see [6, 7, 8]. The functional ρ1 aims at minimizing the norm of ∂tv = F (v) + ∂xvμ (see (2.19)), i.e. one tries to let v
+
+move as little as possible. The term “orthogonal phase functional” is suggested by the resulting phase condition (3.5) derived below. The functional ρ2 uses an (arbitrary) template function ˆ v which may for example be taken as the initial data ˆ v = u0 or as ˆ v = v(ˆ t) at some later time ˆ t > 0. Minimizing ρ2 w.r.t. γ
+
+then requires ˆ v to be the closest point to v(t) on the group orbit of ˆ v. Thus one tries to keep the solution as close as possible to ˆ v during integration. The two functionals ρ3, ρ 4 form a new selection since they involve the spa-tial derivative of the solution v. While the first two phase conditions aim at simplifying the longtime dynamics of the solution, the new conditions aim at avoiding large gradients of the solution during integration. Such a goal is sug-gested by the numerical experiments shown in Section 5. It turns out that ρ3
+
+can lead to inconsistent initial data for the resulting PDAE and thus may cause 11 numerical difficulties; see Section 5.3. The modified functional ρ4 alleviates this problem by realizing a steepest descent of the energy norm within some time-step ∆ t > 0. It is based on the truncated Taylor expansion 
+
+∂xv(t + ∆ t, ·) ≈ ∂xv(t, ·) + ∆ t∂ t∂xv(t, ·) = ∂xv(t, ·) + ∆ t∂ x∂tv(t, ·)= ∂xv(t, ·) + ∆ t∂ x
+
+(F (v(t, ·)) + ∂xv(t, ·)μ(t, ·)).
+
+In principle, we can use any small parameter instead of ∆ t, but using the time-step ∆ t of the numerical scheme is a very natural choice and works well in practice; see Section 4. 
+
+3.2 Derivation of phase conditions 
+
+In this subsection we set up the necessary conditions for local minima of the phase functionals from Section 3.1. As we will see, the type numbers I and II correspond to the (differentiation) index of the resulting PDAE (for a survey of index concepts for DAEs see e.g. [21, Ch.1.2]). As usual, the necessary conditions are derived from the fundamental lemma of the calculus of variations. We use the following version (see [23, A.2] and [29, Section 3.2] for a proof of this specific case): 
+
+Lemma 3.1 Let ϕ ∈ Z be a smooth functional on the tangent bundle satisfying 
+
+ϕ(x, λX ) = λϕ (x, X ), ∀x ∈ M, X ∈ TxM, λ ∈ R,
+
+∫
+
+> M
+
+ϕ(ν(x))do( x) = 0 , ∀ν ∈ V . (3.3) 
+
+Then ϕ(x, X ) = 0 holds for all x ∈ M , X ∈ TxM .
+
+Remark 3.2 Formally, the tangent space TxM at x ∈ M is defined as the set of pairs (x, X ) where X lies in a p-dimensional linear space. For simplicity, we often write X ∈ TxM instead of (x, X ) ∈ TxM ; see (3.3) .
+
+Let us apply Lemma 3.1 to the four phase functionals above. (1) Orthogonal phase condition (type I) 
+
+If ρ1 has a local minimum at μ then for each ν ∈ V it holds that 0 = d
+
+dτ ρ1(w, μ + τ ν, γ )|τ =0 =
+
+[ d
+
+dτ ‖F (w) + ∂xw(μ + τ ν )‖2
+
+> L2(M, Rd)
+
+] 
+
+> |τ=0
+
+= 2 
+
+∫
+
+> M
+
+(F (w)( x) + ∂xw(x)μ(x), ∂ xw(x)ν(x)) Rd do( x).
+
+12 Thus Lemma 3.1 applies to 
+
+ϕ(x, X ) = ( F (w)( x) + ∂xw(x)μ(x), ∂ xw(x)X)Rd , x ∈ M, X ∈ TxM
+
+and yields a phase condition of the form (3.1) 
+
+ψ1(v, μ, g )( x, X ) = ( F (v)( x) + ∂xv(x)μ(x), ∂ xv(x)X)Rd = 0 ,
+
+∀x ∈ M, X ∈ TxM. 
+
+(3.4) In the time dependent setting of (2.19) this may be written as (∂tv(t, x ), ∂ xv(t, x )X)Rd = 0 , ∀x ∈ M, X ∈ TxM, (3.5) i.e. time and space derivatives of v are orthogonal . Figure 3.2 gives a geometric interpretation of the phase condition (3.4) for Example 2.3 with a two-dimensional manifold M . The term vxμ is added to the vector field f in (2.19) in such a way that the resulting vector field is orthogonal to the current manifold v(t, M ) of v-images. 
+
+Figure 3.1: Illustration of the orthogonal phase condition (3.4) Selecting a basis in TxM one can represent ∂xv(t, x ) ∈ Rd,p as a d × p
+
+matrix and rewrite (3.4) as the linear system 
+
+∂xv(t, x )⊤∂xv(t, x )μ(t, x ) = −∂xv(t, x )⊤F (v(t, ·))( x). (3.6) 13 If ∂xv(t, x ) has maximum rank p for all x ∈ M then this system has a unique solution μ(t, x ), which means that the overall PDAE has (differ-entiation) index 1. One can also use (3.6) at t = 0 with v(0 , x ) = u0(x)to determine consistent initial values for μ(0 , x ), x ∈ M .(2) Fixed phase condition (type II) 
+
+The variation of the diffeomorphism proceeds as follows. For any vector field ν ∈ V there exists a smooth path γ(τ, ·) ∈ G, |τ | < ε for some ε > 0such that γ(0 , ·) = 1 and ν(x) = ∂τ γ(0 , x ) ∈ TxM for all x ∈ M ; see the remarks on the tangent bundle of G in Appendix Appendix A. Then we obtain 0 = d
+
+dτ ρ2(w, ν, γ (τ, ·)) |τ =0 = d
+
+dτ
+
+[
+
+‖w − ˆv(γ(τ, ·))) ‖2 
+
+> L2(M, Rd)
+
+] 
+
+> |τ=0
+
+= −2
+
+∫
+
+> M
+
+(w(x) − ˆv(γ(τ, x )) , ∂ x ˆv(γ(τ, x )) ∂τ γ(τ, x )) 
+
+> Rd
+
+do( x)|τ =0 
+
+= −2
+
+∫
+
+> M
+
+(w(x) − ˆv(x), ∂ x ˆv(x)ν(x)) 
+
+> Rd
+
+do( x).
+
+Thus Lemma 3.1 applies to 
+
+ϕ(x, X ) = (w(x) − ˆv(x), ∂ x ˆv(x)X) 
+
+> Rd
+
+, x ∈ M, X ∈ TxM
+
+and yields for the solution v(t, ·) at time t the algebraic condition 0 = (v(t, x ) − ˆv(x), ∂ x ˆv(x)X) 
+
+> Rd
+
+∀x ∈ M, X ∈ TxM. (3.7) This condition does not yet involve the algebraic variable μ so that the PDAE is of higher index. As usual for DAEs, we differentiate the con-straint (3.7) w.r.t. t and use (2.19) to obtain for x ∈ M , X ∈ TxM the hidden constraint 0 = (∂tv(t, x ), ∂ x ˆv(x)X)
+
+> Rd
+
+= (F (v(t, ·))( x) + ∂xv(t, x )μ(t, x ), ∂ x ˆv(x)X)
+
+> Rd
+
+=: ψ2(v(t, ·), μ (t, ·), g )( x, X ).
+
+(3.8) As above this equation is uniquely solvable for μ(t, x ) if ∂xv(t, x )⊤∂x ˆv(x)is invertible, in which case we arrive at a PDAE of index 2. Note that (3.7) is automatically satisfied at t = 0 for the choice ˆ v = u0. Together with (3.8) this implies that (3.7) holds for all t ∈ I .14 (3) Energy based phase condition (type II) 
+
+Proceeding as in the previous item we find the necessary condition 0 = d
+
+dτ ρ3(w, ν, γ (τ, ·)) |τ =0 
+
+= 2 
+
+> d
+
+∑
+
+> ℓ=1
+
+∫
+
+> M
+
+(grad[ ∂τ (wℓ ◦ γ(τ, ·))] , grad[ wℓ ◦ γ(τ, ·)] ) 
+
+> Rn
+
+do |τ =0 
+
+= 2 
+
+> d
+
+∑
+
+> ℓ=1
+
+∫
+
+> M
+
+(
+
+grad[ ∂xwℓ ◦ ν]( x), grad[ wℓ]( x)) 
+
+> Rn
+
+do( x)= −2
+
+> d
+
+∑
+
+> ℓ=1
+
+∫
+
+> M
+
+[∂xwℓ(x)ν(x)]∆ M wℓ(x)do( x).
+
+In the last step we used integration by parts and the Laplace-Beltrami operator ∆ M on M ; see [2, Ch.XI] and Section 6 for a representation of ∆M in local coordinates. Now Lemma 3.1 applies to 
+
+ϕ(x, X ) = 
+
+> d
+
+∑
+
+> ℓ=1
+
+[∂xwℓ(x)X]∆ M wℓ(x) = (∂xw(x)X, ∆M w(x))
+
+> Rd
+
+where ∂xwX and ∆ M w are defined componentwise. We obtain the phase condition 0 = (∂xv(t, x )X, ∆M v(t, x )) 
+
+> Rd
+
+∀x ∈ M, X ∈ TxM, (3.9) which we differentiate w.r.t. time to find the hidden constraint 0 = ψ3(v(t, ·), μ (t, ·), g )( x, X )=
+
+(
+
+∂x
+
+(F (v(t, ·)) + ∂xv(t, ·)μ(t, ·))(x)X, ∆M v(t, x )
+
+)
+
+> Rd
+
++
+
+(
+
+∂xv(t, ·)X, ∆M [F (v(t, ·)) + ∂xv(t, ·)μ(t, ·)]( x)
+
+) 
+
+> Rd
+
+∀x ∈ M, X ∈ TxM. 
+
+(3.10) Integration by parts for the first term and evaluation of ∆ M in the second term shows that (3.10) is a linear second order elliptic problem for μ(t, ·)of the form: 
+
+[∂xv(t, ·)⊤∂xv(t, ·)]∆M μ(t, ·) = a(t, ·)μ(t, ·) + b(t, ·), (3.11) where the coefficients a and b depend on spatial derivatives of v(t, ·) up to order 3. Moreover, let us note that we cannot assume the condition (3.9) to hold for the initial data v(0 , ·) = u0, in general. Therefore, contrary to the fixed phase condition, we also cannot conclude from (3.11) that (3.9) holds for all t ∈ I .15 (4) semi-discrete energy based functions (type I) 
+
+The analysis proceeds along the lines of the orthogonal phase condition and leads to 0 = ψ4(v(t, ·), μ (t, ·), g )( x, X )=
+
+(
+
+∂xv(t, x )X, ∆M
+
+(v(t, ·) + ∆ t(F (v(t, ·)) + ∂xv(t, ·)μ(t, ·))(x)
+
+)
+
+> Rd
+
+∀x ∈ M, X ∈ TxM. 
+
+(3.12) Again, this is a second order elliptic problem of the same type as (3.11), and one can determine consistent initial values for μ(0 , ·) from (3.12) without any conflict. For a comparison, it is instructive to express the four phase functionals in terms of the modified vector field F (v, μ ) := F (v)+ ∂xvμ . Given ( v, μ, g ) ∈ U d × V × G
+
+the functionals are defined for x ∈ M, X ∈ TxM as follows: 
+
+ψ1(v, μ, g )( x, X ) = ( ∂xv(x)X, F (v, μ )( x)) Rd ,ψ2(v, μ, g )( x, X ) = ( ∂x ˆv(x)X, F (v, μ )( x)) Rd ,ψ3(v, μ, g )( x, X ) = ( ∂xF (v, μ )( x)X, ∆M v(x)) Rd + ( ∂xv(x)X, ∆M F (v, μ )( x)) Rd ,ψ4(v, μ, g )( x, X ) = ( ∂xv(x), ∆M (v + ∆ tF (v, μ ))( x)) Rd .
+
+# 4 Applications to flowing closed curves 
+
+In this section we consider the simple Example 2.3 and follow closed curves in a finite dimensional dynamical system (2.16), i.e. ˙u = f (u), f ∈ C∞(Rd, Rd). (4.1) Recall the state space Ud = C∞(S1, Rd) and the vector field F from (2.15). The Freezing equation (2.19), then leads to the following hyperbolic PDE system for the functions μ : I × S1 → R and v : I × S1 → Rd:
+
+∂tv(t, x ) = f (v(t, x )) + ∂xv(t, x )μ(t, x ), v(0 , x ) = u0(x). (4.2) The system will be closed by one of the phase conditions of Section 3.2. The time dependent diffeomorphism g : I × S1 → S1 is then determined from the reconstruction equation (2.20), i.e. 
+
+∂tg(t, x ) = ∂xg(t, x )μ(t, x ), g(0 , x ) = x. (4.3) In the following we describe our numerical setup and then put the main focus on the choice of phase condition, which is crucial for the Freezing method. 16 4.1 Relation to the method of characteristics 
+
+Let us note that one may solve the system (4.2) for a given function μ by the method of characteristics (see e.g. [11, Ch.3.2]). This method requires to solve for each x0 ∈ M the d + 1-dimensional system 
+
+ξ′(t) = −μ(t, ξ (t)) , ξ(0) = x0,h′(t) = f (h(t)) , h(0) = u0(x0).
+
+With the solutions denoted by ξ(t; x0) and h(t; u0(x0)), one then finds the solution v of (4.2) from the relation 
+
+v(t, ξ (t; x0)) = h(t; u0(x0)) , t ∈ I , x 0 ∈ M. 
+
+In our approach, the vector field μ defining the characteristics 
+
+{(t, ξ (t; x0)) ∈ Rd+1 : t ∈ I} 
+
+is not given a-priori but determined during the computation through the phase condition. Thus the orthogonal phase condition (3.4) may be interpreted as se-lecting characteristics which force the v-profile into an orthogonal direction (see Figure 3.2). Rather than following the solution along a bunch of characteristics we treat the PDE (4.2) directly and try to keep the structure of the underlying manifold M during time evolution. 
+
+4.2 Discretization of the Freezing system 
+
+For our model equation (4.2) above we write S1 = R/Z and decompose S1 =
+
+⋃Ni=1 Si into N segments Si = [ xi, x i+1 ] ⊂ [0 , 1] for i = 1 , . . . , N . In the fol-lowing, indices related to the grid are considered modulo N , which realizes the periodic boundary conditions. Further, we use equidistant grids: ∆x = 1
+
+N , xi := ( i − 1)∆ x ∈ [0 , 1] , i = 1 , . . . , N, tn = ( n − 1)∆ t, n = 1 , 2, . . . ∆t > 0.
+
+Our approximate quantities are denoted by 
+
+vni ≈ v(tn, x i), g ni ≈ g(tn, x i), μ ni ≈ μ(tn, x i), n = 1 , 2, . . . , i = 1 , . . . , N 
+
+with initial data v0 
+
+> i
+
+:= u0(xi), i = 1 , . . . , N. 
+
+17 We solve (4.2) here by the Lax-Wendroff (LxW) method commonly used for conservation laws with source terms (see [24], [16]). It is convenient to introduce the first and second order difference quotients 
+
+∂∆xvni = 1
+
+2∆ x (vni+1 − vni−1), ∂2∆xvni = 1
+
+∆x2 (vni+1 − 2vni + vni−1),∂∆xμni = 1
+
+2∆ x (μni+1 − μni−1), ∂∆tμni = 1
+
+∆t (μn+1  
+
+> i
+
+− μni )) .
+
+With these settings and the Jacobian ∂vf (v) of f , the fully discrete scheme reads ( i runs modulo N )
+
+vn+1  
+
+> i
+
+= vni + ∆ t[∂∆xvni + f (vni )] + ∆t2
+
+2 ∂vf (vni )[f (vni ) + 2 ∂∆xvni μni
+
+]
+
++ ∆t2
+
+2
+
+[
+
+∂2∆xvni (μni )2 + ∂∆xvni ∂∆xμni μni + ∂∆xvni ∂∆tμni
+
+]
+
+.
+
+(4.4) If μ is given, the LxW scheme is an explicit method which is second order consistent in space and time if f , μ and the solution v are sufficiently smooth. Note that (4.4) collapses to the Taylor method of order 2 for the ODE (4.1) if 
+
+μ ≡ 0. This fits well into our setup of C∞-manifolds and C∞-solutions, and a con-vergence result for the nonlinear LxW scheme in case of a constant function μ is provided in [29, Ch.4]. However, it is also well known that the LxW scheme pro-duces spurious oscillations for standard conservation laws when discontinuities, like shock waves, arise; see e.g. [25, Ch 10.3, 17.2]. The main departure from the standard case here is that the function μ is not given; rather, it is determined by the phase condition. Note that the expression 
+
+∂∆tμni = 1 
+
+> ∆t
+
+(μn+1  
+
+> i
+
+−μni ) contains the μ-values at the next time instance at which we want to impose the algebraic constraint. For the coupling we employ an implicit-explicit method (similar to the IMEX-RK methods in [3], [30]). First note that we can use (4.4) to express 
+
+∂∆tvni in terms of ∂∆tμni as 
+
+∂∆tvni = ani + bni ∂∆tμni ,
+
+where the terms ani , b ni can be read off from (4.4). For the orthogonal phase con-dition (3.5) we then approximate ∂xv(tn, x i) by the difference quotient ∂∆xvni .This leads to the condition 0 = ( ∂∆xvni , a ni + bni ∂∆tμni )Rd ,
+
+18 from which ∂∆tμni can be determined. With these values we perform an explicit LxW-step (4.4) to obtain vn+1  
+
+> i
+
+.In general, the phase condition provides the algebraic side constraint for (4.4) turning it into a system of N (d + 1) equations for the N (d + 1) un-knowns vn+1  
+
+> i
+
+, μ n+1  
+
+> i
+
+, i = 1 , . . . , N . The IMEX method described above avoids to solve such a fully nonlinear system. For the energy based phase conditions this implicit-explicit coupling is somewhat more involved, see below. For stability reasons the time-step of the LxW method should be chosen to satisfy the standard CFL condition |μ| ∆t 
+
+> ∆x
+
+< 1 for fixed μ, see [24, p.110 f.]. In our case μ is the free variable determined by an additional phase condition. Due to this condition it may happen that μ itself depends on ∆ t causing a negative feedback when ∆ t is decreased. Thus in practice we simply choose ∆ t = 1 
+
+> 2
+
+∆x
+
+and damp μ uniformly if needed to satisfy the CFL condition. The reconstruction equation (4.3) does not involve a source term and is solved in a similar way with less difficulties. With the half-step values 
+
+gn+1 /2 
+
+> i±1/2
+
+= gni±1 + gni
+
+2 ± ∆t gni±1 − gni
+
+2∆ x μni .
+
+the LxW scheme for g reads 
+
+gn+1  
+
+> i
+
+= gni + ∆t
+
+> ∆x
+
+(gn+1 /2 
+
+> i+1 /2
+
+− gn+1 /2
+
+> i−1/2
+
+)μn+1  
+
+> i
+
+, n = 1 , 2, . . . . 
+
+Note that for the reconstruction equation we use the boundary condition g(t, 1) = 1 + g(t, 0) for all t ∈ I which lifts the function g(t, ·) from S1 to R.
+
+# 5 Numerical Results 
+
+5.1 The normal form system for Hopf bifurcation 
+
+Our first system is the two-dimensional normal form of the Andronov-Hopf bifurcation (see e.g. [22]) 
+
+f (u) = 
+
+(−u2 + u1(λ − (u21 + u22)) 
+
+u1 + u2(λ − (u21 + u22)) 
+
+)
+
+. (5.5) In the following we use λ = 1 so that the unit circle S1 is an asymptotically stable periodic orbit for (5.5). As initial data u0 for our flowing curve we choose a circle with center (0 .6, 0) and radius 0 .6 (which intersects the system original periodic orbit). 19 Figure 5.1: Comparison of flowing curves for the original system (continuous lines) at times t = 0 , 0.5, 1, 1.5, 2 and 2 .5 with the LxW solution of the Freezing system with orthogonal phase condition (dotted lines showing the distribution of spatial nodes). The initial data u0 for our flowing curve we choose a circle with center (0 .6, 0) and radius 0 .6. For comparison, the first simulation is performed using the original system, i.e. we parameterize with time. Numerically this corresponds to (4.4) with μ ≡
+
+0, which corresponds to the second order Taylor method. Now we compare with the solution of the Freezing system, which uses an arbitrary parameterization by x ∈ S1, determined during integration. In Figure 5.1 the continuous curves represent the images of the initial circle obtained in this way for t = n 
+
+> 2
+
+, n = 0 , . . . , 5. We compare them with the images vni , i = 1 , . . . , 100 obtained by solving the Freezing system with time-step ∆ t = 10 −3 invoking the orthogonal phase condition. Note that this time is different from the time used in the original system, ˙ u = f (u), with f (u) given by (5.5). While the overlap is almost perfect for the first time instances, there are slight deviations at later times t = 2 , 2.5, in particular at the extremal points to the left. In this region, neighboring image points are moved apart as shown 20 0 0.5 1  
+
+> 00.5 1
+> 00.5 1
+> -1 -0.5 0
+
+(a) (b) Figure 5.2: The left graph shows the solutions g of the reconstruction equation for the orthogonal phase condition for the times t = 0 (red curve) and succes-sively for t = 0 .5, 1, 1.5, 2 and 2 .5. The corresponding curves for the control variables μ are shown in the right graph. Note that the graph of the diffeomor-phism becomes critical in very flat and very steep regions, which occur in the mid-interval as time progresses. by the distribution of nodes provided by the Freezing approach, so that linear interpolation of neighboring nodes becomes problematic for graphical represen-tation. For the same experiment we show in Figure 5.2 the functions μ(t, ·) and the reconstructed diffeomorphism g(t, ·) as obtained from the reconstruction equation. Although μ appears smooth, the reconstructed diffeomorphism g for this simulation exhibits intervals with critical steep regions ( ∂xg → ∞ ) as well as flat regions ( ∂xg → 0) which tend to violate the invertibility of g. This points towards the use of phase conditions which also involve gradients of the solution; see Section 5.2. In a second experiment we follow an initial circle which intersects the peri-odic orbit and which is deformed over time into a stretched banana-like curve, shown as a 3 D graphic in Figure 1.1. The first graphs show that the deviation of the exact continuous curves from the numerical solution of the Freezing sys-tem with orthogonal phase conditions starts being visible at even earlier times than in Figure 5.1. 21 -1 0 1
+
+-1 01
+
+Figure 5.3: Comparison of flowing curves for the original system (continuous lines) at times t = 0 , 0.5 and 1 with the LxW solution of the Freezing system with orthogonal phase condition (dotted lines showing the distribution of spatial nodes). The initial data u0 for this flowing curve is a circle with center (0 .9, 0) and radius 0 .6. 
+
+5.2 Energy based phase conditions 
+
+While the LxW scheme (4.4) is retained, we determine the μ-values at time 
+
+tn+1 from the semi-discrete condition (3.12). In fact, equation (3.12) is written down for all xi, i = 1 , . . . , N at tn+1 with all difference quotients of v evaluated at time tn. Then one obtains a linear system for the values μn+1  
+
+> i
+
+, i = 1 , . . . , N 
+
+which is a discretization of the two-point boundary value problem (3.12) with periodic boundary conditions. The associated matrix is almost tridiagonal with some extra entries in the upper right and lower left corners. Pursuing this approach for the first example in Section 5.1 (see Fig. 5.1) yields visually perfect coincidence with the exact continuous curves; see Figure 5.4. The following Figure 5.5 shows the development of the diffeomorphism g(t, ·)and the control variable μ(t, ·): The superiority of the energy based phase condition over the orthogonal 22 Figure 5.4: Comparison of flowing curves for the original system (continuous lines) at times t = 0 , 0.5, 1, 1.5, 2 and 2 .5 with the LxW solution of the Freezing system with semi-discrete energy based phase condition (dotted lines showing the distribution of spatial nodes).     
+
+> 00.5 1
+> 00.5 1
+> 00.5 1
+> -0.3 -0.15 0
+
+(a) (b) Figure 5.5: Evolution of the diffeomorphism g(t, ·) for the LxW scheme with semi-discrete energy based phase condition at times t = 0 , 0.5, 1, 1.5, 2 and 2 .5for the solutions shown in Figure 5.4 (left) and evolution of the control variable 
+
+μ for the same data (right). 23 -1 0 1
+
+-1 01
+
+Figure 5.6: Comparison of flowing curves for the original system (continuous lines) at times t = 0 , 0.5, 1, 1.5, 2 and 2 .5 with the LxW solution of the Freezing system with semi-discrete energy based phase condition (dotted lines showing the distribution of spatial nodes). phase condition is also clearly seen for the second example from Figure 5.1 where the initial curve is strongly distorted; see Figure 5.6. We also note the almost uniform distribution of nodes on the curve. The corresponding evolution of the map g(t, ·) and the control variable μ(t, ·)is shown in Figure 5.7. Note that the diffeomorphic property is finally lost at times when the curve develops very sharp bends (high curvature). This problem can be alleviated to a certain extent by passing from the energy integral to a curvature integral. We do not discuss the detailed results here but refer to [29, Ch.5.2.4]. 
+
+5.3 Grid evolution on energy levels 
+
+Our next example is a Hamiltonian system (4.1) with the vector field of the cubic oscillator 
+
+fcubic (u) = 
+
+( u2
+
+−4u31 + 2 u1
+
+)
+
+. (5.6) 24 0 0.5 1  
+
+> 00.5 1
+> 00.5 1
+> -0.4 -0.2 00.2
+
+(a) (b) Figure 5.7: Evolution of the map g(t, ·) for the LxW scheme with semi-discrete energy based phase condition at times t = 0 , 0.5, 1, 1.5, 2 and 2 .5 for the solu-tions shown in Figure 5.6 (left) and evolution of the control variable μ for the same data (right). Level curves of the energy 
+
+E(u) = 1
+
+2 u21 + V (u2), V (u2) = u22(u22 − 1) .
+
+are invariant under the flow and hence fixed points of the evolution operator (2.15). This allows us to compare the distribution of nodes for the various phase conditions. First note that the level curves are well approximated by our LxW method (4.4) due to its second order accuracy. The initial data u0 are given by u0(xi) := vsol (i∆τ ) where vsol is obtained from a standard ODE integrator with step-size ∆ τ applied to (4.1), (5.6). Since this deviates from arclength parameterization, the corresponding nodes are non-uniformly distributed on the image curve. Due to the construction of the initial data this parameterisation is retained naturally as we evolve the original system (this holds exactly if the step-size in time is an integer fraction of the period). On the other hand, the semi-discrete energy based phase condition quickly adapts the parameterisation and achieves a uniform distribution of nodes in the image space. This is confirmed by the corresponding time dependence of the nodes and of the control variable μ shown in Figure 5.9. Finally, we note that the orthogonal phase condition leaves all nodes fixed in this particular example since f and vx are linearly dependent. Thus there is no orthogonal part (see Fig. 3.2) and μ can be chosen here to nullify the flow field completely (to actually “freeze” it). 25 -1 -0.5 0 0.5 1    
+
+> -0.5 00.5
+> -1 -0.5 00.5 1
+> -0.5 00.5
+
+(a) (b) Figure 5.8: Two nodal distributions on an energy level of the cubic oscillator. The left panel emerges from a fixed time step integration of original system (μ ≡ 0) while the right panel distribution emerges from solving the Freezing system with semi-discrete energy based phase condition. 
+
+> 00.5 1
+> 010 20
+> -0.4 -0.2 0
+
+(a) (b) Figure 5.9: Cubic oscillator: Evolution of the μ-values for the original system by equidistant integration in time (left panel) and by the Freezing methods with semi-discrete energy based phase condition (right panel). The next Figure 5.10 shows the evolution of the difference quotient ‖∂∆xvni ‖
+
+for the semi-discrete energy based phase condition. It shows the quick process which evens out the spatial distances. Finally, we show in Figure 5.11 the evolution of the diffeomorphism g and the control variable μ when solving the Freezing system with the energy based phase condition. One observes that the 
+
+μ-variable moves like a traveling wave while the dynamics is rotating around the level curve. This time g(t, ·) stays smooth and invertible throughout the simulation. 26 Figure 5.10: Evolution of difference quotients || ∂∆xvni || during the first 20 steps for the semi-discrete energy based phase condition.        
+
+> 00.2 0.4 0.6 0.8 1
+> 00.2 0.4 0.6 0.8 1
+> 00.5 1
+> -0.3 -0.1 0.1
+
+(a) (b) Figure 5.11: (a) Evolution of the spatial profile of the diffeomorphism g for the Freezing system with energy based phase condition. (b) Evolution of the spatial profile of μ for the Freezing system with energy based phase condition. 
+
+# 6 Conclusion and further applications 
+
+This paper deals with first order evolution equations for vector-valued functions defined on a manifold. The vector field of the evolution equation is assumed to be equivariant under spatial diffeomorphisms of the manifold, i.e. under arbi-trary smooth coordinate transformations. Our numerical approach exploits this structure by introducing new time-dependent variables: a transformed solution and a time-dependent diffeomorphism that starts from the identity and is driven by an initially unknown time-dependent vector field. The resulting extended 27 evolution system (1.2), (1.3) is closed by imposing side constraints (phase con-ditions) that effectively determine the additional vector field. In Section 3 we derive several phase conditions from minimization principles. Their purpose is to minimize the time derivative of the solution, making it as stationary as pos-sible, or to minimize energy-like integrals of the solution, thereby reducing its spatial variations. In summary, the resulting system to be solved is a PDAE, that is, a partial differential equation with an infinite number (a discretized field) of algebraic side constraints. We formulate our approach within the framework of evolution equations that are equivariant under diffeomorphisms, using the tools of global analysis for infinite dimensional Lie groups [20]. From this perspective, our approach can be considered as an infinite-dimensional generalization of methods derived for finite dimensional symmetries. We remind the reader that, in the literature, these are known as reduction and reconstruction [31, 18], Freezing [7], or method of slices [13]. In this paper we restrict our attention to the simplest setting, namely the evolution of a parameterized manifold u0 : M → Rd in the phase space of a finite dimensional dynamical system 
+
+∂u 
+
+∂t (t, x ) = f (u(t, x )) , u(0 , x ) = u0(x), x ∈ M, f ∈ C∞(Rd, Rd).
+
+In this case the PDAE becomes a symmetric hyperbolic system (4.2), (4.3) with side constraints. We solve it by the explicit Lax-Wendroff method supplemented by an implicit step that enforces the algebraic constraints. We apply the method to closed curves in the phase space of two types of oscillators (limit cycles). The results show that energy-based phase conditions offer a clear advantage over time-based conditions, when the curves in phase space do not converge but instead become strongly distorted. We view these simulations as test cases for more general systems in which the vector field in function space depends on spatial derivatives, in particular on second-order derivatives. In the following, we mention several examples which fit into the abstract framework and to which our method applies. The first example is the curve shortening equation 
+
+ut = 1
+
+|ux|2 P (ux)uxx =: F (u), (6.1) where u : M → Rd with M = S1 or M = R and P (v) = Id − 1 
+
+> |v|2
+
+vv ⊤ is the orthogonal projector onto v⊥, v ∈ Rd; see [1]. Note that (6.1) is a coordinate 28 free version of the implicit form given in [1] 
+
+P (cx)ct = cxx , (6.2) which parameterizes the curve c : M → Rd by arclength. One readily ver-ifies that F in (6.1) is equivariant under the transformation from u(t, x ) to 
+
+u(t, g (t, x )) for g(t, ·) ∈ Diff( M ), and that the arclength version (6.2) is ob-tained by choosing g(t, x ) = ∫ x 
+
+> 0
+
+|ux(t, ξ )|dξ. We emphasize that the Freezing system (2.19), (2.20) for the curve shortening equation remains parabolic, since its principal part is elliptic and the additional terms are only first order in space. Similar assertions apply to the second order equation which describes the motion of a vortex filament u(t, ·) : M → R3 ; see [19] 
+
+ut = 1
+
+|ux|3 ux × uxx =: F (u).
+
+Again, this is the coordinate free version of the equation P (cx)ct = cx × cxx 
+
+used in [19] for curves parameterized by arclength. As a final application we mention mean curvature flow. To be more specific, consider the motion of a p-dimensional submanifold of Rd parameterized by some C∞-map u(t, ·) : M → Rd on an open subset M ⊆ Rp. The equation is 
+
+ut = ∆ M u =: F (u), u(0 , x ) = u0(x), x ∈ M, (6.3) where ∆ M is the Laplace-Beltrami operator given by ∆M u = 1
+
+g(u) div 
+
+(
+
+g(u)( u⊤ 
+
+> x
+
+ux)−1u⊤
+
+> x
+
+)
+
+with Gramian determinant g(u) = det (u⊤ 
+
+> x
+
+ux
+
+)1/2; see [9, Ch.3.1], [28]. The Laplace-Beltrami operator is known to be equivariant with respect to Diff( M ), so that equation (6.3) is already in coordinate-free form. The resulting Freezing system (2.19), (2.20) then keeps the type of a parabolic system with quasilinear elliptic principal part. 
+
+Acknowledgment: This paper is based in part on the thesis [29] which was initiated and supervised by WJB and YGK. We have incorporated some theoretical advances, and MEK has reorganized the numerical approach and carried out extended numerical experiments. The work of YGK was supported in part by the US National Science Foundation and the US Department of Energy. YGK also wishes to gratefully acknowledge decades-long discussions 29 and collaboration along this conceptual direction with Prof. P. G. Kevrekidis of the University of Massachusetts, starting with their joint work on PDE focusing in the early 2000 years. This ongoing collaboration has touched, at times, on several aspects of the present work, and is currently being separately prepared for publication. 
+
+# References 
+
+[1] D. J. Altschuler, S. J. Altschuler, S. B. Angenent, and L. F. Wu. The zoo of solitons for curve shortening in Rn. Nonlinearity , 26(5):1189–1226, 2013. [2] H. Amann and J. Escher. Analysis. III . Birkh¨ auser Verlag, Basel, 2009. Translated from the 2001 German original by Silvio Levy and Matthew Cargo. [3] U. M. Ascher, S. J. Ruuth, and R. J. Spiteri. Implicit-explicit Runge-Kutta methods for time-dependent partial differential equations. Appl. Numer. Math. , 25(2-3):151–167, 1997. Special issue on time integration (Amsterdam, 1996). [4] T. W. Baumgarte and S. L. Shapiro. Numerical relativity. Solving Ein-stein’s equations on the computer . Cambridge: Cambridge University Press, 2010. [5] W.-J. Beyn and D. Otten. Computation and stability of waves in equiv-ariant evolution equations. In Spectral structures and topological methods in mathematics , EMS Ser. Congr. Rep., pages 129–158. EMS Publ. House, Z¨ urich, 2019. [6] W.-J. Beyn, D. Otten, and J. Rottmann-Matthes. Stability and compu-tation of dynamic patterns in PDEs. Current Challenges in Stability Is-sues for Numerical Differential Equations, Lecture Notes in Mathematics ,2082:89–172, 2014. [7] W.-J. Beyn and V. Th¨ ummler. Freezing solutions of equivariant evolution equations. SIAM Journal on Applied Dynamical Systems - SIADS , 3(2):85– 116, 2004. 30 [8] W.-J. Beyn and V. Th¨ ummler. Phase conditions, symmetries and PDE continuation. In Numerical continuation methods for dynamical systems ,Underst. Complex Syst., pages 301–330. Springer, Dordrecht, 2007. [9] K. A. Brakke. The motion of a surface by its mean curvature , volume 20 of Mathematical Notes . Princeton University Press, Princeton, N.J., 1978. [10] Y. Choquet-Bruhat. Introduction to general relativity, black holes, and cosmology . Oxford University Press, Oxford, 2015. With a foreword by Thibault Damour. [11] L. C. Evans. Partial differential equations , volume 19 of Graduate Studies in Mathematics . American Mathematical Society, Providence, RI, second edition, 2010. [12] A. Fischer and J. E. Marsden. 1972: The Einstein equations of evolution— a geometric approach. Journal of Mathematical Physics , 13:546–568, 1972. [13] S. Froehlich and P. Cvitanovi´ c. Reduction of continuous symmetries of chaotic flows by the method of slices. Commun. Nonlinear Sci. Numer. Simul. , 17(5):2074–2084, 2012. [14] M. Golubitsky and D. G. Schaeffer. Singularities and groups in bifurcation theory. Vol. I , volume 51 of Applied Mathematical Sciences . Springer-Verlag, New York, 1985. [15] W. Huang and R. D. Russell. Adaptive moving mesh methods , volume 174 of Applied Mathematical Sciences . Springer, New York, 2011. [16] J. Hudson. Numerical Techniques for Conservation Laws with Source Terms . PhD thesis, University of Reading, 1998. [17] H. Jarchow. Locally Convex Spaces . Mathematische Leitf¨ aden. Vieweg+Teubner Verlag, 1981. [18] M. Kavousanakis, G. Fabiani, A. Georgiou, C. Siettos, P. Kevrekidis, and I. Kevrekidis. Going with the flow: Solving for symmetry-driven pde dynamics with physics-informed neural networks. arXiv preprint arXiv:2509.15963 , 2025. [19] B. Khesin. The vortex filament equation in any dimension. In Y. K. H.K. Moffatt, K. Bajer, editor, IUTAM Symposium on Topological Fluid 
+
+31 Dynamics: Theory and Applications , volume 7 of IUTAM , pages 135–140, 2013. [20] A. Kriegl and P. Michor. The Convenient Setting of Global Analysis , vol-ume 53. American Mathematical Society, 1997. [21] P. Kunkel and V. Mehrmann. Differential-algebraic equations . EMS Text-books in Mathematics. European Mathematical Society (EMS), Z¨ urich, 2006. Analysis and numerical solution. [22] Y. A. Kuznetsov. Elements of applied bifurcation theory , volume 112 of 
+
+Applied Mathematical Sciences . Springer-Verlag, New York, third edition, 2004. [23] T. Lee, M. Leok, and N. H. McClamroch. Global formulations of La-grangian and Hamiltonian dynamics on manifolds . Interaction of Mechan-ics and Mathematics. Springer, Cham, 2018. A geometric approach to modeling and analysis. [24] R. J. LeVeque. Numerical methods for conservation laws . Lectures in Mathematics ETH Z¨ urich. Birkh¨ auser Verlag, Basel, second edition, 1992. [25] R. J. LeVeque. Finite Volume Methods for Hyperbolic Problems . Cambridge Texts in Applied Mathematics. Cambridge University Press, 2002. [26] J. E. Marsden, D. G. Ebin, and A. E. Fischer. Diffeomorphism groups, hydrodynamics and relativity. In Proceedings of the Thirteenth Biennial Seminar of the Canadian Mathematical Congress Differential Geometry and Applications, (Dalhousie Univ., Halifax, N. S., 1971), Vol. 1 , pages 135–279. Canad. Math. Congr., Montreal, Que., 1972. [27] J. E. Marsden and T. S. Ratiu. Introduction to mechanics and symmetry ,volume 17 of Texts in Applied Mathematics . Springer-Verlag, New York, second edition, 1999. [28] M. Ritor´ e and C. Sinestrari. Mean curvature flow and isoperimetric in-equalities . Advanced Courses in Mathematics. CRM Barcelona. Birkh¨ auser Verlag, Basel, 2010. Edited by Vicente Miquel and Joan Porti. [29] J. R¨ ondigs. Following manifolds in equivariant evolution equations . PhD thesis, Bielefeld University, 2022. https://doi.org/10.4119/unibi/2967771. 32 [30] J. Rottmann-Matthes. An IMEX-RK scheme for capturing similarity so-lutions in the multidimensional Burgers’s equation. IMA J. Numer. Anal. ,39(1):342–373, 2019. [31] C. W. Rowley, I. G. Kevrekidis, J. E. Marsden, and K. Lust. Reduc-tion and reconstruction for self-similar dynamical systems. Nonlinearity ,16(4):1257–1275, 2003. [32] H. Schaefer. Topological vector spaces (3rd print) . Graduate texts in math-ematics 3. Springer-Verlag, 1971. [33] R. Schmid. Infinite-dimensional Lie Groups and Algebras in Mathematical Physics. Advances in Mathematical Physics , 35:280362, 2010. 
+
+# Appendix A Comments on the analytical framework 
+
+In this Appendix we indicate how the formal computations of Sections 2 and 3 can be put into a mathematically rigorous framework. Further, we want to link up the Freezing system (2.19), (2.20) to the well-known approach for finite dimensional Lie groups; see [6], [5]. A more detailed elaboration is given in the thesis [29]. The main source for our undertaking is the monograph [20] on global analy-sis. The authors of [20] work in the category of convenient vector spaces which are locally convex topological vector spaces satisfying a weak completeness con-dition, see [20, 2.14]. For example, Fr´ echet spaces (cf. [17, 2.8.1], [32, p.48]) are special types of convenient vector spaces, see [20, 2.14]. In particular, our phase space Ud = C∞(M, Rd) where M is a finite dimensional manifold becomes a Fr´ echet space when endowed with the topology of uniform convergence of all derivatives on compact subsets, see [20, 52.9]. According to [20, Theorem 43.1] the group G = Diff( M ) of C∞-diffeo-morphisms of the manifold M is a Lie group, i.e. inversion and composition are smooth operations with respect to the topology on the space of all smooth mappings C∞(M, M ), see [20, 42.1]. The Lie algebra g of Diff( M ) is defined as the tangent space T1(G) = g at unity 1 = id M and agrees with the convenient vector space of all smooth vector fields on M with compact support, denoted by C∞ 
+
+> c
+
+(M ← T M ) (see [20, Theorem 43.1]). Since M is compact in our setting, the space C∞ 
+
+> c
+
+(M ← T M ) agrees with the space V = C∞(M, T M ) from (2.2). It is a well accepted fact that such a calculus of infinite-dimensional Lie groups 33 does not exist for manifolds of mappings with finite smoothness, for example in Ck(M, M ), see [20, Introduction], [33]. In the calculus above, the derivative of the multiplication from the left 
+
+Lγ : G → G, Lγ (g) = γ ◦ g, g ∈ G. 
+
+at g = 1 turns out to be 
+
+dgLγ (1)μ = ∂xγ ◦ μ for μ ∈ g = C∞(M, T M ). (A.1) Note that μ(x) ∈ TxM for x ∈ M and ∂xγ(x) : TxM → Tγ(x)M , hence one has ∂xγ(x) ◦ μ(x) ∈ Tγ(x)M and the derivative dg Lγ (1) maps the tangent space 
+
+T1G = g into the tangent space Tγ G = TLγ (1)G as expected. In a similar way, the derivative ∂g a(g, u ) of the action from (2.8) at g = 1
+
+is found to be 
+
+∂g a(1, u )μ = −∂xu ◦ μ, μ ∈ g = C∞(M, T M ). (A.2) The map ∂ga(1, u ) : g → C∞(M, Rd) = Ud is also called the generator of the group action on Ud. With the relations (A.1) and (A.2) to the abstract setting we may write the Freezing system (2.19), (2.20) as follows: 
+
+∂tv(t, ·) = F (v(t, ·)) − ∂ga(1, v (t)) μ(t), v(0 , ·) = u0(·),∂tg(t, ·) = dgLg(t)(1)μ(t), g(0 , ·) = 1.
+
+This is precisely the form of the Freezing equations derived for finite dimensional Lie groups in [6], [7]. Hence, using this calculus, our new system (2.19), (2.20) appears as a direct generalization of the finite dimensional case. 34

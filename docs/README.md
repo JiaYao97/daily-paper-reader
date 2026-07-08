@@ -6,74 +6,64 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-07
-- 运行时间：2026-07-07 21:35:19 UTC
+- 最新运行日期：2026-07-08
+- 运行时间：2026-07-08 21:52:08 UTC
 - 运行状态：成功
-- 本次总论文数：18
-- 精读区：7
+- 本次总论文数：14
+- 精读区：3
 - 速读区：11
 
 ### 今日简报（AI）
-今日精读2篇高分论文、速读3篇，重点聚焦湍流超分辨率压缩与GPU加速城市风场建模。最值得关注方向：SCoReT方法的湍流重建与城市微气象的实时模拟，二者均达9.0/10。建议普通读者优先了解AI与物理模拟结合如何突破计算效率瓶颈。
-- 详情：[/202607/07/README](/202607/07/README)
+今日处理14篇论文，精读3篇，速读11篇，聚焦气体表面散射与物理信息神经网络。  
+最值得看的是高分的《条件归一化流用于气体表面散射》和《物理信息神经嵌入解族》，涵盖热至高超音速场景与PDE求解新思路。  
+建议普通读者优先关注物理信息嵌入与流体力学简化模型，它们在实际问题中应用潜力大。
+- 详情：[/202607/08/README](/202607/08/README)
 
 ### 精读区论文标签
-1. [SCoReT: Super-Resolution Compression and Reconstruction of Turbulent Flows](/202607/07/2607.03683v1-scoret-super-resolution-compression-and-reconstruction-of-turbulent-flows)  
-   标签：评分：9.0/10、query:flow-pred
-   evidence：从稀疏测量中重建湍流场
-2. [Near-real-time, meter-scale 3D urban wind modeling for low-altitude micrometeorology: numerical verification of a GPU-accelerated lattice Boltzmann framework](/202607/07/2607.04516v1-near-real-time-meter-scale-3d-urban-wind-modeling-for-low-altitude-micrometeorology-numerical-verification-of-a-gpu-accelerated-lattice-boltzmann-framework)  
-   标签：评分：9.0/10、query:flow-pred
-   evidence：基于稀疏观测的风场重建
-3. [Nanosecond DBD-Induced Shock and Thermal Perturbations on Blunt Bodies in Hypersonic Flow](/202607/07/2607.04992v1-nanosecond-dbd-induced-shock-and-thermal-perturbations-on-blunt-bodies-in-hypersonic-flow)  
+1. [Conditional Normalizing Flow for Gas-Surface Scattering from Thermal to Hypersonic Velocities](/202607/08/2606.31928v2-conditional-normalizing-flow-for-gas-surface-scattering-from-thermal-to-hypersonic-velocities)  
    标签：评分：9.0/10、query:sfc
-   evidence：高超声速流动、热扰动、激波相互作用
-4. [Generative Model Proposal based Particle Filtering for Data Assimilation](/202607/07/2607.01012v2-generative-model-proposal-based-particle-filtering-for-data-assimilation)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：生成模型提议的粒子滤波数据同化，适用于稀疏传感器流场重建
-5. [Reduced-Order Models: The Mother of World Models](/202607/07/2607.03198v1-reduced-order-models-the-mother-of-world-models)  
+   evidence：用于高超音速下气体-表面散射的条件归一化流
+2. [Physics-Informed Neural Embeddings of PDE Solution Families](/202607/08/2607.06348v1-physics-informed-neural-embeddings-of-pde-solution-families)  
    标签：评分：8.0/10、query:pc-latent
-   evidence：从湍流数据通过POD学习潜在动力学；世界模型视角
-6. [Generalizable turbulence closures across bluff-body shapes by PINN-based solver-agnostic training](/202607/07/2607.04491v1-generalizable-turbulence-closures-across-bluff-body-shapes-by-pinn-based-solver-agnostic-training)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：基于PINN的数据驱动湍流闭合模型用于流场预测
-7. [On the Genealogy of Machine Learning Weather Prediction](/202607/07/2607.05045v1-on-the-genealogy-of-machine-learning-weather-prediction)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：机器学习天气预报综述，讨论数据驱动和物理约束的流体流动建模方法
+   evidence：PDE解族的物理信息潜在流形
+3. [The Right Space for Dynamics: Numerics with Diffeomorphism Equivariance](/202607/08/2607.06536v1-the-right-space-for-dynamics-numerics-with-diffeomorphism-equivariance)  
+   标签：评分：8.0/10、query:pc-latent
+   evidence：利用微分同胚等变性选择动力学潜在空间
 
 ### 速读区论文标签
-1. [The PICNN-Assisted Physics-Preserving Scheme for Thermodynamically Consistent Two-Phase Flow in Porous Media](/202607/07/2607.01020v1-the-picnn-assisted-physics-preserving-scheme-for-thermodynamically-consistent-two-phase-flow-in-porous-media)  
+1. [Accelerating droplet-laden Stokes flow simulations with hierarchical surrogate modeling](/202607/08/2607.03301v1-accelerating-droplet-laden-stokes-flow-simulations-with-hierarchical-surrogate-modeling)  
    标签：评分：7.0/10、query:flow-pred
-   evidence：物理信息CNN用于两相流预测并保持守恒律
-2. [Self-explainable Operator Learning for Discovering Spatial Patterns in Functional Data](/202607/07/2607.02203v1-self-explainable-operator-learning-for-discovering-spatial-patterns-in-functional-data)  
+   evidence：Stokes流的多保真层次代理建模
+2. [Mean-flow-based reduced-order models of turbulent channel flow](/202607/08/2607.03309v1-mean-flow-based-reduced-order-models-of-turbulent-channel-flow)  
    标签：评分：7.0/10、query:flow-pred
-   evidence：算子学习用于物理系统，可解释模型
-3. [Accelerating droplet-laden Stokes flow simulations with hierarchical surrogate modeling](/202607/07/2607.03301v1-accelerating-droplet-laden-stokes-flow-simulations-with-hierarchical-surrogate-modeling)  
-   标签：评分：7.0/10、query:flow-pred
-   evidence：Stokes流替代建模与仿真加速
-4. [PIEFS: Physics-Informed Eigenfunction Features with Learnable Scaling](/202607/07/2607.03692v1-piefs-physics-informed-eigenfunction-features-with-learnable-scaling)  
+   evidence：湍流流场预测的降阶模型
+3. [PIEFS: Physics-Informed Eigenfunction Features with Learnable Scaling](/202607/08/2607.03692v2-piefs-physics-informed-eigenfunction-features-with-learnable-scaling)  
    标签：评分：7.0/10、query:pc-latent
-   evidence：物理约束的潜在空间学习
-5. [U3DWind: A Low Altitude Wind Field Dataset and Benchmark for Urban Air Mobility](/202607/07/2607.04495v1-u3dwind-a-low-altitude-wind-field-dataset-and-benchmark-for-urban-air-mobility)  
-   标签：评分：7.0/10、query:flow-pred
-   evidence：GPU加速CFD生成风场数据集和基准
-6. [A second-order unified gas-kinetic wave-particle method with enhanced mesh independence for hypersonic flows](/202607/07/2606.29853v1-a-second-order-unified-gas-kinetic-wave-particle-method-with-enhanced-mesh-independence-for-hypersonic-flows)  
+   evidence：具有谱偏差的可学习度量物理信息表示学习
+4. [Constrained Flow Matching via Lagrangian Dual Flows](/202607/08/2607.04513v1-constrained-flow-matching-via-lagrangian-dual-flows)  
+   标签：评分：7.0/10、query:pc-latent
+   evidence：提出使用拉格朗日对偶动力学的约束生成方法，可应用于物理约束潜在空间建模
+5. [Orthogonal Dendritic Intrinsic Networks: An Architecture for Significance-Ordered, Orthogonal Latent Spaces](/202607/08/2607.05653v1-orthogonal-dendritic-intrinsic-networks-an-architecture-for-significance-ordered-orthogonal-latent-spaces)  
+   标签：评分：7.0/10、query:pc-latent
+   evidence：强制潜在空间正交且方差排序的自编码器架构
+6. [Self-Supervised Implicit CEST Reconstruction via Physics-Informed Lorentz Encoding](/202607/08/2607.06132v1-self-supervised-implicit-cest-reconstruction-via-physics-informed-lorentz-encoding)  
+   标签：评分：7.0/10、query:pc-latent
+   evidence：用于CEST重建的物理信息隐式神经表示
+7. [Tropical Geometry as a Restricted Architecture for Physics-Informed Neural Networks: Applications in Nonlinear Fluid-Structure Examples](/202607/08/2607.00237v1-tropical-geometry-as-a-restricted-architecture-for-physics-informed-neural-networks-applications-in-nonlinear-fluid-structure-examples)  
+   标签：评分：6.0/10、query:flow-pred
+   evidence：将热带几何应用于限制PINN架构，解决非线性流固耦合问题（包括冲击波），与流体动力学神经算子相关
+8. [HVAF Spraying of NiTi Coatings: Microstructure, Phase Transformation and Shape Memory Behavior](/202607/08/2607.01997v1-hvaf-spraying-of-niti-coatings-microstructure-phase-transformation-and-shape-memory-behavior)  
    标签：评分：6.0/10、query:sfc
-   evidence：二阶统一气体动理学波粒子方法用于高超声速流动
-7. [Offline Reinforcement Learning for Fluid Controls: Data-based Multi-observational Policy Extraction](/202607/07/2606.31025v1-offline-reinforcement-learning-for-fluid-controls-data-based-multi-observational-policy-extraction)  
+   evidence：通过HVAF喷涂制备热防护涂层
+9. [Pointwise Error Estimates for Numerical Physics-Informed Neural Networks](/202607/08/2607.03431v1-pointwise-error-estimates-for-numerical-physics-informed-neural-networks)  
    标签：评分：6.0/10、query:flow-pred
-   evidence：数据驱动的离线强化学习用于流体控制，与流场预测相关
-8. [eXact-Prior Variational Autoencoder (X-VAE): Learning Data-Adaptive Gaussian Mixture Priors for Latent Distributions](/202607/07/2607.01275v1-exact-prior-variational-autoencoder-x-vae-learning-data-adaptive-gaussian-mixture-priors-for-latent-distributions)  
-   标签：评分：6.0/10、query:pc-latent
-   evidence：潜在空间先验学习与数据自适应高斯混合
-9. [Mitigating Numerical Stiffness in Least-Squares Formulations of Elliptic PDEs for Physics-Informed Neural Networks](/202607/07/2607.02726v1-mitigating-numerical-stiffness-in-least-squares-formulations-of-elliptic-pdes-for-physics-informed-neural-networks)  
+   evidence：数值物理信息神经网络的逐点误差估计
+10. [Gaussian kinetic representations of rarefied nonequilibrium flows](/202607/08/2607.05753v1-gaussian-kinetic-representations-of-rarefied-nonequilibrium-flows)  
    标签：评分：6.0/10、query:flow-pred
-   evidence：物理信息神经网络用于PDE求解，可应用于流场预测
-10. [FM-ChangeNet: Learning Change through Pathwise Feature Transport](/202607/07/2607.04750v1-fm-changenet-learning-change-through-pathwise-feature-transport)  
-   标签：评分：6.0/10、query:pc-latent
-   evidence：路径特征传输与潜在状态
-11. [Target-Guided Selective Reweighting for Physics-Informed Neural Network Inverse Problems: A Transfer Learning Approach](/202607/07/2607.05271v1-target-guided-selective-reweighting-for-physics-informed-neural-network-inverse-problems-a-transfer-learning-approach)  
-   标签：评分：6.0/10、query:pc-latent
-   evidence：物理信息神经网络与迁移学习用于逆问题
+   evidence：基于动力学表示的紧凑流场重构
+11. [PhyRes-MDNF: Physics-Coupled Residual GNN Correction for Multilevel Discrete Neural Field Inversion](/202607/08/2607.06237v1-phyres-mdnf-physics-coupled-residual-gnn-correction-for-multilevel-discrete-neural-field-inversion)  
+   标签：评分：6.0/10、query:flow-pred
+   evidence：物理耦合神经场反演用于PDE系数估计，与流场重建相关
 
 
 <div class="dpr-home-promo-card">

@@ -1,0 +1,589 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-08T21:41:48.991722+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 3,
+    "deep_divecandidates": 3,
+    "deep_cap": 8,
+    "deep_selected": 3,
+    "quick_candidates": 11,
+    "quick_skim_target": 13,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2606.31928v2",
+      "source": "arxiv",
+      "title": "Conditional Normalizing Flow for Gas-Surface Scattering from Thermal to Hypersonic Velocities",
+      "abstract": "Accurate aerodynamic modeling of satellites in very low Earth orbit (VLEO) requires gas-surface interaction (GSI) models that capture the full velocity spectrum from thermal to orbital speeds. Atmospheric particles initially strike spacecraft surfaces at hypersonic velocities of 6 000 - 10 000 m/s. Due to surface roughness and complex geometries, especially within air-breathing electric propulsion (ABEP) intake systems, multiple collisions occur, progressively reducing the particle velocities. A recent machine learning framework for deriving scattering kernels from molecular dynamics (MD) simulations has shown promise, but remains limited to high-velocity single impacts and possibly violates fundamental equilibrium principles such as detailed balance. This work extends this machine learning based scattering kernel to cover the complete velocity range using conditional normalizing flows trained with physics-informed constraints, enabling accurate modeling of multi-bounce scenarios in realistic VLEO applications. We train a conditional Real-valued Non-Volume Preserving (cRealNVP) model on expanded molecular dynamics simulations covering velocities from thermal to hypersonic speeds, incorporating a detailed balance loss term. The resulting model demonstrates improved accuracy compared to previous approaches even in the original high-velocity regime, while successfully capturing thermal-velocity scattering. Quantitative assessment shows that thermalization is approximated within acceptable tolerances. This framework provides essential capabilities for accurate ABEP intake optimization and VLEO mission planning while offering a general methodology applicable to broader rarefied gas dynamics problems requiring thermodynamic consistency.",
+      "authors": [
+        "Miklas Schütte",
+        "Stephen Hocker",
+        "Hansjörg Lipp",
+        "Johannes Roth",
+        "Stefanos Fasoulas",
+        "Marcel Pfeiffer"
+      ],
+      "primary_category": "physics.comp-ph",
+      "categories": [
+        "physics.comp-ph"
+      ],
+      "published": "2026-06-30T16:36:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.31928v2",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:sfc"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "conditional normalizing flow for gas-surface scattering at hypersonic velocities",
+      "llm_evidence_cn": "用于高超音速下气体-表面散射的条件归一化流",
+      "llm_evidence": "用于高超音速下气体-表面散射的条件归一化流",
+      "canonical_evidence": "用于高超音速下气体-表面散射的条件归一化流",
+      "llm_tldr_en": "Uses conditional normalizing flow to model gas-surface scattering from thermal to hypersonic velocities, enabling accurate aerodynamic modeling for satellite thermal protection.",
+      "llm_tldr_cn": "本文针对非常低地球轨道卫星的气动建模问题，提出条件归一化流框架模拟气体-表面散射。该模型覆盖从热运动到高超音速（6000-10000 m/s）的全速度谱，可处理多次碰撞导致的能量衰减。基于分子动力学数据训练，克服了传统模型仅适用于单次高速碰撞的局限。实验证明该框架能准确预测散射核，并遵守平衡原理。该工作为高超音速热防护系统中的气体动力学分析提供了新的数据驱动工具。",
+      "llm_tldr": "本文针对非常低地球轨道卫星的气动建模问题，提出条件归一化流框架模拟气体-表面散射。该模型覆盖从热运动到高超音速（6000-10000 m/s）的全速度谱，可处理多次碰撞导致的能量衰减。基于分子动力学数据训练，克服了传统模型仅适用于单次高速碰撞的局限。实验证明该框架能准确预测散射核，并遵守平衡原理。该工作为高超音速热防护系统中的气体动力学分析提供了新的数据驱动工具。",
+      "llm_tags": [
+        "query:sfc"
+      ],
+      "matched_query_tag": "query:sfc",
+      "matched_query_text": "hypersonic thermal protection",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.06348v1",
+      "source": "arxiv",
+      "title": "Physics-Informed Neural Embeddings of PDE Solution Families",
+      "abstract": "We introduce a physics-informed framework for learning finite-dimensional embeddings of solution families of partial differential equations. The method uses a multihead Physics-Informed Neural Network in which a shared body learns a latent manifold representing the solution space, while linear heads reconstruct individual solutions associated with different initial conditions. A head-orthogonalization penalty removes degeneracies in the latent representation and stabilizes the principal-component spectrum across training realizations. Because the initial condition is built into the network output by construction, these principal components measure the additional variability the network learns on top of the initial profile, not the full solution itself. We apply the method to the one-dimensional viscous Burgers equation, with the heat and wave equations as robustness checks. For a latent dimension $n_b=20$, the learned manifolds exhibit pronounced effective dimensional reduction: for Burgers dynamics, only $2$-$4$ principal components capture about $95\\%$ of the latent-space variance, while $4$-$7$ capture about $99\\%$, depending on the initial-condition family; the same qualitative compression holds for the heat and wave equations. We also split the wavenumber axis into bands (``Fourier shells'') and measure how much each band contributes to every principal component. The resulting frequency profile is invariant under the change-of-basis freedom that the orthogonalization penalty leaves in the latent space, and is therefore reproducible across independent training runs. More broadly, this establishes the learned spectral profiles and principal components as robust observables of solution-manifold geometry.",
+      "authors": [
+        "Raul Jimenez",
+        "Svitlana Mayboroda",
+        "Pavlos Protopapas",
+        "Leonid Sarieddine",
+        "David N. Spergel",
+        "Pedro Tarancón-Álvarez"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "math.NA",
+        "physics.comp-ph"
+      ],
+      "published": "2026-07-07T14:45:42+00:00",
+      "link": "https://arxiv.org/pdf/2607.06348v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "physics-informed latent manifold for PDE solutions",
+      "llm_evidence_cn": "PDE解族的物理信息潜在流形",
+      "llm_evidence": "PDE解族的物理信息潜在流形",
+      "canonical_evidence": "PDE解族的物理信息潜在流形",
+      "llm_tldr_en": "A physics-informed neural network learns finite-dimensional embeddings of PDE solution families using a shared latent manifold with orthogonality penalty, enabling structured representation under physical constraints.",
+      "llm_tldr_cn": "现有方法难以学习PDE解族的结构化表示。本文提出一种物理信息神经网络框架，通过共享主体学习潜在流形，线性头重建不同初始条件的解，并利用正交化惩罚稳定表示。实验表明该方法能有效嵌入解族，并揭示解空间的主成分。该工作为物理约束下的潜在变量学习提供了新途径。",
+      "llm_tldr": "现有方法难以学习PDE解族的结构化表示。本文提出一种物理信息神经网络框架，通过共享主体学习潜在流形，线性头重建不同初始条件的解，并利用正交化惩罚稳定表示。实验表明该方法能有效嵌入解族，并揭示解空间的主成分。该工作为物理约束下的潜在变量学习提供了新途径。",
+      "llm_tags": [
+        "query:pc-latent"
+      ],
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "physics constrained learning for latent space models",
+      "matched_requirement_id": "req-16",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.06536v1",
+      "source": "arxiv",
+      "title": "The Right Space for Dynamics: Numerics with Diffeomorphism Equivariance",
+      "abstract": "Among many (equivalent, via invertible transformations) representations of the evolution of a dynamical system, which one is to be preferred? Here we show how the use of infinite-dimensional Lie group theory (and its numerical implementation) allows us to single out one representation, by selecting an element of the group of diffeomorphisms acting on the dynamical system. We present and discuss several types of ``phase conditions\" defining the selected representation, and illustrate their computational implementation. Study of dynamics modulo diffeomorphisms ``liberates\" mathematical modeling of physical phenomena from a user's preferred coordinates, and spontaneously selects a ``right latent space\" for the system.",
+      "authors": [
+        "Wolf-Juergen Beyn",
+        "Michail E. Kavousanakis",
+        "Yannis G. Kevrekidis"
+      ],
+      "primary_category": "math.DS",
+      "categories": [
+        "math.DS"
+      ],
+      "published": "2026-07-07T17:41:46+00:00",
+      "link": "https://arxiv.org/pdf/2607.06536v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Selects a latent space for dynamics using diffeomorphism equivariance",
+      "llm_evidence_cn": "利用微分同胚等变性选择动力学潜在空间",
+      "llm_evidence": "利用微分同胚等变性选择动力学潜在空间",
+      "canonical_evidence": "利用微分同胚等变性选择动力学潜在空间",
+      "llm_tldr_en": "Proposes a method to select an optimal latent space for dynamical systems via diffeomorphism equivariance, using Lie group theory.",
+      "llm_tldr_cn": "该论文针对动力学系统表示不唯一的问题，提出利用无限维李群理论选择微分同胚等变下的最优表示。通过多种相位条件确定动力学系统的固有潜在空间，避免坐标选择的人为性。数值实验展示了该方法在自动选择合适潜在空间方面的有效性，为揭示系统内在结构提供了新视角。",
+      "llm_tldr": "该论文针对动力学系统表示不唯一的问题，提出利用无限维李群理论选择微分同胚等变下的最优表示。通过多种相位条件确定动力学系统的固有潜在空间，避免坐标选择的人为性。数值实验展示了该方法在自动选择合适潜在空间方面的有效性，为揭示系统内在结构提供了新视角。",
+      "llm_tags": [
+        "query:pc-latent"
+      ],
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "latent dynamics",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.03301v1",
+      "source": "arxiv",
+      "title": "Accelerating droplet-laden Stokes flow simulations with hierarchical surrogate modeling",
+      "abstract": "We present a surrogate modeling strategy for Stokes flows with liquid droplets suspended in a carrier fluid. Our approach is based on a multi-fidelity framework. At the lowest fidelity, droplets are treated as passive tracers, neglecting their influence on the ambient flow field. Building on this approximation, we derive a PDE that represents the current modeling error. This error equation is then solved approximately to correct the flow field and the procedure is iterated. Two fidelities are employed in an alternating fashion: Stokes flow in the absence of droplets and flow around a single droplet in free space. By systematically combining these models, the method captures droplet-flow, droplet-boundary, and droplet-droplet interactions. For geometrically similar droplets, we further develop an efficient offline-online strategy that exploits this structure by reusing precomputed single-droplet solutions. Numerical experiments demonstrate the accuracy and efficiency of the proposed surrogate in a variety of tests, including scenarios with up to 10,000 droplets. Notably, we show that the proposed surrogate achieves substantially reduced computational cost compared to fully resolved multi-fluid simulations with state-of-the-art software.",
+      "authors": [
+        "Davide Pradovera",
+        "Thomas Frachon",
+        "Sara Zahedi"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA",
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-03T13:11:48+00:00",
+      "link": "https://arxiv.org/pdf/2607.03301v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "hierarchical surrogate modeling for Stokes flow prediction",
+      "llm_evidence_cn": "Stokes流的多保真层次代理建模",
+      "llm_evidence": "Stokes流的多保真层次代理建模",
+      "canonical_evidence": "Stokes流的多保真层次代理建模",
+      "llm_tldr_en": "A multi-fidelity surrogate modeling strategy for droplet-laden Stokes flows that iteratively corrects flow fields by solving PDE of modeling error, capturing droplet interactions efficiently.",
+      "llm_tldr_cn": "液滴悬浮Stokes流模拟计算成本高。本文提出层次化代理模型策略，将液滴作为被动示踪物作为低保真模型，推导误差PDE并迭代矫正，交替使用无液滴和单液滴解析解。该方法有效捕捉液滴-流场、液滴-边界和液滴-液滴相互作用，加速模拟。",
+      "llm_tldr": "液滴悬浮Stokes流模拟计算成本高。本文提出层次化代理模型策略，将液滴作为被动示踪物作为低保真模型，推导误差PDE并迭代矫正，交替使用无液滴和单液滴解析解。该方法有效捕捉液滴-流场、液滴-边界和液滴-液滴相互作用，加速模拟。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "flow field prediction methods",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.00237v1",
+      "source": "arxiv",
+      "title": "Tropical Geometry as a Restricted Architecture for Physics-Informed Neural Networks: Applications in Nonlinear Fluid-Structure Examples",
+      "abstract": "Nonlinear algebraic (polynomial) differential equations that govern fluid-structure interactions, such as those modeling vortex-induced vibrations, and shock waves, often lack analytical solutions, creating significant challenges to efficient prediction and control. While Physics-Informed Neural Networks (PINNs) offer a mesh-free numerical alternative, they frequently suffer from convergence stagnation when optimizing over chaotic landscapes or stiff singularities. This paper introduces a hybrid methodology that integrates tropical differential algebraic geometry with deep learning. Using tropical algebra, we algorithmically determine a hard constraint, which we use to restrict the neural network's hypothesis space to the exact support of the valid formal power series solution. We establish a theoretical Valuation-Support equivalence between classical Briot-Bouquet indicial analysis and the fundamental theorem of tropical differential algebraic geometry, proving that tropical methods accurately identify singularity structures. Numerical experiments on the Van der Pol and Burgers' equations demonstrate that embedding these tropical constraints directly into the network architecture drastically reduces the search space, overcoming optimization stagnation and improving both accuracy and convergence speed in non-homogeneous physical regimes.",
+      "authors": [
+        "Carla Valencia-Negrete",
+        "Cristhian Garay-Lopez",
+        "Marco Favela-Rodriguez",
+        "Alonso Andapia-Viveros"
+      ],
+      "primary_category": "math.AP",
+      "categories": [
+        "math.AP",
+        "math.AC"
+      ],
+      "published": "2026-06-30T22:29:05+00:00",
+      "link": "https://arxiv.org/pdf/2607.00237v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Applies tropical geometry to restrict PINN architecture for nonlinear fluid-structure problems, including shock waves; relevant to neural operators for fluid dynamics",
+      "llm_evidence_cn": "将热带几何应用于限制PINN架构，解决非线性流固耦合问题（包括冲击波），与流体动力学神经算子相关",
+      "llm_evidence": "将热带几何应用于限制PINN架构，解决非线性流固耦合问题（包括冲击波），与流体动力学神经算子相关",
+      "canonical_evidence": "将热带几何应用于限制PINN架构，解决非线性流固耦合问题（包括冲击波），与流体动力学神经算子相关",
+      "llm_tldr_en": "Integrates tropical geometry with PINNs to solve nonlinear fluid-structure equations, offering a restricted architecture that improves convergence for shock and vortex problems.",
+      "llm_tldr_cn": "该论文针对物理信息神经网络（PINNs）在非线性流固耦合问题（如涡激振动、冲击波）中收敛困难的问题，引入热带代数几何方法，通过算法确定硬约束来限制网络架构，从而提高求解稳定性。实验表明该方法在基准问题上优于标准PINNs，为流体动力学神经算子提供了新途径。",
+      "llm_tldr": "该论文针对物理信息神经网络（PINNs）在非线性流固耦合问题（如涡激振动、冲击波）中收敛困难的问题，引入热带代数几何方法，通过算法确定硬约束来限制网络架构，从而提高求解稳定性。实验表明该方法在基准问题上优于标准PINNs，为流体动力学神经算子提供了新途径。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "neural operators for fluid dynamics",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.03309v1",
+      "source": "arxiv",
+      "title": "Mean-flow-based reduced-order models of turbulent channel flow",
+      "abstract": "Reduced-order models (ROMs) for turbulent flows based on Galerkin projection can achieve reasonable accuracy using equation-based modal bases derived from the linearized Navier-Stokes equations through the controllability and observability Gramians. The use of the modal bases obtained from linearized equations around a mean state has been seen to enhance the first- and second-order statistics in the ROM, but the use of the mean state was not necessarily extended to the equations of motion, as it implies the treatment of the divergence of the Reynolds stresses in the Galerkin projection. In this work, we present a mean-flow-based framework for ROMs in which the projection of the Reynolds stresses is solved through a modified modal basis and the knowledge of the mean flow. This framework achieves turbulence statistics comparable to those of a reference direct numerical simulation (DNS) in a minimal channel at $Re_τ \\approx 185$. Short-time forecasting with this framework is assessed, where balanced truncation modal bases outperform controllability modes in ROMs, yielding a reconstruction of the velocity field comparable to the Galerkin projection of proper orthogonal decomposition (POD) modes. This framework can extend analysis based on linearisations around the mean turbulent flow, which became widespread in recent years, to include explicitly non-linear interactions between modes, enabling accurate models at higher Reynolds number.",
+      "authors": [
+        "Ian Addison-Smith",
+        "Igor A. Maia",
+        "André V. G. Cavalieri",
+        "Benjamin Herrmann"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-03T13:26:52+00:00",
+      "link": "https://arxiv.org/pdf/2607.03309v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "reduced-order models for turbulent flow prediction",
+      "llm_evidence_cn": "湍流流场预测的降阶模型",
+      "llm_evidence": "湍流流场预测的降阶模型",
+      "canonical_evidence": "湍流流场预测的降阶模型",
+      "llm_tldr_en": "Presents a mean-flow-based reduced-order model framework for turbulent channel flow, enhancing first- and second-order statistics by projecting Reynolds stresses through modified modal bases.",
+      "llm_tldr_cn": "本文针对湍流通道流，提出了一种基于平均流的降阶模型框架。通过修正模态基处理雷诺应力的投影，增强了模型的一阶和二阶统计量精度。该方法为复杂湍流流场的快速预测提供了有效手段。",
+      "llm_tldr": "本文针对湍流通道流，提出了一种基于平均流的降阶模型框架。通过修正模态基处理雷诺应力的投影，增强了模型的一阶和二阶统计量精度。该方法为复杂湍流流场的快速预测提供了有效手段。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "flow field prediction methods",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.01997v1",
+      "source": "arxiv",
+      "title": "HVAF Spraying of NiTi Coatings: Microstructure, Phase Transformation and Shape Memory Behavior",
+      "abstract": "Depositing various coatings on surface of engineering components with the aim to improve their performance concerning wear, corrosion, friction and thermal protection is already a standard practice. Depositing metallic NiTi shape memory alloy coatings may be a viable alternative for hard ceramic coatings. NiTi coatings offer additional benefits originating from unique functional thermomechanical properties. However, fabrication of thick NiTi coatings turned out to be difficult. Standard electroplating and laser cladding methods are not suitable for NiTi the most widely used plasma spray methods tend to produce chemically inhomogeneous coatings that do not transform martensitically, cold sprayed NiTi coatings suffer from poor adhesion to the substrates. In this work we report on first ever successful fabrication of thick NiTi coatings (100-300 um) that display functional thermomechanical properties and simultaneously show very good adherence to the substrate. We used high velocity air fuel thermal spray method to fabricate NiTi coatings deposited on mild steel using four different sets of processing parameters. Chemical composition, porosity, microstructure, phase transformation and functional thermomechanical properties of the NiTi coatings were evaluated. Although the coatings contain inhomogeneous microstructure, voids, oxide particles, high density of dislocation defects and internal stress, they undergo martensitic transformation upon cooling and or mechanical loading. As sprayed NiTi coatings need to be annealed to display functional thermomechanical properties. Despite their limited tensile strength, the coatings displayed thermal actuation in 3 point bending tests and shape memory effects in nanoindentation and scratch tests.",
+      "authors": [
+        "Sneha Samal",
+        "Shrikant Joshi",
+        "Stefan Björklund",
+        "Mohit Chandra",
+        "Akhil Bhardwaj",
+        "Jaromír Kopeček",
+        "Stanislav Habr",
+        "Lukáš Václavek Jan Tomáštík",
+        "Ondřej Tyc",
+        "Petr Šittner"
+      ],
+      "primary_category": "cond-mat.mtrl-sci",
+      "categories": [
+        "cond-mat.mtrl-sci"
+      ],
+      "published": "2026-07-02T10:30:58+00:00",
+      "link": "https://arxiv.org/pdf/2607.01997v1",
+      "tags": [
+        "keyword:sfc",
+        "query:sfc"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Thermal protection coatings via HVAF spraying",
+      "llm_evidence_cn": "通过HVAF喷涂制备热防护涂层",
+      "llm_evidence": "通过HVAF喷涂制备热防护涂层",
+      "canonical_evidence": "通过HVAF喷涂制备热防护涂层",
+      "llm_tldr_en": "Investigates NiTi coatings deposited by HVAF spraying for thermal protection, analyzing microstructure, phase transformation, and shape memory behavior.",
+      "llm_tldr_cn": "该论文研究利用HVAF喷涂技术制备NiTi形状记忆合金涂层以用于热防护。分析了涂层的微观结构、相变行为及形状记忆效应，发现与等离子喷涂相比，HVAF涂层化学成分更均匀，且能保持马氏体相变能力，为航天热防护涂层提供了新选择。",
+      "llm_tldr": "该论文研究利用HVAF喷涂技术制备NiTi形状记忆合金涂层以用于热防护。分析了涂层的微观结构、相变行为及形状记忆效应，发现与等离子喷涂相比，HVAF涂层化学成分更均匀，且能保持马氏体相变能力，为航天热防护涂层提供了新选择。",
+      "llm_tags": [
+        "query:sfc"
+      ],
+      "matched_query_tag": "query:sfc",
+      "matched_query_text": "hypersonic thermal protection",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.03692v2",
+      "source": "arxiv",
+      "title": "PIEFS: Physics-Informed Eigenfunction Features with Learnable Scaling",
+      "abstract": "Spectral methods are widely used to construct representations from the geometry of data, but they often rely on a fixed kernel, graph Laplacian, or manually selected feature scaling. We propose Physics-Informed Eigenfunction Features with Learnable Scaling (PIEFS), a supervised neural representation-learning framework with a spectral inductive bias, based on a modified Dirichlet energy. In PIEFS, scalar coordinate maps are trained under empirical Gram orthogonality, a supervised linear readout, and a Dirichlet penalty in which the input gradient is transformed by a learnable metric $A(x)=Λ(x)U(x)$. The diagonal factor $Λ(x)$ controls anisotropic scaling, while the orthogonal factor $U(x)$ is parameterized by a structured product of Givens rotations. This construction yields task-adaptive Dirichlet-regularized coordinates rather than eigenfunctions of a fixed supervision-independent operator. Experiments on synthetic, tabular, and image-based benchmarks study the effect of identity, diagonal, and rotation-scaling metrics, and compare the resulting coordinates with classical baselines and NeuralEF. The results support PIEFS as a compact supervised spectral representation method and identify optimization stability, validation on explicit operator eigenproblems, and richer metric parameterizations as the main directions for future work.",
+      "authors": [
+        "Varvara Nazarenko",
+        "Timur Lidzhiev",
+        "Alexander Tarakanov"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "math.NA",
+        "math.ST"
+      ],
+      "published": "2026-07-04T03:55:40+00:00",
+      "link": "https://arxiv.org/pdf/2607.03692v2",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Physics-informed representation learning with spectral bias and learnable metric",
+      "llm_evidence_cn": "具有谱偏差的可学习度量物理信息表示学习",
+      "llm_evidence": "具有谱偏差的可学习度量物理信息表示学习",
+      "canonical_evidence": "具有谱偏差的可学习度量物理信息表示学习",
+      "llm_tldr_en": "PIEFS proposes a supervised neural representation-learning framework with a spectral inductive bias, using learnable anisotropic scaling and Dirichlet energy penalty to embed physical knowledge.",
+      "llm_tldr_cn": "针对传统谱方法依赖固定核函数或手动特征缩放的问题，提出PIEFS框架。该方法通过可学习度量矩阵实现各向异性缩放，并结合经验Gram正交化、线性读出和Dirichlet能量惩罚来训练标量坐标映射。在多个监督学习任务上，PIEFS展示了优于基线的性能，为物理约束下的表示学习提供了有效工具。",
+      "llm_tldr": "针对传统谱方法依赖固定核函数或手动特征缩放的问题，提出PIEFS框架。该方法通过可学习度量矩阵实现各向异性缩放，并结合经验Gram正交化、线性读出和Dirichlet能量惩罚来训练标量坐标映射。在多个监督学习任务上，PIEFS展示了优于基线的性能，为物理约束下的表示学习提供了有效工具。",
+      "llm_tags": [
+        "query:pc-latent"
+      ],
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "physics constrained learning for latent space models",
+      "matched_requirement_id": "req-16",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.03431v1",
+      "source": "arxiv",
+      "title": "Pointwise Error Estimates for Numerical Physics-Informed Neural Networks",
+      "abstract": "Physics-informed neural networks are often evaluated by residual losses sampled at finitely many points, which do not by themselves certify pointwise values of a partial differential equation solution. In this work, deterministic pointwise error intervals are developed for mesh-based, piecewise-linear numerical physics-informed neural networks. The proposed error estimation is given for a compatible field, which is the finite-element reconstruction of an admissible prediction on a mesh. The certifying residual is then obtained by applying the finite-dimensional numerical system to this compatible field. For compatible square linear systems, the pointwise error relative to the discrete target has an exact adjoint Green representation, and the computed signed error recovers the finite element solution exactly. Norm-based, inexact, localized, and randomized variants provide computable intervals when the exact correction computation is impractical. The extension from the discrete target to the continuous solution is supplied by comparison estimates. For a one-dimensional coercive reaction-diffusion class, this transfer layer is made fully computable by an explicit residual-based a posteriori estimator with querywise constants. The error bound derivation is extended to nonlinear residual systems with explicit Taylor remainders. Numerical experiments assess compatibility and calibration on manufactured examples, on a large-scale public three-dimensional elasticity benchmark, and on projected neural load families on the same benchmark.",
+      "authors": [
+        "Nivar Anwer",
+        "Marien Chenaud",
+        "José Alves",
+        "Frédéric Magoulès"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA",
+        "math-ph"
+      ],
+      "published": "2026-07-03T15:45:28+00:00",
+      "link": "https://arxiv.org/pdf/2607.03431v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Pointwise error estimates for numerical PINNs",
+      "llm_evidence_cn": "数值物理信息神经网络的逐点误差估计",
+      "llm_evidence": "数值物理信息神经网络的逐点误差估计",
+      "canonical_evidence": "数值物理信息神经网络的逐点误差估计",
+      "llm_tldr_en": "Deterministic pointwise error intervals are developed for mesh-based PINNs, providing certified error bounds for PDE solutions.",
+      "llm_tldr_cn": "针对物理信息神经网络残差损失无法逐点认证PDE解值的局限，该工作为基于网格的分段线性数值PINN建立了确定性逐点误差区间，通过伴随格林函数表示给出误差界限，增强了PINN在流场预测等场景中的可靠性。",
+      "llm_tldr": "针对物理信息神经网络残差损失无法逐点认证PDE解值的局限，该工作为基于网格的分段线性数值PINN建立了确定性逐点误差区间，通过伴随格林函数表示给出误差界限，增强了PINN在流场预测等场景中的可靠性。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.04513v1",
+      "source": "arxiv",
+      "title": "Constrained Flow Matching via Lagrangian Dual Flows",
+      "abstract": "Flow matching is a powerful tool for generative modeling, but emerging applications in robotics, planning, and physics require inference-time constraints on generated outputs. Such constraints are often complex and highly nonlinear. As a result, methods designed for linear constraints like image inpainting are rarely sufficient, and projection or optimization-based alternatives can be prohibitively expensive. In this paper, we introduce Lagrangian Dual Flows, a new family of constrained generation techniques based on Lagrangian dual dynamics. By simply flowing a dual co-state alongside generated samples, we can guarantee nonlinear constraint satisfaction without expensive optimization subproblems, pseudoinverses, or projection steps during the denoising process. The resulting constrained generation algorithms are simple, effective, and open new theoretical connections between flow matching and primal-dual methods in numerical optimization.",
+      "authors": [
+        "Vince Kurtz",
+        "Alexander Davydov"
+      ],
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC",
+        "cs.LG"
+      ],
+      "published": "2026-07-05T21:25:51+00:00",
+      "link": "https://arxiv.org/pdf/2607.04513v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Provides a constrained generation method using Lagrangian dual dynamics, applicable to physics-constrained latent space modeling",
+      "llm_evidence_cn": "提出使用拉格朗日对偶动力学的约束生成方法，可应用于物理约束潜在空间建模",
+      "llm_evidence": "提出使用拉格朗日对偶动力学的约束生成方法，可应用于物理约束潜在空间建模",
+      "canonical_evidence": "提出使用拉格朗日对偶动力学的约束生成方法，可应用于物理约束潜在空间建模",
+      "llm_tldr_en": "Introduces Lagrangian Dual Flows to enforce nonlinear constraints during generation without expensive optimization, enabling physics-constrained latent space learning.",
+      "llm_tldr_cn": "该论文针对生成模型在推理时难以满足复杂非线性约束的问题，提出拉格朗日对偶流方法，通过伴随样本流动的对偶变量保证约束满足，无需昂贵的优化或投影步骤。实验表明该方法在多种约束下有效，为物理约束潜在空间学习提供了通用框架。",
+      "llm_tldr": "该论文针对生成模型在推理时难以满足复杂非线性约束的问题，提出拉格朗日对偶流方法，通过伴随样本流动的对偶变量保证约束满足，无需昂贵的优化或投影步骤。实验表明该方法在多种约束下有效，为物理约束潜在空间学习提供了通用框架。",
+      "llm_tags": [
+        "query:pc-latent:composite"
+      ],
+      "matched_query_tag": "query:pc-latent:composite",
+      "matched_query_text": "Papers central to 物理约束潜在空间学习与优化, especially work that connects or combines: latent dynamics; physics constrained learning for latent space models; latent space optimization under physical constraints; latent space methods with physical constraints; latent variable models with constraints from physics; learning latent space that satisfies physical laws; optimizing latent variables with physics constraints; physics constrained autoencoder training.",
+      "matched_requirement_id": "req-composite-pc-latent",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.05753v1",
+      "source": "arxiv",
+      "title": "Gaussian kinetic representations of rarefied nonequilibrium flows",
+      "abstract": "Compact representations of rarefied flows must preserve kinetic observables, not only smooth macroscopic fields. We introduce Gaussian kinetic representations for discrete velocity method (DVM)-Shakhov solutions of normal shocks and a lid-driven cavity. A positive log-density phase-space model reconstructs shock velocity distribution functions (VDFs) and their moments, while a moment-field model compresses wall-bounded cavity structure. Log-density training recovers heat flux, stress, and third- and fourth-order shock moments without explicit moment supervision; the cavity representation gives a compact continuous wall-transport map.",
+      "authors": [
+        "Ehsan Roohi"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-07T02:23:43+00:00",
+      "link": "https://arxiv.org/pdf/2607.05753v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "compact flow reconstruction from kinetic representations",
+      "llm_evidence_cn": "基于动力学表示的紧凑流场重构",
+      "llm_evidence": "基于动力学表示的紧凑流场重构",
+      "canonical_evidence": "基于动力学表示的紧凑流场重构",
+      "llm_tldr_en": "Introduces Gaussian kinetic representations for rarefied nonequilibrium flows, reconstructing velocity distribution functions and moments from log-density phase-space models.",
+      "llm_tldr_cn": "本文针对稀薄非平衡流，提出了高斯动力学表示方法。通过正对数密度相空间模型重建激波速度分布函数及其矩，并利用矩场模型压缩壁面驱动腔体结构。训练过程无需矩监督即可恢复热流、应力等高阶矩，为流场数据压缩和重构提供了紧凑表示。",
+      "llm_tldr": "本文针对稀薄非平衡流，提出了高斯动力学表示方法。通过正对数密度相空间模型重建激波速度分布函数及其矩，并利用矩场模型压缩壁面驱动腔体结构。训练过程无需矩监督即可恢复热流、应力等高阶矩，为流场数据压缩和重构提供了紧凑表示。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "flow field reconstruction from sparse data",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.05653v1",
+      "source": "arxiv",
+      "title": "Orthogonal Dendritic Intrinsic Networks: An Architecture for Significance-Ordered, Orthogonal Latent Spaces",
+      "abstract": "Principal Component Analysis or PCA-like properties (orthogonality, variance ranking) are seldom realized in deep autoencoder architectures. In this work, we present ODIN (Orthogonal Dendritic Intrinsic Network), a novel autoencoder architecture that recovers PCA-like latent structure in a fully non-linear regime. By incorporating a set of geometric constraints directly into the training objective, ODIN encourages latent dimensions to be mutually orthogonal and ordered by explained variance, mirroring the interpretable decomposition of PCA while retaining the expressive power of deep networks. We provide theoretical grounding for these constraints and demonstrate their compatibility with standard encoder-decoder frameworks. We also establish empirical results for both synthetic and real world datasets, establishing a principled path toward interpretable, structured feature learning and dimensionality reduction.",
+      "authors": [
+        "Jeanie Schreiber",
+        "Tyrus Berry",
+        "Zeeshan Ahmed"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "math.OC"
+      ],
+      "published": "2026-07-06T21:51:01+00:00",
+      "link": "https://arxiv.org/pdf/2607.05653v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Autoencoder architecture enforcing orthogonal latent space with variance ordering",
+      "llm_evidence_cn": "强制潜在空间正交且方差排序的自编码器架构",
+      "llm_evidence": "强制潜在空间正交且方差排序的自编码器架构",
+      "canonical_evidence": "强制潜在空间正交且方差排序的自编码器架构",
+      "llm_tldr_en": "ODIN introduces geometric constraints in autoencoder training to produce orthogonal latent dimensions ordered by variance, mimicking PCA interpretability while retaining non-linear expressivity.",
+      "llm_tldr_cn": "该论文针对深度自编码器缺少主成分分析（PCA）那样正交且方差排序的潜在结构，提出ODIN（正交树突内在网络）。通过在训练目标中引入几何约束，ODIN强制潜在维度相互正交并按解释方差排序，同时保持深度网络的非线性表达能力。理论分析和实验验证了该约束的有效性，为可解释潜在空间学习提供了新范式。",
+      "llm_tldr": "该论文针对深度自编码器缺少主成分分析（PCA）那样正交且方差排序的潜在结构，提出ODIN（正交树突内在网络）。通过在训练目标中引入几何约束，ODIN强制潜在维度相互正交并按解释方差排序，同时保持深度网络的非线性表达能力。理论分析和实验验证了该约束的有效性，为可解释潜在空间学习提供了新范式。",
+      "llm_tags": [
+        "query:pc-latent"
+      ],
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "latent dynamics",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.06237v1",
+      "source": "arxiv",
+      "title": "PhyRes-MDNF: Physics-Coupled Residual GNN Correction for Multilevel Discrete Neural Field Inversion",
+      "abstract": "Coefficient inversion on fine grids under PDE constraints is ill conditioned: sparse observations weakly constrain fine-scale parameters, and direct single-resolution optimization must recover state and coefficient fields across all scales simultaneously. This causes slow, initialization-sensitive convergence; learned transfer models require offline data and can introduce approximation error into the numerical physics. We propose PhyRes-MDNF, a fixed-physics multilevel discrete neural field framework. On each level, a single-level DNF represents the inverse unknowns directly as trainable fields and optimizes the discrete objective. In the full-space Darcy realization, state fields \\(U\\) and their shared coefficient field \\(K\\) are optimized jointly in one fixed-physics inverse process. Between levels, one zero-initialized PhyRes-GNN jointly performs fixed-stencil prolongation and bounded residual correction to construct an incoming target representation, which a fixed initialization map converts to the next DNF variables. It is fitted anew from the observations and unchanged numerical model, without offline pretraining or fine-grid truth. Coarse levels therefore resolve large-scale structure before refined degrees of freedom are introduced, shortening the fine-grid optimization path while retaining the original discrete operator. Under the same final-grid update budget, the multilevel Darcy realization reduces coefficient and state errors by approximately \\(85\\%\\) and \\(90\\%\\), respectively, demonstrating improved accuracy and final-grid iteration efficiency. On measured KTC2023 EIT data, the full-\\(W\\) pipeline improves mean Otsu mIoU by approximately \\(3.4\\%\\) over the official linearized CEM reconstruction and \\(16.9\\%\\) over direct single-level DNF.",
+      "authors": [
+        "Zheng Lu",
+        "Jiwei Jia",
+        "Young Ju Lee"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA"
+      ],
+      "published": "2026-07-07T13:05:56+00:00",
+      "link": "https://arxiv.org/pdf/2607.06237v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "physics-coupled neural field inversion for PDE coefficient estimation, related to flow field reconstruction",
+      "llm_evidence_cn": "物理耦合神经场反演用于PDE系数估计，与流场重建相关",
+      "llm_evidence": "物理耦合神经场反演用于PDE系数估计，与流场重建相关",
+      "canonical_evidence": "物理耦合神经场反演用于PDE系数估计，与流场重建相关",
+      "llm_tldr_en": "Proposes PhyRes-MDNF, a multilevel discrete neural field framework for PDE-constrained coefficient inversion, using fixed-physics residual GNN correction to improve convergence and accuracy.",
+      "llm_tldr_cn": "本文针对细网格上PDE约束系数反演的病态问题，提出了PhyRes-MDNF框架。该框架采用多级离散神经场，每级独立优化，并通过物理耦合残差图神经网络校正提升精度。在全空间Darcy实现中，方法有效克服了稀疏观测和初始化敏感问题。该工作为流场反演等逆问题提供了高效且物理一致的求解工具。",
+      "llm_tldr": "本文针对细网格上PDE约束系数反演的病态问题，提出了PhyRes-MDNF框架。该框架采用多级离散神经场，每级独立优化，并通过物理耦合残差图神经网络校正提升精度。在全空间Darcy实现中，方法有效克服了稀疏观测和初始化敏感问题。该工作为流场反演等逆问题提供了高效且物理一致的求解工具。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.06132v1",
+      "source": "arxiv",
+      "title": "Self-Supervised Implicit CEST Reconstruction via Physics-Informed Lorentz Encoding",
+      "abstract": "Multi-Pool Chemical Exchange Saturation Transfer (CEST) MRI provides valuable metabolic information but is clinically limited by long acquisition times. Although sparse sampling reduces scanning time, reconstructing high-resolution Z-spectra from limited data remains an ill-posed inverse problem. Conventional interpolation and generic Implicit Neural Rep-resentations (INRs) often lack physical constraints, leading to spectral artifacts and physically invalid signals. To address this, we propose Lorentz Encoding (LE), a physics-informed framework that formulates CEST reconstruction as a self-supervised reconstruction task via implicit continuous coordinate learning. Unlike generic positional encodings, LE regularizes the continuous spectral mapping by projecting sparse coordinates into a physically constrained space governed by a combination of parametric Lorentzian profiles with learnable basis functions. This mechanism effectively reduces noise and enforces consistency with physical models. Experiments on in vivo human brain data demonstrate that LE significantly outperforms state-of-the-art methods. Specifically, under a 39-point sampling strategy, LE achieves a PSNR of 57.58 dB and an SSIM of 0.9994. Furthermore, the learned physics-informed encodings form a continuous, geometrically ordered trajectory in the latent space, ensuring accurate quantitative metabo-lite mapping (APT, NOE, MT).",
+      "authors": [
+        "Dexuan Li",
+        "Yupeng Wu",
+        "Chenglong Wang",
+        "Hanlin Liu",
+        "Hui Zhen",
+        "Jianqi Li",
+        "Guang Yang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "physics.med-ph"
+      ],
+      "published": "2026-07-07T10:49:07+00:00",
+      "link": "https://arxiv.org/pdf/2607.06132v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Physics-informed implicit neural representation for CEST reconstruction",
+      "llm_evidence_cn": "用于CEST重建的物理信息隐式神经表示",
+      "llm_evidence": "用于CEST重建的物理信息隐式神经表示",
+      "canonical_evidence": "用于CEST重建的物理信息隐式神经表示",
+      "llm_tldr_en": "Proposes Lorentz Encoding, a physics-informed framework that uses self-supervised implicit neural representations to reconstruct CEST spectra from sparse data, enforcing physical constraints to avoid artifacts.",
+      "llm_tldr_cn": "该论文针对多池化学交换饱和转移（CEST）MRI重建中稀疏采样导致的不适定逆问题，提出了一种基于洛伦兹编码（LE）的物理信息框架。LE将CEST重建视为自监督隐式连续坐标学习任务，在隐式神经表示中嵌入物理约束，从而避免光谱伪影和无效信号。实验表明该方法在加速采样的同时保持重建保真度，为医学成像提供了物理约束下的潜在空间学习范例。",
+      "llm_tldr": "该论文针对多池化学交换饱和转移（CEST）MRI重建中稀疏采样导致的不适定逆问题，提出了一种基于洛伦兹编码（LE）的物理信息框架。LE将CEST重建视为自监督隐式连续坐标学习任务，在隐式神经表示中嵌入物理约束，从而避免光谱伪影和无效信号。实验表明该方法在加速采样的同时保持重建保真度，为医学成像提供了物理约束下的潜在空间学习范例。",
+      "llm_tags": [
+        "query:pc-latent"
+      ],
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "physics constrained learning for latent space models",
+      "matched_requirement_id": "req-16",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

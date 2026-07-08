@@ -1,0 +1,814 @@
+Title: Mean-flow-based reduced-order models of turbulent channel flow
+
+URL Source: https://arxiv.org/pdf/2607.03309v1
+
+Published Time: Tue, 07 Jul 2026 00:59:18 GMT
+
+Number of Pages: 24
+
+Markdown Content:
+> Under consideration for publication in J. Fluid Mech.
+
+Banner appropriate to article type will appear here in typeset article 
+
+# Mean-flow-based reduced-order models of turbulent channel flow 
+
+Ian Addison-Smith 1, Igor A. Maia 2, Andr´ e V. G. Cavalieri 2 and Benjamin Herrmann 3,4 
+
+> 1
+
+Department of Mechanical Engineering, Universidad de Chile, Beauchef 851, Santiago, Chile 
+
+> 2
+
+Divis˜ ao de Engenharia Aeron´ autica, Instituto Tecnol´ ogico de Aeron´ autica, S˜ ao Jos´ e dos Campos 12228-900, Brazil 
+
+> 3
+
+Department of Mechanical and Metallurgical Engineering, Pontificia Universidad Cat´ olica de Chile, Av. Vicu˜ na Mackenna 4860, Santiago, Chile 
+
+> 4
+
+Department of Hydraulic and Environmental Engineering, Pontificia Universidad Cat´ olica de Chile, Av. Vicu˜ na Mackenna 4860, Santiago, Chile 
+
+Corresponding author: Ian Addison-Smith, ian.addisonsmith@ug.uchile.cl (Received xx; revised xx; accepted xx) 
+
+Reduced-order models (ROMs) for turbulent flows based on Galerkin projection can achieve reasonable accuracy using equation-based modal bases derived from the linearized Navier-Stokes equations through the controllability and observability Gramians. The use of the modal bases obtained from linearized equations around a mean state has been seen to enhance the first- and second-order statistics in the ROM, but the use of the mean state was not necessarily extended to the equations of motion, as it implies the treatment of the divergence of the Reynolds stresses in the Galerkin projection. In this work, we present a mean-flow-based framework for ROMs in which the projection of the Reynolds stresses is solved through a modified modal basis and the knowledge of the mean flow. This framework achieves turbulence statistics comparable to those of a reference direct numerical simulation (DNS) in a minimal channel at 𝑅𝑒 𝜏 ≈ 185. Short-time forecasting with this framework is assessed, where balanced truncation modal bases outperform controllability modes in ROMs, yielding a reconstruction of the velocity field comparable to the Galerkin projection of proper orthogonal decomposition (POD) modes. This framework can extend analysis based on linearisations around the mean turbulent flow, which became widespread in recent years, to include explicitly non-linear interactions between modes, enabling accurate models at higher Reynolds number. 
+
+Key words: 
+
+Abstract must not spill onto p.2 0 X0-1 
+
+> arXiv:2607.03309v1 [physics.flu-dyn] 3 Jul 2026
+
+I. Addison-Smith, I.A. Maia, A.V.G. Cavalieri and B. Herrmann 
+
+> 1. Introduction
+
+Turbulent flows are characterized by strongly nonlinear and chaotic dynamics, where the dimensionality of the dynamics is often high for typical configurations of interest. Reduced-order models (ROMs) seek to model the fluid flow in a lower dimensional space (Rowley & Dawson 2017), achieving significant computational savings and simplified flow dynamics. ROMs have successfully addressed multiple challenges of fluid flow, such as modeling the dynamics of coherent structures (e.g. Aubry et al. 1988; Waleffe 1997; Moehlis et al. 2004; Cavalieri 2021; McCormack et al. 2024), flow control applications (e.g. Ilak & Rowley 2008; Barbagallo et al. 2009; Bagheri et al. 2009; Dergham et al. 2011; Maia & Cavalieri 2025), and forecasting the flow field (e.g. Noack et al. 2003; Rowley 2005; Nakamura et al. 
+
+2021; Linot & Graham 2023). A common approach in ROMs is to use Galerkin projection, where the Navier-Stokes equations are projected onto a suitable modal basis. Proper orthogonal decomposition (POD) is a standard data-driven modal decomposition (Berkooz et al. 1993) used in reduced-order modeling. It determines a subspace that is optimal in the sense of maximizing the captured kinetic energy, obtained by solving an eigenvalue problem using snapshot data from simulations or experiments. Given a low-rank expansion of the velocity field using these modes, the governing Navier –Stokes equations are projected onto the modal basis. This ROM is commonly referred to as POD-Galerkin and has been applied to different flow configurations over time (e.g. Aubry et al. 1988; Noack et al. 2003, 2005; Smith et al. 
+
+2005 b; Chua Khoo et al. 2022; Sato & Schmidt 2025). However, it has been argued that neglecting higher-order POD modes causes models to suffer from numerical instability due to the truncation of relevant non-energetic interactions present in the turbulent energy cascade. Latest works show that modal bases from the linearized Navier-Stokes equations in Galerkin ROMs (e.g. Cavalieri & Nogueira 2022) can overcome the instability without needing a closure for the truncated terms as other works (Protas et al. 2015; Hijazi et al. 
+
+2020; Ahmed et al. 2021; Chua Khoo et al. 2022). Unlike POD modes, which require flow data to construct the basis, modal decompositions derived from the linearized Navier –Stokes equations provide an equation-based framework for reduced-order modeling. In particular, bases obtained from the controllability Gramian can be used; these bases are referred to as controllability modes in the literature. When the linearized system is driven by white noise in time and space stochastic forcing, the POD modes obtained from the linearized system are equivalent to the controllability modes. From the work by Cavalieri & Nogueira (2022), which used controllability modes in turbulent Couette flow, subsequent examples for the same configuration were studied (McCormack et al. 2024; Maia & Cavalieri 2024, 2025; Addison-Smith et al. 2025). Similar to POD, controllability modes focus only on energetic structures, not necessarily on dynamically important ones. However, from control theory for linearized systems, a modal basis can be built considering the input-output of the system through a balanced truncation (Moore 1981), where the modal basis is referred to as balanced truncation modes. This modal basis in ROMs has been applied successfully to linearized systems (Willcox & Peraire 2002; Rowley 2005; Ilak & Rowley 2008; Zong et al. 2026), improving the representation of transient growth and harmonic responses. Balanced truncation modes are ranked simultaneously considering controllability and observability, and hence allow a compact representation of the input-output behavior of a linear system. ROMs rely on both the modal basis and the equation of motion, even though the latter is not commonly emphasized. In the usual POD-Galerkin setup, the full Navier-Stokes equations are typically used (e.g. Waleffe 1997; Omurtag & Sirovich 1999; Ma & Karniadakis 2002; Noack et al. 2003, 2005; Protas et al. 2015); other works rewrite the  
+
+> 0X0-2
+
+Journal of Fluid Mechanics 
+
+equations around a known laminar state and solve for the unknown fluctuations (e.g. Smith 
+
+et al. 2005 b; Ilak & Rowley 2008; Cavalieri 2021; Cavalieri & Nogueira 2022; Chua Khoo 
+
+et al. 2022; Maia & Cavalieri 2024, 2025; Zong et al. 2026); and others use a fully data-driven method to model the corresponding equations (e.g. Brunton et al. 2016; Loiseau & Brunton 2018; Nakamura et al. 2021; Linot & Graham 2023; Constante-Amores et al. 
+
+2025). The relevance of the transition between the laminar solution to the mean turbulent flow over the dynamics has been explored by Noack et al. (2003) through an enhanced modal basis using shift modes. A recent work by Zong et al. (2026) studied different modal bases in a Galerkin model approach, focusing on the state convergence of these bases in a turbulent Couette flow setup. They found that the POD basis is the best for representing the statistics of turbulence for this configuration. In addition, controllability and balanced truncation modes obtained from linear mean-flow analyses can outperform laminar-flow modal bases in the representation of these statistics. Solving the velocity fluctuations over a mean state is uncommon due to the fact that the equations need to include the effect of the Reynolds stresses, which are typically modeled. Mean-flow-based analysis has come as a typical framework to understand wall-bounded turbulence (McKeon & Sharma 2010; Hwang & Cossu 2010 a,b), where the dynamics are decomposed in a linearized operator around the mean state plus an exogenous nonlinear forcing due to the nonlinear interactions. This approach has uncovered significant linear amplification mechanisms, suggesting that much of the energy in turbulent flows is related to the structural properties of the mean shear (e.g. Del ´ Alamo & Jim´ enez 2006; Hwang & Cossu 2010 a,b; McKeon & Sharma 2010; Morra et al. 2019; von Saldern et al. 2023; Symon et al. 2023). These mechanics are central to the self-sustaining process (SSP) (Hamilton et al. 1995; Waleffe 1997), a three-stage cycle involving streak formation, streak instability, and the regeneration of streamwise vortices. Linear mechanisms are part of this process through the lift-up effect, where high- and low-speed streaks are generated through the amplification of streamwise velocity perturbations (e.g. Butler & Farrell 1992; Del ´ Alamo & Jim´ enez 2006; Hwang & Cossu 2010 b,c; Abreu et al. 2020), and the Orr mechanism, which describes the transient growth associated with the tilting of vortical structures by the mean shear (Jim´ enez 2013; Encinar & Jim´ enez 2020). The nonlinear forcing in mean-flow-based analysis is typically accounted for either by modifying the linearized operator with an eddy viscosity model (Hwang & Cossu 2010 b), or by treating it as a self-sustaining feedback loop originating from the velocity field (McKeon & Sharma 2010). Quadratic interactions and the Reynolds stresses are contained in the forcing, and their statistics are spatiotemporally colored (Morra et al. 2021). Then, the common assumption of white noise in space and time is inaccurate for representing nonlinear contributions. Several approaches focus either on the availability of statistical data or on approximations to the nonlinear term (Zare et al. 2017; Illingworth et al. 
+
+2018; Towne et al. 2020). ROMs based on Galerkin projection offer a different approach, in which the nonlinear term arises from quadratic interactions among the modal basis functions, without relying on any approximation. A framework where Galerkin projection is combined with the mean-flow-based analysis has not been explored, where the nonlinear interactions are captured explicitly by the Galerkin projection, and the linear operator retains key mechanisms that self-sustain turbulence. Reduced-order models in wall-bounded turbulence span relatively simple shear flows such as Couette flow (e.g. Smith et al. 2005 b; Cavalieri & Nogueira 2022; Linot & Graham 2023; Zong et al. 2026), sinusoidal flow (Waleffe flow) (e.g. Waleffe 1997; Moehlis 
+
+et al. 2004; Cavalieri 2021), and pipe flow (e.g. Constante-Amores & Graham 2024; Kasz´ as & Haller 2024; Constante-Amores et al. 2025). ROMs based on Galerkin projection  
+
+> 0X0-3
+
+I. Addison-Smith, I.A. Maia, A.V.G. Cavalieri and B. Herrmann 
+
+for turbulent channel flow are not common in the literature, given the change in the boundary conditions compared to turbulent Couette flow and the increased complexity of the simulation (Ahmed et al. 2021). For the examples available in the literature for ROMs in plane channel flow, POD-Galerkin is a natural choice (e.g. Podvin & Lumley 1998; Omurtag & Sirovich 1999; Johansson et al. 2006; Mou et al. 2023; Tsai et al. 2025), but other data-driven approaches are also possible (Nakamura et al. 2021). Channel flow is a flow that is driven by external pressure; hence, the pressure term is relevant in comparison with Couette flow. With this context, a modification of the ROM based on a linearized equations modal basis is necessary to extend the framework presented in Cavalieri & Nogueira (2022) for Couette flow to plane channel flow. Beyond reproducing turbulence statistics, short-time forecasting in ROMs was recently achieved in different works (Brunton et al. 2016; Loiseau & Brunton 2018; Hijazi et al. 
+
+2020; Callaham et al. 2022; Linot & Graham 2023; Constante-Amores et al. 2025; Zong et al. 2026), with the three most recent ones focusing on wall-bounded turbulence. Turbulence, as a chaotic system, displays sensitivity to initial conditions, so only short-term forecasting can be done. Such sensitivity is manifest by the exponential divergence of nearby state-space trajectories, characterized by the leading Lyapunov exponent ∼ exp (𝜆 1𝑡 ), which can be calculated for canonical shear flows (e.g. Keefe et al. 1992; Inubushi et al. 2015; Nikitin 2018), leading to a value (in inner units) of 𝜆 + 
+
+> 1
+
+≈ 0.021 at the friction Reynolds number 𝑅𝑒 𝜏 = 180 in turbulent channel flow (Nikitin 2018) and 𝜆 + 
+
+> 1
+
+≈ 0.007 at Reynolds number 𝑅𝑒 𝜏 = 34 in a minimal flow unit Couette flow (Inubushi et al. 2015). The value of the leading Lyapunov exponent is believed to be independent of the boundary conditions and the Reynolds number in near-wall turbulence if the value is scaled in inner units (Nikitin 2008). In this work, we introduce a ROM based on a Galerkin projection study for turbulent channel flow in a minimal flow unit configuration (Jim´ enez & Moin 1991), where a mean-flow-based approach for both the equations and the modal basis is pursued, in contrast with the previous works (Cavalieri & Nogueira 2022; Zong et al. 2026). We compare our methodology with the laminar-flow-based ROM from Cavalieri & Nogueira (2022) and the mean-flow-based basis in a laminar-flow-based ROM (Zong et al. 2026). We also compare modal bases from equation-based approaches, such as controllability and balanced truncation modes, with those from data-driven approaches, such as POD modes. First and second-order statistics are evaluated with the different ROMs, assessed against a reference direct numerical simulation (DNS). A modified set of modes is presented to extend the framework present in Cavalieri & Nogueira (2022) to the plane channel flow setting, where the mean pressure gradient is not negligible as in Couette flow. Finally, the dynamics of the ROMs are compared with short-time forecasting with respect to the reference DNS simulation, considering the highly sensitive conditions of the turbulence through the leading Lyapunov exponent of the turbulent plane channel flow. The remainder of the paper is organized as follows: in §2 the modal bases for plane channel flow are presented; in §3 the reduced-order models and the numerical details are described; in §4 the results and discussion from the statistics and the short-time forecasting are presented for the different ROMs, followed by concluding remarks in §5. 
+
+> 2. Modal bases for plane channel flow
+
+We consider plane Poiseuille flow for an incompressible fluid with density 𝜌 and kinematic viscosity 𝜈 , wherein two infinite planes separated by a wall-normal distance 2 ℎ remain fixed and a constant bulk velocity 𝑈 𝑏 is imposed. The domain is defined in Cartesian coordinates by (𝑥, 𝑦, 𝑧 ) where 𝑥 is the streamwise, 𝑦 is the wall-normal and 𝑧 is the spanwise   
+
+> 0X0-4
+
+Focus on Fluids articles must not exceed this page length Journal of Fluid Mechanics 
+
+direction with dimensions [0, 𝐿 𝑥 ) × [− ℎ, ℎ ] × [ 0, 𝐿 𝑧 ), the flow has boundary conditions for the velocity 𝒖 |𝑦 =±1 = (0, 0, 0) in the upper and lower walls and periodic boundary conditions on streamwise and spanwise directions. All variables are dimensionless with respect to 𝑈 𝑏 , ℎ and 𝜈 , where the resulting characteristic number is the Reynolds bulk number 𝑅𝑒 𝑏 = 𝑈 𝑏 ℎ/𝜈 . The velocity field is decomposed into a known parallel flow 
+
+𝑼 = (𝑈 (𝑦 ), 0, 0) and fluctuations around this flow 𝒖 ′ (𝒙 , 𝑡 ) = (𝑢 ′ (𝒙 , 𝑡 ), 𝑣 ′ (𝒙 , 𝑡 ), 𝑤 ′ (𝒙 , 𝑡 )) 
+
+with (𝒙 , 𝑡 ), the space and time of the flow field 
+
+𝒖 (𝒙 , 𝑡 ) = 𝑼 (𝑦 ) + 𝒖 ′ (𝒙 , 𝑡 ), (2.1) The velocity fluctuations can be decomposed into a suitable orthonormal modal basis 𝝓 𝑖 
+
+with modal coefficients 𝑎 𝑖 
+
+𝒖 (𝒙 , 𝑡 ) =
+
+> ∞
+
+∑︁ 
+
+> 𝑖 =1
+
+𝑎 𝑖 (𝑡 )𝝓 𝑖 (𝒙 ) ≈ 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝑎 𝑖 (𝑡 )𝝓 𝑖 (𝒙 ), (2.2) which satisfy the boundary conditions and continuity equation, and converge to the velocity fluctuations as 𝑛 → ∞ . Given the translation invariance of the flow in the streamwise and spanwise directions, we can specify Fourier modes in those directions, where the basis considers the following structure 
+
+𝝓 𝑖 (𝒙 ) = 𝝓 (𝑛 )  
+
+> 𝑛 𝑥 𝑛 𝑧
+
+(𝒙 ) = exp (i (𝛼 𝑜 𝑛 𝑥 𝑥 + 𝛽 𝑜 𝑛 𝑧 𝑧 )) ˆ𝝓 (𝑛 )  
+
+> 𝑛 𝑥 𝑛 𝑧
+
+(𝑦 ), (2.3) where the pair (𝑛 𝑥 , 𝑛 𝑧 ) refers to streamwise and spanwise multiples of the fundamental wavenumber (𝛼 0, 𝛽 𝑜 ) = (2𝜋 /𝐿 𝑥 , 2𝜋 /𝐿 𝑧 ) and the superscript (𝑛 ) is the 𝑛 -mode associated with that pair (𝑛 𝑥 , 𝑛 𝑧 ) ordered by energy (or eigenvalue). In the following, we consider an inner product, which we define in physical space as 
+
+⟨ 𝒇 , 𝒈 ⟩ = 12ℎ𝐿 𝑥 𝐿 𝑧 
+
+∫ 𝐿 𝑧 
+
+> 0
+
+∫ ℎ
+
+> −ℎ
+
+∫ 𝐿 𝑥 
+
+> 0
+
+𝒈 (𝒙 )∗ 𝒇 (𝒙 )d𝑥 d𝑦 d𝑧, (2.4) for complex vector fields 𝒇 and 𝒈 , with (·) ∗ denoting the Hermitian transpose. In the case of real-valued vectors, we changed the Hermitian transpose to the transpose. 2.1. POD modes 
+
+POD modes provide a modal basis that optimally represents the kinetic energy in the fluid flow given data from experiments or simulation data (Berkooz et al. 1993). Specifically, POD modes are an orthonormal basis that maximizes the projection of the modal basis over the fluid flow, solving the following optimization problem max 
+
+> 𝝓
+
+|⟨ 𝝓 , 𝒖 ′⟩| 2
+
+⟨𝝓, 𝝓 ⟩ , (2.5) where (·) is the ensemble average, or an average over time and periodic directions. The optimization problem can be solved with an eigenvalue problem that considers Fourier modes along streamwise and spanwise directions, given the boundary conditions of the channel (Smith et al. 2005 a)
+
+∫ 1
+
+> −1
+
+ˆ𝒖 ′ (𝑛 𝑥 , 𝑦, 𝑛 𝑧 , 𝑡 ) ˆ𝒖 ′∗ (𝑛 𝑥 , 𝑦 ′, 𝑛 𝑧 , 𝑡 ) ˆ𝝓 (𝑛 )  
+
+> 𝑛 𝑥 𝑛 𝑧
+
+(𝑦 ′)𝑑𝑦 ′ = 𝜆 (𝑛 )  
+
+> 𝑛 𝑥 𝑛 𝑧
+
+ˆ𝝓 (𝑛 )  
+
+> 𝑛 𝑥 𝑛 𝑧
+
+(𝑦 ), (2.6) such that modes ˆ𝝓 (𝑛 )  
+
+> 𝑛 𝑥 𝑛 𝑧
+
+(𝑦 ) can be expressed from Fourier space to physical space using 2.3, and the coefficient 𝜆 (𝑛 )  
+
+> 𝑛 𝑥 𝑛 𝑧
+
+expresses the averaged kinetic energy contained in each mode (𝑛 )
+
+0 X0-5 I. Addison-Smith, I.A. Maia, A.V.G. Cavalieri and B. Herrmann 
+
+for a given wavenumber pair (𝑛 𝑥 , 𝑛 𝑧 ). Usually solving 2.6 requires a significant amount of snapshots, so we rely on the symmetries of the fluid configuration to data augment the total number of snapshots in the flow field. The symmetries in plane channel flow are typically used to augment the data in the snapshots (e.g. Omurtag & Sirovich 1999; Gibson et al. 
+
+2008) 
+
+𝐼 :(𝑥, 𝑦, 𝑧, ˜𝑢, ˜𝑣, ˜𝑤, 𝑝 ) ↦ → ( 𝑥, 𝑦, 𝑧, ˜𝑢, ˜𝑣, ˜𝑤, 𝑝 ) (2.7 a)
+
+𝑅 𝑦 :(𝑥, 𝑦, 𝑧, ˜𝑢, ˜𝑣, ˜𝑤, 𝑝 ) ↦ → ( 𝑥, −𝑦, 𝑧, ˜𝑢, − ˜𝑣, ˜𝑤, 𝑝 ) (2.7 b)
+
+𝑅 𝑧 :(𝑥, 𝑦, 𝑧, ˜𝑢, ˜𝑣, ˜𝑤, 𝑝 ) ↦ → ( 𝑥, 𝑦, −𝑧, ˜𝑢, ˜𝑣, − ˜𝑤, 𝑝 ) (2.7 c)
+
+𝑅 𝑦 𝑅 𝑧 :(𝑥, 𝑦, 𝑧, ˜𝑢, ˜𝑣, ˜𝑤, 𝑝 ) ↦ → ( 𝑥, −𝑦, −𝑧, ˜𝑢, − ˜𝑣, − ˜𝑤, 𝑝 ) (2.7 d)where 𝑝 is the pressure, 𝐼 is the identity transformation, 𝑅 𝑦 is a reflection over 𝑦 = 0 plane, 
+
+𝑅 𝑧 is a reflection over 𝑧 = 0 and 𝑅 𝑦 𝑅 𝑧 correspond to a 180 ° rotation over 𝑥 −axis. 2.2. Linearized equations 
+
+The equations of motion can be decomposed using 2.1 from a known parallel flow and unknown fluctuations around this flow. The dynamics of the fluctuations can be simplified by taking the Fourier transform in the periodic directions and taking the divergence of the wall-normal velocity ˆ 𝑣 ′ and the wall-normal vorticity ˆ 𝜂 ′ as variables. This transformation results in the Orr-Sommerfeld & Squire equations. Following the same framework as previous works (Farrell & Ioannou 1993; Jovanovi´ c & Bamieh 2005), the equations for the fluctuations can be expressed as a linearized dynamical system 
+
+𝜕 ˆ𝒒 
+
+𝜕𝑡 = 𝑨 ˆ𝒒 + 𝑩 ˆ𝒇 , (2.8 a)
+
+ˆ𝒖 = 𝑪 ˆ𝒒 . (2.8 b)where ˆ𝒒 =  ˆ𝑣 ′ ˆ𝜂 ′𝑇 , ˆ𝒖 =  ˆ𝑢 ′ ˆ𝑣 ′ ˆ𝑤 ′𝑇 is the velocity field in Fourier space along streamwise and spanwise directions and ˆ𝒇 =  ˆ𝑓 𝑢 ˆ𝑓 𝑣 ˆ𝑓 𝑤 
+
+𝑇 are the forcing terms of the linearized system. The operators are defined as 
+
+A =
+
+𝛥 −1L𝑂𝑆 0
+
+−𝑖𝛽 D𝑈 L𝑆𝑄 
+
+
+
+, B =
+
+−𝑖𝛼𝛥 −1D −𝑘 2 𝛥 −1 −𝑖𝛽𝛥 −1D
+
+𝑖𝛽 0 −𝑖𝛼 
+
+
+
+, C = 1
+
+𝑘 2
+
+
+
+𝑖𝛼 D −𝑖𝛽 𝑘 2 0
+
+𝑖𝛽 D 𝑖𝛼 
+
+
+
+,
+
+(2.9) where the streamwise and spanwise wavenumbers are (𝛼, 𝛽 ) = (𝛼 𝑜 𝑛 𝑥 , 𝛽 0𝑛 𝑧 ), D = 𝑑 /𝑑𝑦 is the derivative in wall-normal direction and 𝛥 = D2 − 𝑘 2 is the Laplacian with 𝑘 2 = 𝛼 2 + 𝛽 2.The Orr-Sommerfeld & Squire operators are defined by 
+
+LOS = −𝑖𝛼𝑈 𝛥 + 𝑖𝛼 D2𝑈 + 𝑅𝑒 −1 
+
+> 𝑏
+
+𝛥 2, (2.10 a)
+
+LSQ = −𝑖𝛼𝑈 + 𝑅𝑒 −1 
+
+> 𝑏
+
+𝛥. (2.10 b)These operators depend on the parallel flow 𝑼 around which the equations are linearized. Common options are the laminar flow solution 𝑼 0 or the turbulent mean velocity ¯𝑼 𝑼 0 (𝑦 ) = 𝑈 𝑐 
+
+
+
+ℎ2 − 𝑦 2, 0, 0
+
+
+
+, ¯𝑼 (𝑦 ) =   ¯𝑈 (𝑦 ), 0, 0 , (2.11) where the centerline velocity is 𝑈 𝑐 = 3/2, due to the condition of the bulk velocity 𝑈 𝑏 = 1. 
+
+0 X0-6 Journal of Fluid Mechanics 
+
+2.3. Controllability modes 
+
+Controllability modes identify the directions in state space ˆ𝒒 that are most easily reached by external inputs ˆ𝒇 . For the linearized Navier –Stokes equations driven by white-in-time and space stochastic forcing, these modes correspond to the most energetic structures of the system response, i.e. the POD modes of the forced dynamics. They are obtained from the infinite-time controllability Gramian, 
+
+W 𝑞 𝑐 =
+
+∫ ∞
+
+> 0
+
+𝑒 𝑨 𝑡 BB ∗𝑒 𝑨 ∗𝑡 𝑑𝑡, (2.12) Usually, the direct computation of the Gramian is numerically intractable, so it is numerically better to solve the Lyapunov equations instead 
+
+AW 𝑞 𝑐 + W 𝑞 𝑐 A∗ + BB ∗ = 0, (2.13) With the controllability Gramian, the modal bases can be obtained solving the following eigenvalue problem for different wavenumber pairs (𝑛 𝑥 , 𝑛 𝑧 )
+
+W 𝑞 𝑐 ˆ𝜱 𝑞 = ˆ𝜱 𝑞 𝛬, (2.14) The eigenvector can be transformed to primitive variables with ˆ𝜱 = 𝑪 ˆ𝜱 𝑞 , then ˆ𝜱 =
+
+[ ˆ𝝓 (1) ˆ𝝓 (2) · · · ˆ𝝓 (𝑛 ) ] and eigenvalues are ordered by energy 𝛬 = [𝜆 (1) 𝜆 (2) · · · 𝜆 (𝑛 ) ] where we dropped the explicit dependence to the wavenumber pairs (𝑛 𝑥 , 𝑛 𝑧 ). The resulting modes are optimal in a 2-norm ∥𝒒 ∥22, but it is often necessary to consider an appropriate energy 
+
+𝑄 −norm for the state vector ∥𝒒 ∥2 
+
+> 𝑄
+
+= 𝒒 ∗Q𝒒 . In particular, if we have an appropriate weight matrix, the following Q-norm matrix can be decomposed into a Cholesky form 
+
+Q = F ∗F (Herrmann-Priesnitz et al. 2018; Herrmann et al. 2023). Then the linear system is transformed accordingly with ˜𝒒 = F 𝒒 , and the dynamics to ˜A = FAF −1, ˜B = FB ,
+
+˜C = CF −1. This transformation results in modes that are optimal in an energetic Q-norm sense. 2.4. Balanced truncation modes 
+
+Balanced truncation yields a modal basis that orders states according to their joint controllability and observability (Moore 1981; Willcox & Peraire 2002). In other words, it identifies states that are both easily excited by inputs and strongly reflected in the outputs. This is achieved through the use of the controllability and observability Gramians, where the latter is defined by 
+
+𝑾 𝑞 𝑜 =
+
+∫ ∞
+
+> 0
+
+𝑒 𝑨 ∗𝑡 C∗C𝑒 𝑨 𝑡 𝑑𝑡, (2.15) Similar to controllability Gramian, the infinite-time observability Gramian is numerically intractable, so it is often solved directly with the Lyapunov equations 
+
+A∗W 𝑞 𝑜 + W 𝑞 𝑜 A + C∗C = 0, (2.16) The balanced transformation seeks a coordinate transformation matrix T 𝑞 where the Gramians are equal and diagonal (Brunton & Kutz 2022). This leads to ˜W 𝑞 𝑐 ˜W 𝑞 𝑜 = (T 𝑞 )−1 W 𝑞 𝑐 (T 𝑞 )−∗ (T 𝑞 )∗ W 𝑞 𝑜 T 𝑞 (2.17) 
+
+= (T 𝑞 )−1 W 𝑞 𝑐 W 𝑞 𝑜 T 𝑞 = 𝛬, (2.18) 
+
+0 X0-7 I. Addison-Smith, I.A. Maia, A.V.G. Cavalieri and B. Herrmann 
+
+with (·) −∗ corresponding to the inverse of the Hermitian transpose. Then the matrix T 𝑞 
+
+can be found by solving the following eigenvalue problem 
+
+W 𝑞 𝑐 W 𝑞 𝑜 T 𝑞 = T 𝑞 𝛬, (2.19) The balanced transformation can be expressed in terms of primitive variables with T =
+
+CT 𝑞 where the direct modes are defined by T = [ ˆ𝝓 (1) ˆ𝝓 (2) · · · ˆ𝝓 (𝑛 ) ], the adjoint modes correspond to T −1 = S = [ ˆ𝝍 (1) ˆ𝝍 (2) · · · ˆ𝝍 (𝑛 ) ] and the Hankel singular values that relate with the dynamical relevance of each mode 𝛴 = [𝜎 (1) 𝜎 (2) · · · 𝜎 (𝑛 ) ]. The set of modes is biorthonormal and not orthonormal as POD and controllability modes, satisfying then 
+
+⟨ ˆ𝝓 (𝑖 ) , ˆ𝝍 ( 𝑗 ) ⟩ = 𝛿 𝑖 𝑗 
+
+2.5. Galerkin (Petrov-) projection 
+
+Reduced-order models seek a modal decomposition in 2.2 that significantly reduces the number of degrees of freedom from the full model. This decomposition depends, as we described, on the modal basis, but also on the equation that we choose to model the dynamics. The ROMs can be described generally with the equation 
+
+𝑑𝑎 𝑖 
+
+𝑑𝑡 = 𝝍 𝑖 , F ( 𝜱𝒂 ) , (2.20) where the modal coefficients are 𝒂 = [𝑎 1, 𝑎 2, 𝑎 3, · · · , 𝑎 𝑛 ]𝑇 and the modal bases are 
+
+𝜱 = [𝝓 1, 𝝓 2, 𝝓 3, · · · , 𝝓 𝑛 ]. The ROM depends on the modal basis 𝜱 chosen in 2.2 and on the dynamics F (·) which describes the fluid flow. The projection (Petrov-Galerkin) used in 2.20 considers a biorthonormal basis ⟨𝝓 𝑖 , 𝝍 𝑗 ⟩ = 𝛿 𝑖 𝑗 , but in particular, if we have an orthonormal basis, then we use a Galerkin projection with 𝜳 = 𝜱 . An appropriate choice of both the modal basis and the dynamical model is crucial for the performance of the ROM, as discussed in the following sections. 
+
+> 3. Mean-flow-based reduced-order models
+
+Within the framework of mean-flow-based analysis, the equations of motion are described around a mean state ¯𝑼 commonly averaged over time and homogeneous directions. The total velocity and pressure fields are decomposed as 𝒖 = ¯𝑼 + 𝒖 ′ and 𝑝 = ¯𝑃 + 𝑝 ′, where 
+
+𝒖 ′ and 𝑝 ′ denote the fluctuations about the mean. Substituting this decomposition in the Navier-Stokes equation and subtracting the equation of the mean flow results in the following equations for the fluctuation field 𝒖 ′
+
+𝜕 𝒖 ′
+
+𝜕𝑡 + ( 𝒖 ′ · ∇) ¯𝑼 +   ¯𝑼 · ∇  𝒖 ′ + ∇ 𝑝 ′ − 1
+
+𝑅𝑒 𝑏 
+
+∇2𝒖 ′ = − ( 𝒖 ′ · ∇) 𝒖 ′ + ( 𝒖 ′ · ∇) 𝒖 ′, (3.1 a)
+
+∇ · 𝒖 ′ = 0. (3.1 b)The equations of momentum in 3.1 a are forced by a zero mean forcing term 𝑮 (𝑡 ) =
+
+𝐺 (𝑡 )𝒆 𝑥 that keeps the mass flux constant in the channel. As the mean state is not a solution of the Navier-Stokes equations, the Reynolds stresses (𝒖 ′ · ∇) 𝒖 ′ appear in the equations of motion. In the left-hand side of the equation, the linear operators are defined around a mean state and not around a laminar state as previous ROMs (Cavalieri & Nogueira 2022; Maia & Cavalieri 2025; Zong et al. 2026). Both differences change the physical meaning of the velocity fluctuations and how the linear mechanisms that sustain the turbulence are captured in the equations 
+
+0 X0-8 Journal of Fluid Mechanics 
+
+3.1. Plane channel flow setup 
+
+In plane channel flow we consider the laminar base state as 𝑼 0 = 𝑈 0 (𝑦 )𝒆 𝑥 and the mean state is averaged in time and spatial directions resulting in ¯𝑼 = ¯𝑈 (𝑦 )𝒆 𝑥 as in Section 2. This mean state is modeled by the Reynolds-averaged Navier-Stokes equations, which for the considerations in the base flow are the following 
+
+−∇ ¯𝑃 + 1
+
+𝑅𝑒 𝑏 
+
+𝑑 2 ¯𝑈 𝑑𝑦 2 𝒆 𝑥 − ( 𝒖 ′ · ∇) 𝒖 ′ = 0, (3.2) The projection of the equations in 3.1 can be done using any modal decomposition from 2 with the general projection 2.20. The projection of the left-hand side (linear terms) in 3.1 a
+
+is direct as other works (Cavalieri & Nogueira 2022; Maia & Cavalieri 2025), where only the physical meaning of the terms changes. The projection of the right-hand side (non-linear terms) in the mean-flow-based framework requires further work, given the influence of the Reynolds stresses, where they can be reworked using the base state equation 3.2 
+
+D
+
+(𝒖 ′ · ∇) 𝒖 ′, 𝝍 𝑖 
+
+E
+
+= −∇ ¯𝑃, 𝝍 𝑖 + 1
+
+𝑅𝑒 𝑏 
+
+ 𝑑 2 ¯𝑈 𝑑𝑦 2 𝒆 𝑥 , 𝝍 𝑖 
+
+
+
+,
+
+=
+
+∫
+
+> 𝛤
+
+− ¯𝑃 (𝝍 𝑖 · 𝒏 )𝑑𝛤 − − ¯𝑃, ∇ · 𝝍 𝑖 + 1
+
+𝑅𝑒 𝑏 
+
+ 𝑑 2 ¯𝑈 𝑑𝑦 2 𝒆 𝑥 , 𝝍 𝑖 
+
+
+
+,
+
+(3.3) Using the divergence theorem, the projection over the mean pressure can be split into two different terms as shown in 3.3. This equation states that the projection of the Reynolds stresses involves three different terms: the first is a boundary integral in 𝛤 which for plane channel flow is not zero given that the base state is driven by the mean pressure gradient, the second involves a projection of the mean pressure over the divergence of the modes which is zero given the divergence-free condition of the modes in 3.1 b and the third involves a projection of the Laplacian of the mean flow over the modal basis. 3.2. The need for a modified basis: Modified Stokes modes 
+
+The projection of the Reynolds stresses involves projecting the mean pressure gradient onto the modal bases. This is in contrast with Couette flow, where the mean pressure gradient can be neglected because the boundary conditions drive the flow. Plane channel flow is pressure-driven; thus, the pressure gradient sustains the flow. In plane channel flow the mean pressure gradient can be assumed constant with a variable mass flux in the channel, or a forcing 𝑮 (𝑡 ) it can be added to the mean pressure gradient to satisfy a constant mass flux in the channel. As the mean flow has only a streamwise component, it can be assumed that the forcing has only a streamwise component. The projection of the mean pressure gradient can be added as an additional time-dependent term to the ROM that modifies the mean pressure gradient at each step, or it can be imposed by modifying the modal bases to have a null projection as shown below 
+
+𝒆 𝑥 , 𝝍 𝑖 =
+
+∫ 1
+
+> −1
+
+ˆ𝝍 𝑖 (𝑦 ′)𝒆 𝑥 𝑑𝑦 ′ = 0, (3.4) Since this condition refers to the mean flow, only modes with 𝛼 = 𝛽 = 0 are relevant. In data-driven modal bases, such as POD, this condition is satisfied because the simulation data can be forced to satisfy a mass-flux condition. However, for modes from linearized equations, this condition is not necessarily satisfied. As the operators presented in 2.8 are singular for this wavenumber pair, works rely on eigenfunctions of the viscous operators i.e. Stokes modes (e.g. Waleffe 1997; Cavalieri & Nogueira 2022). The condition to enforce  
+
+> 0X0-9
+
+I. Addison-Smith, I.A. Maia, A.V.G. Cavalieri and B. Herrmann                
+
+> Figure 1. Modes 𝝍 (1)
+> 00 used in the construction of the modal basis, plotted in Fourier space. (a) First Stokes mode, (b) First modified Stokes mode for 𝑛 =9 total modes, (c) First modified Stokes mode for 𝑛 =36 total modes, (d) First POD mode. The ranking of the modes is through eigenvalues of the same wavenumber pair
+> (𝑛 𝑥 , 𝑛 𝑧 )=(0,0)
+
+in the Stokes modes is to subtract the mean value in the streamwise direction, which the following projections can define 
+
+P∥ ( ˆ𝝍 𝑖 ) = 12
+
+∫
+
+ˆ𝝍 𝑖 (𝑦 ′)𝒆 𝑥 𝑑𝑦 ′, P⊥ ( ˆ𝝍 𝑖 ) = ˆ𝝍 𝑖 − P ∥ ( ˆ𝝍 𝑖 ), (3.5) The modified Stokes basis can be defined using the orthogonal projector over the Stokes basis P⊥ ( ˆ𝝍 𝑖 ). The resulting modal basis is not orthogonal but the orthogonality can be recovered using a Gram-Schmidt process or through the left singular vectors doing a singular value decomposition (SVD) over the non-orthogonal basis. For the remainder of this work, the latter approach is adopted. The resulting orthogonal modal basis is ˜𝜳 = [ ˜𝝍 1 ˜𝝍 2 · · · ˜𝝍 𝑛 ], which satisfies ⟨ ˜𝝍 𝑖 , ˜𝝍 𝑗 ⟩ = 𝛿 𝑖 𝑗 . An example of the structures we recover using the left singular vectors of an SVD with this process can be seen in Figure 1. In the case of balanced truncation modes, we rely on the same modal bases ˜𝜱 = ˜𝜳 
+
+3.3. Galerkin (Petrov-) projection 
+
+We can use a Petrov-Galerkin projection in 3.1 a, using the general equation in 2.20 for any suitable modal basis. The resulting projection gives d𝑎 𝑖 
+
+d𝑡 =
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =1
+
+𝐿 𝑖 𝑗 𝑎 𝑗 +
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =1
+
+˜𝐿 𝑖 𝑗 𝑎 𝑗 +
+
+> 𝑛
+
+∑︁ 
+
+> 𝑘 =1
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑄 𝑖 𝑗 𝑘 𝑎 𝑗 𝑎 𝑘 + 𝐹 𝑖 , (3.6) where the projection on the pressure term is zero if we use modified Stokes modes that satisfy 3.4. The operators are defined by 
+
+𝐿 𝑖 𝑗 = 𝑅𝑒 −1 
+
+> 𝑏
+
+⟨∇ 2𝝓 𝑗 , 𝝍 𝑖 ⟩, (3.7 a)˜𝐿 𝑖 𝑗 = −⟨( 𝝓 𝑗 · ∇) 𝑼 + ( 𝑼 · ∇) 𝝓 𝑗 , 𝝍 𝑖 ⟩, (3.7 b)
+
+𝑄 𝑖 𝑗 𝑘 = −⟨( 𝝓 𝑗 · ∇) 𝝓 𝑘 , 𝝍 𝑖 ⟩, (3.7 c)
+
+𝐹 𝑖 = 𝑅𝑒 −1
+
+> 𝑏
+
+ 𝑑 2 ¯𝑈 𝑑𝑦 2 𝒆 𝑥 , 𝝍 𝑖 
+
+
+
+, (3.7 d)These operators are similar to the known framework in the literature (e.g. Cavalieri & Nogueira 2022; Maia & Cavalieri 2024; Zong et al. 2026). In the case of laminar-flow-based operators, the projection of the 𝐹 𝑖 is zero by construction, but in the mean-flow-based approach, this quantity takes into account the projection of the Reynolds stresses. We consider this as a general model for both laminar-flow-based and mean-flow-based models, where the model is changed with respect to the definition of base flow used 𝑼 (𝑦 ) and in 
+
+0 X0-10 Rapids articles must not exceed this page length Journal of Fluid Mechanics                                            
+
+> Case 𝜙 𝑖 /𝜓 𝑖 𝑈 (Modal bases) F(Model) 𝐹 𝑖 (Reynolds stresses) C-LL Controllability modes 𝑈 0(𝑦 )Laminar-flow-based ×
+> C-TL Controllability modes 𝑈 (𝑦 )Laminar-flow-based ×
+> C-TT Controllability modes 𝑈 (𝑦 )Mean-flow-based ✓
+> BT-LL Balanced truncation modes 𝑈 0(𝑦 )Laminar-flow-based ×
+> BT-TL Balanced truncation modes 𝑈 (𝑦 )Laminar-flow-based ×
+> BT-TT Balanced truncation modes 𝑈 (𝑦 )Mean-flow-based ✓
+> POD-T POD modes of turbulent state Not applicable Mean-flow-based ✓
+> Table 1. List of different ROMs compared in this work
+
+the inclusion of the 𝐹 𝑖 term. The different options we covered for the ROMs are explained in Table 1 3.4. Numerical implementation 
+
+We define a mesh (𝑁 𝑥 , 𝑁 𝑦 , 𝑁 𝑧 ) = (16 , 101 , 32 ) using equidistant points in the stream-wise and spanwise directions. The wall-normal direction is discretized with Chebyshev polynomials, whereas the homogeneous directions are discretized with Fourier modes. A reference DNS simulation is obtained using the Channelflow spectral code (Gibson et al. 
+
+2008; Gibson 2014) with a factor of 3 /2 in 𝑁 𝑥 and 𝑁 𝑧 for de-aliasing, and statistics are also collected after a transient of 100 time units. We choose the dimensions of the channel equal to (𝐿 𝑥 , 𝐿 𝑦 , 𝐿 𝑧 ) = (1.81 , 2, 0.92 ) with 𝑅𝑒 𝑏 = 2800 similarly to a minimal flow unit (Jim´ enez & Moin 1991), where the resulting friction Reynolds 𝑅𝑒 𝜏 = ℎ/𝛿 𝑣 ≈ 185 considering 𝛿 𝜈 = 𝜈 /𝑢 𝜏 is the viscous length scale and 𝑢 𝜏 is the friction velocity. Quantities with superscript + denote inner (or viscous) units which are scaled in length by 𝛿 𝜈 , in velocity with 𝑢 𝜏 , and in time with 𝜈 /𝑢 2
+
+> 𝜏
+
+For the modal basis, we consider |𝑛 𝑥 | ≤ 2, |𝑛 𝑧 | ≤ 1 Fourier wavenumber pairs. In the case of POD modes, we consider the DNS reference simulation to build the eigenvalue problem in 2.6, using the symmetries in 2.7 for data augmentation, after the same transient of 100 time units. For the framework described in 2.8, the controllability and observability Gramians are obtained by solving the Lyapunov equations described in 2.13, 2.16, then controllability modes are obtained by solving the eigenvalue problem in 2.14 and balanced modes solving problem 2.19. For all three eigenvalue problems described, we order the resulting eigenvectors by eigenvalue (or Hankel singular value in the balanced truncation case) and truncate by 𝑛 𝑦 = 9, 18 , 27 , 36. We decompose for every modal basis the real and imaginary part of the mode in 2.3, which gives two sets of modes separated by a phase shift of 𝜋 /2. Then, modes with (− 𝑛 𝑥 , −𝑛 𝑧 ) are dropped in the basis, as they are complex conjugates of (𝑛 𝑥 , 𝑛 𝑧 ), so only positive 𝑛 𝑥 is considered. For (𝑛 𝑥 , 𝑛 𝑧 ) = (0, 0) in the equation-based approach, we choose the modified Stokes modes described in 3.4. The total amount of modes for these configurations is then ranges over 𝑛 = 135 , 270 , 405 , 540 modes The ROM defined in 3.6 is run using an initial condition 𝑎 𝑖 ∈ ( 0, 0.5). The system is integrated up to 3000 non-dimensional time units ( 𝑡𝑈 𝑏 /ℎ) with a 0.5 step using the ode45 
+
+function in MATLAB. Statistics are collected after the first 1000 time units. The base state where the fluctuations are defined is given in 2.11, where the average streamwise velocity is obtained through the DNS. The error between different truncations 𝑛 𝑦 is quantified by the 𝐿 2 norm of the difference for the chosen value to compare (Maia & Cavalieri 2024). For instance, the error in the 
+
+0 X0-11 I. Addison-Smith, I.A. Maia, A.V.G. Cavalieri and B. Herrmann           
+
+> Figure 2. Modal coefficients 𝑎 𝑗 (𝑡 )time series for (a) C-TL (b) C-TT. Both models use 𝑛 𝑦 =18 ( 𝑛 =270).
+
+RMS values of the streamwise component of the velocity fluctuation is 
+
+𝜀 (𝑢 𝑟 𝑚𝑠 ) = (𝑢 𝑟 𝑚𝑠 )(DNS) − ( 𝑢 𝑟 𝑚𝑠 )(ROM) 2
+
+(𝑢 𝑟 𝑚𝑠 )(DNS) 2
+
+, (3.8) The 𝐿 2 norm is equivalent to the inner product as ∥𝒖 ∥2 =√︁ ⟨𝒖 , 𝒖 ⟩, and the RMS values are defined, for example, by 𝑢 ′ 
+
+> 𝑟 𝑚𝑠
+
+=√︁ (𝑢 ′𝑢 ′).
+
+4. Results & Discussion 
+
+We compare the models in terms of convergence of statistical quantities, as usual in the literature, and we also expand the comparison to short-time forecasting, focusing on the dynamical agreement of the ROMs with respect to DNS. 4.1. Turbulence statistics 
+
+The time series of the modal coefficients for two different models using the same modal basis (controllability modes) are shown in Figure 2. As the model F changes between the two ROMs, the dynamics of the modal coefficients differ. For instance, in the mean-flow-based ROM, all the mode coefficients tend to have zero mean. In contrast, the laminar-flow-based model does not necessarily satisfy this, as mean-flow modes have non-zero time average, leading to a mean flow different from the laminar solution. Both models exhibit chaotic behavior, as shown in previous works (Cavalieri & Nogueira 2022; Maia & Cavalieri 2025). The chaotic behavior is not necessarily observed in every ROM simulated in this work, where models based on balanced truncation (BT-LL, BT-TL, and BT-TT), on the other hand, suffer from blow-ups as reported in Zong et al. (2026) when a low number of eigenvectors 𝑛 𝑦 are used in the modal bases. The initial condition was changed from 𝑎 𝑖 ∈ ( 0, 0.1) used in Cavalieri & Nogueira (2022) to 𝑎 𝑖 ∈ ( 0, 0.5) to prevent re-laminarization of the models. The blow-ups can be further explained through the nonlinear term 𝑄 𝑖 𝑗 𝑘 , which is known to be a conservative term (Loiseau & Brunton 2018; Callaham 
+
+et al. 2022), but when balanced truncation modes are used, this property is not necessarily satisfied because the modal bases are not orthogonal ⟨𝝍 𝑗 , 𝝍 𝑖 ⟩ ≠ 𝛿 𝑖 𝑗 
+
+The convergence of different statistics is shown in Figure 3. We compare different modal bases and models, focusing on the changes in convergence between laminar-flow-based ROMs and mean-flow-based ROMs. For the comparison of statistics of the rms values, we show in Figure 3a,b,c, the best representation of the statistics is given by the POD modal basis, as recently shown in Zong et al. (2026) in a Couette flow setup. The use of a modal basis based on a mean flow provides a better representation of RMS values than relying on 
+
+0 X0-12 Journal of Fluid Mechanics      
+
+> Figure 3. Errors of the first and second order statistics defined in 3.8. (a) Streamwise component values, (b) Wall-normal component values, (c) Spanwise component values , (d) 𝑢 ′𝑣 ′stress component (e) Mean flow ¯ 𝑈 ,f) Friction velocity 𝑢 𝜏 . The models missing in the plots show blowing-up behavior
+
+a basis from a laminar state. However, the choice of model is also key here, maintaining the same modal basis while changing the model can significantly improve the statistics, yielding results comparable to those of the POD model. We also observed that balanced truncation modes do not provide a significant improvement over controllability modes, even when the projected model changes. The convergence of the mean flow and the friction velocity is shown in Figure 3d,e,f, where all the cases converge to a similar error of the mean flow, with the exception of the BT-LL case. The convergence of the friction velocity gives an approximation of the convergence of the friction Reynolds number, where mean-flow-based ROMs achieve a closer value to the friction velocity than laminar-flow-based ROMs, given that this is an input of the model through the decomposition of the velocity in 2.1. Mean-flow-based ROMs verify that the recovered friction velocity and 𝑢 ′𝑣 ′ component of the Reynolds stresses is only achieved when sufficient modes are given ( 𝑛 > 400), Laminar-flow-based ROMs do not recover these values with exception of C-TL when 𝑛 = 540 modes are used. This implies that laminar-flow-based models can achieve comparable results to mean-flow-based models but need more modes for an equivalent results. The behavior of the error in the different plots of Figure 3 is non-monotonic as previous works on ROMs (Cavalieri & Nogueira 2022; Addison-Smith et al. 2025; Zong et al. 
+
+2026) and as has also been reported in DNS with coarse grids (Meyers & Sagaut 2007; Rasam et al. 2011). The values of POD-T, C-TL, C-TT, and BT-TT converge to similar statistics when a sufficient number of modes is provided, as appears in Figure 3; the other models do not converge to the same statistics due to the limited number of modes and both modal bases and equations used as discussed. The values can be compared with the reported values in Zong et al. (2026) for 𝑛 𝑦 = 10, equivalently 𝑛 = 150 modes (see his 
+
+0 X0-13 I. Addison-Smith, I.A. Maia, A.V.G. Cavalieri and B. Herrmann 
+
+Figure 4. Statistics of the models 𝑼 in outer units (a-d-g-j), in inner units (b-e-h-k), 𝑢 ′𝑣 ′ in (c-f-i-l). Models using |𝑛 𝑥 | ≤ 2, |𝑛 𝑧 | ≤ 1 and (a-c) 𝑛 𝑦 = 9, (d-f) 𝑛 𝑦 = 18, (g-i) 𝑛 𝑦 = 27, (j-l) 𝑛 𝑦 = 36, equivalent to        
+
+> 𝑛 =135 ,270 ,405 ,540. The models missing in the plots show blowing-up behavior. For 𝑢 ′𝑣 ′statistics, the BT-LL is not shown due to high deviation with respect to other models
+
+Table 4), and with our results for 𝑛 = 135 modes. The errors for the second-order statistics (RMS) are higher than in his study because they use a lower friction Reynolds number (𝑅𝑒 𝜏 ≈ 34). The effect of the equations is non-negligible, as can be seen in Figure 3, where, for a low amount of modes, the mean-flow-based approach can achieve statistics similar to POD-Galerkin at least in the wall-normal and spanwise directions. A further visualization in physical space of the statistics is given in Figures 4 and 5, where in Figure 4 the convergence of the mean flow and the 𝑢 ′𝑣 ′ are shown. The use of modified 
+
+0 X0-14 Journal of Fluid Mechanics                               
+
+> Figure 5. Statistics of the models 𝑢 𝑟 𝑚𝑠 in (a-d-g-j), 𝑣 𝑟 𝑚𝑠 in (b-e-h-k), 𝑤 𝑟 𝑚𝑠 in (c-f-i-l). Models using |𝑛 𝑥 | ≤
+> 2,|𝑛 𝑧 | ≤ 1 and (a-c) 𝑛 𝑦 =9, (d-f) 𝑛 𝑦 =18, (g-i) 𝑛 𝑦 =27, (j-l) 𝑛 𝑦 =36, equivalent to 𝑛 =135 ,270 ,405 ,540. The models missing in the plots show blowing-up behavior
+
+Stokes ensures that the mean flow obtained has the same bulk velocity as the one from DNS even though the values are different between the ROM and the DNS as presented in Figure 4a,d,g,j. However, the values near wall in Figure 4b,e,h,k demonstrate that accuracy on the mean velocity representations does not imply good representation in the near wall velocity. Even though ROMs achieve low error as presented in Figure 3e, laminar-flow-based ROMs (specifically C-LL and BT-LL) do not show a good representation of the near wall values. The inclusion of mean-flow-based modal bases (C-TL and BT-TL) improves the results, but models that use both mean-flow-based equations and modal bases (C-TT, BT-TT) can 
+
+0 X0-15 I. Addison-Smith, I.A. Maia, A.V.G. Cavalieri and B. Herrmann 
+
+achieve results comparable to POD-T, as indicated by Figure 3f. For the visualization of the RMS values, we present Figure 5, where the three components of the RMS values are present. The models, as discussed, give reasonable accuracy in a further reduced space compared with the DNS, with closer agreement for the mean-flow-based models. Overall, these results highlight that one may achieve better low-order representation of the turbulence dynamics by considering equations taken around the mean flow. There is a significant body of literature showing that mean-flow based modes offer a good representation of coherent structures in turbulence (see McKeon 2017 and references therein), and here we extend this view to the non-linear dynamics, as the TT models, with mean-flow based modes and dynamics show better agreement with the reference statistics. 4.2. Short-time forecasting 
+
+A comparison of the short-time forecasting between the ROMs and the DNS is studied, where we define the following initial condition for the ROMs 
+
+𝑎 𝑖 (𝑡 = 0) = ⟨𝒖 ′, 𝝓 𝑖 ⟩, (4.1) where the velocity field 𝒖 ′ is obtained from the DNS. The projection depends on the modal basis chosen 𝝓 𝑖 and the definition of the modal coefficients used in the ROM, presented in 2.1 and 2.2. To study the behavior of the models in the short-time forecasting, we define the following approach: from the DNS, we randomly choose different snapshots and then project them with 4.1 in the ROM to run a parallel simulation in a short-time window. We repeat this process a total of 100 times and average the error of the velocity field 𝒖 and the fluctuations around the mean state 𝒖 ′.The choice of the time step for comparison is based on the Lyapunov exponent found in wall-bounded turbulence (Keefe et al. 1992; Inubushi et al. 2015; Nikitin 2018). We chose two time steps to compare: one at 𝑡 1 = 3ℎ/𝑈 𝑏 equivalent to 𝑡 + 
+
+> 1
+
+≈ 37 and the second at 
+
+𝑡 2 = 6ℎ/𝑈 𝑏 equivalent to 𝑡 + 
+
+> 2
+
+= 73. The Lyapunov time 𝜏 1 is the inverse of the Lyapunov exponent, which in this case should lie between the value reported for the Couette minimal flow unit 𝜏 + 
+
+> 1
+
+= 1/𝜆 + 
+
+> 1
+
+≈ 142 , 86 (Inubushi et al. 2015) and the one reported for the turbulent channel flow in the full size domain 𝜏 + 
+
+> 1
+
+= 1/𝜆 + 
+
+> 1
+
+≈ 43 , 49 (Nikitin 2018). The first time 
+
+𝑡 + 
+
+> 1
+
+is chosen below both Lyapunov times, but the second time 𝑡 + 
+
+> 2
+
+is only below the value reported in Inubushi et al. (2015). As our dimensions are in the minimal flow unit size, we believe that our model should behave similarly to the one presented in Inubushi et al. 
+
+(2015), as the Lyapunov exponent, scaled in wall units, is believed to be independent of the boundary conditions and Reynolds number (Nikitin 2018). The results are shown in Figure 6. The error in the velocity field in the initial condition confirms that POD is the best basis for projecting the field, as it uses data from the DNS. Bases using controllability modes (C-LL, C-TL, and C-TT) are better than balanced truncation ones (BT-LL, BT-TL, and BT-TT) at the initial time, but we observe that as the number of modes increases, the differences can be negligible between approaches. Even though C-TL and C-TT use the same modal basis, they show different errors in the initial conditions, which can be explained using 4.1. The projection not only depends on the modal basis used, but also on the velocity fluctuations it represents. Mean-flow-based modal bases better project fluctuations onto the mean state than onto the laminar state, which explains the difference between the results. Moving forward in time on the simulation, we observe an interesting phenomenon in Figure 6b,e where BT-LL, BT-TL, and BT-TT surpass their controllability modes counterparts (C-LL, C-TL, and C-TT). Balanced truncation modes perform better in the input-output dynamics, as demonstrated in several works (e.g., Rowley 2005; Ilak & Rowley  
+
+> 0X0-16
+
+Journal of Fluid Mechanics              
+
+> Figure 6. Error for the full velocity 𝒖 (a-c) and the fluctuations 𝒖 ′around the mean (d-f). In (a,d) 𝑡 +
+> 0=0, (b,e)
+> 𝑡 +
+> 1≈37 (c,f) 𝑡 +
+> 2≈73. The errors are obtained after averaging 100 different random simulations of the ROMs. The models missing in the plots show blowing-up behavior in the calculation of statistics
+
+2008; Barbagallo et al. 2009), given their accurate representation of transient growth, harmonic response, and structures that are dynamically relevant to the flow, regardless of their energy content. This trend is consistent if we simulate more time steps, as shown in Figure 6c,f with the model BT-TL surpassing C-TT when a sufficient number of modes are given. The comparison is studied until the error of the fluctuations 𝜀 𝒖 ′ ≈ 1, which is achieved in Figure 6c,f. The error for the full velocity field compared with the fluctuations is lower, as it can be compared in Figure 6a,b,c with d,e,f. The flow is predominantly influenced by the mean flow rather than by fluctuations. Then, a good representation of the mean flow is more important for the error calculation than an accurate representation of the fluctuations. The overall behavior if we change the comparison to the fluctuations results in the same conclusions as if we analyze the full velocity field. An evolution of the error in both the velocity field and fluctuations around a mean state can be seen in Figure 7 for models with 𝑛 = 405 modes. As appeared in Figure 6, ROMs from controllability modes and balanced modes start from similar initial error, and the only difference is due to the choice of modal bases and equations. These comparisons show that moving forward in time, BT-TL and BT-TT, in the average sense, have less error than their controllability counterparts, where this difference can be seen from 𝑡 + ≈ 30 forward in time. The standard deviation error ( 𝑆𝑡𝑑 ) in Figure 7 gives an insight of the variation of the error, where given the sensitivity to the initial condition, models start to have more deviation moving forward in time. The value of the error indicates that the average advantage of using BT-TT over C-TT is not necessarily valid when looking at single snapshots, where the situation of the error has to be assessed considering the initial 
+
+0 X0-17 I. Addison-Smith, I.A. Maia, A.V.G. Cavalieri and B. Herrmann                                        
+
+> Figure 7. Error for the fluctuations 𝒖 ′around the mean (a) and the full velocity 𝒖 (c). Standard deviation error (𝑆𝑡𝑑 ) in (b) for 𝒖 ′and (d) for 𝒖 . The errors are obtained after averaging 100 different random simulations of the ROMs. Models use 𝑛 =405 modes C-LL BT-LL C-TL BT-TL C-TT BT-TT POD Turbulent statistics Weak Weak Fair Fair Strong Strong Best Short-time forecasting Weak Weak Weak Strong Weak Strong Best Data requirements None None Mean flow Mean flow Mean flow Mean flow DNS snapshots
+> Table 2. Comparison of the different ROMs. Details of the definitions in Table 1
+
+condition. However, the improvement obtained using balanced truncation, albeit slight, is not related to a specific initial condition, displaying an average increase when several realisations are considered The comparison of the streamwise velocity fluctuations is shown in Figure 8, where three different times from the simulation are plotted for an arbitrary initial condition in the location 𝑦 + ≈ 20, focusing mainly on approaches based on equation-based ROMs around turbulent-state fluctuations (BT-TT, C-TT). The initial snapshots show a good agreement between the different models for a given initial condition. In time 𝑡 + ≈ 42, the ROMs conserve a similar overall resemblance to the initial condition. Finally, at time 𝑡 + ≈ 85, C-TT is significantly different from the DNS showing a streaky structure that is considerably more deformed than the BT-TT model. The cross-section of the channel is plotted in Figure 9. The cross-section is compared at the same times as Figure 8 with an arbitrary initial condition from the DNS. The DNS snapshots indicate that the cross-stream flow appears in highly localized regions of values, whereas ROMs can reproduce it with reasonable accuracy in the initial snapshots. Looking 
+
+0 X0-18 Journal of Fluid Mechanics                       
+
+> Figure 8. Streamwise fluctuation velocity 𝑢 ′in 𝑦 +≈20 for three different times (left 𝑡 +=0, center 𝑡 +≈42, right 𝑡 +≈85) with (a) 𝒖 ′from DNS, (b) DNS filtered on the same wavenumbers of the ROM, (c) BT-TT, (d) C-TT. The ROMs use 𝑛 𝑦 =36 ( 𝑛 =540 modes)
+
+further in 𝑡 + ≈ 42, as in the previous Figure 8, both ROMs keep similar cross-stream velocity as streamwise velocity in the previous figure. In time 𝑡 + ≈ 85, the cross-stream velocity where the BT-TT has a better representation of the vortical structures than C-TT. 
+
+5. Conclusions 
+
+In this work, we show how the equations of motion and modal bases influence the turbulent statistics convergence and short-time forecasting of ROMs based on Galerkin projection. The chosen case was a plane channel flow for its relevance to wall-bounded turbulence and the limited attention paid to equation-based ROMs for this specific configuration. In this mean-flow-based approach, the projection of Reynolds stresses is accounted for through a forcing term that can be obtained with the mean flow. A modification of the modal basis is presented to enforce the boundary conditions of plane channel flow. The change of both modal bases and equation of motion to the mean flow increases the accuracy of turbulence statistics and short-time forecasting in comparison with other ROMs based on laminar flow fluctuations (Cavalieri & Nogueira 2022; Zong et al. 2026). Reduced-order modeling often relies on the ability to obtain data to build a modal basis that describes, in a reduced space, the dynamics of the turbulent flow. Equation-based modal bases allow building models without prior data and, as presented in this work, can perform similarly to POD-Galerkin models, only requiring knowledge of the mean state 
+
+0 X0-19 I. Addison-Smith, I.A. Maia, A.V.G. Cavalieri and B. Herrmann                     
+
+> Figure 9. Cross-section at 𝑥 +≈168 (left 𝑡 +=0, center 𝑡 +≈42, right 𝑡 +≈85) with (a) 𝒖 ′from DNS, (b) DNS filtered on the same wavenumbers of the ROM, (c) BT-TT, (d) C-TT. The ROMs use 𝑛 𝑦 =36 ( 𝑛 =540 modes)
+
+of the flow (C-TT and BT-TT). The study of different modal bases in a Couette flow was reported in Zong et al. (2026), but the change in the equations from laminar-flow-based to mean-flow-based, presented in this work, can improve the performance of turbulent statistics beyond simply changing the modal basis of the ROM (e.g., C-TL compared with C-TT). An overall comparison is given in Table 2 ROMs for wall-bounded turbulence based on a modal basis derived from linearized equations were recently presented in several works (e.g., Cavalieri & Nogueira 2022; McCormack et al. 2024; Zong et al. 2026), but the specific case of turbulent plane channel flow has not been previously studied. Here, we presented an extended framework that used a modified basis (Modified Stokes modes), in which the modal basis was chosen to have a null projection onto the pressure term of the equation of motion. This change allows the same mass flux to be sustained without setting a specific pressure gradient, as commonly POD-Galerkin based on the Navier-Stokes equation does in the literature (Omurtag & Sirovich 1999; Johansson et al. 2006). However, unlike the cited works, the present Galerkin frameworks do not require numerical stabilisation. 
+
+0 X0-20 Journal of Fluid Mechanics 
+
+The forecasting of equation-based ROM is presented for different modal bases and models for the dynamics. As with the turbulence statistics, mean-flow-based ROMs with mean-flow modal basis perform similarly to POD-Galerkin models, but here we see that for short-time forecasting, ROMs built from balanced truncation modes can achieve better short-time forecasting than their controllability modes counterparts in the case of mean-flow-based ROMs. This was achieved by averaging 100 different trajectories from the reference DNS and then simulating both the ROM and the DNS over a short time window. This work generalizes the framework for ROMs based on linearized equations presented in Cavalieri & Nogueira (2022) for plane Couette flow to plane channel flow. This type of ROM can push the Reynolds number beyond that reported in previous work (Zong et al. 
+
+2026) in a similar reduced space. The applications span from turbulence control (Maia & Cavalieri 2025) to the computation of the invariant solutions representative of turbulence (McCormack et al. 2024). The use of equation-based methods for building ROMs can yield results similar to those of data-driven methods like POD-Galerkin, where the use of mean-flow modal bases and equations is key to advancing into higher Reynolds numbers. 
+
+Acknowledgements We gratefully acknowledge E. Kracht for his helpful comments and insightful discussions. 
+
+Funding Ian Addison-Smith acknowledges the financial support received from CAPES (Coordenac ¸ ˜ ao de Aperfeic ¸oamento de Pessoal de N´ ıvel Superior - Brasil (CAPES) - Finance Code 001), under Move La America program, and ANID under scholarship ANID-Subdirecci´ on de Capital Humano/Mag´ ıster Nacional/2024-22241812. This work was also funded by ANID Fondecyt project 1250693. 
+
+Declaration of interests The authors report no conflict of interest. 
+
+REFERENCES 
+
+Abreu, Leandra I., Cavalieri, Andr´ e V.G., Schlatter, Philipp, Vinuesa, Ricardo & Henningson, Dan S. 
+
+2020 Resolvent modelling of near-wall coherent structures in turbulent channel flow. International Journal of Heat and Fluid Flow 85 , 108662. 
+
+Addison-Smith, Ian, Maia, Igor A., Herrmann, Benjamin & Cavalieri, Andre V. G. 2025 Train yourself: self-compressing reduced-order models of turbulent flows, arXiv: 2511.04813. 
+
+Ahmed, Shady E., Pawar, Suraj, San, Omer, Rasheed, Adil, Iliescu, Traian & Noack, Bernd R. 2021 On closures for reduced order models—A spectrum of first-principle to machine-learned avenues. Physics of Fluids 33 (9), 091301. 
+
+Aubry, Nadine, Holmes, Philip, Lumley, John L & Stone, Emily 1988 The dynamics of coherent structures in the wall region of a turbulent boundary layer. Journal of Fluid Mechanics 192 , 115–173. 
+
+Bagheri, S., Henningson, D. S., Hœpffner, J. & Schmid, P. J. 2009 Input-output analysis and control design applied to a linear model of spatially developing flows. Applied Mechanics Reviews 62 (2), 020803. 
+
+Barbagallo, Alexandre, Sipp, Denis & Schmid, Peter J. 2009 Closed-loop control of an open cavity flow using reduced-order models. Journal of Fluid Mechanics 641 , 1 –50. 
+
+Berkooz, Gal, Holmes, Philip & Lumley, John L 1993 The proper orthogonal decomposition in the analysis of turbulent flows. Annual review of fluid mechanics 25 (1), 539–575. 
+
+Brunton, Stephen L. & Kutz, J. Nathan 2022 Data-Driven Science and Engineering: Machine Learning, Dynamical Systems, and Control . Cambridge University Press. 
+
+Brunton, Steven L., Proctor, Joshua L. & Kutz, J. Nathan 2016 Discovering governing equations from data by sparse identification of nonlinear dynamical systems. Proceedings of the National Academy of Sciences 113 (15), 3932–3937. 
+
+Butler, Kathryn M. & Farrell, Brian F. 1992 Three-dimensional optimal perturbations in viscous shear flow. Physics of Fluids A: Fluid Dynamics 4 (8), 1637–1650. 
+
+Callaham, Jared L., Brunton, Steven L. & Loiseau, Jean-Christophe 2022 On the role of nonlinear correlations in reduced-order modelling. Journal of Fluid Mechanics 938 , A1. 
+
+Cavalieri, Andr´ e V. G. 2021 Structure interactions in a reduced-order model for wall-bounded turbulence. 
+
+Phys. Rev. Fluids 6, 034610. 
+
+Cavalieri, Andr´ e V. G. & Nogueira, Petr ˆ onio A. S. 2022 Reduced-order Galerkin models of plane Couette flow. Physical Review Fluids 7, L102601. 
+
+Chua Khoo, Zhao, Chan, Chi Hin & Hwang, Yongyun 2022 A sparse optimal closure for a reduced-order model of wall-bounded turbulence. Journal of Fluid Mechanics 939 , A11. 
+
+0 X0-21 I. Addison-Smith, I.A. Maia, A.V.G. Cavalieri and B. Herrmann 
+
+Constante-Amores, C. Ricardo & Graham, Michael D. 2024 Data-driven state-space and Koopman operator models of coherent state dynamics on invariant manifolds. Journal of Fluid Mechanics 984 ,R9. 
+
+Constante-Amores, C. Ricardo, Linot, Alec J. & Graham, Michael D. 2025 Dynamics of a data-driven low-dimensional model of turbulent minimal pipe flow. Journal of Fluid Mechanics 1020 , A58. 
+
+Del ´ Alamo, Juan C. & Jim´ enez, Javier 2006 Linear energy amplification in turbulent channels. Journal of Fluid Mechanics 559 , 205 –213. 
+
+Dergham, G., Sipp, D., Robinet, J.-C. & Barbagallo, A. 2011 Model reduction for fluids using frequential snapshots. Physics of Fluids 23 (6), 064101. 
+
+Encinar, Miguel P. & Jim´ enez, Javier 2020 Momentum transfer by linearised eddies in turbulent channel flows. Journal of Fluid Mechanics 895 , A23. 
+
+Farrell, Brian F & Ioannou, Petros J 1993 Stochastic forcing of the linearized Navier–Stokes equations. 
+
+Physics of Fluids A: Fluid Dynamics 5 (11), 2600–2609. 
+
+Gibson, J. F. 2014 Channelflow: A spectral Navier-Stokes simulator in C++. Tech. Rep. . U. New Hampshire. 
+
+Gibson, John F, Halcrow, Jonathan & Cvitanovi´ c, Predrag 2008 Visualizing the geometry of state space in plane Couette flow. Journal of Fluid Mechanics 611 , 107–130. 
+
+Hamilton, James M., Kim, John & Waleffe, Fabian 1995 Regeneration mechanisms of near-wall turbulence structures. Journal of Fluid Mechanics 287 , 317 –348. 
+
+Herrmann, Benjamin, Baddoo, Peter J, Dawson, Scott TM, Semaan, Richard, Brunton, Steven L & McKeon, Beverley J 2023 Interpolatory input and output projections for flow control. Journal of Fluid Mechanics 971 , A27. 
+
+Herrmann-Priesnitz, Benjam´ ın, Calder ´ on-Mu ˜ noz, Williams R., Diaz, Gerardo & Soto, Rodrigo 2018 Heat transfer enhancement strategies in a swirl flow minichannel heat sink based on hydrodynamic receptivity. 
+
+International Journal of Heat and Mass Transfer 127 , 245–256. 
+
+Hijazi, Saddam, Stabile, Giovanni, Mola, Andrea & Rozza, Gianluigi 2020 Data-driven POD-Galerkin reduced order model for turbulent flows. Journal of Computational Physics 416 , 109513. 
+
+Hwang, Yongyun & Cossu, Carlo 2010 a Amplification of coherent streaks in the turbulent Couette flow: an input –output analysis at low Reynolds number. Journal of Fluid Mechanics 643 , 333 –348. 
+
+Hwang, Yongyun & Cossu, Carlo 2010 b Linear non-normal energy amplification of harmonic and stochastic forcing in the turbulent channel flow. Journal of Fluid Mechanics 664 , 51 –73. 
+
+Hwang, Yongyun & Cossu, Carlo 2010 c Self-sustained process at large scales in turbulent channel flow. 
+
+Phys. Rev. Lett. 105 , 044505. 
+
+Ilak, Miloˇ s & Rowley, Clarence W. 2008 Modeling of transitional channel flow using balanced proper orthogonal decomposition. Physics of Fluids 20 (3), 034103. 
+
+Illingworth, Simon J., Monty, Jason P. & Marusic, Ivan 2018 Estimating large-scale structures in wall turbulence using linear models. Journal of Fluid Mechanics 842 , 146 –162. 
+
+Inubushi, Masanobu, Takehiro, Shin-ichi & Yamada, Michio 2015 Regeneration cycle and the covariant Lyapunov vectors in a minimal wall turbulence. Phys. Rev. E 92 , 023022. 
+
+Jim´ enez, Javier 2013 How linear is wall-bounded turbulence? Physics of Fluids 25 (11), 110814. 
+
+Jim´ enez, Javier & Moin, Parviz 1991 The minimal flow unit in near-wall turbulence. Journal of Fluid Mechanics 225 , 213 –240. 
+
+Johansson, P.S., Andersson, H.I. & Rønquist, E.M. 2006 Reduced-basis modeling of turbulent plane channel flow. Computers & Fluids 35 (2), 189–207. 
+
+Jovanovi´ c, Mihailo R & Bamieh, Bassam 2005 Componentwise energy amplification in channel flows. 
+
+Journal of Fluid Mechanics 534 , 145–183. 
+
+Kasz ´ as, B ´ alint & Haller, George 2024 Capturing the edge of chaos as a spectral submanifold in pipe flows. 
+
+Journal of Fluid Mechanics 979 , A48. 
+
+Keefe, Laurence, Moin, Parviz & Kim, John 1992 The dimension of attractors underlying periodic turbulent Poiseuille flow. Journal of Fluid Mechanics 242 , 1 –29. 
+
+Linot, Alec J. & Graham, Michael D. 2023 Dynamics of a data-driven low-dimensional model of turbulent minimal Couette flow. Journal of Fluid Mechanics 973 , A42. 
+
+Loiseau, Jean-Christophe & Brunton, Steven L. 2018 Constrained sparse Galerkin regression. Journal of Fluid Mechanics 838 , 42 –67. 
+
+Ma, Xia & Karniadakis, George Em 2002 A low-dimensional model for simulating three-dimensional cylinder flow. Journal of Fluid Mechanics 458 , 181 –190. 
+
+Maia, Igor A. & Cavalieri, Andr´ e 2025 Turbulence suppression in plane Couette flow using reduced-order models. Journal of Fluid Mechanics 1014 , A18. 
+
+Maia, Igor A & Cavalieri, Andr´ e V G 2024 Modal-based generalised quasilinear approximations for turbulent plane Couette flow. Theoretical and Computational Fluid Dynamics 38 (3), 313–330. 
+
+0 X0-22 Journal of Fluid Mechanics 
+
+McCormack, Matthew, Cavalieri, Andr´ e V.G. & Hwang, Yongyun 2024 Multi-scale invariant solutions in plane Couette flow: a reduced-order model approach. Journal of Fluid Mechanics 983 , A33. 
+
+McKeon, B. J. 2017 The engine behind (wall) turbulence: perspectives on scale interactions. Journal of Fluid Mechanics 817 , P1. 
+
+McKeon, Beverley J. & Sharma, Ati S. 2010 A critical-layer framework for turbulent pipe flow. Journal of Fluid Mechanics 658 , 336 –382. 
+
+Meyers, Johan & Sagaut, Pierre 2007 Is plane-channel flow a friendly case for the testing of large-eddy simulation subgrid-scale models? Physics of Fluids 19 (4), 048105. 
+
+Moehlis, Jeff, Faisst, Holger & Eckhardt, Bruno 2004 A low-dimensional model for turbulent shear flows. 
+
+New Journal of Physics 6 (1), 56. 
+
+Moore, B. 1981 Principal component analysis in linear systems: Controllability, observability, and model reduction. IEEE Transactions on Automatic Control 26 (1), 17–32. 
+
+Morra, Pierluigi, Nogueira, Petr ˆ onio A. S., Cavalieri, Andr´ e V. G. & Henningson, Dan S. 2021 The colour of forcing statistics in resolvent analyses of turbulent channel flows. Journal of Fluid Mechanics 907 ,A24. 
+
+Morra, Pierluigi, Semeraro, Onofrio, Henningson, Dan S & Cossu, Carlo 2019 On the relevance of reynolds stresses in resolvent analyses of turbulent wall-bounded flows. Journal of Fluid Mechanics 867 ,969–984. 
+
+Mou, Changhong, Merzari, Elia, San, Omer & Iliescu, Traian 2023 An energy-based lengthscale for reduced order models of turbulent flows. Nuclear Engineering and Design 412 , 112454. 
+
+Nakamura, Taichi, Fukami, Kai, Hasegawa, Kazuto, Nabae, Yusuke & Fukagata, Koji 2021 Convolutional neural network and long short-term memory based reduced order surrogate for minimal turbulent channel flow. Physics of Fluids 33 (2), 025116. 
+
+Nikitin, Nikolay 2008 On the rate of spatial predictability in near-wall turbulence. Journal of Fluid Mechanics 
+
+614 , 495 –507. 
+
+Nikitin, Nikolay 2018 Characteristics of the leading Lyapunov vector in a turbulent channel flow. Journal of Fluid Mechanics 849 , 942 –967. 
+
+Noack, Bernd R., Afanasiev, Konstantin, Morzy ´ nski, Marek, Tadmor, Gilead & Thiele, Frank 2003 A hierarchy of low-dimensional models for the transient and post-transient cylinder wake. Journal of Fluid Mechanics 497 , 335 –363. 
+
+Noack, Bernd R., Papas, Paul & Monkewitz, Peter A. 2005 The need for a pressure-term representation in empirical Galerkin models of incompressible shear flows. Journal of Fluid Mechanics 523 , 339 –365. 
+
+Omurtag, A & Sirovich, L 1999 On low-dimensional modeling of channel turbulence. Theorical and Computational Fluid Dynamics 13 (2), 115–127. 
+
+Podvin, B´ ereng` ere & Lumley, John 1998 A low-dimensional approach for the minimal flow unit. Journal of Fluid Mechanics 362 , 121 –155. 
+
+Protas, Bartosz, Noack, Bernd R. & ¨ Osth, Jan 2015 Optimal nonlinear eddy viscosity in Galerkin models of turbulent flows. Journal of Fluid Mechanics 766 , 337 –367. 
+
+Rasam, A., Brethouwer, G., Schlatter, P., Li, Q. & Johansson, A. V. 2011 Effects of modelling, resolution and anisotropy of subgrid-scales on large eddy simulations of channel flow. Journal of Turbulence 12 , N10. 
+
+Rowley, Clarence W. 2005 Model reduction for fluids, using balanced proper orthogonal decomposition. 
+
+International Journal of Bifurcation and Chaos 15 (03), 997–1013. 
+
+Rowley, Clarence W. & Dawson, Scott T.M. 2017 Model reduction for flow analysis and control. Annual Review of Fluid Mechanics 49 (Volume 49, 2017), 387–417. 
+
+von Saldern, Jakob G, Reumsch ¨ ussel, Johann M, Kaiser, Thomas L, Schmidt, Oliver T, Jordan, Peter & Oberleithner, Kilian 2023 Self-consistent closure modeling for linearized mean field methods. In AIAA Aviation 2023 Forum , p. 4351. 
+
+Sato, Shintaro & Schmidt, Oliver T. 2025 Parametric reduced-order modelling and mode sensitivity of actuated cylinder flow from a matrix manifold perspective. Journal of Fluid Mechanics 1021 , A44. 
+
+Smith, Troy R, Moehlis, Jeff & Holmes, Philip 2005 a Low-dimensional modelling of turbulence using the proper orthogonal decomposition: A tutorial. Nonlinear Dyn. 41 (1-3), 275–307. 
+
+Smith, T. R., Moehlis, J. & Holmes, P. 2005 b Low-dimensional models for turbulent plane Couette flow in a minimal flow unit. Journal of Fluid Mechanics 538 , 71 –110. 
+
+Symon, Sean, Madhusudanan, Anagha, Illingworth, Simon J & Marusic, Ivan 2023 Use of eddy viscosity in resolvent analysis of turbulent channel flow. Physical Review Fluids 8 (6), 064601. 
+
+Towne, Aaron, Lozano-Dur ´ an, Adri ´ an & Yang, Xiang 2020 Resolvent-based estimation of space –time flow statistics. Journal of Fluid Mechanics 883 , A17. 
+
+Tsai, Ping-Hsuan, Fischer, Paul & Iliescu, Traian 2025 A time-relaxation reduced order model for the turbulent channel flow. Journal of Computational Physics 521 , 113563. 
+
+0 X0-23 I. Addison-Smith, I.A. Maia, A.V.G. Cavalieri and B. Herrmann 
+
+Waleffe, Fabian 1997 On a self-sustaining process in shear flows. Physics of Fluids 9 (4), 883–900. 
+
+Willcox, K. & Peraire, J. 2002 Balanced model reduction via the proper orthogonal decomposition. AIAA Journal 40 (11), 2323–2330, arXiv: https://doi.org/10.2514/2.1570. 
+
+Zare, Armin, Jovanovi´ c, Mihailo R. & Georgiou, Tryphon T. 2017 Colour of turbulence. Journal of Fluid Mechanics 812 , 636 –680. 
+
+Zong, Zilin, Maia, Igor Albuquerque, Cavalieri, Andr´ e & Hwang, Yongyun 2026 State-dependent convergence of Galerkin-based reduced-order models for Couette flow. Journal of Fluid Mechanics 1030 ,A28. 
+
+0 X0-24
