@@ -1,0 +1,1529 @@
+Title: 2607.07084v1.pdf
+
+URL Source: https://arxiv.org/pdf/2607.07084v1
+
+Published Time: Thu, 09 Jul 2026 00:33:39 GMT
+
+Number of Pages: 25
+
+Markdown Content:
+Inverse Low -Dimensional Manifold  Reconstruction  Framework  for 
+
+Spatiotemporal Reconstruction of  Compressible  Physical  Fields        
+
+> Qiang Liu, a) ,Feng Ma, a) ,Wei Zhu, a,*) ,Xiyu Jia, a) , Jianmin Xue ,a) ,Jun Wen, a) ,Gaojun Fu ,a)
+
+AFFILIATIONS  
+
+> a
+
+Beijing Institute of Technology, Beijing 100081, China  
+
+> * Correspondence author:
+> zhu.wei@bit.edu.cn (Wei Zhu)
+
+Abstract 
+
+Compressible physical fields are widely present in the real physical world, but current 
+
+artificial intelligence lacks an understanding mechanism for the non -differentiable 
+
+features in compressible physical fields.  Addressing the limitations of existing deep 
+
+learning architectures in handling global  non -differentiable  features, we propose the 
+
+Inverse Low -Dimensional Manifold reconstruction framework  (ILDM) . This 
+
+framework couples the Non -differentiable Approximation Function (NAF) for 
+
+capturing non -differentiable features in compressible flows with the Smooth Fluid 
+
+Reconstruction (SFR) module tailored for smooth fluid regions.  Extensive evaluations 
+
+across 1D and 2D benchmarks, including Riemann problems and double Mach 
+
+reflection, demonstrate that  ILDM  significantly outperforms cPINN and R -adaptive 
+
+DeepONet. Specifically,  ILDM  achieves superior localization of non -differentiable 
+
+interfaces and maintains robust super -resolution performance even with low -resolution 
+
+inputs, establishing a physically consistent and scalable paradigm for data -driven fluid 
+
+dynamics. Introduction 
+
+The occurrence of non -differentiable phenomena in physical variables is an inherent 
+
+and unavoidable challenge in the study of compressible flows 1. The reconstruction of 
+
+such non -differentiable features provides a fundamental basis for the development of 
+
+high -order numerical algorithms and physically consistent data -driven models. The 
+
+governing equations of compressible flows typically admit non -smo oth solutions; 
+
+driven by the convergence of characteristic lines and the associated multi -valued 
+
+paradoxes, compressible flow fields manifest a pronounced structural heterogeneity, 
+
+characterized by the coexistence of non -differentiable interfaces and locally smooth 
+
+regions 2-4. This heterogeneity poses significant challenges for the high -fidelity 
+
+reconstruction of physical fields. Traditional numerical methods —relying on the 
+
+integral form of conservation laws, numerical flux functions, and Courant –Friedrichs –
+
+Lewy (CFL) stabilit y constraints —remain susceptible to Gibbs phenomena in the 
+
+presence of discontinuities, often struggling to maintain a balance between high -order 
+
+accuracy and numerical robustness. Recently, the advent of deep learning has 
+
+introduced hybrid computational s trategies that integrate neural networks with physical 
+
+priors 5. These approaches, operating under supervised or self -supervised paradigms, 
+
+enable the learning and prediction of physical fields from data, offering a promising 
+
+alternative to mitigate the inherent limitations of conventional numerical schemes. 
+
+In recent years, a broad spectrum of neural network architectures has been explored for 
+
+solving  non -differentiable  physical dynamics 6-9. For forward and inverse problems in 
+
+continuum physics, Karniadakis and co -workers pioneered the Physics -Informed 
+
+Neural Network (PINN) framework 10 . However, the presence of  non -differentiable 
+
+interfaces and derivative singularities in  non -differentiable  fields severely limits the 
+
+applicability of standard PINNs. To address this issue, Karniadakis subsequently 
+
+introduced the conservative PINN (cPINN) 11 , which decomposes the computational 
+
+domain into multiple subdomains, trains an independent PINN in each subdomain, and 
+
+enforces Rankine –Hugoniot jump conditions at the interfaces between subdomains. 
+
+Nonetheless, the locations of these subdomain interfaces  still need to be pres cri bed 
+
+manually.  Moreover, other researchers have developed computational models for  non -
+
+differentiable  physical dynamics  based on the PINN architecture 12 -15 , but these are, in essence, closely related to and highly similar to cPINN.  Deep Operator Network 
+
+(DeepONet) 16 , proposed by Lu et al., encounters similar difficulties when applied to 
+
+non -differentiable  problems, as DeepONet is essentially a smooth operator 
+
+approximator and cannot inherently capture jump -type behaviour.  To address this issue, 
+
+Ahmad Peyvan  et al.  employed DeepONet to directly learn the solution procedure of 
+
+Riemann problems 17 , enforcing the Rankine –Hugoniot conditions on the propagation 
+
+speed of discontinuities, with the left and right states as inputs and the resulting wave 
+
+structure as the output.  Yameng Zhu et al. further proposed an R -adaptive DeepONet 
+
+that repeatedly redistributes training samples so that a larger fraction of points  is 
+
+concentrated near  non -differentiable  regions 18 . PINN and DeepONet -based strategies 
+
+can achieve good performance for relatively simple, low -dimensional 
+
+discontinuities 19 ,20 .
+
+Reconstructing the physical dynamics of compressible flow fields fundamentally 
+
+necessitates deciphering their underlying spatiotemporal reconstruction mechanisms 21 ，
+
+> 22
+
+. However, the global spatial reconstruction of such fields remains beyond the current 
+
+representational limits of deep learning models. To circumvent this challenge, existing 
+
+architectures often employ non -differentiable interfaces as computational boundar ies 
+
+to decompose the spatial domain 23 -25 . While this strategy is designed to preserve 
+
+numerical accuracy, it implicitly necessitates that these interfaces remain stationary or 
+
+move at negligible velocities. Such an assumption stands in stark contrast to the 
+
+physical reality of compressible flows , where the rapid propagation of non -
+
+differentiable interfaces —such as shock waves —is ubiquitous. 
+
+To achieve global reconstruction of compressible flow fields, we explicitly construct 
+
+non -differentiable interfaces by leveraging non -differentiable gradient structures and 
+
+manifold representations. In compressible physical fields, the divergence and 
+
+confl uence of characteristic lines give rise to expansion waves and shock waves, which 
+
+manifest as continuous yet non -smooth transitions and discrete discontinuities, 
+
+respectively 26 -29 . In 2D and 3D flow fields, the interaction of these diverse wave 
+
+topologies results in intricate wave systems and induces transitions in the underlying 
+
+flow states between individual waves 30 . To reconstruct such complex non -differentiable 
+
+interfaces, we adopt a manifold -based perspective to simplify the interfaces through dimensionality compression. Subsequently, high -dimensional global non -differentiable 
+
+features are recovered from these low -dimensional representations via a dimensionality 
+
+lifting process. 
+
+Consequently, we develop a computational framework  (ILDM)  tailored for the global 
+
+reconstruction of compressible physical fields, comprising  two  core components: a 
+
+non -differentiable approximation function, and a smooth fluid reconstruction module. 
+
+Designed for universal applicability across diverse compressible flow scenarios, the 
+
+proposed model is characterized by three primary features: 
+
+1.  Explicit Non -differentiable Approximation : We introduce an explicitly 
+
+represented  NA F. By constructing bidirectional Sigmoid functions integrated 
+
+with internal scaling factors, the model can effectively approximate non -
+
+differentiable features. Simultaneously, the spatiotemporal evolution of non -
+
+differentiable interfaces is captured through  the learning capabilities of neural 
+
+networks. 
+
+2.  Spatiotemporal Reconstruction of Smooth Flow : To address the smooth flow 
+
+regions interspersed between non -differentiable interfaces, we leverage a
+
+Convolutional LSTM (ConvLSTM ) architecture. By integrating convolutional 
+
+operators with temporal recurrent units, the model effectively learns the 
+
+spatiotemporal dynamics of smooth fluid regions. 
+
+3.  Inverse Low -Dimensional Manifold reconstruction framework :
+
+Recognizing that compressible flows in general scenarios typically reside in 
+
+spatial domains of two or more dimensions, we employ a manifold  -inspired 
+
+approach to perform dimensionality lifting of non -differentiable features. 
+
+Specifically, these features undergo a progressive reconstruction from zero -
+
+dimensional points to one -dimensional curves, subsequently expanding into 
+
+non -differentiable interfaces. Ultimately, the global reconstruction of the entire 
+
+compressible flow field  is achieved by seamlessly integrating these interfaces 
+
+with the smooth flow regions. 
+
+In this study, the efficacy and robustness of the resulting  ILDM  are demonstrated 
+
+through its application to a wide range of compressible physical field reconstruction 
+
+tasks. Workflow 
+
+Compressible physical fields are principally composed of complex non -differentiable 
+
+interfaces and smooth fluid regions. Both the non -differentiable interfaces and the 
+
+smooth flow structures represent dynamic fields that undergo spatiotemporal evolution 
+
+un der pres cri bed initial and boundary conditions. We formulate the compressible 
+
+physical field as a linear superposition of these two components, expressed as follows: 00 00
+
+( , ), 
+
+Ω { ( ( , )) 0} : CC C
+
+U x tx xCC x Dt
+
+ = +
+
+where x denotes the spatial variable, 0t is  the initial time ,0U is  the physical field 
+
+at t he initial time ,0D is  the  non -differentiable  interface ,C is  the  smooth  fluid 
+
+structures within the physical field,  and ΩC is  the  smooth -flow subdomain. 
+
+Consequently, the reconstruction of compressible flow fields is decomposed into two 
+
+distinct stages. First, a non -differentiable approximation function is designed based on 
+
+the gradient characteristics of the interfaces. This function must concurrently 
+
+app roximate two prevalent types of interfaces in compressible flows:  dis continuous  and 
+
+continuous  yet  non -differentiable . Specifically, the characterization of  non -
+
+differentiable  requires the function's derivative at the singular point to significantly 
+
+exceed that of its neighboring points. To satisfy this requirement, we formulate the 
+
+fundamental structure of the approximation function as the product of a monotonically 
+
+increasing  and a monotonically decreasing Sigmoid function. Building upon this 
+
+structural baseline, a gradient scaling factor and a peak coefficient are incorporated, 
+
+rendering the gradient variation trends on both sides of the non -differentiable point 
+
+tunable: , ( )* ( )* 1
+
+1 1( ; , ) * *1 1         
+
+> iidddd
+> niiixxxxi
+
+d F x v x v e e   
+
+> −−−=
+
+= = + +
+
+# 
+
+where d denotes the  non -differentiable  curve s,,D D
+
+F  
+
+> 
+
+is  the  non -differentiable 
+
+approximation function ,n is  number of  non -differentiable  point s,i
+
+v is  a numerical 
+
+scaling coefficient, i
+
+x is  the location of the  non -differentiable  point s,d
+
+ and d
+
+ are 
+
+the forward and backward scale factors, respectively; the design rationale of this function is detailed in the Methods section. 
+
+Conversely, the approximation of continuous non -differentiable transitions requires the 
+
+derivative at the singular point to significantly exceed that of its neighbors on only one 
+
+side. This specific profile can be synthesized through the superposition of n on -
+
+differentiable approximation functions characterized by disparate gradient trends, as 
+
+illustrated in Fig.  1b .
+
+Through this construction methodology, we leverage a suite of parametrically 
+
+controllable functions to reconstruct the intrinsic non -differentiable features of flow 
+
+interfaces. Building upon this functional basis, we developed the ILDM to recover the 
+
+spatial architecture of these interfaces. Given that non -differentiable interfaces can be 
+
+conceptualized as low -dimensional manifolds embedded within compressible physica l
+
+fields —where non -differentiable points and curves represent even lower -dimensional 
+
+manifold substructures —we propose an inverse dimensionality reconstruction strategy 
+
+characterized by dimensionality lifting. Specifically, the procedure involves the neste d
+
+application of non -differentiable approximation functions, progressively achieving 
+
+global reconstruction of the interface by evolving from zero -dimensional points to one -
+
+dimensional curves and ultimately to two -dimensional surfaces. 1 , ( ) ( , ) , Ω; ,d d ccn ik cik k ki
+
+f x tF x v x xc 
+
+> =
+
+= + 
+
+where kf denotes the  non -differentiable  curve, ik
+
+v is  the height difference between 
+
+non -differentiable  points, ikx is  the  non -differentiable  points, d
+
+ is  the forward scale 
+
+factor, d
+
+ is  the backward scale factor, and ( , )c kc x t is  the  smooth  fluid structures 
+
+along the curve ,Ωc is  the  smooth  region along the  non -differentiable  curve . The 
+
+complete time -evolving  compressible  physical field is then expressed as: ,1,1
+
+:( ; , )(( , ), ( , ), ,
+
+Ω , Ω
+
+; )            
+
+> DDdd
+> niikkkkmjjkcCkicCkkkCckj
+
+Uxf F x v Fx cvx tx tx xD CD f
+
+> ==
+
+==++
+
+# 
+
+where kU denotes the  non -differentiable  physical field at time kt , and kt is  the k -
+
+th time instant. During computation, jk
+
+v is determined by the initial conditions. ikx 、ik
+
+v
+
+、( , )C kC x t and ( , )c kc x t are learned by different neural networks, and the complete 
+
+computational pipeline for the time -evolving  compressible  physical field is illustrated in Fig. 1b. 
+
+Subsequently, the reconstruction of smooth flow structures necessitates masking the 
+
+compressible physical field, utilizing the previously identified non -differentiable 
+
+interfaces as a spatial template. This procedure effectively isolates the smooth regions 
+
+and circumvents the detrimental impact of  non -differentiability  on the reconstruction 
+
+accuracy. The spatiotemporal reconstruction of smooth flow requires the simultaneous 
+
+extraction of spatial morphological features and temporal evolutionary dynamics. To 
+
+this end, we develop a smooth -flow reconstruction module based on  the ConvLSTM 
+
+architecture. Within this framework, convolutional operators are employed to extract 
+
+high -dimensional spatial features, while the gating mechanisms of the LSTM units are 
+
+leveraged to capture and preserve the underlying spatiotemporal dynamics of the 
+
+smooth  fluid. 
+
+The global reconstruction of the compressible physical field is finalized through the 
+
+spatial superposition of the smooth fluid regions and the non -differentiable interfaces. 
+
+The comprehensive workflow of this integration process is schematically illustrat ed in 
+
+Fig.  1.
+
+Fig. 1 |  Scheme for reconstructing compressible physical fields . a, Extraction of  non -
+
+differentiable  surfaces from a  non -differentiable  physical field and application of the NAF  to reconstruct these  non -differentiable  surfaces.  b, Inverse Low -Dimensional 
+
+Manifold reconstruction framework . The  NAF  uses the propagation behaviour of  non -
+
+differentiable  points 0~ 0~ ,i ik kx v to reconstruct the  non -differentiable  structure 0~ k
+
+> j
+
+d
+
+along a non -differentiable  curve; the  non -differentiable  curve 0
+
+> j
+
+f is then 
+
+reconstructed by combining 0~ k
+
+> j
+
+d and ( , )c kc x t , and the same procedure is iterated to 
+
+obtain the full time -evolving  non -differentiable  physical field.  c,  Smooth fluid 
+
+reconstruction module . The  SFR  module takes the smooth fluid regions within the 
+
+compressible flow field as its input, utilizing a ConvL ST M network as the core 
+
+reconstruction model. 
+
+Methods 
+
+The  Inverse -Manifold Network  proposed in this work consists of three main 
+
+components: the  NAF , the ILDM architecture and the  SFR . In the following, we 
+
+des cri be the use of  NAF , ILDM and  SFR  in detail. 
+
+NAF 
+
+The primary objective of the NAF  (, ( ; , )i i
+
+F x v x 
+
+>  
+
+) is to reconstruct the gradient 
+
+characteristics of non -differentiable interfaces within compressible flow fields, while 
+
+providing functional support for the dimensionality reconstruction executed by the 
+
+ILDM. Structurally, the , ( ; , )i i
+
+F x v x 
+
+>  
+
+is composed of two Sigmoid functions with 
+
+opposing variation trends. Its explicit parameters include a gradient scaling factor ,
+
+   ,
+
+a peak coefficient i
+
+v , and a positional variable i
+
+x . The adjustment of the gradient 
+
+scaling factor is specifically tailored to the morphological characteristics of the non -
+
+differentiable interface. In typical configurations, the gradient distribution near such 
+
+interfaces manifests in two characteristic mod  es: (i ) the gradient at the non -
+
+differentiable point significantly exceeds those of its neighbors, and (ii) the gradient at 
+
+the non -differentiable point exceeds those of its neighbors on only one side. The first 
+
+mode is realized by modulating the gradient scalin g factor within the NAF to induce a 
+
+steep gradient ascent at the interface. In contrast, the second mode necessitates the 
+
+simultaneous adjustment of bidirectional scaling factors and the superposition of two 
+
+NAFs with opposing orientations to achieve a non -zero gradient on a single side. The 
+
+mapping for the iterative updating of i
+
+v and i
+
+x from the temporal variable kt is implemented via a Multi -Layer Perceptron (MLP), which is constructed by stacking 
+
+multiple fully connected layers: 1 1 1 11 1 1 1
+
+( ) : ( ( , , ( ) ) ), ( ) : ( ( , , ( ) ) ),         
+
+> iLLLLiLLLL
+
+v tx ttt
+
+    
+
+> −−−−
+
+= + + += + + +
+
+W W W b b bW W W b b b
+
+
+
+
+
+The learning process of the height and position variables by the MLP can be expressed 
+
+mathematically as: ( ) 21
+
+1 ˆarg min ,i 
+
+> iNivi
+
+v v t N
+
+ =
+
+ −( ) 21
+
+1 ˆarg min .i 
+
+> iNixi
+
+x x t N
+
+ =
+
+ −
+
+SFR 
+
+NAF  and ILDM are primarily designed for computing  non -differentiable  interfaces in 
+
+non -differentiable physical dynamics , whereas a wide range of existing models can be 
+
+used to reconstruct the  smooth  fluid structures. On top of ILDM, we therefore develop 
+
+a SFR  that embeds reliable continuous -flow reconstruction models (such as 
+
+ConvLSTM and U -Net) into the framework. Within  SFR , we first use the initial  non -
+
+differentiable  flow field 0U together with the  non -differentiable  interface 0D to 
+
+separate the  smooth  fluid structures 0C . We then treat the  non -differentiable  interface 
+
+as a boundary and employ an existing  reconstruction model to reconstruct the  smooth 
+
+fluid structures kC at time kt . Finally, by combining  NAF  and ILDM, we obtain the 
+
+non -differentiable  interfaces kD and kC at time kt , and reconstruct the 
+
+corresponding  non -differentiable  flow field kU . The loss function used to train the 
+
+continuous reconstruction model is given mathematically by: ( )
+
+> 21
+
+1 ˆarg min .k kNC ii
+
+C C t N
+
+
+
+> =
+
+ −
+
+where ˆC denotes the  smooth fluid reconstruction  model. The reconstruction 
+
+procedure for the  smooth  fluid structures k
+
+c along the  non -differentiable  interface is 
+
+identical to that used for kC .
+
+ILDM 
+
+Building upon the NAF, we construct an ILDM architecture designed to recover the spatial characteristics of non -differentiable interfaces. Each interface is conceptualized 
+
+as an ( 1) n − -dimensional Lipschitz manifold embedded within the compressible 
+
+physical field Ω n
+
+  , while the non -differentiable curves and points situated on the 
+
+interface constitute its 1D and 0D Lipschitz submanifolds, respectively. To reconstruct 
+
+these geometric structures, we leverage a level -set mapping , Lip( Ω)( ; , )i i   
+
+> Fx v x
+>   
+
+induced by the NAF and define a Lipschitz -class embedding 1Φ :k k k +→  that 
+
+maps k -dimensional structures to ( 1) k + -dimensional interfaces. This constructive 
+
+approach facilitates a progressive geometric reconstruction, evolving from singular 
+
+points to curves and ultimately to surfaces. Mathematically, this framework ensures the 
+
+regularity, geometric stability, and topo logical consistency of the interfaces, thereby 
+
+providing a rigorously controllable representation for the high -fidelity modeling of 
+
+complex non -differentiable boundaries. 
+
+Results 
+
+We apply the  ILDM  to the prediction of 1D and 2D compressible flow fields, as well 
+
+as the super -resolution (SR) processing of low -resolution data, all of which involve the 
+
+coexistence of complex non -differentiable interfaces and smooth flow regions. The 
+
+reconstruction perfo rmance is quantitatively evaluated using Mean Squared Error 
+
+(MSE) and relative error metrics. The 1D benchmarks comprise the Sod shock tube and 
+
+the peak problems, primarily aimed at benchmarking the  ILDM  against prevailing 
+
+physics -informed deep learning models —specifically the R-adaptive DeepONet 
+
+(RADON) and cPINN —while quantifying the deviations from their respective 
+
+analytical solutions. The 2D assessments encompass the Riemann problem and the 
+
+double Mac h reflection problem. These tests are designed to evaluate the enhancements 
+
+provided by the  NAF  in resolving non -differentiable interfaces, and to examine its 
+
+compatibility with mainstream deep learning reconstruction models —such as 
+
+Convolutional Long Short -Term Memory (ConvLSTM), Fourier Neural Operator 
+
+(FNO), and U -Net —in reconstructing  smooth  fluid structures. Furthermore, super -
+
+resolution experiments are conducted on low -resolution flow fields to assess the 
+
+capability of the  ILDM  in recovering fine -scale flow structures from coarse data. One -dimensional  non -differentiable  flow -field reconstruction 
+
+For the first set of experiments, the datasets are generated from the Sod shock -tube 
+
+problem and the peak problem, which correspond to different evolutions of a one -
+
+dimensional Riemann problem under distinct initial conditions. The corresponding 
+
+formulatio ns are given as follows. 2 0( )
+
+uu u pt xE u E p
+
+      + + =      +   211 2
+
+pE u
+
+= +−
+
+For an ideal gas, 1.4 
+
+= . The Sod problem is the most commonly used one -
+
+dimensional benchmark for  non -differentiable  flow fields, whereas the peak problem 
+
+exhibits very sharp variations of the physical variables on both sides of the  non -
+
+differentiable , providing a stringent test of the robustness of the ILDM architecture. For 
+
+the Sod problem, the initial conditions are set as ( ) ( )
+
+, , 1.0, 0.75, 1.0 L
+
+u p 
+
+= and ( ) ( )
+
+, , 0.125, 0.0, 0.1 R
+
+u p 
+
+=
+
+, with the computational domain ( )
+
+0,1 x  , the initial 
+
+non -differentiable  located at 0 0.3 x = , and the final time 0.2 T = . The initial 
+
+conditions of the peak problem are set as ( ) ( )
+
+, , 0.1261192,8.9047029,782.92899 L
+
+u p 
+
+=
+
+,( ) ( )
+
+42. 6 , , 72 54 6.5 09149 43 7 3, ,3.15 48 R
+
+u p 
+
+=
+
+, with the computational domain ( )
+
+0,1 x 
+
+, the initial  non -differentiable  initially located at 0 0.5 x = , and the final time 0.0039 T =
+
+. The resulting dataset consists of 500 temporal snapshots of the one -
+
+dimensional flow field, with the first 200 time steps used for training and the remaining 
+
+300 for testing. 
+
+Utilizing these known analytical solutions as test cases, we first quantified the 
+
+discrepancies between the  ILDM  predictions and the ground truth, subsequently 
+
+conducting comparative evaluations of  ILDM  against RADON and cPINN using the 
+
+same analytical benchmarks. Figure 2a illustrates the reconstruction errors for the Sod 
+
+and peak problems, demonstrating that the  ILDM  consistently maintains a lower error 
+
+profile, which is significantly smaller than those of the other two models. In Figure 2b, 
+
+the outputs of the three reconstruction models are compared with the analytical solutions. The results indicate that the  ILDM  accurately reconstructs the various 
+
+physical fields in both problems, exhibiting a high degree of fidelity to the analytical 
+
+solutions in  cri tical regions, such as non -differentiable points and boundaries. While 
+
+RADON captures the general trend of the analytical solutions, it exhibits pronounced 
+
+deviations in the localization of non -differentiable points and suffers from numerical 
+
+oscillations.  In contrast, the output of cPINN shows substantial discrepancies from the 
+
+analytical solutions. Consequently, compared with existing reconstruction models, the 
+
+ILDM  achieves a marked improvement in accuracy when addressing problems 
+
+characterized by non -differentiable features. 
+
+Fig. 2 | Error statistics and predicted physical profiles of  ILDM , cPINN and 
+
+RADON.  a, Comparison of reconstruction errors for  ILDM , cPINN and RADON on 
+
+the Sod and peak problems.  b, Comparison of predicted physical profiles obtained by 
+
+ILDM , cPINN and RADON for the Sod and peak problems. 
+
+Two -dimensional Riemann problems 
+
+The two -dimensional Riemann problem is one of the most classical benchmarks for 
+
+non -differentiable  physical dynamics  and is routinely used to assess the performance 
+
+of numerical algorithms 31 . Its formulation is given as follows. 22 0( ) ( )             
+
+> uvuupuv vuv vptxyEu E pv E p
+
+          +     + + =     +     + +     211 2
+
+E u
+
+ = +−For an ideal gas, 1.4 
+
+= . The dataset is generated from the two -dimensional Riemann 
+
+problem with the fluid medium modelled as an ideal gas, on the computational domain [0,1] [0,1]  = 
+
+, with the initial conditions specified as follows: 0.5, 0.5 0.5, 0.5 0.5, 0.5 0.5, 0.5 
+
+0.5323 1.5 1.206 0.0 ,0.0 0.0 0.3 1.5 0.138 01.206 ,1.206 0.029       
+
+> xyxyxyxy
+
+u uv vp pu uv vp p
+
+      
+
+> 
+
+                     = =                                    = =               
+
+.5323 0.0 1.206 0.3 
+
+      
+
+The dataset contains 200 temporal snapshots of the flow field on a 512 *512 grid, with 
+
+the first 50 time steps used for training and the remaining 150 for testing. 
+
+Subsequently, we investigate the specific role of the  NAF  within the  ILDM  framework 
+
+for reconstructing non -differentiable interfaces in complex compressible flows. Figure 
+
+3a illustrates the evolution of reconstruction errors over time for models configured 
+
+both with and without the  NAF . The  NAF -based model exhibits significantly lower 
+
+sensitivity to temporal variations, maintaining an error profile that is substantially 
+
+smaller than that of its counterpart at later time steps. Figure 3b presents high -fidelity 
+
+simulation snapshots of the 2D Riema nn problem alongside the relative errors 
+
+associated with reconstructions using and omitting the  NAF . In regions containing  non -
+
+differentiable  surfaces, the  NAF -equipped model yields markedly lower reconstruction 
+
+errors and also achieves slightly reduced errors in smooth flow regions. These findings 
+
+demonstrate that the  NAF  not only ensures the accurate reconstruction of non -
+
+differentiable interfaces but also exerts a beneficial influence on the overall 
+
+reconstruction of smooth fluid structures. Fig. 3 | Reconstruction performance with and without  NAF  when ConvLSTM is 
+
+used in the  SFR  interface. a , Error -propagation curves for models with and without 
+
+NAF . b, Reference  compressible  physical field and spatial maps of relative error for 
+
+models with and without  NAF .
+
+Double Mach reflection 
+
+The double Mach reflection problem is a complex flow phenomenon that arises when 
+
+a strong shock wave impinges obliquely on a ramp 32 , and features highly intricate  non -
+
+differentiable  interfaces. We therefore use this benchmark to assess how well 
+
+mainstream continuous -flow reconstruction models —such as ConvLSTM , FNO and U -
+
+Net —can be integrated within  ILDM  for reconstructing  smooth  fluid structures, and to 
+
+identify the most performant reconstruction backbone. The dataset is generated from the double Mach reflection problem with the fluid medium modelled as an ideal gas, 
+
+on the computational domain [0, 4] [0,1]  =  . The initial condition consists of a 
+
+strong shock incident at an angle of  60 °, with the shock initially located at 0 1 6 x = ,
+
+and its incident direction forming a  60 ° angle with the bottom boundary. In the 
+
+chosen coordinate system, the initial conditions are specified as follows: (8.0,8.25 cos(60 ), 8.25sin(60 ),116.5) , if ( )( , , , ) (1.4, 0, 0,1.0) , otherwise   
+
+> sxxyu v p
+
+ − =  
+
+> 
+
+where ( )sx y denotes the initial position of the shock. 1( ) 6 tan(60 ) 
+
+> s
+
+yx y = + 
+
+The dataset comprises 200 temporal snapshots of the flow field on a (120 * 480) grid, 
+
+with the first 50 time steps used for training and the remaining 150 for testing. 
+
+For the Double Mach Reflection problem, we evaluated the reconstruction performance 
+
+of various deep learning architectures integrated within the ILDM framework. Figure 
+
+4a illustrates the temporal evolution of reconstruction errors for ILDM models based 
+
+on  ConvLSTM, FNO, and U-Net. The FNO -based model exhibits substantial 
+
+reconstruction errors that escalate rapidly over time. In contrast, the models utilizing 
+
+ConvLSTM and U -Net display comparable error trends, with the ConvLSTM  yielding 
+
+marginally lower overall errors. Noting that both ConvLSTM and U -Net employ an 
+
+encoder -decoder architecture, we observe that this architectural paradigm demonstrates 
+
+superior performance in reconstructing smooth fluid regions when coupled with th e
+
+ILDM. Figure 4b presents the high -fidelity reference snapshots of the Double Mach 
+
+Reflection alongside the spatial relative error maps for the reconstructions based on 
+
+ConvLSTM , FNO, and U -Net. The error maps reveal that the error distributions 
+
+generated by ConvLSTM and U -Net are generally similar and low in magnitude. 
+
+Conversely, the FNO exhibits striated regions of high error, resulting in significantly 
+
+elevated reconstruction  errors within the smooth fluid zones. These results suggest that 
+
+encoder -decoder type architectures are more suitable for the reconstruction of smooth 
+
+fluid structures in this context. Fig. 4 | Reconstruction performance of  SFR  equipped with different  smooth  fluid 
+
+reconstruction models under ILDM.  a, Error -propagation curves for different  smooth 
+
+fluid reconstruction models.  b, Reference  compressible  physical field and spatial maps 
+
+of relative error for the different  smooth  fluid reconstruction models. 
+
+The Propagation Law of  Non -differentiable  Points 
+
+As the minimal geometric representation within a  non -differentiable  physical field, the 
+
+non -differentiable  point serves as the foundation for reconstructing  non -differentiable 
+
+interfaces. In this study, we identify  non -differentiable  points in both the Riemann 
+
+problem and the double Mach reflection problem, denoting them as DPs. Given the 
+
+symmetry of the  non -differentiable  interfaces in the pres cri bed Riemann flow field with 
+
+respect to the line Y=X, only the  non -differentiable  points along the interfaces in the 
+
+X-direction are labeled. As illustrated in  Figure  5, the DPs predicted by the  NAF  exhibit 
+
+a high degree of consistency in propagation characteristics with those identified in the 
+
+reference field. This predictive accuracy ensures the positional precision of the 
+
+subsequent  non -differentiable  interface reconstruction. Fig.  5 | Propagation characteristics of  non -differentiable  points. a , Identification of 
+
+non -differentiable  points within the  compressible  physical field. Error -propagation 
+
+curves for different  smooth  fluid reconstruction models.  b, Comparison between the 
+
+ILDM  predicted  non -differentiable  points and the labeled points in the reference 
+
+compressible  physical field , including the Mean Squared Error (MSE). 
+
+Super -resolution 
+
+Training datasets for our model typically require high -resolution  non -differentiable 
+
+fields, whose generation is computationally expensive, whereas super -resolution 
+
+techniques can substantially reduce the cost of data acquisition. Noting that, within 
+
+ILDM , the accuracy of  non -differentiable -interface reconstruction is not directly tied to 
+
+the resolution of the input flow field, we anticipate that  ILDM  may exhibit strong 
+
+performance on super -resolution tasks. To examine this, we perform spatio -temporal 
+
+subsampling of the two -dimensional Riemann and double Mach reflection problems, 
+
+with a temporal sampling interval of 5 time steps. For the two -dimensional  Riemann 
+
+problem, the spatially downsampled resolutions are  32*32 , 64*64 , 128*128  and 
+
+256*256 ; for the double Mach reflection problem, the corresponding resolutions are 
+
+15*60 , 30*120 , 60*240  and  120*480 .We next examine the super -resolution performance of  ILDM  under different low -
+
+resolution inputs. In  Figure  6a, we show the reconstruction errors of  ILDM  for the 
+
+double Mach reflection super -resolution task, and in  Figure  6b the corresponding errors 
+
+for the Riemann problem. The curves indicate that  ILDM  maintains a stable super -
+
+resolution accuracy across different problems and resolutions, while keeping the 
+
+reconstruction error at a low level.  Figure  6c displays input snapshots of the Riemann 
+
+problem at different resolutions together with their reconstructed  compressible  physical 
+
+field s. The error maps reveal that, although some reconstruction discrepancies arise in 
+
+the  smooth  fluid  regions at different upsampling levels, the reconstructed  non -
+
+differentiable  regions remain highly consistent. Taken together, both the error curves 
+
+and the  reconstruction contours  demonstrate that the  NAF  and  SFR  components of 
+
+ILDM  are largely insensitive to input resolution in super -resolution tasks, yielding high 
+
+stability and consistency. 
+
+Fig.  6 | Super -resolution errors and reconstructed  compressible physical field 
+
+snapshots at different resolutions. a , Comparison of super -resolution reconstruction 
+
+errors at different input resolutions for the double Mach reflection problem.  b,
+
+Comparison of super -resolution reconstruction errors at different input resolutions for the Riemann problem.  c, Reference high -fidelity snapshot of the Riemann problem, 
+
+together with input flow -field snapshots at different resolutions and their corresponding 
+
+reconstructed fields. 
+
+Discussion 
+
+In this  work , we present the  Inverse Low -Dimensional Manifold reconstruction 
+
+framework , a unified framework for the reconstruction of compressible flow fields 
+
+leveraging the NAF and  SFR . The central premise lies in utilizing the NAF with explicit 
+
+parameters to approximate the gradient characteristics inherent to non -differentiable 
+
+interfaces. Building upon this, the ILDM mapping is employed to recover spatial 
+
+interface features by progre ssively performing dimensionality lifting of geometric 
+
+entities, evolving from localized non -differentiable features to global interfaces. This 
+
+modeling strategy enables the stable representation of intricate non -differentiable 
+
+structures while preserving  physical consistency, thereby offering a novel perspective 
+
+on spatiotemporal reconstruction challenges in compressible physical fields. 
+
+Compared with conventional architectures such as cPINN and R -Adaptive DeepONet, 
+
+the principal advantage of the  ILDM  lies in its ability to reconstruct non -differentiable 
+
+interfaces directly according to their propagation laws, thereby obviating the need for 
+
+manual specification of subdomain boundaries. By explicitly characterizing the 
+
+localization and gradient features  of singular points via the NAF, the framework 
+
+effectively circumvents numerical oscillations typically induced by gradient 
+
+singularities. Furthermore, the progressive, dimensionality -lifting reconstruction 
+
+paradigm inherent in the ILDM  framework  establishes a unified mathematical pathway 
+
+for the precise modeling of intricate interface geometries. The  ILDM  framework  is also 
+
+highly extensible, allowing for the seamless integration of various smooth -flow 
+
+reconstruction modules —such as ConvLSTM and U-Net —to enhance its 
+
+representational capacity for complex smooth fluids. Numerical results demonstrate 
+
+that the proposed fr amework achieves reconstruction accuracy significantly superior to 
+
+mainstream benchmarks across 1D and 2D  non -differentiable  flows, including the Sod 
+
+shock tube, peak problems, 2D Riemann problems, and double Mach reflections. 
+
+Notably, it maintains robust super -resolution performance even when trained on low -resolution inputs. 
+
+The architecture of the  ILDM  unifies the reconstruction of non -differentiable interfaces 
+
+and smooth flow regions, thereby establishing an equilibrium between physical 
+
+consistency and numerical generalization. Nevertheless, within the current framework, 
+
+the gradient scaling factors of  the NAF necessitate pre -configuration based on specific 
+
+initial conditions. In future research, these parameters could be integrated into the loss 
+
+function and optimized concurrently with the network, facilitating a fully data -driven 
+
+calibration of the str uctural functions. Furthermore, while the current smooth -flow 
+
+module is primarily tailored for deep learning -based architectures, extending this 
+
+interface to incorporate traditional numerical solvers would significantly broaden the 
+
+framework’s applicabilit y and potentially enhance its overall reconstruction precision. 
+
+In summary, the  ILDM  framework proposed in this study provides a novel theoretical 
+
+paradigm and a robust computational tool for the high -fidelity reconstruction of 
+
+compressible physical fields. The methodology not only yields superior performance in 
+
+canonical fluid dynamics be nchmarks but also demonstrates significant potential for 
+
+extension to multi -physics coupled systems, such as detonation and phase transitions. 
+
+Future endeavors will prioritize enhancing the framework's computational scalability, 
+
+aiming to facilitate more universal and physically consistent reconstruction and 
+
+prediction for complex nonlinear systems. 
+
+Appendix  A.  Validation of the method 
+
+Design rationale and validation of  NAF 
+
+The design of , ( ; , )i i
+
+F x v x 
+
+>  
+
+is inspired by the characterization of  non -differentiable 
+
+jumps using the Heaviside function, which represents  non -differentiable  structures in 
+
+physical fields in their simplest possible form. 0, 0, ( ) 1, 0
+
+xH x x
+
+=  
+
+However, it cannot capture complex  non -differentiable  patterns in realistic physical 
+
+fields. We therefore introduce a function , ( ; , )i i
+
+F x v x 
+
+>  
+
+capable of representing 
+
+intricate local transition profiles. The structure of , ( ; , )i i
+
+F x v x 
+
+>  
+
+is constructed from 
+
+sigmoid functions equipped with scale factors: *
+
+1( ) 1 x
+
+x e
+
+> 
+
+ −
+
+= +where  denotes a tunable scale factor; when →   ,( ) x
+
+> 
+
+ mathematically 
+
+converges to the Heaviside function ( )H x :0
+
+0, 0, lim ( ) ( ) 1, 0
+
+xx H x x
+
+> 
+
+
+
+> →
+
+= =  
+
+When constructing ( ) ( ) ( ), S x x x
+
+> 
+
+ = −
+
+When ,
+
+  →   , the transition becomes infinitely steep, and the product ensures that 
+
+the gradient of the function is non -zero only in the vicinity of the interface and 
+
+approaches zero away from it, as illustrated by the gradient profile in Fig. 1a. 
+
+Accordingly, ( ) ( )x x
+
+> 
+
+ − serves as an approximate Heaviside indicator function 
+
+with a tunable gradient. The function , ( ; , )i i
+
+F x v x 
+
+>  
+
+further augments ( ) ( )x x
+
+> 
+
+ −
+
+by introducing a scaling coefficient i
+
+v and a position variable i
+
+x :( )* ( )* 
+
+1 1* *1 1    
+
+> ii
+> ixxxx
+
+v e e  
+
+> −−−
+
++ +
+
+which does not alter its ability to represent the underlying  non -differentiable .
+
+Validation of the regularity and topological consistency of ILDM 
+
+Using ILDM, we achieve a progressive reconstruction of the geometric features of  non -
+
+differentiable  interfaces. Here, we employ Lipschitz continuity to assess whether ILDM 
+
+guarantees interface regularity, geometric stability and topological consistency. 
+
+First, let : Ω n
+
+u  →  denote a piecewise smooth physical field. Its  non -
+
+differentiable  set Γ { Ω : ( ) ( )} x u x u x − +
+
+=   can, in the sense of geometric measure 
+
+theory, be regarded as a( 1) n − -dimensional bounded Lipschitz manifold, i.e. Lip 1Γ (Ω). n−
+
+The  non -differentiable  curves and points on this interface then constitute its 1D and 0D 
+
+Lipschitz submanifolds, respectively: 1 0 1Γ Γ, Γ Γ . 
+
+We define, in the parametric  Non -differentiable  Structural Function, , : Ω ,F
+
+>  
+
+→ 
+
+with respect to any finite parameter vector ,
+
+   , and denote the corresponding mapping 
+
+by , Lip( Ω), F 
+
+>  
+
+ ; then ,F 
+
+>  
+
+is globally Lipschitz continuous and satisfies , , ,( ) ( ) , , Ω,yF x y L x y xF
+
+>      
+
+−  −  where ,L 
+
+>  
+
+is the Lipschitz constant controlled by the sigmoid scale factors ,
+
+   .
+
+As the scale factors approach their limiting values (for example, in the case of a 
+
+sharpened sigmoid), ,F 
+
+>  
+
+converges in the sense of distributions to a Heaviside -type 
+
+interface indicator function Γ ( ), x
+
+ , while preserving a controllable Lipschitz upper 
+
+bound. 
+
+For any  
+
+0,1 n  , we define the level -set mapping Lip 1Φ : Lip( Ω) (Ω)k n+→  as , ,1 Φ ( ) { Ω : ( ) }, n nn x x cF F 
+
+>     +
+
+= =  =
+
+where nc is a constant threshold. 
+
+Since ,F 
+
+>  
+
+is a Lipschitz continuous function, its level sets are Lipschitz manifolds in 
+
+the sense of geometric measure theory (satisfying the implicit -function condition 
+
+almost everywhere), and hence Lip 1 1 (Ω). n n+ +  . This implies that, provided the 
+
+Lipschitz regularity of (d) is ensured, the interface curves and surfaces induced by ,F
+
+>  
+
+possess good geometric regularity (for example, bounded curvature, finite measure and 
+
+the absence of sharp singularities). 
+
+Through the mapping chain 0 1 2→ →  , we thus achieve a hierarchical 
+
+reconstruction from point -like discontinuities to curves and then to full interfaces. 
+
+Mathematically, this corresponds to a family of embedding maps satisfying Lipschitz 
+
+regularity, 0 0 1 1 1 2Φ : , Φ : ,→ → 
+
+which ensure that the geometric objects at each level retain controlled interface 
+
+smoothness and topological consistency. 
+
+References 
+
+1.  Saurel, Richard, and Olivier Lemetayer. "A multiphase model for compressible 
+
+flows with interfaces, shocks, detonation waves and cavitation."  Journal of fluid 
+
+mechanics  431 (2001): 239 -271. 
+
+2.  Brunton, Steven L., Joshua L. Proctor, and J. Nathan Kutz. "Discovering 
+
+governing equations from data by sparse identification of nonlinear dynamical 
+
+systems."  Proceedings of the national academy of sciences  113.15 (2016): 3932 -
+
+3937. 
+
+3.  Rudy, Samuel H., et al. "Data -driven discovery of partial differential 
+
+equations."  Science advances  3.4 (2017): e1602614. 
+
+4.  Thompson, Jack, et al. "Measurements of weak and moderate oblique shock -
+
+vortex interactions in supersonic flow."  Physical Review Fluids  7.7 (2022): 074703. 
+
+5.  Kolluru, Sai Swetha Venkata, Nicolas Besse, and Rahul Pandit. "Novel spectral 
+
+methods for shock capturing and the removal of tygers in computational fluid 
+
+dynamics."  Journal of Computational Physics  519 (2024): 113446. 
+
+6.  Lanthaler , Samuel, et al. "Nonlinear reconstruction for operator learning of PDEs 
+
+with discontinuities."  arXiv preprint arXiv:2210.01074  (2022). 
+
+7.  Li, Zongyi, et al. "Fourier neural operator for parametric partial differential 
+
+equations."  arXiv preprint arXiv:2010.08895  (2020). 
+
+8.  Beck, Andrea D., et al. "A neural network based shock detection and localization 
+
+approach for  non -differentiable  Galerkin methods."  Journal of Computational 
+
+Physics  423 (2020): 109824. 
+
+9.  Frerichs -Mihov, Derk, Linus Henning, and Volker John. "Using deep neural 
+
+networks for detecting spurious oscillations in  non -differentiable  Galerkin 
+
+solutions of convection -dominated convection –diffusion equations."  Journal of 
+
+Scientific Computing  97.2 (2023): 36. 
+
+10.  Raissi, Maziar, Paris Perdikaris, and George E. Karniadakis. "Physics -informed 
+
+neural networks: A deep learning framework for solving forward and inverse 
+
+problems involving nonlinear partial differential equations."  Journal of 
+
+Computational physics  378 (2019): 686 -707. 
+
+11.  Jagtap, Ameya D., Ehsan Kharazmi, and George Em Karniadakis. "Conservative 
+
+physics -informed neural networks on discrete domains for conservation laws: 
+
+Applications to forward and inverse problems."  Computer Methods in Applied 
+
+Mechanics and Engineering  365 (2020): 113028. 
+
+12.  Zhou, Yuanye, et al. "LT -PINN: Lagrangian  topology -conscious physics -
+
+informed neural network for boundary -focused engineering optimization." 
+
+Computer Methods in Applied Mechanics and Engineering 448 (2026): 118453. 
+
+13.  Kenzhebek, Yerzhan, et al. "Coupled pressure and saturation prediction for two -
+
+phase flow in porous media using physics -informed neural networks (PINNs)." 
+
+Computer Methods in Applied Mechanics and Engineering 446 (2025): 118229. 
+
+14.  Sahli Costabal , Francisco, et al. "Physics -informed neural networks for cardiac 
+
+activation mapping." Frontiers in Physics 8 (2020): 42. 
+
+15.  Yang, Li, et al. "A hybrid model and data driven approach for ballistic prediction 
+
+with PINN." Engineering Applications of Artificial Intelligence 163 (2026): 
+
+112965. 
+
+16.  Lu, Lu, et al. "Learning nonlinear operators via DeepONet based on the universal 
+
+approximation theorem of operators."  Nature machine intelligence  3.3 (2021): 
+
+218 -229. 
+
+17.  Peyvan, Ahmad, et al. "Riemannonets : Interpretable neural operators for riemann problems."  Computer Methods in Applied Mechanics and Engineering  426 
+
+(2024): 116996. 
+
+18.  Zhu, Yameng, Jingrun Chen, and Weibing Deng. "R -adaptive DeepONet: 
+
+Learning solution operators for PDEs with  non -differentiable  solutions using an 
+
+R-adaptive strategy."  arXiv preprint arXiv:2408.04157  (2024). 
+
+19.  He, Junyan, et al. "Sequential deep operator networks (s -deeponet ) for predicting 
+
+full -field solutions under time -dependent loads." Engineering Applications of 
+
+Artificial Intelligence 127 (2024): 107258. 
+
+20.  Goswami, Somdatta, et al. "Deep transfer operator learning for partial differential 
+
+equations under conditional shift."  Nature Machine Intelligence  4.12 (2022): 
+
+1155 -1164. 
+
+21.  Kossaczká , Tatiana, Matthias Ehrhardt, and Michael Gü nther. "Enhanced fifth 
+
+order WENO shock -capturing schemes with deep learning."  Results in Applied 
+
+Mathematics  12 (2021): 100201. 
+
+22.  Nogueira, Xesú s, et al. "Machine learning -based WENO5 scheme."  Computers & 
+
+Mathematics with Applications  168 (2024): 84 -99. 
+
+23.  Yu, Jian, and Jan S. Hesthaven. "A data -driven shock capturing approach for 
+
+non -differentiable  Galekin methods."  Computers & Fluids  245 (2022): 105592. 
+
+24.  Fan, Songzheng, et al. "WCNS3 -MR -NN: A machine learning -based shock -
+
+capturing scheme with accuracy -preserving and high -resolution 
+
+properties."  Journal of Computational Physics  532 (2025): 113973. 
+
+25.  Stevens, Ben, and Tim Colonius. "Enhancement of shock -capturing methods via 
+
+machine learning."  Theoretical and Computational Fluid Dynamics  34.4 (2020): 
+
+483 -496. 
+
+26.  Fukami, Kai, and Kunihiko Taira. "Grasping extreme aerodynamics on a low -
+
+dimensional manifold."  Nature Communications  14.1 (2023): 6480. 
+
+27.  Meil ă, Marina, and Hanyu Zhang. "Manifold learning: What, how, and 
+
+why."  Annual Review of Statistics and Its Application  11.1 (2024): 393 -417. 
+
+28.  Ciallella, Mirco, et al. "Extrapolated Shock Tracking: bridging shock -fitting and 
+
+embedded boundary methods."  Journal of Computational Physics  412 (2020): 
+
+109440. 
+
+29.  Li, Ruixue, and Shufang Song. "Manifold learning -based reduced -order model 
+
+for full speed flow field."  Physics of Fluids  36.8 (2024). 
+
+30.  Berkooz, Gal, Philip Holmes, and John L. Lumley. "The proper orthogonal 
+
+decomposition in the analysis of turbulent flows." Annual review of fluid 
+
+mechanics 25.1 (1993): 539 -575. 
+
+31.  Chu, Shaoshuai , Alexander Kurganov, and Mingye Na. "Fifth -order A -WENO 
+
+schemes based on the path -conservative central -upwind method."  Journal of Computational Physics  469 (2022): 111508. 
+
+32.  Wang, Zhentong, et al. "An Eulerian SPH method with WENO reconstruction for 
+
+compressible and incompressible flows."  Journal of Hydrodynamics  35.2 (2023): 
+
+210 -221.

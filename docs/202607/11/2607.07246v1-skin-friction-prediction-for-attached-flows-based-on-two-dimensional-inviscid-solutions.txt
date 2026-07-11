@@ -1,0 +1,848 @@
+Title: Skin friction prediction for attached flows based on two-dimensional inviscid solutions
+
+URL Source: https://arxiv.org/pdf/2607.07246v1
+
+Published Time: Thu, 09 Jul 2026 00:44:47 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+# Skin friction prediction for attached flows based on two-dimensional inviscid solutions 
+
+Mingkun Xia 1,2,3 , Shule Zhao 1,2,3 and Weiwei Zhang 1,2,3,* 
+
+> 1
+
+School of Aeronautics, Northwestern Polytechnical University, Xi’an 710072, China 
+
+> 2
+
+International Joint Institute of Intelligent Fluid Mechanics, Northwestern Polytechnical University, Xi’an 710072, China 
+
+> 3
+
+National Key Laboratory of Aircraft Configuration Design, Xi’an 710072, China 
+
+> *
+
+Corresponding author: Weiwei Zhang, aeroelastic@nwpu.edu.cn 
+
+Abstract 
+
+Boundary layer theory and its analytical methods for skin friction coefficients provide an important basis for aerodynamic analysis. However, classical analytical formulas are mostly limited to flat-plate flows. High-fidelity numerical simulations are not only computationally expensive but also yield predictions that are highly sensitive to physical models, numerical schemes, and grid resolution. To overcome these limitations, symbolic AI opens a new pathway to discover novel laws of complex physical systems from data. Using limited data from surface solutions of the Euler equations (pressure coefficient 𝐶 𝑝 , streamwise Reynolds number Re 𝑥 , local Mach number Ma 𝑥 ) and the skin friction coefficient 𝑐 𝑓 from viscous flows over airfoils, we employ symbolic regression to progressively discover a generalizable, interpretable analytical formula chain for fast skin friction prediction in subsonic and supersonic attached flows. From the perspective of physical mechanisms, the discovered analytical expression chain reveals scaling laws for skin friction at different Mach numbers: the basic form captures the logarithmic decay of skin friction along the streamwise direction in the turbulent boundary layer; the inclusion of a pressure coefficient correction term quantifies the effect of surface pressure variation; and the Mach number correction term evolves with flow regimes, transitioning from the compressibility correction term in subsonic regimes to the thermodynamic effects term in supersonic and hypersonic regimes. This knowledge chain exhibits a unified structure across different Mach numbers, and omitting the correction terms under certain conditions recovers classical theoretical forms, further demonstrating its physical consistency. Validation against typical geometries shows that this analytical formula chain achieves a low average integrated skin friction drag prediction error, with good generalization capability across different freestream conditions and geometric shapes. 
+
+Keywords: skin friction, symbolic regression, boundary layer, scaling law, data-driven discovery 
+
+# 1 Introduction 
+
+Low-cost methods for estimating skin friction drag have significant engineering application value in aircraft design, and their accurate prediction directly affects the reliability of aerodynamic performance evaluation and the efficiency of optimization design [ 1 ]. Especially under subsonic cruise conditions, skin friction drag can account for more than 50% of the total drag; under hypersonic low-Reynolds-number flight conditions, this proportion can even reach 90%. Therefore, developing efficient and high-precision skin friction prediction methods is of great importance for accurately and rapidly assessing performance metrics such as flight range. Traditional skin friction acquisition methods are mainly divided into two categories: empirical engineering methods and numerical simulation methods. The estimation of skin friction drag for classical airfoils typically starts from the turbulent flat-plate theory and is corrected using the shape factor [ 2]. Such methods are still widely used in preliminary drag evaluation of wings, but they cannot effectively provide the distribution information of skin friction, which is crucial for local aerodynamic load assessment and 1arXiv:2607.07246v1 [physics.flu-dyn] 8 Jul 2026 fine-grained shape optimization. Engineering algorithms based on boundary layer theory are important means for obtaining boundary layer information [ 3– 6 ], but their computational accuracy for complex geometries is difficult to guarantee. With the development of turbulence theory, some researchers have derived theoretical calculation methods for wall-bounded turbulent skin friction based on different velocity profile assumptions or turbulence models [ 7 –11 ]. Such methods have relatively clear physical mechanisms, but their applicability to complex geometries still needs further improvement. In engineering practice, the primary approach for obtaining skin friction distribution is to solve the Reynolds-averaged Navier–Stokes equations using computational fluid dynamics (CFD) methods [ 12 , 13 ]. Although CFD methods can provide solutions with relatively high accuracy, applying them to inverse problems such as optimization design often requires thousands of simulations, making the computational cost orders of magnitude higher than real-time requirements. Moreover, numerical simulation methods suffer from dependencies on computational grid density and quality, numerical schemes, and turbulence models. To strike a balance between computational accuracy and efficiency, researchers have developed engineering algorithms that couple the Euler equations with integral boundary layer equations. In this class of methods, the Euler equation solution is used as an approximation of the outer edge condition of the boundary layer, and the viscous effects are corrected by solving the integral boundary layer equations, thereby avoiding the direct solution of the full Navier–Stokes equations. Cai and Li [14] applied this coupling method to solve the flow around a typical transonic airfoil, and Gaible et al. [15] extended it to the analysis of three-dimensional launch vehicles. Such methods can obtain wall flow information at relatively low computational cost; however, their skin friction prediction still relies on empirical relations for closure within boundary layer theory, making it difficult to guarantee accuracy and robustness under complex conditions such as transonic flow or strong pressure gradients. Nevertheless, these methods reveal an important fact: there exists an intrinsic correlation between the inviscid flow features on the surface (e.g. pressure distribution) provided by the Euler equations and the skin friction distribution within the boundary layer. Moreover, the Euler equation solutions exhibit good consistency, with results from different researchers or numerical methods being mutually verifiable. This implies that if the mapping from inviscid features to skin friction can be learned directly, an efficient and generalizable skin friction prediction method could be achieved. This idea naturally aligns with data-driven modeling. In recent years, data-driven machine learning methods have opened new avenues for aerodynamic force modeling [ 16 –19 ]. For aerodynamic force prediction, Sekar et al. [20] explored the capability of deep learning methods for flow field prediction across different airfoils. Wang et al. [21] proposed a target-oriented feature extraction method that significantly improves the modeling accuracy and generalization ability of data-driven surrogate models by constraining the distance and boundary of hidden feature spaces. For distributed force prediction, Hui et al. [22] developed a convolutional neural network-based method for predicting airfoil pressure distributions. Shen et al. [23] adopted the Pointnet++ architecture and trained the network on a large dataset of shapes, successfully achieving pressure distribution prediction under hypersonic conditions with substantial geometric variations. However, purely data-driven machine learning approaches, despite their advantages in addressing complex nonlinear problems, suffer from issues such as large sample requirements, weak physical interpretability, and limited extrapolation/generalization capability. To further overcome these limitations, physics-embedded/informed machine learning incorporates first principles into feature design, network architecture, loss functions, etc., effectively enhancing model robustness and generalization ability [ 24 ]. Ribeiro et al. [25] combined feature dimensionality reduction with machine learning and used concentrated forces to constrain the loss, achieving prediction of skin friction and pressure coefficients for transonic unsteady airfoils. Zhao and Zhang [26 , 27] proposed a method that embeds the Euler equations into machine learning to simultaneously predict wall pressure and skin friction distributions, and Wang et al. [28] extended this idea to aerothermal distributions. Although physics-embedded/informed neural networks can improve generalization, their black-box nature remains unchanged, and the explicit functional relationship between inputs and outputs remains unclear. Symbolic regression, as a white-box modeling tool [ 29 , 30 ], differs from black-box models such as neural networks in that it can automatically search for interpretable expressions that describe the 2relationships among variables on a given dataset, helping to reveal the underlying physical representations hidden behind the data [ 31 – 35 ]. This fully embodies the core idea of AI for scientific discovery: using artificial intelligence to automatically discover scientific laws from observational data, compensating for the limitations of traditional manual discovery, and accelerating the transformation from data to theory. In recent years, symbolic regression has shown great potential in areas such as differential equation discovery [ 36 – 40 ], turbulence modeling [ 41 – 43 ], aerodynamic force modeling [ 44 , 45 ], scaling laws [ 45 –49 ], and constitutive laws [ 50 ]. In turbulence modeling, Weatheritt and Sandberg [41] proposed a novel evolutionary algorithm and applied it to the algebraic modification of the RANS stress–strain relationship, demonstrating the feasibility of symbolic regression in improving the constitutive relations of turbulence models. Shan and Zhang [42] applied symbolic regression to adverse-pressure-gradient turbulent boundary layer modeling, directly discovering an explicit pressure gradient correction term for the SA model from high-fidelity data, effectively improving the prediction accuracy of separated flows. Yang et al. [43] further proposed a three-step discovery framework for turbulence closure models, using symbolic regression to derive a universal inner-layer correction and a specific outer-layer decay function for the mixing-length model, achieving generalization capabilities beyond traditional models in both separated and attached flows. In scaling law discovery, Lin et al. [44] proposed the scaling function learning method, which uses symbolic regression to reconstruct sparse aerodynamic data correlations across different aircraft geometries, successfully extracting a unified form of aerodynamic scaling laws across geometric shapes. At the methodological level, Xia and Zhang [45] developed a progressive discovery framework that injects prior knowledge [ 47 ] and adopts different symbolic search strategies in stages, significantly improving the efficiency and robustness of mining governing laws in complex flow systems. Collectively, these studies outline the evolution trajectory of symbolic regression from single-point correction to systematic modeling, and from specific working conditions to cross-domain generalization. Building upon this, this paper proposes a knowledge discovery method for skin friction distribution based on progressive symbolic regression. Based on numerical solutions of the Euler equations and combined with limited RANS-computed skin-friction distribution data, this method progressively mines an analytical expression chain for the skin friction coefficient from the inviscid flow features on the surface. The core contributions of this work are: (1) establishing a white-box knowledge chain from flow field features to skin friction distribution, providing clear physical interpretability for the prediction results; (2) revealing a unified mathematical representation of the skin friction scaling law under different Mach numbers, where the expressions under complex conditions can naturally degenerate into simpler forms, demonstrating their inherent physical consistency; (3) validating the extrapolation generalization capability of the proposed expression chain to conditions and geometries outside the training sample space, providing a new tool that balances accuracy and efficiency for fast evaluation of aerodynamic distributed forces. The paper is organized as follows. Section 2 introduces the process of the progressive symbolic regression method. Section 3 analyzes the physical interpretation of the discovered expression chain and verifies the effectiveness of the method through typical test cases. Section 4 provides a systematic summary of the key conclusions of this study. 
+
+# 2 Methods 
+
+This section describes the progressive symbolic regression method adopted, and Figure 1 presents its workflow diagram. The core idea of this method is to decouple the skin friction modeling problem into several physically well-defined sub-problems through a progressive symbolic search strategy that proceeds from simple to complex. Starting from the basic turbulent boundary layer skin friction law, corrections for pressure effects, compressibility effects, etc., are introduced sequentially. At each stage, the expression structure inherited from the previous stage is preserved, and only the correction terms accounting for the newly added physical effects are explored within a restricted search space. This hierarchical progressive discovery framework significantly reduces the search difficulty and ensures the inherent physical consistency of the final expression chain (i.e. the expressions for complex conditions 3Figure 1: Workflow diagram of the progressive symbolic regression method. The method is based on numerical simulation data. Guided by a progressive framework that proceeds from simple to complex, the symbolic regression algorithm hierarchically searches and outputs an analytical expression chain that advances layer by layer. can degenerate progressively into simpler forms). Consequently, a knowledge chain with clear physical interpretability is constructed. The analytical forms of the final expression chain will be presented and discussed in detail in Section 3.1. 
+
+2.1 Data construction 
+
+The proposed method relies on two types of numerical simulation data: inviscid surface flow features provided by Euler equation solutions, and the corresponding skin friction distribution target values provided by RANS equation solutions. Euler equation solutions are used to obtain inviscid flow features such as surface pressure coefficient 𝐶 𝑝 , local resultant velocity magnitude 𝑉 , local normalized streamwise length 
+
+𝐿 , and local Mach number Ma 𝑥 . RANS equation solutions, closed with the SA one-equation turbulence model, are used to generate the target skin friction coefficient distributions required for training and validation. All numerical computations are performed using the PhengLEI solver [ 51 ], whose accuracy and reliability have been thoroughly validated in previous studies. Each test case is computed under turbulent flow conditions. Among them, the first NACA0012 case and the LowRe case adopt the turbulence model proposed by Yang et al. [43] , while the remaining cases employ the SA turbulence model. For geometry-variation cases, the CST parameterization method is used to describe the airfoil shape: the class function is determined based on the baseline NACA0012 airfoil, the shape function coefficients of the 12-level CST parameters are taken as design variables, and new airfoils are generated by applying perturbations to these coefficients via Latin hypercube sampling (LHS) [ 52 ]. The geometry variation method, freestream condition ranges, and sample usage for each dataset are summarized in Table 1. The training set is used for expression search in symbolic regression, while the test sets are used to evaluate the generalization capability of the model for unseen operating conditions and geometries. 
+
+2.2 Feature selection 
+
+The selection of input features significantly influences the prediction accuracy and generalization capability of the model. This paper adopts a strategy combining data-driven screening and physical mechanism analysis to determine the core input variables for symbolic regression. To ensure that the candidate feature library covers the flow information affecting skin friction as comprehensively as possible, this study considers the inviscid flow field characteristics and known freestream parameters. Guided by boundary 4Case Data Ma 𝑅𝑒 /10 6 𝛼 (deg) For training NACA0012 (SR_Yang) Train_1 0.15–0.3 1–30 0–10 Yes Train_2 0.3–0.6 1–30 0–10 Yes NACA0012 (SA) Pre_incompre 0.2–0.4 3–7 0–4 No Pre_compre 0.4–0.55 7–8 4–5 No Pre_mix 0.2–0.55 3–8 0–5 No Supersonic/hypersonic (NACA0006) Train_3 1.5/3/6.5 1–8 0–8 Yes Pre_super 2.5/5/8 1–8 0–8 No LowRe Pre_lowRe 0.15–0.6 0.33–0.4 0–4.1 No New airfoil Pre_newairfoil 0.2–0.5 3–8 0–6 No Wing Pre_wing 0.3–0.5 3–8 0–5 No 
+
+Table 1: Summary of dataset details. SR_Yang denotes the general turbulence closure model proposed by Yang et al. [43] . In the training set, “Yes” indicates that the dataset is used for symbolic regression search, and “No” indicates that it is used only for generalization performance evaluation. layer theory, a candidate feature library is constructed, including streamwise coordinate 𝐿 , resultant velocity 𝑉 , freestream parameters (Reynolds number 𝑅𝑒 , Mach number Ma , angle of attack 𝛼 ), and local flow parameters (pressure coefficient 𝐶 𝑝 , local Mach number Ma 𝑥 ). These features characterize the flow state at the boundary layer edge from different perspectives, providing a rich candidate space for subsequent screening. To identify the features most strongly correlated with skin friction from a data perspective, this paper employs two ensemble learning methods, LightGBM [ 53 ] and random forest [ 54 ], to evaluate feature importance. LightGBM is based on the Boosting strategy, which iteratively trains weak learners and progressively reduces residuals to improve model accuracy. Random forest is based on the Bagging strategy, which uses bootstrap sampling from the original dataset to train multiple decision trees and aggregates their predictions by averaging. The core hyperparameter for both methods is set as 𝑛 estimators = 300 ,with the remaining parameters at default values. The two algorithms adopt different ensemble strategies (Boosting gradually focuses on difficult-to-fit samples through weighted correction, while Bagging reduces model variance through parallel independent training). Thus, they assess the correlation strength between features and the output target from different perspectives, and the mutual validation of their importance rankings enhances the statistical reliability of the conclusions. The normalized feature importance results are shown in Figure 2. The rankings from the two algorithms exhibit high consistency: streamwise length 
+
+𝐿 , pressure coefficient 𝐶 𝑝 , and freestream Reynolds number 𝑅𝑒 consistently rank as the top three in importance, with relative importance significantly higher than the remaining features. Local Mach number 
+
+Ma 𝑥 , local resultant velocity 𝑉 , and angle of attack 𝛼 rank in the middle, while freestream Mach number 
+
+Ma ranks low. These results indicate that global parameters have a relatively weak direct impact on local skin friction, and their effects are already indirectly reflected through local quantities such as 𝐶 𝑝 and Ma 𝑥 .Combining physical mechanism analysis with machine learning screening results, and considering both model simplicity and cross-condition generalization capability, this paper ultimately selects four variables – freestream Reynolds number 𝑅𝑒 , streamwise length 𝐿 , pressure coefficient 𝐶 𝑝 , and local Mach number Ma 𝑥 – as the core input features for symbolic regression. From the physical essence of boundary layer theory, the dominant factors governing the skin friction coefficient 𝑐 𝑓 can be summarized into three types of physical effects. The first is the streamwise development effect: 𝑅𝑒 and 𝐿 jointly characterize the boundary layer development state and describe the influence of viscous effects on friction drag. The second is the pressure gradient effect: actual airfoil surfaces exhibit favorable or adverse pressure gradients, and the pressure coefficient 𝐶 𝑝 , as a direct measure of the surface pressure distribution in the inviscid flow field, serves as the core inviscid feature representing this effect. The third is the compressibility effect, which becomes increasingly significant as the Mach number rises. The local Mach number Ma 𝑥 is the key parameter capturing this effect. 50 5 10 15 20 25 30       
+
+> Relative Importance (%)
+> Ma
+> Ma x
+> V
+> Re
+> Cp
+> L
+> LightGBM
+> 0510 15 20 25 30
+> Relative Importance (%)
+> Ma
+> V
+> Ma x
+> Re
+> Cp
+> L
+> Random Forest
+
+Figure 2: Feature importance ranking from ensemble learning algorithms. Normalized evaluation results of feature importance from LightGBM and random forest. 
+
+2.3 Symbolic regression algorithm 
+
+Symbolic regression is a machine learning method that automatically searches for analytical expressions from data. Unlike traditional regression methods that prespecify functional forms (e.g. linear, polynomial), symbolic regression searches the expression space spanned by a given set of operators and variables without assuming a specific functional structure. Therefore, it balances data fitting accuracy with model parsimony, and its results are fully white-box interpretable. This study employs the open-source symbolic regression library PySR [ 29 ], which is based on a multi-population parallel genetic programming algorithm. By simulating natural selection and genetic variation, the algorithm iteratively searches for optimal analytical expressions in the expression space: an initial population of expressions is randomly generated, then in each generation individuals are evaluated according to a fitness function, well-performing expressions are selected as parents, and crossover and mutation operations produce the next generation. Meanwhile, a cross-generational hall-of-fame set is maintained to store the best expressions at different complexity levels. The algorithm runs until a predefined early-stopping condition or the maximum number of iterations is reached. The hyperparameter configuration of PySR critically affects search efficiency and result quality. Following the principle of balancing search space breadth and model parsimony, this study configures key hyperparameters including the operator set, complexity constraints, penalty terms, and early-stopping conditions. The detailed configuration is listed in Table 2. The operator set is chosen to include common functional forms encountered in boundary-layer skin-friction scaling laws, such as power laws and logarithmic laws. The upper bound on complexity is set to prevent expressions from becoming too large and losing physical interpretability. The nesting penalty term is used to suppress redundant function nesting (e.g. taking the square root of a squared term), further promoting structural parsimony. The core novelty of this paper is the embedding of the above symbolic regression algorithm into a simple-to-complex, layer-by-layer discovery progressive framework. If all the data were fed into symbolic regression at once, the expression search space would expand exponentially, easily converging to lengthy empirical expressions lacking physical meaning. The detailed process at each stage is described in Section 3.1. 
+
+# 3 Results 
+
+This section systematically presents the analytical expression chain for skin friction distribution discovered by the progressive symbolic regression, analyzes its physical meaning, and validates its prediction accuracy and generalization capability under different speed regimes and operating conditions. 6Category Configuration aspect API setting Operator set Binary operators +, −, ∗, /, ^                     
+
+> Unary operators sqrt ,square ,cube ,log
+> Complexity Maximum complexity maxsize=30
+> Maximum tree depth maxdepth=15
+> Constant complexity 3–5 Penalty term Symbolic nesting penalty "sqrt":{"square":0}, "cube":{"cube":0} "square":{"sqrt":0}, "log":{"log":0}
+> Other settings Early-stopping condition loss < 1e-10 && complexity < 20
+> Loss function 𝑙𝑜𝑠𝑠 =∥𝑐 𝑓 −SR (𝑅𝑒, 𝐿, 𝐶 𝑝 ,Ma 𝑥 )∥ 22
+
+Table 2: Hyperparameter configuration of the PySR code. 
+
+3.1 Discovered skin-friction distribution formula 
+
+Following the progressive symbolic regression framework, this paper successfully discovers a set of analytical expression chains for the skin friction coefficient with clear physical interpretability. The following four discovery stages elaborate on the complete discovery process and hierarchical structure, from fundamental physical laws to multi-effect corrections. 
+
+Stage 1: Discovery of the fundamental law. 
+
+Using low-speed incompressible flow over an airfoil as the training data (corresponding to the Train_1 dataset in Table 1), the input parameters are the freestream Reynolds number 𝑅𝑒 , streamwise length 𝐿 ,and pressure coefficient 𝐶 𝑝 . This stage aims to capture the dominant streamwise development law of turbulent boundary layer skin friction. Through automatic dimensionality reduction, symbolic regression combines 𝑅𝑒 and 𝐿 into the local streamwise Reynolds number Re 𝑥 = 𝑅𝑒 · 𝐿 and discovers the fundamental expression describing the decay of skin friction in the turbulent boundary layer: 
+
+𝑐 (0) 
+
+> 𝑓
+
+(𝑅𝑒, 𝐿 ) = 1
+
+{log (𝑅𝑒 · 𝐿 )} 𝑛 , (1) where 𝑛 is a constant to be determined. In general, 𝑛 = 3.18 (the symbolic regression result is consistent with the normalized estimate of the classical flat-plate friction formula; see Appendix A for derivation). This fundamental form is fully consistent with the classical scaling law for turbulent flat-plate boundary layer skin friction (see (14) –(15) in Appendix A), verifying the ability of symbolic regression to automatically identify known physical laws from data. 
+
+Stage 2: Pressure correction. 
+
+Based on the fundamental expression structure obtained in Stage 1, the form of the fundamental term 
+
+1/( log Re 𝑥 )𝑛 and the value of the exponent 𝑛 are fixed, and the search focuses on the correction due to the pressure coefficient 𝐶 𝑝 . Symbolic regression discovers a multiplicative correction term (using the Train_1 dataset), yielding the extended expression: 
+
+𝑐 (1) 
+
+> 𝑓
+
+(Re 𝑥 , 𝐶 𝑝 ) = 𝑐 (0) 
+
+> 𝑓
+
+𝑓 1 (𝐶 𝑝 ) = 1 − 𝐶 𝑝 
+
+(log Re 𝑥 )𝑛 . (2) Here, 1 − 𝐶 𝑝 is the pressure correction term. The pressure correction term modulates the friction drag by affecting the boundary layer thickness: a negative 𝐶 𝑝 (typically associated with flow acceleration) thins the boundary layer, increases the wall velocity gradient, and thus increases the skin friction; a positive 
+
+𝐶 𝑝 (typically associated with flow deceleration) thickens the boundary layer, reduces the wall velocity gradient, and thus decreases the skin friction. Under the flat-plate condition where 𝐶 𝑝 = 0, the expression naturally degenerates to the fundamental form of Stage 1. This formula can be derived step by step from boundary layer velocity distribution laws (see Appendix A) or discovered from data-driven symbolic regression; the two independent approaches corroborate each other, ensuring both data consistency and clear mechanical reasoning. 7Stage 3: Subsonic compressibility correction. 
+
+Further fixing the structure of 𝑐 (1) 
+
+> 𝑓
+
+, the local Mach number Ma 𝑥 is introduced, and the training is performed using variable-Mach-number data (Train_2 dataset) to search for the compressibility correction term 
+
+𝑓 2 (Ma 𝑥 ). The resulting expression is 
+
+𝑐 (2) 
+
+> 𝑓
+
+(Re 𝑥 , 𝐶 𝑝 , Ma 𝑥 ) = 𝑐 (1) 
+
+> 𝑓
+
+(Re 𝑥 , 𝐶 𝑝 𝑓 2 (Ma 𝑥 )) = 1 − 𝐶 𝑝 √︃ 1 − Ma 2
+
+> 𝑥
+
+(log Re 𝑥 )𝑛 . (3) The physical meaning of the Prandtl–Glauert compressibility correction factor √︁ 1 − Ma 2 
+
+> 𝑥
+
+is that it scales the pressure coefficient in compressible flow to an equivalent incompressible state, allowing the skin friction formula originally established under the incompressible assumption to be applicable to subsonic compressible flows. Notably, in the expression discovered by symbolic regression, the compressibility correction factor does not appear as an independent multiplicative term but is coupled with the pressure coefficient in a product form ( 𝐶 𝑝 √︁ 1 − Ma 2 
+
+> 𝑥
+
+). This structure indicates that the Mach number effect does not directly increase or decrease the skin friction but indirectly affects the wall shear stress by modulating the contribution strength of the pressure coefficient. From a physical mechanism perspective, this framework is established for incompressible flow; multiplying by the compressibility factor converts the pressure coefficient in the compressible flow field into an equivalent incompressible pressure coefficient, i.e. 
+
+𝐶 𝑝, inc = 𝐶 𝑝 √︁ 1 − Ma 2 
+
+> 𝑥
+
+, thereby indirectly accounting for compressibility effects within the incompressible skin friction framework. When Ma 𝑥 → 0,√︁ 1 − Ma 2 
+
+> 𝑥
+
+→ 1, and the expression naturally degenerates to the Stage-2 form, ensuring physical continuity in the low-speed limit. 
+
+Stage 4: Supersonic/hypersonic correction. 
+
+For supersonic/hypersonic conditions (Train_3 dataset), the structure of 𝑐 (1) 
+
+> 𝑓
+
+is fixed, the specific heat ratio 𝛾 and the local Mach number Ma 𝑥 are introduced, and the correction term 𝑓 3 (𝛾, Ma 𝑥 ) reflecting thermodynamic state effects is searched. The final expression is 
+
+𝑐 (3) 
+
+> 𝑓
+
+(Re 𝑥 , 𝐶 𝑝 , Ma 𝑥 ) = 𝑐 (1) 
+
+> 𝑓
+
+(Re 𝑥 , 𝐶 𝑝 𝑓 3 (𝛾, Ma 𝑥 )) 
+
+= 1 − 𝐶 𝑝 (√︃ |1 − Ma 2 
+
+> 𝑥
+
+| − 𝛾 Ma 2 
+
+> 𝑥
+
+· 11+exp (− 0.5(Ma 𝑥 −2.5) ) )(log Re 𝑥 )𝑛 .
+
+(4) Compared with the subsonic expression, the Mach-squared term 𝛾𝑀𝑎 2 
+
+> 𝑥
+
+introduced in (4) reflects the weakening of wall shear stress caused by the boundary-layer temperature rise and density drop due to aerodynamic heating. This weakening is equivalent to adding an extra negative contribution to the equivalent incompressible pressure coefficient. The sigmoid factor 11+exp (− 0.5( 𝑀 𝑎 𝑥 −2.5) ) in the correction term acts as a smooth activation function, indicating that aerodynamic heating gradually takes effect when the Mach number exceeds approximately 2.5, highlighting the further weakening mechanism dominated by thermal effects (taking 𝛾 = 1.4). As the Mach number increases further, this factor converges to 1; for Mach number exceeding 3, it can be replaced by 1, thereby simplifying the numerator to √︁ |1 − 𝑀𝑎 2 
+
+> 𝑥
+
+| − 𝛾𝑀𝑎 2 
+
+> 𝑥
+
+.The correction term √︁ |1 − 𝑀𝑎 2 
+
+> 𝑥
+
+| − 𝛾𝑀𝑎 2   
+
+> 𝑥 11+exp (− 0.5(Ma 𝑥 −2.5) )
+
+is always negative in the supersonic regime. Its role is to ensure a positive correlation between the skin friction coefficient 𝑐 𝑓 and the pressure coefficient 𝐶 𝑝 . The physical reason is that under hypersonic viscous interaction, the growth rate of the boundary-layer displacement thickness d𝛿 ∗/d𝑥 is proportional to 𝑐 𝑓 , while the local pressure perturbation 
+
+𝐶 𝑝 is proportional to d𝛿 ∗/d𝑥 ; hence 𝑐 𝑓 varies positively with 𝐶 𝑝 .
+
+𝐶 𝑝 = 2
+
+𝛾𝑀𝑎 2
+
+> ∞
+
+ 𝑃 𝑥 
+
+𝑃 ∞
+
+− 1
+
+
+
+= 2
+
+𝛾𝑀𝑎 2
+
+> ∞
+
+
+
+1 + 𝛾 −12 𝑀𝑎 2
+
+> ∞
+
+1 + 𝛾 −12 𝑀𝑎 2
+
+> 𝑥
+
+! 𝛾 𝛾 −1
+
+− 1
+
+
+
+∼ 1
+
+𝑀𝑎 2𝛾 /( 𝛾 −1)
+
+> 𝑥
+
+. (5) In this high-Mach-number limit, the term 𝛾𝑀𝑎 2    
+
+> 𝑥 11+exp (− 0.5(𝑀 𝑎 𝑥 −2.5) )
+
+asymptotically approaches 𝛾𝑀𝑎 2 
+
+> 𝑥
+
+.Since 2𝛾 /( 𝛾 − 1) = 7 is larger than the highest order (2) of √︁ |1 − 𝑀𝑎 2 
+
+> 𝑥
+
+| − 𝛾𝑀𝑎 2 
+
+> 𝑥
+
+, the term 𝐶 𝑝 · 𝑓 3 (𝛾, 𝑀𝑎 𝑥 )
+
+tends to zero as 𝑀𝑎 𝑥 → ∞ , which is consistent with the Mach number independence principle. 83.2 Validation under multiple conditions 
+
+To comprehensively evaluate the prediction accuracy and generalization capability of the discovered expression chain, this section conducts validation under typical varying speed regimes, flow conditions, and geometric configurations. Specifically, the validation covers low-speed incompressible conditions, subsonic conditions, supersonic/hypersonic conditions, low-Reynolds-number conditions ( 𝑅𝑒 ∼ 10 5), and variable-geometry conditions. The freestream parameters for each validation case are summarized in Table 1. According to the definition in aerodynamics, the total skin friction coefficient 𝐶 𝐷 can be obtained by integrating the distributed skin friction over the surface. In practical aircraft design, accurate prediction of the total skin friction coefficient is often more critical than the skin friction distribution. Therefore, this paper further defines the relative error of the drag coefficient as the overall accuracy metric: 
+
+𝑅𝐸 𝑓 =
+
+∮ 𝑐 𝑓 , pred (𝑠 ) d𝑠 − ∮ 𝑐 𝑓 , true (𝑠 ) d𝑠 
+
+∮ 𝑐 𝑓 , true (𝑠 ) d𝑠 . (6) In the following case validations, the relative error of the drag coefficient ( 𝑅𝐸 𝑓 ) will be used as the primary metric for evaluating prediction accuracy. 
+
+3.2.1 Low-speed incompressible/subsonic formula validation 
+
+Under low-speed incompressible conditions, compressibility effects are negligible, and the expression given by (2) is adopted. For this speed regime, the Train_1 dataset from Table 1 is used for model discovery, and the Pre_incompre dataset is used for validation. Figure 3(a) shows a comparison between the predicted skin friction distribution under typical conditions and the RANS reference solution. The results indicate that the expression accurately captures the skin friction distribution along the airfoil surface for low-speed attached flows. Under subsonic conditions, the compressibility correction term is activated, and the expression given by (3) is used. For this speed regime, the Train_2 dataset from Table 1 is used for model discovery, and the Pre_compre dataset is used for validation. Figure 3(b) compares the predicted skin friction distribution under typical conditions with the RANS reference solution. It can be seen that after introducing the compressibility correction, the model maintains good prediction accuracy under subsonic conditions, and the coupling effect between pressure effects and Mach number effects is effectively captured. To quantitatively evaluate the prediction accuracy of the discovered expression chain, error statistics are performed on all samples of the three datasets, Pre_incompre, Pre_compre and Pre_mix, and box plots of the integrated drag error are drawn. Furthermore, to examine the accuracy differences among the symbolic regression white-box model, the classical local skin friction coefficient White formula 
+
+𝑐 𝑓 = 0.445 /( ln (0.06 Re 𝑥 )) 2 [55 ], and a neural network model that predicts skin friction based on Euler equation solutions [ 26 ] (where the neural network uses a residual neural network with 15 layers and 32 neurons per layer as the baseline), the comparison of their prediction performance is shown in Figure 3(c). After statistical error analysis of the skin friction predictions, the white-box expression obtained by symbolic regression yields a drag integration error for skin friction distribution that is comparable to, or slightly better than, that of the black-box neural network model, while also featuring a concise analytical form and clear physical meaning. 
+
+3.2.2 Supersonic/hypersonic formula validation 
+
+Under supersonic/hypersonic conditions, thermal effects become significant. The temperature inside the boundary layer rises sharply and the density drops substantially, leading to severe distortion of the velocity profile and consequent attenuation of the wall shear stress. Under such conditions, the compressibility correction term √︁ 1 − Ma 2 
+
+> 𝑥
+
+valid for subsonic flows is no longer sufficient to capture the strong thermodynamic effects. Therefore, the Mach-squared term 𝛾 Ma 2 
+
+> 𝑥
+
+is introduced as a correction. Figure 4 shows a comparison between the predicted skin friction distribution under hypersonic conditions 9(a) Ma = 0.29 , 𝑅𝑒 = 2.9 × 10 7, 𝛼 = 9.2◦ Ma = 0.29 , 𝑅𝑒 = 3.1 × 10 6, 𝛼 = 2.36 ◦0.0 0.2 0.4 0.6 0.8 1.0 
+
+x/c 
+
+0.000 
+
+0.005 
+
+0.010 
+
+0.015 
+
+0.020 
+
+0.025 
+
+> cf
+
+SA 
+
+Present 0.0 0.2 0.4 0.6 0.8 1.0 
+
+x/c 
+
+0.000 
+
+0.002 
+
+0.004 
+
+0.006 
+
+0.008 
+
+0.010 
+
+> cf
+
+SA 
+
+Present 
+
+(b) Ma = 0.35 , 𝑅𝑒 = 3.8 × 10 6, 𝛼 = 3.25 ◦ Ma = 0.6, 𝑅𝑒 = 1.8 × 10 7, 𝛼 = 2.0◦0.0 0.2 0.4 0.6 0.8 1.0 
+
+x/c 
+
+0.000 
+
+0.002 
+
+0.004 
+
+0.006 
+
+0.008 
+
+0.010 
+
+0.012 
+
+> cf
+
+SA 
+
+Present 0.0 0.2 0.4 0.6 0.8 1.0 
+
+x/c 
+
+0.000 
+
+0.002 
+
+0.004 
+
+0.006 
+
+0.008 
+
+> cf
+
+SA 
+
+Present 
+
+(c) Pre_incompre Pre_compre Pre_mix 
+
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> 12
+> RE f (%)
+> Median
+> Mean
+> White s Model
+> NN(Zhao, 2023)
+> Present
+
+Figure 3: Comparison of skin friction distribution predictions for low-speed and subsonic conditions. (a) Validation cases from the Train_1 and Pre_incompre datasets; (b) validation cases from the Train_2 and Pre_compre datasets; (c) comparison of skin friction predictions among the symbolic regression formula, the classical White formula, and the neural network [26]. 10 (a) Ma = 1.5, 𝑅𝑒 = 6.0 × 10 6, 𝛼 = 0◦ (b) Ma = 2.5, 𝑅𝑒 = 6.0 × 10 6, 𝛼 = 0◦0.0 0.2 0.4 0.6 0.8 1.0      
+
+> x/c
+> 0.002
+> 0.003
+> 0.004
+> 0.005
+> 0.006
+> 0.007
+> cf
+> SA
+> Present(1.17%) 0.0 0.2 0.4 0.6 0.8 1.0
+> x/c
+> 0.002
+> 0.004
+> 0.006
+> 0.008
+> cf
+> SA
+> Present(2.16%)
+
+(c) Ma = 3.0, 𝑅𝑒 = 6.0 × 10 6, 𝛼 = 0◦ (d) Ma = 5.0, 𝑅𝑒 = 8.0 × 10 6, 𝛼 = 2.0◦0.0 0.2 0.4 0.6 0.8 1.0      
+
+> x/c
+> 0.000
+> 0.002
+> 0.004
+> 0.006
+> 0.008
+> cf
+> SA
+> Present(2.23%) 0.0 0.2 0.4 0.6 0.8 1.0
+> x/c
+> 0.000
+> 0.005
+> 0.010
+> cf
+> SA
+> Present(1.62%)
+
+(e) Ma = 6.5, 𝑅𝑒 = 1.0 × 10 6, 𝛼 = 8.0◦ (f) Ma = 8.0, 𝑅𝑒 = 8.0 × 10 6, 𝛼 = 2.0◦0.0 0.2 0.4 0.6 0.8 1.0      
+
+> x/c
+> 0.00
+> 0.01
+> 0.02
+> 0.03
+> cf
+> SA
+> Present(1.99%) 0.0 0.2 0.4 0.6 0.8 1.0
+> x/c
+> 0.000
+> 0.005
+> 0.010
+> 0.015
+> cf
+> SA
+> Present(2.90%)
+
+Figure 4: Validation of the supersonic formula for skin friction distribution prediction under super-sonic/hypersonic conditions. and the RANS reference solution. The results indicate that after introducing the thermodynamic correction term, the model exhibits a good capability to capture the trend of skin friction, with consistently low concentrated - force errors and excellent overall fitting performance across the entire Mach number range from 1.5 to 8. 11 (a) Ma = 0.15 , 𝑅𝑒 = 4 × 10 5, 𝛼 = 0◦ (b) Ma = 0.32 , 𝑅𝑒 = 3.5 × 10 5, 𝛼 = 0.83 ◦0.00 0.25 0.50 0.75 1.00      
+
+> x/c
+> 0.000
+> 0.005
+> 0.010
+> 0.015
+> 0.020
+> cf
+> LES
+> SR(Yang, 2025)
+> SA
+> White's Model
+> Present 0.0 0.2 0.4 0.6 0.8 1.0
+> x/c
+> 0.000
+> 0.005
+> 0.010
+> 0.015
+> 0.020
+> cf
+> SA
+> Present(3.57%)
+
+(c) Ma = 0.4, 𝑅𝑒 = 3.3 × 10 5, 𝛼 = 4.1◦ (d) Ma = 0.6, 𝑅𝑒 = 3.3 × 10 5, 𝛼 = 0.84 ◦0.0 0.2 0.4 0.6 0.8 1.0      
+
+> x/c
+> 0.00
+> 0.01
+> 0.02
+> 0.03
+> 0.04
+> cf
+> SA
+> Present(2.49%) 0.0 0.2 0.4 0.6 0.8 1.0
+> x/c
+> 0.000
+> 0.005
+> 0.010
+> 0.015
+> 0.020
+> cf
+> SA
+> Present(3.24%)
+
+Figure 5: Validation under low-Reynolds-number conditions (on the order of 10 5). (a) NACA0012, angle of attack = 0◦, compared with LES data; (b–d) NACA0012, non-zero angles of attack, together with the relative errors of the integrated skin friction drag. 
+
+3.2.3 Lower-Reynolds-number condition validation 
+
+To examine the applicability of the discovered expression chain under low-Reynolds-number conditions (on the order of 10 5), the Pre_lowRe dataset from Table 1 is used for validation. This dataset contains four cases covering different combinations of Mach number and angle of attack. At low Reynolds numbers (𝑅𝑒 ∼ 10 5), the relative thickness of the boundary layer increases and viscous effects become more significant. Under these conditions, since the Reynolds number deviates significantly from the training range ( 𝑅𝑒 ∼ 10 6 and 10 7), the exponent 𝑛 in the base expression (3) needs to be fine-tuned using a small number of samples, yielding 𝑛 ≈ 3.28 . Figure 5 shows a comparison between the predicted skin friction distributions for the four cases and the RANS reference solutions (Figure 5a also includes LES data). The results indicate that under zero angle-of-attack conditions (Figure 5a), the proposed expression agrees well with the LES data over the middle and aft portions of the airfoil; only a certain deviation is observed near the leading-edge acceleration region, which has little effect on the overall friction drag estimation, with an integrated force error of 0.54%. In stark contrast, the classical White formula significantly overestimates the skin friction over the entire airfoil surface, exhibiting large deviations from the LES data. Under non-zero angle-of-attack conditions (Figures 5b–d), the predicted skin friction distributions follow the same trend as the RANS reference solutions except for the deviation at the leading edge. This demonstrates the rapid adaptability of the white-box model to extreme conditions. 12 (a) (b) Ma = 0.44 , 𝑅𝑒 = 3.98 × 10 6, 𝛼 = 0.503 ◦0.0 0.2 0.4 0.6 0.8 1.0      
+
+> x
+> 0.06
+> 0.04
+> 0.02
+> 0.00
+> 0.02
+> 0.04
+> 0.06
+> y
+> NACA0012
+> New airfoils 0.0 0.2 0.4 0.6 0.8 1.0
+> x/c
+> 0.000
+> 0.002
+> 0.004
+> 0.006
+> 0.008
+> cf
+> SA
+> Present
+
+(c) Ma = 0.34 , 𝑅𝑒 = 3.56 × 10 6, 𝛼 = 1.74 ◦ (d) Ma = 0.35 , 𝑅𝑒 = 5.54 × 10 6, 𝛼 = 2.16 ◦0.0 0.2 0.4 0.6 0.8 1.0      
+
+> x/c
+> 0.000
+> 0.002
+> 0.004
+> 0.006
+> 0.008
+> cf
+> SA
+> Present 0.0 0.2 0.4 0.6 0.8 1.0
+> x/c
+> 0.000
+> 0.002
+> 0.004
+> 0.006
+> 0.008
+> 0.010
+> cf
+> SA
+> Present
+
+(e) Airfoil 1 Airfoil 2 Airfoil 3 Airfoil 4 Airfoil 5 Airfoil 6 Airfoil 7 Airfoil 8 
+
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> RE f (%)
+> Mean
+> Median
+
+Figure 6: Generalization validation results for two-dimensional variable geometries. (a) The eight new airfoil geometries generated by CST parameter perturbations; (b–d) predictions for variable-geometry airfoil cases, where (b) corresponds to Airfoil 8; (e) box plot of integrated drag errors for the predictions on the eight airfoils. 
+
+3.2.4 Variable geometry generalization validation 
+
+To further evaluate the generalization capability of the discovered expression chain to two-dimensional variable-geometry airfoils, the Pre_newairfoil dataset from Table 1 is used for validation, and the skin 13 friction distribution formula given by (3) is adopted. This dataset takes the NACA0012 airfoil as the baseline. Random perturbations of ±30% are applied to the shape function coefficients using the 12-level CST parameterization method, generating eight new airfoils (Airfoil 1 to Airfoil 8). Their geometric shapes are shown in Figure 6(a). For each airfoil, ten operating conditions are randomly sampled from the freestream condition space, resulting in a total of 80 cases. The geometries of all these cases have not appeared in the training set, aiming to test the extrapolation capability of the expression chain to unseen geometries (shown in Figures 6b–d). Figure 6(e) presents a box plot of the integrated drag errors for all 80 cases of the eight airfoils. The results show that for most perturbed airfoils (Airfoil 1 to Airfoil 6), the mean integrated drag error of the expression chain predictions is within 2%. For airfoils with more pronounced geometric variations (Airfoil 7 and Airfoil 8), the error increases slightly but the mean value remains below 4%, and the error for all airfoils is within 7%. Overall, the expression chain exhibits good generalization capability for unseen geometries, with integrated drag errors all within the engineering acceptable range. This generalization capability benefits from the fact that the input features ( Re 𝑥 , 𝐶 𝑝 , and Ma 𝑥 ) are all local flow parameters; together with the streamwise coordinate, they help the model accurately identify the flow development at each location, thereby effectively adapting to local shape variations of the airfoil. In scenarios requiring higher accuracy, the model can be further tuned using additional data and the existing theoretical formula framework to achieve more precise predictions. To further evaluate the generalization capability of the discovered expression chain to three-dimensional wing configurations with varying geometries, the Pre_wing dataset from Table 1 is used for validation, and the skin friction distribution is computed using (3) . This dataset consists of subsonic flows over variable-geometry three-dimensional wings. The wing under consideration has a taper ratio of 2, a span of 1.5 m, and a sweep angle of 30 ◦. Its geometry is generated by extruding the NACA0012 airfoil, with shape variations achieved through CST parameter control and perturbations applied to the airfoil shape. Validation results are obtained under different freestream conditions and wing geometries, as shown in Figure 7. For case (b) ( Ma = 0.5), away from the wing tip, the three-dimensional spanwise effect is weak and the two-dimensional formula remains applicable; near the wing tip, however, the spanwise effect becomes significant, leading to relatively large deviations in the trailing-edge prediction. For a finite-span wing, the downwash and cross-flow induced by the wingtip vortex thin the boundary layer, increase the velocity gradient, and consequently produce a local skin friction coefficient notably higher than that of a two-dimensional airfoil. Nevertheless, the mean relative errors of the integrated force for cases (a) and (b) are only 1.76% and 2.15%, respectively, demonstrating that the expression chain still possesses good generalization prediction capability for three-dimensional wings. 
+
+# 4 Conclusions 
+
+Addressing the demand for rapid skin friction prediction in aircraft design, this paper proposes a knowledge discovery method for skin friction drag that integrates physical knowledge with symbolic regression. This method demonstrates the capability of symbolic regression in fluid mechanics knowledge discovery and provides a paradigm for extracting physical laws from data and constructing interpretable models. The main conclusions are as follows: (i) Construction of a white-box knowledge chain: using inviscid surface flow features as inputs, an analytical expression chain for the skin friction coefficient is successfully mined via symbolic regression. The expressions are concise in form, possess clear physical meaning, and exhibit a unified mathematical structure across different Mach number ranges, with only the scaling exponent adjusting according to the Mach number regime. This reveals the correction law of skin friction with varying flow parameters. (ii) Physical interpretability and engineering value: the analytical formula chain provides aerodynamic engineers with an explicit drag model that can be directly embedded into design optimization frameworks, avoiding repetitive CFD computations. Moreover, its white-box nature facilitates understanding of the contribution mechanisms of different flow phenomena to skin friction. 14 (a) Ma = 0.36 , 𝑅𝑒 = 6.57 × 10 6, 𝛼 = 0.6◦SA          
+
+> Present
+> 0.000
+> 0.003
+> 0.006
+> 0.009
+> 0.012
+> 0.015
+> 0.018
+> 0.021 0.4 0.6 0.8 1.0
+> x/c
+> 0.001
+> 0.002
+> 0.003
+> 0.004
+> 0.005
+> 0.006
+> cf
+> SA
+> Present(1.43%) 0.8 1.0 1.2
+> x/c
+> 0.001
+> 0.002
+> 0.003
+> 0.004
+> 0.005
+> 0.006
+> cf
+> SA
+> Present(2.36%) 0.9 1.0 1.1 1.2 1.3
+> x/c
+> 0.002
+> 0.003
+> 0.004
+> 0.005
+> 0.006
+> cf
+> SA
+> Present(0.45%)
+
+(b) Ma = 0.5, 𝑅𝑒 = 6.0 × 10 6, 𝛼 = 3.74 ◦SA          
+
+> Present
+> 0.002
+> 0.004
+> 0.007
+> 0.009
+> 0.011
+> 0.014
+> 0.017
+> 0.019
+> 0.022
+> 0.024 0.4 0.6 0.8 1.0
+> x/c
+> 0.002
+> 0.004
+> 0.006
+> 0.008
+> cf
+> SA
+> Present(2.39%) 0.8 1.0 1.2
+> x/c
+> 0.002
+> 0.004
+> 0.006
+> 0.008
+> 0.010
+> cf
+> SA
+> Present(2.38%) 0.9 1.0 1.1 1.2 1.3
+> x/c
+> 0.002
+> 0.004
+> 0.006
+> 0.008
+> 0.010
+> cf
+> SA
+> Present(7.15%)
+
+Figure 7: Generalization validation results for a three-dimensional wing. Contour plot of the predicted skin friction distribution on the wing and comparison of skin friction at the 1/4, 1/2 and 3/4 span sections (top-right, bottom-left, bottom-right, respectively). (iii) Strong generalization capability: owing to its concise analytical form and clear physical meaning, the proposed expression chain demonstrates good extrapolation generalization capability for varying operating conditions and geometric configurations, including two-dimensional airfoils and three-dimensional wings. This study still has several limitations that require further investigation. First, the current method is primarily validated for attached flow conditions. For transonic and high-angle-of-attack cases involving 15 strong nonlinear flow features such as shock waves, whether symbolic regression can effectively capture the abrupt variation patterns of skin friction remains to be examined. Second, the adopted feature set is limited to inviscid surface flow parameters, with viscosity information only accounted for via the Reynolds number. Viscous information within the boundary layer, such as velocity profiles and turbulence intensity, has not yet been introduced, which may restrict the model’s ability to characterize complex pressure gradient effects. Furthermore, the stage sequence and expression freezing strategy in the progressive discovery procedure have a certain influence on the final results; how to adaptively determine the optimal discovery path requires further exploration. Future work can extend the method to skin friction modeling for complex flows involving shock waves and separation, as well as explore deeper integration with other physical knowledge (e.g. boundary layer theory) to achieve higher-fidelity white-box modeling. 
+
+Author contributions. Mingkun Xia: Methodology, Validation, Visualization, Writing-original draft, Writing-review&editing; Shule Zhao: Investigation, Methodology, Validation; Weiwei Zhang: Conceptu-alization, Funding acquisition, Investigation, Methodology, Project administration. 
+
+Declaration of interests. The authors report no conflict of interest. 
+
+Data availability statement. Data will be made available on request. 
+
+Acknowledgements. This research was supported by the National Natural Science Foundation of China (No.92152301, No. U2441211, No. U23B6009). 
+
+# Appendix A. Derivation of an Explicit Approximate Formula for the Skin Friction Coefficient in the Turbulent Boundary Layer 
+
+In a turbulent boundary layer, the velocity distribution law at the outer edge can be written as 
+
+𝑈 𝑒 
+
+𝑢 𝜏 
+
+= 1
+
+𝜅 ln 
+
+ 𝑢 𝜏 𝛿 𝜈 
+
+
+
++ 𝐵 + 2Π
+
+𝜅 , (7) where 𝑈 𝑒 is the free-stream velocity at the boundary layer edge, 𝑢 𝜏 =√︁ 𝜏 𝑤 /𝜌 is the friction velocity, 𝛿 is the boundary layer thickness, 𝜈 is the kinematic viscosity, 𝜅 = 0.41 is the von Karman constant, 𝐵 = 5.0 is the logarithmic law constant, and Π = 0.45 is the Coles wake parameter. Introducing the friction coefficient 𝑐 𝑓 = 𝜏 𝑤 /( 𝜌𝑈 2 
+
+> 𝑒
+
+/2), we have 𝑈 𝑒 /𝑢 𝜏 =√︁ 2/𝑐 𝑓 and 𝑢 𝜏 𝛿 /𝜈 =
+
+𝑅𝑒 𝛿 √︁ 𝑐 𝑓 /2, where 𝑅𝑒 𝛿 is the Reynolds number based on boundary layer thickness. Substituting into (7) and inserting the constant values yields √︄ 
+
+2
+
+𝑐 𝑓 
+
+= 2.44 ln 𝑅𝑒 𝛿 √︂ 𝑐 𝑓 
+
+2
+
+!
+
++ 7.20 . (8) In more general cases, the friction coefficient is often expressed in the following form: 
+
+1
+
+√𝑐 𝑓 
+
+= 𝑏 1 ln 𝑐 𝑓 + 𝑏 2 ln 𝑅𝑒 + 𝑏 3, (9) where 𝑏 1, 𝑏 2 and 𝑏 3 are empirical constants, and 𝑅𝑒 is the Reynolds number based on a characteristic length (the choice depends on the flow configuration; in this paper, the Reynolds number Re 𝑥 based on streamwise length is adopted). Equation (9) holds for flat plate conditions ( 𝑈 𝑒 = 𝑈 ∞, pressure coefficient 𝐶 𝑝 = 0). For more complex conditions, a pressure coefficient correction must be introduced. According to Bernoulli’s principle (applicable to incompressible flow), 𝐶 𝑝 = 1 − ( 𝑈 𝑒 /𝑈 ∞)2. Therefore, the pressure-corrected friction coefficient ˜𝑐 𝑓 = 𝜏 𝑤 /( 12 𝜌𝑈 2 
+
+> 𝑒
+
+) = 𝜏 𝑤 /( 12 𝜌𝑈 2
+
+> ∞
+
+) · 𝑈 2
+
+> ∞
+
+/𝑈 2 
+
+> 𝑒
+
+= 𝑐 𝑓 /( 1 − 𝐶 𝑝 ), with the pressure correction term being 1/( 1 − 𝐶 𝑝 ). Then 16 1√︂ 
+
+𝑐 𝑓 
+
+1 − 𝐶 𝑝 
+
+= 𝑏 1 ln 
+
+ 𝑐 𝑓 
+
+1 − 𝐶 𝑝 
+
+
+
++ 𝑏 2 ln (Re 𝑥 ) + 𝑏 3. (10) To convert the implicit form of (10) into an explicit form, we refer to the transformation method of Shi [56], introducing the variables 
+
+𝑧 = 12𝑏 1√︄ 
+
+1 − 𝐶 𝑝 
+
+𝑐 𝑓 
+
+, 𝑎 =
+
+Re 𝑏 2/( 2𝑏 1 ) 
+
+> 𝑥
+
+exp 
+
+ 𝑏 3 − 𝑏 1 ln (1 − 𝐶 𝑝 )
+
+2𝑏 1
+
+
+
+2𝑏 1√︁ 
+
+1 − 𝐶 𝑝 
+
+. (11) Equation (10) then simplifies to the simple form 𝑧 e𝑧 = 𝑎 , where the relationship between 𝑧 and 𝑎 
+
+can be obtained by solving the implicit equation. For engineering convenience, the following piecewise explicit approximation is given for 𝑎 ∈ [ 46 , 1.6 × 10 7]: 𝑧 = 𝑏 4 (ln 𝑎 )𝑏 5 . This range covers the typical Reynolds number regimes of engineering turbulent boundary layer flows, from the low-Reynolds-number transition region to the high-Reynolds-number fully turbulent region. Substituting back into (11) gives 
+
+12𝑏 1√︁ 
+
+1 − 𝐶 𝑝 
+
+√𝑐 𝑓 
+
+= 𝑏 4
+
+"
+
+𝑏 2
+
+2𝑏 1
+
+ln (Re 𝑥 ) + 𝑏 3 − 𝑏 1 ln (1 − 𝐶 𝑝 )
+
+2𝑏 1
+
++ ln  √︁ 1 − 𝐶 𝑝 
+
+2𝑏 1
+
+!# 𝑏 5
+
+. (12) Further simplification leads to 
+
+𝑐 𝑓 =
+
+(1 − 𝐶 𝑝 )    
+
+> 2𝑏 1
+> 𝑏 2
+> 2𝑏 5
+> 4(𝑏 1)2(𝑏 4)2
+
+
+
+ln (𝑅𝑒 𝑥 ) + 𝑏 3 
+
+> 𝑏 2
+
+− 2𝑏 1 
+
+> 𝑏 2
+
+ln (2𝑏 1)
+
+2𝑏 5
+
+. (13) It is observed that this form is highly consistent in structure with the explicit approximate formula 
+
+𝑐 𝑓 = (1 − 𝐶 𝑝 )/( log Re 𝑥 )3.18 discovered by our symbolic regression, validating the theoretical rationality of the symbolic regression results. The basic expression discovered by symbolic regression in stage one is 𝑐 (0) 
+
+> 𝑓
+
+(𝑅𝑒, 𝐿 ) = 1/( log (𝑅𝑒 · 𝐿 )) 𝑛 ,where the exponent 𝑛 ≈ 3.18 . Starting from classical flat-plate turbulent friction formulas, we back-calculate the equivalent exponent via coefficient normalization and cross-validate with the symbolic regression results. Classical flat-plate turbulent boundary layer friction coefficient formulas are Prandtl–Schlichting (1932): 𝑐 𝑓 = 0.455 (log Re 𝑥 )−2.58 , (14) Wieghardt (1955): 𝑐 𝑓 = 0.52 (log Re 𝑥 )−2.685 . (15) Setting the two equations equal, i.e. 0.455 (log Re 𝑥 )−2.58 = 0.52 (log Re 𝑥 )−2.685 , an averaged Reynolds number can be solved. Using this Reynolds number as a reference and normalizing the coefficient of the formula to 1, i.e. 0.455 (log Re 𝑥 )−2.58 = (log Re 𝑥 )−𝑛 , we obtain 𝑛 ≈ 3.199 , which is very close to the 3.18 obtained from symbolic regression. Starting from the velocity distribution law for turbulent boundary layers, this appendix derives the implicit expression for the skin friction coefficient. After introducing pressure correction, the standard form 𝑧 e𝑧 = 𝑎 is obtained through variable transformation. An explicit approximation and the validation of the exponent scaling are provided. The final form is highly consistent with the symbolic regression results, demonstrating the rationality and practicality of the explicit approximate formula. 17 References 
+
+[1] John Anderson. EBOOK: Fundamentals of Aerodynamics (SI units) . McGraw hill, 2011. [2] Falk Götten, Marc Havermann, Carsten Braun, Matthew Marino, and Cees Bil. Airfoil drag at low-to-medium reynolds numbers: A novel estimation method. AIAA journal , 58(7):2791–2805, 2020. [3] Simon C Sommer and Barbara J Short. Free-flight measurements of turbulent-boundary-layer skin friction in the presence of severe aerodynamic heating at mach numbers from 2.8 to 7.0. Technical report, 1955. [4] Hermann Schlichting and Joseph Kestin. Boundary layer theory , volume 121. Springer, 1961. [5] Philip K Sasman and Robert J Cresci. Compressible turbulent boundary layer with pressure gradient and heat transfer. AIAA Journal , 4(1):19–25, 1966. [6] Yingui Bian and Guoying Zhao. Engineering calculation method for boundary layer parameters of compressible flows. Chinese Journal of Theoretical and Applied Mechanics , 16(2):120–128, 1980. [7] Meng-Juan Xiao and Zhen-Su She. Precise drag prediction of airfoil flows by a new algebraic model. 
+
+Acta Mechanica Sinica , 36(1):35, 2020. [8] Zhenhua Xia, Peng Zhang, and Xiang IA Yang. On skin friction in wall-bounded turbulence. Acta Mechanica Sinica , 37(4):589–598, 2021. [9] Ya-Sen Hu, Zhen-Hua Wan, Peng-Jun-Yi Zhang, De-Jun Sun, and Xi-Yun Lu. Reconstructing self-similarity for improving wall skin-friction prediction under adverse pressure gradients. Journal of Fluid Mechanics , 1034:A31, 2026. [10] Zhiye Zhao and Lin Fu. Revisiting the theory of van driest: a general scaling law for the skin-friction coefficient of high-speed turbulent boundary layers. Journal of Fluid Mechanics , 1012:R3, 2025. [11] Zhiye Zhao and Lin Fu. Generalisation of the prandtl relation for the skin-friction law to compressible turbulent channel and pipe flows. Journal of Fluid Mechanics , 1032:A72, 2026. [12] Giovanni Lombardi, Maria Vittoria Salvetti, and Dario Pinelli. Numerical evaluation of airfoil friction drag. Journal of aircraft , 37(2):354–356, 2000. [13] Krzysztof J Fidkowski. A coupled inviscid–viscous airfoil analysis solver, revisited. AIAA Journal ,60(5):2961–2971, 2022. [14] Hanlong Cai and Feng Li. Transonic airfoil analysis based on the interaction of euler and integral boundary-layer equation. Acta Aeronautica et Astronautica Sinica , 12(5):221–227, 1991. [15] F Gaible, R Cariou, and R Houdeville. Numerical simulation of three-dimensional supersonic flows using euler and boundary layer solvers. In 31st Aerospace Sciences Meeting , page 531, 1993. [16] Steven L Brunton, Bernd R Noack, and Petros Koumoutsakos. Machine learning for fluid mechanics. 
+
+Annual review of fluid mechanics , 52(1):477–508, 2020. [17] Zhigong Tang, Linyang Zhu, Xinghao Xiang, Lei HE, Tun ZHAO, Yueqing WANG, Weiqi QIAN, and Xianxu YUAN. Some research progress and prospect of intelligent aerodynamics. Acta Aerodynamica Sinica , 41(7):1–35, 2023. [18] Weiwei Zhang, Mingkun Xia, and Jiaqing Kou. A scientometric investigation of artificial intelligence for fluid mechanics: Emerging topics and active groups. Progress in Aerospace Sciences , 157: 101130, 2025. [19] Weiwei Zhang and Shule Zhao. Envisioning the blueprint: Aeronautics in large models era. Chinese Journal of Aeronautics , 38(8), 2025. [20] Vinothkumar Sekar, Qinghua Jiang, Chang Shu, and Boo Cheong Khoo. Fast flow field prediction over airfoils using deep learning approach. Physics of Fluids , 31(5), 2019. 18 [21] Xu Wang, Ruiqi Huang, Jiaqing Kou, Hui Tang, and Weiwei Zhang. Goal-oriented feature extraction: A novel approach to enhance data-driven surrogate models. AIAA journal , 64(1):303–317, 2026. [22] Xinyu Hui, Junqiang Bai, Hui Wang, and Yang Zhang. Fast pressure distribution prediction of airfoils using deep learning. Aerospace Science and Technology , 105:105949, 2020. [23] Yang Shen, Wei Huang, Zhen-guo Wang, Da-fu Xu, and Chao-Yang Liu. A deep learning framework for aerodynamic pressure prediction on general three-dimensional configurations. Physics of Fluids ,35(10), 2023. [24] George Em Karniadakis, Ioannis G Kevrekidis, Lu Lu, Paris Perdikaris, Sifan Wang, and Liu Yang. Physics-informed machine learning. Nature Reviews Physics , 3(6):422–440, 2021. [25] Mateus Dias Ribeiro, Mario Stradtner, and Philipp Bekemeyer. Unsteady reduced order model with neural networks and flight-physics-based regularization for aerodynamic applications. Computers & Fluids , 264:105949, 2023. [26] Shule Zhao and Weiwei Zhang. Machine learning of skin friction distribution based on surface inviscid flow feature. Chinese Journal of Theoretical and Applied Mechanics , 56(8):2243–2258, 2024. [27] Shule Zhao and Weiwei Zhang. Euler equation embedded machine learning method for wall pressure and skin friction distribution. Engineering Applications of Computational Fluid Mechanics , 19(1): 2556450, 2025. [28] Ze Wang, Xu Wang, Weiwei Zhang, and Shufang Song. Ed-resnet: Euler equation embedding double-series residual neural network for aerothermal modeling. AIAA Journal , 63(1):134–147, 2025. [29] Miles Cranmer. Interpretable machine learning for science with pysr and symbolicregression. jl. 
+
+arXiv preprint arXiv:2305.01582 , 2023. [30] Silviu-Marian Udrescu and Max Tegmark. Ai feynman: A physics-inspired method for symbolic regression. Science advances , 6(16):eaay2631, 2020. [31] Hanchen Wang, Tianfan Fu, Yuanqi Du, Wenhao Gao, Kexin Huang, Ziming Liu, Payal Chandak, Shengchao Liu, Peter Van Katwyk, Andreea Deac, Anima Anandkumar, Karianne Bergen, Carla P. Gomes, Shirley Ho, Pushmeet Kohli, Joan Lasenby, Jure Leskovec, Tie-Yan Liu, Arjun Manrai, Debora Marks, Bharath Ramsundar, Le Song, Jimeng Sun, Jian Tang, Petar Veličković, Max Welling, Linfeng Zhang, Connor W. Coley, Yoshua Bengio, and Marinka Zitnik. Scientific discovery in the age of artificial intelligence. Nature , 620(7972):47–60, 2023. [32] Dimitrios Angelis, Filippos Sofos, and Theodoros E Karakasidis. Artificial intelligence in physical sciences: Symbolic regression trends and perspectives: D. angelis et al. Archives of Computational Methods in Engineering , 30(6):3845–3865, 2023. [33] Michael Schmidt and Hod Lipson. Distilling free-form natural laws from experimental data. science ,324(5923):81–85, 2009. [34] Pat Langley. Data-driven discovery of physical laws. Cognitive Science , 5(1):31–54, 1981. [35] Jianyang Guo and Wan-Jian Yin. Harnessing data using symbolic regression methods for discovering novel paradigms in physics. Science China Physics, Mechanics & Astronomy , 67(6):267301, 2024. ISSN 1869-1927. doi: 10.1007/s11433-023-2346-2. [36] Steven L Brunton, Joshua L Proctor, and J Nathan Kutz. Discovering governing equations from data by sparse identification of nonlinear dynamical systems. Proceedings of the national academy of sciences , 113(15):3932–3937, 2016. [37] Sarah Beetham, Rodney O Fox, and Jesse Capecelatro. Sparse identification of multiphase turbulence closures for coupled fluid–particle flows. Journal of Fluid Mechanics , 914:A11, 2021. 19 [38] Wenjun Ma, Jun Zhang, Kaikai Feng, Haoyun Xing, and Dongsheng Wen. Dimensional homogeneity constrained gene expression programming for discovering governing equations. Journal of Fluid Mechanics , 985:A12, 2024. [39] Tianyi Chen, Hao Yang, Wenjun Ma, and Jun Zhang. Symbolic identification of tensor equations in multidimensional physical fields. Journal of Fluid Mechanics , 1024:A34, 2025. [40] Ding Wang, Dachuan Feng, Kangcheng Zhou, Yuntian Chen, Shi-Jun Liao, and Shiyi Chen. Symbolic regression-enhanced dynamic wake meandering: fast and physically consistent wind turbine wake modelling. Journal of Fluid Mechanics , 1025:A56, 2025. [41] Jack Weatheritt and Richard Sandberg. A novel evolutionary algorithm applied to algebraic modifications of the rans stress–strain relationship. Journal of Computational Physics , 325:22–37, 2016. [42] XiangLin Shan and WeiWei Zhang. Data-driven adverse pressure gradient correction for turbulence model. AIAA Journal , 63(7):2780–2796, 2025. [43] Zhongxin Yang, Xianglin Shan, Xiang IA Yang, and Weiwei Zhang. Data-enabled discovery of specific and generalisable turbulence closures. Journal of Fluid Mechanics , 1016:R1, 2025. [44] Haitao Lin, Xu Wang, and Weiwei Zhang. Scaling function learning: A sparse aerodynamic data reconstruction method for various aircraft shapes. Chinese Journal of Aeronautics , 39(4):103797, 2025. [45] Mingkun Xia and Weiwei Zhang. Data-driven progressive discovery of physical laws. arXiv preprint arXiv:2603.13727 , 2026. [46] Xiaoyu Xie, Arash Samaei, Jiachen Guo, Wing Kam Liu, and Zhengtao Gan. Data-driven discovery of dimensionless numbers and governing laws from scarce measurements. Nature communications ,13(1):7562, 2022. [47] Mingkun Xia, Haitao Lin, and Weiwei Zhang. Hierarchical dimensionless learning: A physics-data hybrid-driven approach for discovering dimensionless parameter combinations. Engineering Applications of Artificial Intelligence , 170:114190, 2026. [48] Xiang Zhang, Yuntian Chen, Zi-Mo Liao, Zhiye Zhao, Chenyue Xie, Nan-Sheng Liu, and Xi-Yun Lu. Transformations of velocity and temperature for compressible turbulent boundary layers from subsonic to hypersonic regimes. Journal of Fluid Mechanics , 1029:A12, 2026. [49] Nikos Bempedelis, Luca Magri, and Konstantinos Steiros. Extracting self-similarity from data. 
+
+Journal of Fluid Mechanics , 1020:A11, 2025. [50] Yang Liu and Jingdi Wan. Symbolic learning of material constitutive laws. Science China Physics, Mechanics & Astronomy , 69(1), 2025. [51] Lei He, Yongyan Guo, Zhichun Zeng, Xiangcheng Lai, and Zhong Zhao. Design and development of software automated continuous integration and testing platform for national numerical windtunnel project. Acta Aerodynamica Sinica , 38(6):1158–1164, 2021. [52] Michael Stein. Large sample properties of simulations using latin hypercube sampling. Technometrics ,29(2):143–151, 1987. [53] Guolin Ke, Qi Meng, Thomas Finley, Taifeng Wang, Wei Chen, Weidong Ma, Qiwei Ye, and Tie-Yan Liu. Lightgbm: A highly efficient gradient boosting decision tree. Advances in neural information processing systems , 30, 2017. [54] Leo Breiman. Random forests. Machine learning , 45(1):5–32, 2001. [55] FM White, C Ng, and S Saimek. Fluid Mechanics . McGraw hill, 2011. [56] Changchun Shi. An explicit expression of the turbulent frictional drag coefficient for a flat plate. 
+
+Acta Aeronautica et Astronautica Sinica , 9:B299–B302, 1988. 20

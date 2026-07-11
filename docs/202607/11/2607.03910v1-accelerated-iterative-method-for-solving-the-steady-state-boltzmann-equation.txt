@@ -1,0 +1,2217 @@
+Title: Accelerated iterative method for solving the steady-state Boltzmann equation
+
+URL Source: https://arxiv.org/pdf/2607.03910v1
+
+Published Time: Tue, 07 Jul 2026 03:01:47 GMT
+
+Number of Pages: 26
+
+Markdown Content:
+# Accelerated iterative method for solving the steady-state Boltzmann equation 
+
+Pei Zhang ∗
+
+, Zhenning Cai †
+
+, Yanli Wang ‡
+
+Abstract 
+
+The efficient simulation of steady-state rarefied gas flows remains a significant computational challenge due to the high dimensionality of the collision integral and the severe numerical stiffness in the near-continuum regime. In this work, we propose a modified Newton method equipped with a macroscopic synthetic system (Newton-MS) for the steady-state Boltzmann equation with the quadratic collision operator. In Newton-MS, the modified Newton iteration is utilized as the outer nonlinear solver, while each Newton correction equation is solved by an inner source iteration, where the linearized collision operator is utilized to approximate the quadratic collision model, and it is reduced into a linear iteration. Moreover, a macroscopic synthetic system based on Chapman-Enskog closure is derived to accelerate the convergence of the linear inner iteration in the continuum limit. Besides, the fully discrete macroscopic synthetic system is deduced under the framework of the discontinuous Galerkin method to reduce computational cost compared to directly discretizing the continuous macroscopic synthetic system. Several numerical examples, including the 1D Fourier, Couette flow problem, and the 2D cavity flow and thermal-driven cavity flow, are studied to validate the high efficiency of Newton-MS. 
+
+Keywords: steady-state Boltzmann equation; Newton-MS; macroscopic synthetic acceleration; fast Fourier spectral method 
+
+# 1 Introduction 
+
+Rarefied gas dynamics constitutes a pivotal branch of fluid mechanics, essential for understanding multi-scale flow phenomena in high-altitude aerothermodynamics, micro-electromechanical systems (MEMS), and specialized gas transport processes. The flow regimes are characterized by the Knudsen number (Kn), defined as the ratio of the molecular mean free path to a characteristic macroscopic length scale. Although the Euler or Navier-Stokes equations suffice for the continuum regime (Kn ≪ 1), they become physically inadequate as the rarefaction effects increase. Consequently, the Boltzmann equation, which governs the evolution of the single-particle probability distribution function in phase space, serves as the fundamental framework that is valid across all flow regimes. However, the high dimensionality of phase space and the complex quadratic collision term pose substantial challenges for efficient numerical simulations. Traditional numerical methods for solving the Boltzmann equation are generally categorized into stochastic methods and deterministic methods. Direct Monte Carlo simulation (DSMC) [ 1,9,22 ] is one of the most popular stochastic methods that is effective in simulating high-speed rarefied gas flows. However, it suffers from computational inefficiency and inherent statistical noise in low-speed regimes. The Unified Gas-Kinetic Wave-Particle (UGKWP) method couples deterministic waves for continuum flows with stochastic particles for kinetic non-equilibrium, covering the full Knudsen number regime. Unlike DSMC, which is costly and time-step limited in near-continuum flows, UGKWP adaptively weights waves and particles by local Knudsen number, recovering a fluid solver in continuum and a particle method in rarefied regimes. This hybrid reduces noise and cost while preserving kinetic accuracy for multiscale gas dynamics [ 20 ].    
+
+> ∗Beijing Computational Science Research Center, Beijing, China, email: zhangpei@csrc.ac.cn .
+> †Department of Mathematics, National University of Singapore, Singapore, 119076, email: matcz@nus.edu.sg .
+> ‡Beijing Computational Science Research Center, Beijing, China, email: ylwang@csrc.ac.cn .
+
+1
+
+> arXiv:2607.03910v1 [math.NA] 4 Jul 2026
+
+Conversely, deterministic methods are often preferred for continuous or low-speed flows where the statistical fluctuations must be minimized. The discrete velocity method (DVM) [ 2, 3, 18 ] is a classi-cal deterministic method, which discretizes the distribution function at a series of microscopic velocity points. The unified gas-kinetic scheme (UGKS) can eliminate restrictions on cell size and time step by simultaneously handling free flow and collision of gas molecules [ 19 , 20 ]. However, since information exchange depends on the evolution of the velocity distribution function, UGKS still requires a large number of iterations to obtain the steady-state solution of the near-continuum flow [ 6, 29 ]. Furthermore, spectral methods, including the Fourier spectral method [ 7, 23 , 24 ], the Hermite spectral method [ 14 , 16 ], the Burnett spectral method [ 8, 13 ], and the mapped Chebyshev spectral method [ 11 , 12 ] utilize global basis functions to approximate the distribution function, leading to a higher order of convergence. Al-ternatively, the moment method [ 10 ] originally proposed by Grad simplifies the kinetic description by approximating the distribution function through a truncated series of macroscopic moments. For the steady-state problems, which are of great engineering interest, the efficiency of the numerical solver is critical. The conventional source iteration (SI) is efficient in highly rarefied regimes, but exhibits prohibitively slow convergence as the flow approaches the continuum limit (Kn → 0) [ 28 ]. In this diffusive limit, the “converged” solution is often contaminated by numerical errors arising from velocity discretization and collision operator approximations. To overcome the slow convergence in the near-continuum regime, Synthetic Iterative Schemes (SIS) have been developed to accelerate the solution of the Boltzmann equation [ 17 ,27 ]. The core mechanism of SIS is to couple the microscopic kinetic transport with macroscopic fluid equations, where the macroscopic fluid equations are utilized to guide the evolution of the distribution function. While early SIS versions were often limited to specific flow scenarios or linearized equations, the subsequently proposed General Synthetic Iterative Scheme (GSIS) extended this capability to general rarefied gas flows [ 25 , 26 , 32 ]. By rigorously deriving the macroscopic equations from the kinetic level, GSIS ensures asymptotic preserving properties and achieves fast convergence across the entire range of Knudsen numbers, typically converging within dozens of iterations. Alternatively, the Newton method addresses the collision nonlinearity by solving a sequence of Newton equations, each of which is essentially a linearized Boltzmann equation with a residual source term [ 31 ]. The competitiveness of this method has been substantially enhanced by the recent developments in the fast Fourier spectral method (FFT), where the complexity of the linearized collision operator is reduced to O(N 4 log N ), with N denoting the number of modes in each velocity direction [ 31 ]. The computational cost is significantly lower than that of the quadratic collision operator with complexity of 
+
+O(M N 4 log N ) [ 7], where M is the number of quadrature points on the unit sphere. This new efficient FFT to solve the linear collision operator makes the Newton iteration a highly viable and efficient choice. However, efficiently evaluating the collision operator does not equate to efficiently solving the linear system. Although the linearized collision operator can be evaluated efficiently, the corresponding source iteration still converges slowly for small Kn, where macroscopic information is propagated inefficiently only through the update of the kinetic equation. This observation motivates a macroscopic synthetic preconditioning strategy, in which a macroscopic system is utilized to accelerate the slow macroscopic components of the Newton correction. However, the macroscopic equations here cannot be directly borrowed from the existing GSIS. The key difference lies in the state around which the equation is linearized. Precisely, nonlinear GSIS is built for the original nonlinear equation [ 32 ], and linearized GSIS is derived around a global equilibrium [ 26 ], which is spatially uniform. For the Newton correction, it is linearized around a local Maxwellian that varies in space and is updated at each outer step. As a result, a different form of the macroscopic synthetic system should be derived specifically. In this work, a Newton method equipped with a macroscopic synthetic system (Newton-MS) is de-veloped for the steady-state Boltzmann equation with the quadratic collision operator. The main idea is retaining the modified Newton iteration for the nonlinear collision term, while constructing a macroscopic synthetic system for the inner correction equation to accelerate the convergence of the slow macroscopic components. As discussed above, the corresponding macroscopic equations differ from existing GSIS and are derived for the Newton correction around a spatially varying local Maxwellian. These continuous equations, however, contain several background-dependent terms induced by the spatial variation of the local Maxwellian, which make direct discretization cumbersome. Rather than discretizing them directly, the matrix form of the macroscopic system at the fully discrete level is constructed, starting from the discrete Newton correction equation. This yields a compact macroscopic linear system that can be assem-2bled once per Newton step and reused in the inner iterations, without explicitly deducing the complicated continuous macroscopic synthetic systems. The spatial discretization is achieved by the discontinuous Galerkin (DG) method, ensuring high-order accuracy and geometric flexibility for multidimensional problems. Extensive numerical experiments, ranging from the 1D Fourier and Couette flows to 2D cavity flows, are presented to validate the efficiency and accuracy of the proposed Newton-MS method. The rest of this paper is organized as follows. Sec. 2 briefly reviews the Boltzmann equation and the fast Fourier spectral method for the collision operator. The construction of the Newton-MS, especially the deduction of the continuous macroscopic synthetic system, is presented in Sec. 3, while Sec. 4 provides the fully discrete form of Newton-MS. Several numerical examples are provided in Sec. 5 with some concluding remarks and the appendix listed in Sec. 6 and App. A.
+
+# 2 Preliminaries 
+
+In this section, several basic properties of the steady-state Boltzmann equation are introduced, and the fast Fourier spectral method, which is utilized to approximate the quadratic collision model, is proposed in Sec. 2.2 .
+
+2.1 The steady-state Boltzmann equation 
+
+The dynamics of a rarefied gas are characterized by the evolution of the particle distribution function 
+
+f (t, x, v) in the phase space, where t > 0 is time, x ∈ Ω ⊂ Rd, d = 1 , 2, 3 is position, and v ∈ R3 is the microscopic velocity of gas molecules. Here, the steady-state Boltzmann equation is considered as 
+
+v · ∇ xf (x, v) = 1
+
+Kn Q[f, f ]( x, v), (2.1) where Kn is the Knudsen number and Q[f, f ] is the quadratic collision operator, which describes binary collisions between particles and has the following integral form 
+
+Q[f, f ]( x, v) = 
+
+∫
+
+> R3
+
+∫
+
+> S2
+
+B(v − v∗, σ) [ f (x, v′)f (x, v′∗) − f (x, v)f (x, v∗)] d σ dv∗, (2.2) where ( v, v∗) and ( v′, v′∗) denote the pre- and post-collision velocity pairs, respectively. Under the constraints of momentum and energy conservation, the post-collision velocities are parameterized by the unit vector σ ∈ S2
+
+v′ = v + v∗
+
+2 + |v − v∗|
+
+2 σ, v′∗ = v + v∗
+
+2 − |v − v∗|
+
+2 σ. (2.3) The collision kernel B reflects the intermolecular potential between gas molecules. A widely adopted sim-plification is the variable hard-sphere (VHS) model [ 1], which assumes B is independent of the scattering angle σ
+
+B = C|v − v∗|α, α = 2(1 − ω), (2.4) where ω represents the viscosity index of the gas and the constant C is determined by the molecular diameter. Due to the complex form of the quadratic collision, several simplified collision models are proposed, such as the linearized collision model 
+
+L[g] = Q[M, g ] + Q[g, M], (2.5) where g denotes the distribution acted on by the linearized collision operator. The Maxwellian M =
+
+M[ρ, u,T ](v) is given by 
+
+M[ρ, u,T ](v) = ρ
+
+√2πT 3 exp 
+
+(
+
+− |v − u|2
+
+2T
+
+)
+
+. (2.6) Here, ρ is the density, u = ( u1, u 2, u 3)T is the macroscopic velocity, and T is the temperature. When the reference Maxwellian is associated with a distribution function f , the corresponding macroscopic quantities are given by 
+
+ρ =
+
+∫
+
+> R3
+
+f (x, v) d v, u = 1
+
+ρ
+
+∫
+
+> R3
+
+vf (x, v) d v, T = 1
+
+3ρ
+
+∫
+
+> R3
+
+|v − u|2f (x, v) d v. (2.7) 32.2 Fast Fourier spectral approximation of the collision operator 
+
+Due to the complex form of the quadratic collision model Q[f, f ], numerical methods for it have been extensively studied in recent years. The fast Fourier spectral method (FFS) [ 7,24 ] is adopted here, due to its high efficiency and easy implementation. As stated in [ 7], the time complexity for FFS to approximate the quadratic collision operator is O(M N 4 log N ). For VHS models, the linearized collision operator L[g]can be approximated with time complexity O(N 4 log N ), according to the recent research work [ 31 ]. In this section, these algorithms will be briefly reviewed. For FFS, it truncates the microscopic velocity space to a finite domain Dv = [ −L, L ]3. Let N denote the one-dimensional spectral truncation parameter, so that 2 N velocity grid points are used in each direction. The distribution function f (x, v) is approximated by 
+
+f (v) = 1
+
+(2 L)3
+
+> N
+
+∑
+
+> k=−N
+
+ˆfk eiπ k·v/L , ˆfk = 1
+
+ck
+
+( L
+
+N
+
+)3 N −1∑
+
+> ℓ=−N
+
+f
+
+( ℓL
+
+N
+
+)
+
+e−iπ k·ℓ/N , (2.8) where k = ( k1, k 2, k 3) and 
+
+> N
+
+∑
+
+> k=−N
+
+=
+
+> N
+
+∑
+
+> k1=−NN
+
+∑
+
+> k2=−NN
+
+∑ 
+
+> k3=−N
+
+, ck = ck1 ck2 ck3 , cj =
+
+{
+
+2, if j = ±N, 
+
+1, otherwise. (2.9) Moreover, the discretization of the quadratic collision model Q[f, f ] requires a truncation of the collision kernel by assuming B(v−v∗, σ) = 0 when |v−v∗| > R , where R > 0 is a problem-dependent parameter [ 7]. Then the Fourier coefficients of Q are calculated as ̂
+
+Qk =
+
+> J
+
+∑
+
+> j=1
+> M
+
+∑
+
+> m=1
+
+Cj,m, k 
+
+> N−1
+
+∑
+
+> l=−N
+
+(α(1) 
+
+> j,m, k−l
+
+β(1)  
+
+> j,m, l
+
++ α(2) 
+
+> j,m, k−l
+
+β(2) 
+
+> j,m, l
+
+) ˆfk−l ˆfl − 
+
+> N−1
+
+∑
+
+> l=−N
+
+γl ˆfk−l ˆfl, (2.10) where all coefficients Cj,m, k, α(1) 
+
+> j,m, k
+
+, α(2) 
+
+> j,m, k
+
+, β(1) 
+
+> j,m, k
+
+, β(2)  
+
+> j,m, k
+
+and γl can be precomputed, and we refer to [ 7]for the detailed calculation of these coefficients. Thus, if the fast Fourier transform (FFT) is adopted to compute the convolution, the final computational cost of ( 2.10 ) is O(JM N 3 log N ), where J is the number of quadrature points for a one-dimensional integral over [0 , R ]. Generally speaking, R is chosen to be proportional to L, and it is expected that J = O(N ). Thus the computational cost can also be written as O(M N 4 log N ) [ 7]. For the VHS models, the Fourier coefficients of the linearized collision operator L[g] can be computed more efficiently. The algorithm in [ 31 ] provides the following form of ̂ Lk:̂
+
+Lk =
+
+> J
+
+∑
+
+> j=1
+
+αj, k 
+
+> N−1
+
+∑
+
+> l=−N
+
+Mh 
+
+> l
+
+ψj, le−iπ k·l/N − 
+
+> N−1
+
+∑
+
+> l=−N
+
+γl( ˆfk−l ˆMl + ˆMk−l ˆfl), (2.11) where ˆMl is the Fourier coefficient of the local Maxwellian ( 2.6 ), and 
+
+ψj, l =
+
+( π
+
+N
+
+)3 ∑
+
+> m
+
+βj, mrl−mMc
+
+> m
+
+, rl = g
+
+( lL
+
+N
+
+) /
+
+M
+
+( lL
+
+N
+
+)
+
+, (2.12) 
+
+Mh 
+
+> m
+
+= ρ
+
+(πT )3/2 exp 
+
+(
+
+− 1
+
+T
+
+∣∣∣∣ mL
+
+N − u
+
+∣∣∣∣
+
+> 2
+
+)
+
+, Mc 
+
+> m
+
+= ρ
+
+(πT )3/2 e− |m|2 L2  
+
+> N2T
+
+. (2.13) 
+
+The coefficients αj, k and βj, m can again be precomputed. With FFT, this leads to a total computational cost O(N 4 log N ), removing the dependence on M , which is the degree of freedom for the integration on the unit sphere compared with the quadratic collision operator. With the lower computational cost of the linearized collision operator, one can achieve a cheaper model by replacing Q[f, f ] with L[g], while still maintaining much better accuracy than BGK-type models. Moreover, as briefly tested in [ 31 ], the lower computational cost of L[g] can also help develop efficient algorithms for the steady-state Boltzmann equation ( 2.1 ), whose efficiency will be further improved in the following sections, especially in the case of small Knudsen number. 43 Construction of Newton-macroscopic synthetic system 
+
+Solving the steady-state Boltzmann equation efficiently is hindered by two primary challenges: the pro-hibitive computational cost of the high-dimensional collision integral, and the slow convergence caused by the stiffness of the transport term in the near-continuum regime. To address these issues, a Newton iter-ation accelerated by a macroscopic synthetic system in the inner iteration (Newton-MS) is constructed. Precisely, the nonlinear Boltzmann equation is solved by an outer modified Newton iteration, and each Newton correction equation is solved by an inner source iteration preconditioned by a macroscopic syn-thetic system. The linearized collision operator is used in the Newton correction equation to reduce the cost of collision evaluation, while the macroscopic correction accelerates the propagation of large-scale flow information when Kn is small. For the modified Newton’s method to solve the steady-state Boltzmann equation, it aims to seek the numerical solution to ( 3.1 )
+
+R(f ) := v · ∇ xf − 1
+
+Kn Q[f, f ] = 0 . (3.1) A similar Newton method proposed in [ 31 ] is utilized here, where the distribution function is updated iteratively by 
+
+f (n+1) = f (n) − g(n), (3.2) where the correction g(n) is solved from the linearized equation 
+
+v · ∇ xg(n) − 1
+
+Kn 
+
+(
+
+Q[f (n), g (n)] + Q[g(n), f (n)]
+
+)
+
+= r(n), (3.3) with 
+
+r(n) = R(f (n)) (3.4) the residual at the n-th Newton iterate. This Newton iteration ( 3.2 ) to update the distribution function is called the outer Newton iteration. The computational cost can be extremely high when numerically solving ( 3.3 ) with an iterative method, regardless of which method is used, due to the high cost of com-puting the binary collision operator. To solve this, the quadratic collision term Q[f (n), g (n)]+ Q[g(n), f (n)]is approximated with a linearized collision operator around the local Maxwellian, with a similar method utilized in [ 31 ]. This strategy is conceptually similar to the quasi-Newton method by replacing the Ja-cobian matrix with a computationally efficient approximation. Therefore, the governing equation of the correction g(n) is reduced to 
+
+v · ∇ xg(n) − 1
+
+Kn L(n)[g(n)] = r(n), (3.5) where the linearized operator L(n)[·] is defined around the local Maxwellian as 
+
+L(n)[·] = Q[M(n), ·] + Q[·, M(n)]. (3.6) Here, M(n) is the Maxwellian corresponding to f (n). It has been demonstrated in [ 31 ] that this modified Newton’s method shows fast convergence rates and can greatly reduce the computational cost at the same time. Within each Newton’s iteration, to solve the linear equation ( 3.5 ), the iterative method is also utilized, which is called the inner iteration. For example, the classical source iteration (SI) was employed in [ 31 ], which updates the numerical solution by 
+
+v · ∇ xg(n,l +1) + ν
+
+Kn g(n,l +1) = 1
+
+Kn L(n)[g(n,l )] + ν
+
+Kn g(n,l ) + r(n), (3.7) where n stands for the index of the outer Newton iteration, and l stands for the index of the inner source iteration. Here, the penalization terms involving ν are introduced to obtain a stable source iteration, where ν is usually chosen as the local collision frequency depending on the density and temperature. The resulting outer-inner solver is referred to as the modified Newton method combined with source iteration (Newton–SI). However, it is well known that SI leads to slow convergence when the Knudsen number is small [ 4, 26 , 29 , 30 ]. 5Improving the computational efficiency of SI is full of challenges, and several numerical methods have been proposed to accelerate it, especially in the near-continuum regime. For example, a macroscopic syn-thetic preconditioner is constructed by solving a macroscopic system, and a similar macroscopic coupling principle is also proposed in the general synthetic iterative scheme (GSIS) [ 25 , 26 ]. The general idea of GSIS is to accelerate the convergence of macroscopic variables by solving an NSF-like system, where the stress tensor and the heat flux include higher-order contributions from the microscopic solution in the previous iteration. Precisely, the synthetic equations are the full nonlinear NSF system with high-order corrections in nonlinear GSIS [ 32 ], while the linearized counterpart around a global equilibrium is adopted in [ 26 ]. The main contribution of this work is to construct an efficient macroscopic synthetic preconditioner to solve ( 3.7 ) by coupling the macroscopic governing equations. 
+
+3.1 Macroscopic moment system for the Newton correction equation 
+
+To improve the convergence of SI in the near-continuum regime, we follow the idea of adopting the macro-scopic system to accelerate convergence, but the specific form of the macroscopic equations is different from GSIS. Compared with GSIS, the correction equation ( 3.5 ) in this work is linearized around the local Maxwellian M(n)(x, v), where the macroscopic variables, such as the density ρ(n) and macroscopic velocity u(n), vary in space and will only be refreshed at the outer Newton step when the distribution function is updated by ( 3.2 ). This may bring a different macroscopic synthetic preconditioner, which will be derived through the Chapman-Enskog expansion of the correction g(n) around M(n).Before presenting the macroscopic synthetic preconditioner, the local equilibrium E(n) of the correction 
+
+g(n) is introduced. Defining the peculiar velocity c(n) = v − u(n)(x), the local Maxwellian M(n) of the distribution function f (n) in ( 3.6 ) can be rewritten as 
+
+M(n)(x, v) = ρ(n)(x)
+
+(2 πT (n)(x)) 3/2 exp 
+
+(
+
+− |c(n)|2
+
+2T (n)(x)
+
+)
+
+, (3.8) where ρ(n)(x), u(n)(x), and T (n)(x) denote the macroscopic moments of f (n) through ( 2.7 ). During the inner iteration in one Newton step, these macroscopic variables are known and fixed. Then the kernel space of the linearized collision operator ( 3.6 ) [ 5] holds the form as ker L(n) = {ϕ(c(n))T α(x)M(n)(x, v) | α : Ω → R5}, (3.9) where 
+
+ϕ(c(n)) = 
+
+(
+
+1, c(n), |c(n)|2 − 3T (n)
+
+2
+
+)T
+
+. (3.10) Then, the local equilibrium E(n)(x, v) of the correction g(n) is defined as the projection of g(n) onto ker L(n)
+
+E(n)(x, v) , ϕ(c(n))T m(n)(x)M(n)(x, v), (3.11) where m(n) is the vector of local macroscopic variables defined as 
+
+m(n)(x) = 
+
+( δρ (n)(x)
+
+ρ(n)(x) , δu(n)(x)
+
+T (n)(x) , δT (n)(x)
+
+(T (n)(x)) 2
+
+)T
+
+, (3.12) with δρ , δu, and δT being the perturbations of macroscopic variables related to g(n)
+
+m(n)(x) = 
+
+∫
+
+> R3
+
+ϕ(c(n))g(n) dv, ϕ(c(n)) = 
+
+( 1
+
+ρ(n) , c(n)
+
+ρ(n)T (n) , |c(n)|2 − 3T (n)
+
+3ρ(n)(T (n))2
+
+)T
+
+. (3.13) It is easy to verify that 
+
+∫
+
+> R3
+
+φ(v)g(n) dv =
+
+∫
+
+> R3
+
+φ(v)E(n) dv, φ(v) = (1 , v, |v|2)T . (3.14) 6Defining P as the orthogonal projection operator from any distribution function to ker L, it holds that 
+
+∫
+
+> R3
+
+φ(v)( I − P )f dv = 0 , Pg(n) = E(n). (3.15) The detailed derivation of the local equilibrium of g(n) can be found in [ 5]. In the following, the macroscopic system associated with the Newton correction will be derived with a Chapman-Enskog type expansion of the correction g(n) in terms of the Knudsen number, and the outer-iteration superscript “( n)” is omitted for simplicity. Thus, the linearized equation ( 3.5 ) is reduced to 
+
+v · ∇ xg − 1
+
+Kn L[g] = r. (3.16) Moreover, with the local Maxwelilan ( 3.11 ), the Chapman-Enskog ansatz of the correction g has the form 
+
+g = E + Kn g1 + Kn 2g2, (3.17) where g1 represents the first-order Navier-Stokes correction, and g2 denotes the high-order non-equilibrium remainder. With the definition of P, it holds that 
+
+Pg1 = 0 , Pg2 = 0 . (3.18) Substituting ( 3.17 ) into ( 3.16 ), with L[E] = 0, we can obtain 
+
+v · ∇ xE + Kn v · ∇ xg1 + Kn 2v · ∇ xg2 − L [g1] − Kn L[g2] = r. (3.19) To obtain g1, by comparing the terms in order O(1), we obtain 
+
+L[g1] = v · ∇ xE − r. (3.20) Modding out the kernel of L by taking the operator ( I − P ), then g1 is derived as 
+
+g1 = L−1(I − P )( v · ∇ xE − r) , (3.21) where L−1 is the pseudoinverse of L. From ( 3.15 ), it holds for g1 and g2 that 
+
+∫
+
+> R3
+
+φ(v)g1 dv =
+
+∫
+
+> R3
+
+φ(v)g2 dv = 0 . (3.22) Moreover, since L−1(I − P ) = L−1, the projection ( I − P ) will be omitted below. The macroscopic equations for δρ , δu and δT are obtained by taking moments of ( 3.19 ) with respect to the collision invariants φ(v). With the conservation property of the linearized collision operator and the first-order correction ( 3.21 ), the resulting macroscopic equations can be written as 
+
+S1 =
+
+∫
+
+> R3
+
+r dv, (3.23a) 
+
+S2 + Kn ∇x · σ =
+
+∫
+
+> R3
+
+vr dv − Kn 2∇x ·
+
+∫
+
+> R3
+
+v ⊗ vg2 dv, (3.23b) 
+
+S3 + 2Kn ∇x · (σu + q) = 
+
+∫
+
+> R3
+
+|v|2 r dv − Kn 2∇x ·
+
+∫
+
+> R3
+
+|v|2v g2 dv, (3.23c) with 
+
+S1 =∇x · (u δρ + ρ δ u) , (3.24a) 
+
+S2 =∇x ·
+
+[
+
+δρ (u ⊗ u + T I) + ρ (u ⊗ δu + δu ⊗ u) + ρ δT I
+
+]
+
+, (3.24b) 
+
+S3 =∇x ·
+
+[
+
+δρ u(|u|2 + 5 T ) + ρ δ u (|u|2 + 5 T ) + 2 ρu(u · δu) + 5 ρ u δT 
+
+]
+
+. (3.24c) 7Here, the variables σ and q are defined as 
+
+σ =
+
+∫
+
+> R3
+
+(
+
+c ⊗ c − |c|2
+
+3 I
+
+)
+
+g1 dv, q =
+
+∫
+
+> R3
+
+1
+
+2 |c|2c g1 dv, (3.25) with ⊗ denotes the tensor product of two vectors. The left-hand side of ( 3.23 ) has a similar form to the standard linearized Navier-Stokes-Fourier equations (NSF), which are approximated in the reference state ( ρ, u, T ). But the variables σ and q defined in ( 3.25 ) depend not simply on δu and δT as the standard NSF, but also on the macroscopic variables ρ, u and θ due to the non-homogeneous Maxwellian 
+
+M(n) in the outer Newton iteration. To obtain σ and q, they are split into two parts 
+
+σ = σ(∇) − σ(r), q = q(∇) − q(r), (3.26) where 
+
+σ(∇) =
+
+∫
+
+> R3
+
+(
+
+c ⊗ c − |c|2
+
+3 I
+
+)
+
+L−1(v · ∇ xE) d v, q(∇) =
+
+∫
+
+> R3
+
+|c|2
+
+2 c L−1(v · ∇ xE) d v, (3.27a) 
+
+σ(r) =
+
+∫
+
+> R3
+
+(
+
+c ⊗ c − |c|2
+
+3 I
+
+)
+
+L−1r dv, q(r) =
+
+∫
+
+> R3
+
+|c|2
+
+2 c L−1r dv. (3.27b) Here, σ(∇) and q(∇) are calculated as 
+
+σ(∇) = C2,0
+
+ν S + C2,1
+
+ν R, q(∇) = − 1
+
+2ν (C1,1 P + C1,2 Q) , (3.28) where 
+
+S = 1
+
+T (∇xδu)stf +
+
+( δu
+
+T ⊗ ∇xρ
+
+ρ
+
+)
+
+> stf
+
++
+
+( δρ 
+
+ρT − 5δT 
+
+2T 2
+
+)
+
+(∇xu)stf 
+
+− 5
+
+2T 2 (δu ⊗ ∇ xT )stf +
+
+( δu
+
+T ⊗ (u · ∇ x)u
+
+)
+
+> stf
+
+, (3.29a) 
+
+R = ρδT 
+
+3T (∇xu)stf + ρ
+
+2T (δu ⊗ ∇ xT )stf , (3.29b) and 
+
+P = ρT ∇xδT + T δT ∇xρ + T δρ ∇xT − 5ρδT ∇xT
+
++ 2ρT 
+
+5
+
+[(δu · ∇ x)u + ( ∇xu)⊤δu + ( ∇x · u) δu] (3.30a) + ρδT (u · ∇ x)u + ρ(u · ∇ xT ) δuQ = ρδT 
+
+2 ∇xT. (3.30b) 
+
+Here, ( X)stf denotes the symmetric and trace-free part of the matrix X, defined by ( X+XT )/2−tr( X)I/3. The detailed deduction is listed in App. A. For the spatially homogeneous background where ∇xρ, ∇xu
+
+and ∇xT all equal zero, ( 3.29 ) and ( 3.30 ) reduce to the standard constitutive laws 
+
+σ(∇) = C2,0
+
+νT (∇xδu)stf , q(∇) = − C1,1
+
+2ν ρT ∇xδT. (3.31) Substituting ( 3.26 ) in ( 3.23 ), with ( 3.28 ), the macroscopic system ( 3.23 ) is reduced into 
+
+S1 =
+
+∫
+
+> R3
+
+r dv, (3.32a) 
+
+S2 + Kn ∇x · σ(∇) = Kn ∇x · σ(r) +
+
+∫
+
+> R3
+
+vr dv − G 2,1, (3.32b) 
+
+S3 + 2Kn ∇x ·
+
+(
+
+σ(∇)u + q(∇))
+
+= 2Kn ∇x ·
+
+(
+
+σ(r)u + q(r))
+
++
+
+∫
+
+> R3
+
+|v|2 r dv − G 2,2, (3.32c) 
+
+8with 
+
+G2,1 = Kn 2∇x ·
+
+∫
+
+> R3
+
+v ⊗ vg2 dv, G2,2 = Kn 2∇x ·
+
+∫
+
+> R3
+
+|v|2v g2 dv (3.33) where the left parts are the linear system with the unknown variables δρ , δu and δT , who depend on 
+
+ρ, u and T , which keep constant during the inner iteration. The right parts are unknown terms left to be closed, which will be introduced in detail in the following section. Then, the macroscopic system (3.23 ) will be completed, which form a linear system of δρ , δu, and δT , while most of the coefficients are spatially dependent. 
+
+BGK-type approximation of the coefficients Ci,j For the linearized collision operator, to obtain the coefficients Ci,j in ( 3.28 ), the operator L−1 should be calculated exactly, which is quite difficult [ 5]. In the numerical implementation, the BGK model is utilized as a penalty term to obtain Ci,j . Precisely, (3.16 ) is reformulated by inserting a simpler BGK collision operator: 
+
+v · ∇ xg − 1
+
+Kn LBGK [g] = r + 1
+
+Kn 
+
+(
+
+L[g] − L BGK [g]
+
+)
+
+, LBGK = ν(E − g). (3.34) Thus, define ˜r = r + Kn −1(L[g] − L BGK [g]). (3.35) It is easy to verify that utilizing ˜ r instead of r in ( 3.34 ), the deduction of the macroscopic synthetic system is the same as ( 3.32 ), due to 
+
+∫
+
+φ(v)r dv =
+
+∫
+
+φ(v)˜ r dv. (3.36) Moreover, the pseudoinverse of the BGK operator has the form 
+
+L−1BGK = − 1
+
+ν (I − P ), (3.37) thus, the coefficients Ci,j can be obtained explicitly as 
+
+C2,0 = −ρT 2, C2,1 = −7T, C1,1 = 5 , C1,2 = 70 . (3.38) The detailed deduction is presented in App. A.2 .
+
+3.2 Closure and synthetic iteration 
+
+To obtain the right-side terms of ( 3.32 ), we recall the numerical scheme of the inner iteration ( 3.7 ). Omitting the superscript ( n) in the outer iteration, ( 3.7 ) is reduced into 
+
+v · ∇ xg(l+1) + ν
+
+Kn g(l+1) = 1
+
+Kn L(n)[g(l)] + ν
+
+Kn g(l) + r, (3.39) with r defined in ( 3.4 ), which keeps constant in the inner iteration. Moreover, the background macroscopic variables ρ, u, and T also remain constant. Let 
+
+g(∇,l )1 = L−1 (
+
+v · ∇ xE(l))
+
+, g(r)1 = g(r,l )1 = L−1r, g(l)1 = g(∇,l )1 − g(r)1 , (3.40) where E(l) is the corresponding local equilibrium of g(l). Here, the superscript ( l) is omitted in g(r,l )1 due to the constancy of the residual r (3.4 ) in each inner iteration. With the Chapman-Enskog decomposition (3.17 ) and ( 3.21 ), it holds at the l-th inner iteration that Kn 2g(l)2 = g(l) − E (l) − Kn g(∇,l )1 + Kn g(r,l )1 . (3.41) Moreover, due to ( 3.22 ), we can derive that 
+
+∫
+
+> R3
+
+v ⊗ vg(l)2 dv =
+
+∫ (
+
+c ⊗ c − |c|2
+
+3 I
+
+)
+
+g(l)2 dv,
+
+∫
+
+> R3
+
+|v|2vg(l)2 dv =
+
+∫
+
+> R3
+
+|c|2cg(l)2 dv. (3.42) 9Since the terms ( 3.33 ) are small variables, they are closed with variables obtained at the l-th inner iteration to close ( 3.32 ). Precisely, substituting ( 3.41 ) into ( 3.33 ), with ( 3.42 ), ( 3.27b ), then ( 3.32 ) is reduced into 
+
+S1 =
+
+∫
+
+> R3
+
+r dv, (3.43a) 
+
+S2 + Kn ∇x · σ(∇) =
+
+∫
+
+> R3
+
+vr dv − Kn ∇x ·
+
+(
+
+σ(neq ,l ) − σ(∇,l ))
+
+, (3.43b) 
+
+S3 + 2Kn ∇x ·
+
+(
+
+σ(∇)u + q(∇))
+
+=
+
+∫
+
+> R3
+
+|v|2 r dv − 2Kn ∇x ·
+
+[( 
+
+σ(neq ,l )u + q(neq ,l ))
+
+−
+
+(
+
+σ(∇,l )u + q(∇,l ))] 
+
+.
+
+(3.43c) 
+
+Here, the terms ( 3.27b ) are canceled and there is no need to compute L−1r. σ(neq ,l ) and q(neq ,l ) are non-equilibrium moments defined as 
+
+σ(neq ,l ) = 1
+
+Kn 
+
+∫
+
+> R3
+
+(
+
+c ⊗ c − |c|2
+
+3 I
+
+) (
+
+g(l) − E (l))
+
+dv, q(neq ,l ) = 1
+
+Kn 
+
+∫
+
+> R3
+
+1
+
+2 |c|2c
+
+(
+
+g(l) − E (l))
+
+dv. (3.44) 
+
+They are calculated directly by ( 3.44 ) in the l-th inner iteration since g(l) and E(l) are already known for the moment. σ(∇,l ) and q(∇,l ) are defined in ( 3.27a ) with E replaced by E(l), and are calculated by (3.28 ). Besides, the terms ∫ 
+
+> R3
+
+r dv, ∫ 
+
+> R3
+
+vr dv and ∫ 
+
+> R3
+
+|v|2r dv keep constant in the inner iteration, and only one calculation is needed. For now, the macroscopic moment system is completely derived. Next, we will introduce how it is adopted to accelerate inner iteration ( 3.39 ). At each outer Newton iteration, the correction is initialized as g(0) = 0. Then, at the l-th inner iteration, the following three steps are applied 
+
+Step 1: Obtain the macroscopic variables m(l) = ( δρ (l)/ρ, δ u(l)/T, δT (l)/T 2) related to g(l) by ( 3.13 ), the non-equilibrium moments σ(neq ,l ), q(neq ,l ) by ( 3.44 ), and σ(∇,l ), q(∇,l ) by ( 3.28 ). 
+
+Step 2: Obtain the intermediate macroscopic variables 
+
+m(l+1 ,∗) =
+
+( δρ (l+1 ,∗)
+
+ρ , δu(l+1 ,∗)
+
+T , δT (l+1 ,∗)
+
+T 2
+
+)T
+
+(3.45) by solving the closed macroscopic system ( 3.43 ), once σ(neq ,l ), σ(∇,l ) and q(neq ,l ), q(∇,l ) are known. Then, reconstruct the local equilibrium part E(l+1 ,∗) from m(l+1 ,∗).
+
+Step 3: Obtain the Newton correction g(l+1) by the modified source iteration 
+
+v · ∇ xg(l+1) + ν
+
+Kn g(l+1) = 1
+
+Kn L
+
+[
+
+g(l)]
+
++ ν
+
+Kn g(l) + α(l) ν
+
+Kn 
+
+(
+
+E(l+1 ,∗) − E (l))
+
++ r, (3.46) where α(l) ∈ [0 , 1] is a relaxation parameter. 
+
+Remark 1 With the macroscopic correction 
+
+α ν
+
+Kn (E(l+1 ,∗) − E (l)), (3.47) 
+
+the information of the updated macroscopic variables is injected into the microscopic inner iteration, and therefore, the convergence of the macroscopic component in the correction g(l) is accelerated, especially when Kn is small. A similar acceleration method can also be found in [ 25 ]. 
+
+To distinguish from Newton-SI, we call this Newton method accelerated by the macroscopic synthetic system in the inner iteration as Newton-MS. Though the convergence of the inner iteration ( 3.46 ) can be accelerated with the macroscopic synthetic system ( 3.43 ), directly solving ( 3.43 ) is still expensive. In the following section, the discrete form of ( 3.43 ) is directly deduced in the framework of the discontinuous Galerkin (DG) method, which is reduced into a linear system of g(n) and can be directly solved. 10 4 Discrete form of Newton-MS 
+
+In this section, the fully discrete form of Newton-MS will be introduced, and the whole process can be treated as deducing the discrete form of the macroscopic synthetic system ( 3.43 ) in the framework of DG. We begin from the discretization of the spatial space where the DG method is adopted. The physical domain Ω ⊂ Rd (d = 1 , 2) is partitioned into Nel elements, and on each element, the numerical solution is approximated by polynomials of degree Np. For the microscopic velocity space, as in Sec. 2.2 , the microscopic velocity space is first truncated to a finite domain as [ −L, L ]3, and then the uniform mesh with number 2 N is utilized to discretize this microscopic velocity space. Thus, the discrete velocity set is {vk}(2 N )3 
+
+> k=1
+
+, where vk = ( v1k, v 2k, v 3k)T , and the corresponding quadrature weight is ∆ v = ( L/N )3. For simplicity, we introduce the total degrees of freedom Nt, those in the spatial space Ns and those in the microscopic space Nv as 
+
+Nt = Ns × Nv, Ns = Nel (Np + 1) d, Nv = (2 N )3. (4.1) With this discretization, let f (n), g(n) ∈ RNt be the global numerical solution and the global discrete correction, and their entries are ordered first by the spatial index. In particular, 
+
+f (n) =
+
+(
+
+(f (n)1 )T , · · · , (f (n) 
+
+> Ns
+
+)T )T
+
+, g(n) =
+
+(
+
+(g(n)1 )T , · · · , (g(n) 
+
+> Ns
+
+)T )T
+
+, f (n) 
+
+> i
+
+, g(n) 
+
+> i
+
+∈ RNv , (4.2) where f (n) 
+
+> i
+
+, g(n) 
+
+> i
+
+represent the distribution function f , and the correction g at the i-th mesh, respectively. Thus, the update in each Newton step ( 3.2 ) becomes 
+
+f (n+1) = f (n) − g(n). (4.3) Let T denote the DG discretization of the transport operator v · ∇ x. With the assumption of the upwind numerical flux with a homogeneous inflow condition, the operator T is reduced to a matrix as 
+
+T ∈ RNt×Nt . Moreover, it is block-tridiagonal in 1D and block-pentadiagonal in 2D on a structured mesh, with each block of size ( Nv(Np + 1) d) × (Nv(Np + 1) d), due to the coupling with adjacent spatial elements through the upwind flux. In this case, the physical boundary condition is incorporated explicitly through a boundary source term. Thus, the discrete form ( 3.5 ) has the form as 
+
+Tg(n) − 1
+
+Kn L(n)g(n) = r(n) + b(n)bc , (4.4) where L(n) ∈ RNt×Nt is the discrete form of the linearized collision operator ( 3.6 ), r(n) is the discrete outer residual, and b(n)bc is the boundary source term, depending on g(n). Since the linear collision operator 
+
+L(n) is a local operator, L(n) is block-diagonal 
+
+L(n) = diag 
+
+{
+
+L(n)1 , L(n)2 , . . . , L(n)
+
+> Ns
+
+}
+
+, (4.5) with each block L(n) 
+
+> i
+
+∈ RNv ×Nv . In the following, the outer iteration superscript “( n)” will be omitted for brevity. To deduce the discrete form of the macroscopic synthetic system ( 3.43 ), the discrete form of the deduction process as in Sec. 3 is proposed. Precisely, with the Chapman-Enskog ansatz ( 3.17 ), the discrete correction g is expanded as 
+
+g = E + Kn˜ g1 + Kn 2 ˜g2, ˜g1, ˜g2 ∈ RNt , (4.6) where E is the discrete local equilibrium of g, ˜ g1 is the discrete first-order Navier–Stokes correction, and ˜ g2 represents the discrete high-order non-equilibrium remainder. Substituting ( 4.6 ) into the discrete Newton correction equation ( 4.4 ), and using LE = 0, we obtain 
+
+TE + Kn T˜g1 + Kn 2T˜g2 − L˜g1 − Kn L˜g2 = r + bbc . (4.7) To obtain the discrete macroscopic equation related to ( 3.23 ), the discrete collision invariant operator Φ ∈ R5Ns×Nt is introduced as Φ = diag { ¯Φ, . . . , ¯Φ}, ¯Φ = ∆ v (φ(v1), · · · , φ (vNv )) ∈ R5×Nv , (4.8) 11 where φ(v) is the collision invariants ( 3.14 ). Multiplying ( 4.7 ) by Φ from the left, and with the discrete conservation property ΦL = 0 , (4.9) we can derive the discrete form of ( 3.23 ) as ΦT (E + Kn˜ g1 + Kn 2 ˜g2
+
+) = Φ r + Φ bbc . (4.10) Then, a similar closure is displayed to obtain the closed discrete macroscopic synthetic system. We first introduce two block-diagonal operators S and Γ as 
+
+S = diag {S1, . . . , SNs }, Γ = diag {Γ1, . . . , ΓNs }, (4.11) with Si and Γ i as 
+
+Si = ∆ v (si(v1), · · · , s i(vNv )) ∈ R5×Nv , si(vk) = ϕ(cki ), (4.12) Γi = ( γi(v1), · · · , γ i(vNv )) T ∈ RNv ×5, γi(vk) = Mi(vk)ϕ(cki ). (4.13) Here, cki = vk − ui is the peculiar velocity, ϕ and ϕ are defined in ( 3.13 ), and ( 3.10 ), respectively. Mi
+
+is the Maxwellian ( 2.6 ), whose corresponding macroscopic variables are ( ρi, ui, T i) at the i-th mesh. It is easy to derive that 
+
+mi = Sigi, Ei = Γ imi, i = 1 , · · · , N s, (4.14) It means that the operator S maps the discrete correction g to the local macroscopic variables mi (3.12 ), and Γ reconstructs local equilibrium from the local macroscopic variables. Moreover, we can deduce that ΓS is equal to the discrete form of the orthogonal projection operator P (3.15 ). With the definition (3.40 ), it holds that ˜g(l)1 = ˜ g(∇,l )1 − ˜g(r)1 , ˜g(∇,l )1 = L−1TΓm(l), (4.15) where m = ( mT 
+
+> 1
+
+, · · · , m TNs )T ∈ R5Ns , and L−1 is the discrete form of the operator L−1. In this case, with the discrete Chapman-Enskog expansion ( 3.41 ), ( 4.6 ) and ( 4.14 ), the high order ˜ g(l)2 is obtained as Kn 2 ˜g(l)2 = g(l) − Γm(l) − Kn˜ g(∇,l )1 + Kn˜ g(r)1 , ˆg(l) + Kn˜ g(r)1 . (4.16) Substituting ( 4.14 ), ( 4.15 ) and ( 4.16 ) into the discrete moment equation ( 4.10 ), the residual-driven term 
+
+g(r)1 is canceled as in the continuous case ( 3.43 ). Then, the discrete macroscopic system for the local macroscopic variables m(l+1 ,∗) in the inner iteration is driven as ΦT
+
+(
+
+Γm(l+1 ,∗) + Kn ˜ g(∇,l +1 ,∗)1 + ˆ g(l))
+
+= Φ r + Φ b(l)bc . (4.17) The macroscopic system ( 4.17 ) is the discrete form of the continuous closed system ( 3.43 ) and can be rewritten as (Ψ E + Kn Ψ NS ) m(l+1 ,∗) = b(l), (4.18) where ΨE = Φ TΓ, ΨNS = Φ TL −1TΓ, b(l) = −ΦTˆg(l) + Φ r + Φ b(l)bc . (4.19) Here, Ψ E represents the contribution of the equilibrium as ( 3.24 ), while Ψ NS corresponds to the discrete first-order Chapman-Enskog correction, or the terms ( ·)(∇) on the left side of ( 3.43 ). 
+
+Remark 2 Due to the complex form of the discrete pseudoinverse L−1, the BGK-type pseudoinverse 
+
+(3.37 ) is adopted here to approximate that of the linearized collision operator. Thus, ΨNS is reduced into 
+
+ΨNS ≈ − 1
+
+ν ΦT(I − ΓS)TΓ, (4.20) 
+
+where ν ∈ RNt is the local collision frequency. 
+
+12 Note that Ψ E and Ψ NS depend only on the outer iteration variables and remain constant in the inner iterations and their reconstruction is based on applications of the sparse transport operator T on the block-diagonal matrix Γ, and the applications of the block-diagonal matrix Φ, S and Γ. Finally, the discrete form of the augmented source iteration ( 3.46 ) is 
+
+(
+
+T + ν
+
+Kn 
+
+)
+
+g(l+1) = 1
+
+Kn Lg(l) + ν
+
+Kn g(l) + α ν
+
+Kn Γ(m(l+1 ,∗) − m(l)) + r + b(l)bc . (4.21) For the computational complexity, the one-time setup within each Newton step consists of assembling the synthetic macroscopic operators Ψ E and Ψ NS , whose construction is approximated as O(NsN dp N 3). For one inner iteration, the dominant cost comes from the implement of the linearized collision operator 
+
+Lg(l), whose complexity is O(NsN 4 log N ) with the FFT-based algorithm in Sec. 2.2 . The computational cost brought by the transport operator T is approximated as O(NsN dp N 3), while the numerical cost of solving the macroscopic synthetic system is O(Ns). Therefore, compared with Newton-SI, Newton-MS has essentially the same leading-order cost in the microscopic iteration. For the completeness of Newton-MS, the algorithm is listed in Alg. 1.
+
+Algorithm 1 Discrete Newton-MS  
+
+> 1:
+
+Input: Initial distribution f (0) , Knudsen number Kn, relaxation parameter α 
+
+> 2:
+
+Output: Steady-state distribution f 
+
+> 3:
+
+n ← 0 
+
+> 4:
+
+repeat ⊲ Outer Newton iteration  
+
+> 5:
+
+Compute macroscopic moments ( ρ(n), u(n), T (n)) from f (n) through Φ;  
+
+> 6:
+
+Construct the local Maxwellian M(n) and compute the discrete residual r(n); 
+
+> 7:
+
+Build S, Γ from ( ρ(n), u(n), T (n)) by ( 4.12 ), and assemble Ψ E, ΨNS by ( 4.19 );  
+
+> 8:
+
+Initialize g(0) ← 0, m(0) ← 0, l ← 0;  
+
+> 9:
+
+repeat ⊲ Inner accelerated source iteration  
+
+> 10:
+
+Compute E(l) = Γ m(l) and g(∇,l )1 = − 1 
+
+> ν
+
+(I − ΓS)TΓm(l); 
+
+> 11:
+
+Compute the remainder ˆ g(l) by ( 4.16 );  
+
+> 12:
+
+Assemble the right-hand side b(l) by ( 4.19 );  
+
+> 13:
+
+Solve the macroscopic system ( 4.18 ) for m(l+1 ,∗); 
+
+> 14:
+
+Solve the augmented source iteration for g(l+1) by ( 4.21 );  
+
+> 15:
+
+Set m(l+1) = Sg(l+1) ; 
+
+> 16:
+
+l ← l + 1;  
+
+> 17:
+
+until inner convergence  
+
+> 18:
+
+Set g(n) = g(l) and update the distribution: f (n+1) = f (n) − g(n); 
+
+> 19:
+
+n ← n + 1;  
+
+> 20:
+
+until outer convergence  
+
+> 21:
+
+return f (n)
+
+# 5 Numerical results 
+
+In this section, several numerical experiments are presented to validate the accuracy and efficiency of the proposed Newton-MS scheme. The main comparison is made with the standard Newton source iteration (Newton-SI), focusing on convergence behavior and computational cost over a range of Knudsen numbers, especially for the small Knudsen number. The collision operator is evaluated by the fast Fourier spectral method described in Sec. 2.2 , and the transport term is discretized by the discontinuous Galerkin (DG) method described in Sec. 4.The stop criteria for the outer Newton iteration ( 3.2 ) is that the residual of the nonlinear steady Boltzmann equation satisfies 
+
+Rout (n) = 
+
+(∫
+
+> Ω
+
+∫
+
+> [−L,L ]3
+
+∣∣∣r(n)
+
+∣∣∣2
+
+dv dx
+
+)1/2
+
+< ǫ out . (5.1) 13 Moreover, the stop criteria for the inner iteration ( 3.39 ) are 
+
+Rin (n, l ) = 
+
+(∫
+
+> Ω
+
+∫
+
+> [−L,L ]3
+
+∣∣∣R(n,l )in 
+
+∣∣∣2
+
+dv dx
+
+)1/2
+
+< ǫ in ,1, or Rin (n, l )
+
+Rout (n) < ǫ in ,2, (5.2) where the residual of the inner iteration R(n,l )in is defined as 
+
+R(n,l )in = v · ∇ xg(n,l ) − 1
+
+Kn L(n)[g(n,l )] − r(n). (5.3) Here, the relative error in the stop criterion ( 5.2 ) prevents unnecessary over-iteration of the linearized correction equation for g when a highly accurate inner solution is not required for the outer Newton iteration. In the simulation, the related parameters ǫout , ǫin ,1 and ǫin ,2 are problem dependent, and unless otherwise specified, they are set as ( 5.4 ) in this work. 
+
+ǫout = 10 −5, ǫin ,1 = 10 −6, ǫin ,2 = 10 −2. (5.4) Moreover, the macroscopic correction 
+
+α(l) ν
+
+Kn 
+
+(
+
+E(l+1 ,∗) − E (l))
+
+(5.5) in ( 3.46 ) mainly speeds up the convergence of macroscopic variables, including density, macroscopic velocity, and temperature. Therefore, the inner residual drops quickly in the first few iterations, but it may stop decreasing once these macroscopic variables have converged, and the residual mainly comes from the non-equilibrium parts. In this case, the macroscopic correction ( 5.5 ) is no longer needed to achieve convergence of the correction g. Thus, the relaxation parameter α(l) in ( 5.5 ) is chosen as 
+
+α(n,l ) =
+
+{
+
+α0, l < l (n)sw ,
+
+0, l > l(n)sw , (5.6) where l(n)sw is the switching index at the n-th Newton step, which is determined by the following residual-decay criterion 
+
+l(n)sw = min 
+
+{
+
+l > p + 1 : Rin (n, l )
+
+Rin (n, l − j) > η sw , j = 1 , . . . , p 
+
+}
+
+. (5.7) Here, p chosen as p = 3 is the monitoring window length and ηsw = 0 .9 is a threshold to measure the rate of convergence. In the following tests, α0 = 0 .4 and α0 = 1 are utilized for the one-dimensional Fourier and Couette flow problems, and for the two-dimensional cavity-flow problems, respectively. For the truncation region of the microscopic velocity space, L is set as 
+
+L = 3 + √2
+
+2 R, R = 4 . (5.8) Besides, when the fast Fourier spectral method is utilized to solve the linearized collision term, the total mass conservation can not be conserved [ 31 ]. Therefore, a post-processing is added to keep mass conservation. Precisely, after each outer Newton iteration, the distribution function is rescaled by 
+
+f (n+1) ← f (n+1) · m(0) tot 
+
+m(n+1) tot 
+
+, m(n+1) tot =
+
+∫
+
+> Ω
+
+∫
+
+> [−L,L ]3
+
+f (n+1) dv dx, (5.9) where m(0) tot is the initial total mass. In the simulation, the efficiency comparison between Newton-MS, Newton-SI and GSIS is displayed. For all three methods, they are all implemented with the same spatial and velocity discretization. For Newton-MS and Newton-SI, the outer iteration is the same nonlinear Newton iteration ( 3.2 ), but the macroscopic moment equations are utilized to accelerate the convergence ( 3.46 ) of the inner iteration 14 in Newton-MS, while ( 3.7 ) is directly adopted in Newton-SI. For GSIS, only the outer iteration with macroscopic synthetic acceleration is adopted, and no inner iteration is needed. For all three methods, to obtain the nonlinear outer residual r(n) (3.4 ), although the quadratic collision term only needs to be calculated once in each outer iteration, this is still quite expensive, and the CPU time to obtain r(n) for all ( n) is labeled Tout . For Newton-MS and Newton-SI, to obtain the linear inner residual R(n,l )in (5.3 ), only the linear collision term is calculated, but it needs to be calculated once for each inner iteration, which will also be quite expensive if the number of inner iterations is large. Here, the CPU time to obtain R(n,l )in for all ( n, l ) is labeled Tin . Moreover, the CPU time for solving the macroscopic synthetic equations for all ( l, n ) is labeled Tm with Ttol the total CPU time. 
+
+5.1 1D Fourier flow problem 
+
+We first consider the classical one-dimensional Fourier flow problem. The scenario consists of two parallel, stationary plates at x = 0 and x = 1, with wall temperatures TL = 1 and TR = 1 .2, respectively. The discretization of the spatial domain is Nel = 40 with the degree of polynomial Np = 2. For the discretization of the microscopic velocity space, the number of the Fourier modes is set as N = 24, corresponding to the degree of freedom 2 N = 48 in each direction of the microscopic velocity space. The fully diffuse reflection boundary condition [ 31 ] is imposed on both walls. The similar Fourier flow problem is also studied in [ 15 ].             
+
+> 00.2 0.4 0.6 0.8 1
+> 0.9 0.92 0.94 0.96 0.98 11.02 1.04 1.06 1.08 1.1
+> Newton-MS
+> Ref
+> (a) ρ
+> 00.2 0.4 0.6 0.8 1
+> 11.02 1.04 1.06 1.08 1.1 1.12 1.14 1.16 1.18 1.2
+> Newton-MS
+> Ref
+> (b) T
+
+Figure 1: (1D Fourier flow problem in Sec. 5.1 ) Steady state numerical solution of the density ρ and temperature T for Kn = 1 , 0.1, 0.01, and 0 .001. Here, the solid black lines are the numerical solution by Newton-MS, and the red dashed lines are those of the reference solution. The numerical solution of the density ρ, temperature T at the steady state for Kn = 1 , 0.1, 0.01 and 0.001 by Newton-MS is shown in Fig. 1, where the reference solution for Kn = 0 .001 is obtained by directly solving the Navier-Stokes equation with temperature slip boundary condition imposed and those for other Kn are obtained by Newton-SI. Fig. 1 indicates that for both ρ and T , the numerical solution matches well with the reference solution for all Knudsen numbers. The efficiency comparison of Newton-MS, Newton-SI, and GSIS is summarized in Tab. 1. It indicates that for Newton-MS, the inner iteration number Nin remains small with decreasing Kn, while for Newton-SI, Nin is increasing rapidly, and it even fails to converge when Kn = 0 .001. The behavior of Tin is similar, which is at the same order for Kn = 1, but that of Newton-SI is 11 times that of Newton-MS for Kn = 0 .01. Moreover, the total computational time Ttol of Newton-MS is also greatly reduced to more than 7 times compared to Newton-SI for Kn = 0 .01. We can expect that efficiency can be further improved for smaller Knudsen numbers. Compared to GSIS, the outer iteration number is much smaller for Newton-MS. Thus, the total CPU time for Newton-MS is only half that of GSIS for Kn = 1 and 0 .001, and about three-quarters for Kn = 0 .1 and 0 .01. This means that though the inner iteration is added, the total computational cost can still be reduced for Newton-MS compared to GSIS for all Kn. Besides, Tab. 1
+
+15 0 1 2 3
+
+> outer Newton iteration
+> 10 -6
+> 10 -5
+> 10 -4
+> 10 -3
+> 10 -2
+> 10 -1
+> Newton-SI
+> Newton-MS
+
+(a) r(n)        
+
+> 0100 200 300 400 500 600 700 800
+> inner iteration
+> 10 -2
+> 10 -1
+> 10 0
+> 10 1
+> Newton-SI
+> Newton-MS
+
+(b) R(1 ,l )in       
+
+> 0100 200 300 400 500 600
+> inner iteration
+> 10 -2
+> 10 -1
+> 10 0
+> Newton-SI
+> Newton-MS
+
+(c) R(2 ,l )in        
+
+> 050 100 150 200 250 300 350
+> inner iteration
+> 10 -1
+> 10 0
+> Newton-SI
+> Newton-MS
+
+(d) R(3 ,l )in 
+
+Figure 2: (1D Fourier flow problem in Sec. 5.1 ) Comparison of the convergence histories of outer Newton and inner iterations for Newton-MS and Newton-SI at Kn = 0 .01. (a) evolution of the outer Newton iteration residual r(n). (b) evolution of the inner iteration residual for the first outer Newton iteration 
+
+R(1 ,l )in . (c) evolution of the inner iteration residual for the second outer Newton iteration R(2 ,l )in . (d) evolution of the inner iteration residual for the third outer Newton iteration R(3 ,l )in .also shows that for all Knudsen numbers, the computational cost for solving the macroscopic synthetic system is quite small, all less than 5% of the total computational cost. 
+
+Kn method Nout Nin 
+
+sub-time (s) (%) Ttol 
+
+Tout Tin Tm
+
+1NMS 2 5 412.5 (78.8%) 51.2 (9.80%) 12.2 (2.3%) 523.6 NSI 2 7 410.6 (79.4%) 66.3 (12.8%) - 517.1 GSIS 7 - 1037.2 (97.1%) - 3.1 (0.3%) 1067.7 
+
+0.1 NMS 3 16 541.2 (49.0%) 330.0 (29.9%) 35.6 (3.2%) 1103.5 NSI 3 30 544.6 (44.6%) 430.3 (35.2%) - 1222.4 GSIS 10 - 1479.3 (98.5%) - 4.3 (0.3%) 1501.3 
+
+0.01 NMS 3 52 548.5 (27.5%) 822.4 (41.2%) 84.3 (4.2%) 1996.9 NSI 3 563 565.6 (3.60%) 9428.9 (61.7%) - 15267.5 GSIS 18 - 2516.8 (98.6%) - 7.0 (0.3%) 2551.7 
+
+0.001 NMS 5 37 784.3 (36.0%) 732.5 (33.7%) 101.2 (4.6%) 2176.5 NSI - - - - - -GSIS 38 - 5162.8 (98.8%) - 18.6 (0.4%) 5227.6 
+
+Table 1: (1D Fourier flow problem in Sec. 5.1 ) The efficiency comparison of Newton-MS (NMS), Newton-SI (NSI) and GSIS for different Knudsen numbers. For NMS and NSI, Nout and Nin denote the number of outer Newton iteration and the average number of inner iterations. For GSIS, Nout denotes the total number of iterations, and there is no Nin . Tout and Tin are the computational time for obtaining r(n)
+
+(3.4 ) and R(n,l )in (5.3 ). Tm and Ttol are the computational time for solving macroscopic synthetic system (4.18 ) and the total CPU time. The convergence histories of the outer Newton and inner iterations for Kn = 0 .01 are plotted in Fig. 2.It shows that the evolution of the outer Newton iteration residual r(n) for Newton-MS and Newton-SI is almost the same as in Fig. 2(a) , indicating that the macroscopic synthetic system does not deteriorate the convergence of the outer Newton iteration. Fig. 2(b) to 2(d) present the evolution of the inner iteration residual R(n,l )in for each outer Newton iteration of both methods. It shows that compared to Newton-SI, the inner iteration residual of Newton-MS decreases much more quickly for each outer Newton iteration, which is also consistent with the results in Tab. 1.
+
+5.2 1D Couette flow problem 
+
+In this section, the planner Couette flow problem is studied to validate the performance of Newton-MS in the shear-dominated problems. The scenario consists of two parallel plates at x = 0 and x = 1, which move in opposite tangential directions with wall velocities uw = ±0.5 and fixed temperature Tw = 1 .0. 16 Fully diffuse reflection boundary conditions are imposed on both walls. The similar example is also tested in [ 15 ]. The discretization of the spatial and microscopic velocity space is the same as that in Sec. 5.1 .     
+
+> 00.2 0.4 0.6 0.8 1
+> 0.985 0.99 0.995 11.005 1.01 1.015 1.02 1.025
+> Newton-MS
+> Ref
+
+(a) ρ     
+
+> 00.2 0.4 0.6 0.8 1
+> -0.5 -0.4 -0.3 -0.2 -0.1 00.1 0.2 0.3 0.4 0.5
+> Newton-MS
+> Ref
+
+(b) uy     
+
+> 00.2 0.4 0.6 0.8 1
+> 11.01 1.02 1.03 1.04 1.05 1.06 1.07 1.08 1.09
+> Newton-MS
+> Ref
+
+(c) T
+
+Figure 3: (1D Couette flow in Sec. 5.2 ) Steady state numerical solution of the density ρ, macroscopic velocity in y-axes uy, and temperature T for Kn = 1 , 0.1, 0.01, and 0 .001. Here, the solid black lines are the numerical solution by Newton-MS, and the red dashed lines are those of the reference solution. The steady state numerical solution of the density ρ, the tangential velocity uy and the temperature for Kn = 1 , 0.1, 0.01 and 0 .001 is shown in Fig. 3, where the reference solution is also plotted. Here, the reference solution of Kn = 0 .001 is obtained by the compressible Navier-Stokes equations with slip boundary conditions, while the others are obtained by Newton-SI. Fig. 3 shows that for all Knudsen numbers, the numerical solution agrees well with the reference solution. 
+
+Kn method Nout Nin 
+
+sub-time (s) (%) Ttol 
+
+Tout Tin Tm
+
+1NMS 2 6 416.4 (78.4%) 65.3 (12.3%) 11.9 (2.2%) 531.1 NSI 2 6 419.5 (80.4%) 64.1 (12.3%) - 521.6 GSIS 8 - 1221.3 (97.0%) - 3.7 (0.3%) 1258.9 
+
+0.1 NMS 2 11 413.8 (69.9%) 120.7 (20.4%) 9.7 (1.6%) 591.9 NSI 2 26 421.6 (49.4%) 271.6 (31.8%) - 853.4 GSIS 14 - 1909.6 (94.8%) - 7.6 (0.4%) 2013.9 
+
+0.01 NMS 2 38 421.6 (38.3%) 412.7 (37.5%) 33.9(3.1%) 1101.3 NSI 2 426 431.2 (5.5%) 4207.6 (54.5%) - 7721.6 GSIS 23 - 3220.8 (97.9%) - 12.9 (0.4%) 3289.7 
+
+0.001 NMS 4 31 712.4 (34.3%) 811.3 (39.0%) 91.6 (4.4%) 2079.3 NSI - - - - - -GSIS 56 - 7386.4 (98.8%) - 29.6 (0.4%) 7478.1 
+
+Table 2: (1D Couette flow problem in Sec. 5.2 ) The efficiency comparison of Newton-MS (NMS), Newton-SI (NSI) and GSIS for different Knudsen numbers. For NMS and NSI, Nout and Nin denote the number of outer Newton iteration and the average number of inner iterations. For GSIS, Nout denotes the total number of iterations, and there is no Nin . Tout and Tin are the computational time for obtaining r(n)
+
+(3.4 ) and R(n,l )in (5.3 ). Tm and Ttol are the computational time for solving macroscopic synthetic system (4.18 ) and the total CPU time. The comparison of the computational efficiency between Newton-MS, Newton-SI, and GSIS is sum-marized in Tab. 2, where the similar behavior is found as in Sec. 5.1 . For Kn = 1, Newton-MS has a comparable cost to Newton-SI, since the source iteration is already efficient in the rarefied regime and the additional macroscopic correction brings only limited benefit. As Kn decreases, however, the advan-tage of Newton-MS becomes increasingly evident. Newton-SI suffers from the slow convergence of the inner source iteration, whereas Newton-MS keeps the number of inner iterations small. Compared with GSIS, Newton-MS also requires fewer outer iterations and achieves a lower total CPU time, especially in the near-continuum regime. The computational cost Tm to solve the macroscopic synthetic system all remains a small fraction of the total cost for all Knudsen numbers. 17 0 0.5 1 1.5 2
+
+> outer Newton iteration
+> 10 -6
+> 10 -5
+> 10 -4
+> 10 -3
+> 10 -2
+> 10 -1
+> Newton-SI
+> Newton-MS
+
+(a) r(n)      
+
+> 020 40 60 80 100 120
+> inner iteration
+> 10 -2
+> 10 -1
+> 10 0
+> Newton-SI
+> Newton-MS
+
+(b) R(1 ,l )in         
+
+> 0100 200 300 400 500 600 700 800
+> inner iteration
+> 10 -2
+> 10 -1
+> 10 0
+> Newton-SI
+> Newton-MS
+
+(c) R(2 ,l )in 
+
+Figure 4: (1D Couette flow problem in Sec. 5.2 ) Comparison of the convergence histories of outer Newton and inner iterations for Newton-MS and Newton-SI at Kn = 0 .01. (a) evolution of the outer Newton iteration residual r(n). (b) evolution of the inner iteration residual for the first outer Newton iteration 
+
+R(1 ,l )in . (c) evolution of the inner iteration residual for the second outer Newton iteration R(2 ,l )in .The convergence histories of the outer Newton and inner iterations for Kn = 0 .01 are plotted in Fig. 
+
+4, the behavior of which is similar to that in Sec. 5.1 . Precisely, the evolution of the outer Newton iteration residual r(n) for Newton-MS and Newton-SI is almost the same as in Fig. 4(a) , indicating that the macroscopic synthetic system does not deteriorate the convergence of the outer Newton iteration. Fig. 
+
+4(b) to 4(c) present the evolution of the inner iteration residual R(n,l )in for each outer Newton iteration of both methods. It shows that compared to Newton-SI, the inner iteration residual of Newton-MS decreases much more quickly for each outer Newton iteration, which is also consistent with the results in Tab. 2. The inner iteration residual reaches the tolerance much faster for Newton-MS in each outer Newton iteration, compared to Newton-SI, indicating the effect of the acceleration for the macroscopic synthetic system when applied to the shear-dominated problems. 
+
+5.3 2D lid-driven cavity flow problem 
+
+In this section, the two-dimensional lid-driven cavity flow problem is studied to demonstrate the capability of Newton-MS for the high dimensional problems. The scenario is a unit square domain ( x, y ) ∈ [0 , 1] 2.The top wall at y = 1 is moving with a constant tangential velocity uw = (0 .5, 0, 0), while the other three walls are stationary. All walls are maintained at the fixed temperature Tw = 1 .0, and fully diffuse reflection boundary conditions are imposed. Similar problems are also studied in [ 15 , 21 ]. The mesh size in the spatial space is Nel = 40 × 40 with the DG polynomial degree set to Np = 2. For the microscopic velocity space, the number of Fourier modes is chosen as N = 16. The steady state numerical solution of the density ρ, temperature T , the macroscopic velocity ux and 
+
+uy for Kn = 0 .01 is shown in Fig. 5, where the reference solution obtained by Newton-SI is also plotted. It shows that the numerical solution matches well with the reference solution. The computational efficiency of Newton-MS and Newton-SI is summarized in Tab. 3. It shows that though the number of outer Newton iteration is the same for both methods, the inner iteration number of Newton-MS is much smaller for each outer Newton iteration. Therefore, the total computational time of Newton-MS is less than half of Newton-SI. Moreover, the additional cost of solving the macroscopic synthetic system is quite small, less than 5% of the total cost. The convergence histories of the outer Newton and inner iterations for Kn = 
+
+Kn method Nout Nin sub-time (h) Ttol (h) 
+
+1 2 3 Tout Tin Tm
+
+0.01 NMS 3 10 125 218 2.3 9.6 0.9 18.5 NSI 3 262 268 621 2.3 28.5 - 46.8 
+
+Table 3: (2D lid-driven cavity flow problem) The efficiency comparison of Newton-MS (NMS), and Newton-SI (NSI) for Kn = 0 .01. 0.01 are plotted in Fig. 6. The evolution of the outer Newton residuals for Newton-MS and Newton-SI 18 0 0.5 1
+
+> 00.5 1
+> 0.9 0.95 11.05 1.1
+
+(a) density ρ  
+
+> 00.5 1
+> 00.5 1
+> 0.994 0.996 0.998 11.002 1.004 1.006 1.008 1.01
+
+(b) temperature T  
+
+> 00.5 1
+> 00.5 1
+> -0.02 00.02 0.04 0.06 0.08 0.1 0.12 0.14
+
+(c) velocity in x-direction ux  
+
+> 00.5 1
+> 00.5 1
+> -0.06 -0.04 -0.02 00.02 0.04 0.06
+
+(d) velocity in y-direction uy
+
+Figure 5: (2D lid-driven cavity flow problem in Sec. 5.3 ) Steady state numerical solution of the density 
+
+ρ, temperature T , and macroscopic velocity ux and uy for Kn = 0 .01. Here, the solid black lines are the numerical solution by Newton-MS, and the red dashed lines are those of the reference solution. 19 is similar, as shown in Fig. 6(a) . The evolution of R(n,l )in for each Newton iteration are presented in Fig. 6(b) to 6(d) , respectively. They illustrate that the decay of R(n,l )in is much faster for Newton-MS compared to Newton-SI, which is also consistent with the results in Tab. 3.   
+
+> 0123
+> outer Newton iteration
+> 10 -5
+> 10 -4
+> 10 -3
+> 10 -2
+> 10 -1
+> Newton-SI
+> Newton-MS
+
+(a) r(n)      
+
+> 050 100 150 200 250 300
+> inner iteration
+> 10 -2
+> 10 -1
+> 10 0
+> Newton-SI
+> Newton-MS
+
+(b) R(1 ,l )in       
+
+> 050 100 150 200 250 300
+> inner iteration
+> 10 -2
+> 10 -1
+> 10 0
+> Newton-SI
+> Newton-MS
+
+(c) R(2 ,l )in       
+
+> 0100 200 300 400 500 600
+> inner iteration
+> 10 -2
+> 10 -1
+> 10 0
+> Newton-SI
+> Newton-MS
+
+(d) R(3 ,l )in 
+
+Figure 6: (2D lid-driven cavity flow problem in Sec. 5.3 ) Comparison of the convergence histories of outer Newton and inner iterations for Newton-MS and Newton-SI at Kn = 0 .01. 
+
+5.4 2D thermal cavity flow problem 
+
+In this section, the 2D thermal cavity flow problem is studied. The scenario is also a unit square domain (x, y ) ∈ [0 , 1] 2 as in Sec. 5.3 , but all four walls are stationary. The temperature of the top wall is set as Ttop = 1 .2, while all others are fixed as T = 1. The fully diffuse reflection boundary conditions are imposed on all walls. Different from the lid-driven cavity flow in Sec. 5.3 , there is no external momentum added, and the flow is driven entirely by the difference of the wall temperature. The similar example is also studied in [ 15 ]. The same discretization of the spatial space and microscopic velocity as in Sec. 5.3 is adopted. The steady state numerical solution of the density ρ, and the temperature T for Kn = 0 .01 is plotted in Fig. 
+
+7, where it matches well with the reference solution obtained by Newton-SI. The computational efficiency is summarized in Tab. 4, where the behavior of both methods is similar as that in Sec. 5.3 . The total computational time of Newton-MS is reduced to one third of that by Newton-SI, which is also mainly due to the reduced number of the inner iterations. Moreover, the additional cost of solving the macroscopic synthetic system still remains quite small, compared to the total computational time saved.   
+
+> 00.5 1
+> 00.5 1
+> 0.9 0.92 0.94 0.96 0.98 11.02
+
+(a) ρ  
+
+> 00.5 1
+> 00.5 1
+> 1.02 1.04 1.06 1.08 1.1 1.12 1.14 1.16
+
+(b) T
+
+Figure 7: (2D thermal cavity flow problem in Sec. 5.4 ) Steady state numerical solution of the density ρ,and temperature T for Kn = 0 .01. Here, the solid black lines are the numerical solution by Newton-MS, and the red dashed lines are those of the reference solution. The convergence histories of the outer Newton and inner iterations for Kn = 0 .01 are plotted in Fig. 
+
+8. The outer Newton residuals decay at almost the same rates for Newton-SI and Newton-MS, as shown in Fig. 8(a) , indicating that the synthetic acceleration does not affect the outer nonlinear convergence. 20 For the inner iteration, the evolution of R(n,l )in is the similar to that in Sec. 5.3 , which all shows a much more rapid decay rate for Newton-MS compared to that of Newton-SI.     
+
+> 01234
+> outer Newton iteration
+> 10 -6
+> 10 -5
+> 10 -4
+> 10 -3
+> 10 -2
+> 10 -1
+> Newton-SI
+> Newton-MS
+
+(a) r(n)        
+
+> 050 100 150 200 250 300 350 400
+> inner iteration
+> 10 -2
+> 10 -1
+> 10 0
+> Newton-SI
+> Newton-MS
+
+(b) R(1 ,l )in       
+
+> 020 40 60 80 100 120
+> inner iteration
+> 10 -2
+> 10 -1
+> 10 0
+> Newton-SI
+> Newton-MS
+
+(c) R(2 ,l )in      
+
+> 0100 200 300 400 500
+> inner iteration
+> 10 -2
+> 10 -1
+> 10 0
+> Newton-SI
+> Newton-MS
+
+(d) R(3 ,l )in     
+
+> 050 100 150 200
+> inner iteration
+> 0.4 0.5 0.6 0.7 0.8 0.9 1
+> Newton-SI
+> Newton-MS
+
+(e) R(4 ,l )in 
+
+Figure 8: (2D thermal cavity flow problem in Sec. 5.4 ) Comparison of the convergence histories of outer Newton and inner iterations for Newton-MS and Newton-SI at Kn = 0 .01. 
+
+Kn method Nout Nin sub-time (h) Ttol 
+
+1 2 3 4 Tout Tin Tm
+
+0.01 NMS 4 14 18 70 91 2.9 6.6 0.7 16.2 NSI 4 370 112 494 181 2.9 30.2 - 49.3 
+
+Table 4: (2D thermal cavity flow problem) The efficiency comparison of Newton-MS (NMS), and Newton-SI (NSI) for Kn = 0 .01. 
+
+# 6 Conclusion 
+
+In this work, a modified Newton’s method accelerated by a macroscopic synthetic system (Newton-MS) is proposed for the steady-state Boltzmann equation. For Newton-MS, the outer iteration is the normal Newton method, while the linearized collision operator is utilized instead of the quadratic Boltzmann collision operator in the inner iteration to reduce computational cost. For the inner iteration, a macro-scopic synthetic system based on a Chapman-Enskog closure is first derived, and then the information of the updated macroscopic variables obtained by solving this macroscopic synthetic system is added in the general source iteration to accelerate inner iteration convergence. The discrete matrix form of the macroscopic synthetic system is derived in the framework of the discontinuous Galerkin method for the practical implementation, where the computational cost can be greatly reduced compared to directly discretizing the continuous macroscopic synthetic system. Numerical results indicate that Newton-MS maintains consistent convergence properties from the free-molecular regime to the continuum limit and offers a practical and effective alternative to standard Newton-SI schemes for rarefied gas simulations. 
+
+# Acknowledgments 
+
+We thank Prof. Lei Wu from Southern University of Science and Technology for providing the GSIS code. This work of Yanli Wang is partially supported by the Science Challenge program (NO. TZ2025016). This work of Pei Zhang was supported by the China Scholarship Council (NO. 202404890001). The work of Zhenning Cai was supported by the Academic Research Fund of the Ministry of Education of Singapore under grant A-8002392-00-00. 
+
+# A Derivation of σ(∇) and q(∇)In this appendix, the detailed deduction of the stress tensor σ(∇) and heat flux q(∇) in ( 3.27a ) is presented. The derivation is based on the expansion of v · ∇ xE on the microscopic velocity space, and the rotational invariance of the linear collision operator L.21 A.1 Deducing σ(∇) and q(∇)
+
+We first introduce some abbreviations for convenience as 
+
+∂i = ∂
+
+∂x i
+
+, Ai = ∂iρ
+
+ρ , Uij = ∂iuj , Gi = ∂iT, Dij = ∂iδuj , (A.1a) 
+
+Aij (c) = cicj − |c|2
+
+3 δij , Bi(c) = 1
+
+2 |c|2ci, α = δρ 
+
+ρ , βi = δu i
+
+T , ϑ = δT 
+
+2T 2 . (A.1b) Then the local equilibrium ( 3.11 ) can be rewritten as 
+
+E(x, v) = M χ, χ = α + βici + ϑ(|c|2 − 3T ). (A.2) Here, the Einstein summation convention is utilized. Thus, it holds that 
+
+v · ∇ xE = M v · ∇ xχ + χ v · ∇ xM , M(Tρ + Tu + TT
+
+), (A.3) with 
+
+Tρ = βkAℓ Akℓ (c) + ϑA k |c|2ck + Rρ, (A.4a) 
+
+Tu = S(u) 
+
+> kℓ
+
+Akℓ (c) + R(u) 
+
+> kℓ
+
+|c|2Akℓ (c) + C(u, 3)  
+
+> k
+
+|c|2ck + Ru, (A.4b) 
+
+TT = S(T ) 
+
+> kℓ
+
+Akℓ (c) + R(T ) 
+
+> kℓ
+
+|c|2Akℓ (c) + C(T, 3)  
+
+> k
+
+|c|2ck + C(T, 5)  
+
+> k
+
+|c|4ck + RT , (A.4c) and 
+
+S(u) 
+
+> kℓ
+
+=
+
+( α
+
+T − 3ϑ
+
+)
+
+Ukℓ + Dkℓ 
+
+T − δu ℓ Gk
+
+T 2 + βk umUmℓ 
+
+T , R(u) 
+
+> kℓ
+
+= ϑ
+
+T Ukℓ , (A.5a) 
+
+C(u, 3)  
+
+> k
+
+= ϑ
+
+T uℓUℓk + 1
+
+5T
+
+(bℓUℓk + bℓUkℓ + βk Uℓℓ 
+
+), (A.5b) 
+
+S(T ) 
+
+> kℓ
+
+= − 3bk Gℓ
+
+2T − δT U kℓ 
+
+T 2 , R(T ) 
+
+> kℓ
+
+= βk Gℓ
+
+2T 2 , (A.5c) 
+
+C(T, 3)  
+
+> k
+
+= α G k
+
+2T 2 − 3ϑ G k
+
+T + ∂k δT 
+
+2T 2 − δT G k
+
+T 3 + βk uℓ Gℓ
+
+2T 2 , C(T, 5)  
+
+> k
+
+= ϑ G k
+
+2T 2 . (A.5d) 
+
+Here, only the terms that will contribute when calculating σ(∇) and q(∇) are listed, namely 
+
+{ Akℓ (c), |c|2 Akℓ (c), |c|2 ck, |c|4 ck
+
+}, (A.6) while all the others are summarized in Rs, s = ρ, u, T . Moreover, due to the isotropy of the linearized collision operator L [5], we can deduce that the integrals have the form below 
+
+∫
+
+> R3
+
+Aij (c) L−1[Akℓ (c) M] dv =: C2,0
+
+ν
+
+(δik δjℓ + δiℓ δjk − 2 
+
+> 3
+
+δij δkℓ 
+
+) , (A.7a) 
+
+∫
+
+> R3
+
+Aij (c) L−1[|c|2Akℓ (c) M] dv =: C2,1
+
+ν ρT 2(δik δjℓ + δiℓ δjk − 2 
+
+> 3
+
+δij δkℓ 
+
+) , (A.7b) 
+
+∫
+
+> R3
+
+Bi(c) L−1[|c|2ck M] dv =: − C1,1
+
+ν ρT 3 δik , (A.7c) 
+
+∫
+
+> R3
+
+Bi(c) L−1[|c|4ck M] dv =: − C1,2
+
+ν ρT 4 δik , (A.7d) 
+
+∫
+
+> R3
+
+Aij (c) L−1[|c|2ck M] = 0 ,
+
+∫
+
+> R3
+
+Aij (c) L−1[|c|4ck M] = 0 , (A.7e) 
+
+∫
+
+> R3
+
+Bi(c) L−1[Akℓ (c) M] dv = 0 ,
+
+∫
+
+> R3
+
+Bi(c) L−1[|c|2Akℓ (c) M] dv = 0 , (A.7f) 
+
+where ν is the local collision frequency and C2,0, C2,1, C1,1, C1,2 are scalar coefficients determined by the linearized collision operator. Therefore, with the definition 
+
+σ(∇) 
+
+> ij
+
+=
+
+∫
+
+> R3
+
+Aij (c) g(∇)1 dv, q(∇) 
+
+> i
+
+=
+
+∫
+
+> R3
+
+Bi(c) g(∇)1 dv, (A.8) 22 it holds that 
+
+σ(ρ) 
+
+> ij
+
+,
+
+∫
+
+> R3
+
+Aij (c) L−1[Tρ M] dv = βk Aℓ
+
+∫
+
+> R3
+
+Aij (c) L−1[Akℓ (c) M] dv = C2,0
+
+ν
+
+((β ⊗ A)stf 
+
+) 
+
+> ij
+
+, (A.9a) 
+
+q(ρ) 
+
+> i
+
+,
+
+∫
+
+> R3
+
+Bi(c) L−1[Tρ M] dv = ϑA k
+
+∫
+
+> R3
+
+Bi(c) L−1[|c|2ck M] dv = − C1,1
+
+ν ρT 3 ϑA i. (A.9b) 
+
+Similarly, we can obtain that 
+
+σ(u) 
+
+> ij
+
+,
+
+∫
+
+> R3
+
+Aij (c) L−1[Tu M] dv = C2,0
+
+ν
+
+(( 
+
+S(u))
+
+> stf
+
+)
+
+> ij
+
++ C2,1
+
+ν ρT 2 (( 
+
+R(u))
+
+> stf
+
+)
+
+> ij
+
+, (A.10a) 
+
+q(u) 
+
+> i
+
+,
+
+∫
+
+> R3
+
+Bi(c) L−1[Tu M] dv = − C1,1
+
+ν ρT 3 C(u, 3)  
+
+> i
+
+, (A.10b) 
+
+and 
+
+σ(T ) 
+
+> ij
+
+,
+
+∫
+
+> R3
+
+Aij (c) L−1[TT M] dv = C2,0
+
+ν
+
+(( 
+
+S(T ))
+
+> stf
+
+)
+
+> ij
+
++ C2,1
+
+ν ρT 2 (( 
+
+R(T ))
+
+> stf
+
+)
+
+> ij
+
+, (A.11a) 
+
+q(T ) 
+
+> i
+
+,
+
+∫
+
+> R3
+
+Bi(c) L−1[TT M] dv = − C1,1
+
+ν ρT 3 C(T, 3)  
+
+> i
+
+− C1,2
+
+ν ρT 4 C(T, 5)  
+
+> i
+
+. (A.11b) 
+
+Collecting ( A.9 ), ( A.10 ), and ( A.11 ), we finally achieve that 
+
+σ(∇) = C2,0
+
+ν S + C2,1
+
+ν R, q(∇) = − 1
+
+2ν
+
+(C1,1 P + C1,2 Q), (A.12) where S, R, P , Q are defined in ( 3.29 ) and ( 3.30 ). 
+
+A.2 Calculating the coefficients Ci,j 
+
+We first present the integrals of the Maxwellian as below, which are utilized to calculate Ci,j .
+
+∫
+
+> R3
+
+cicj M dv = ρT δ ij ,
+
+∫
+
+> R3
+
+cicj ckcℓM dv = ρT 2(δij δkℓ + δik δjℓ + δiℓ δjk ), (A.13) 
+
+∫
+
+> R3
+
+|c|2cicj M dv = 5 ρT 2δij ,
+
+∫
+
+> R3
+
+|c|4cicj M dv = 35 ρT 3δij ,
+
+∫
+
+> R3
+
+|c|6cicj M dv = 315 ρT 4δij . (A.14) To obtain the coefficients Ci,j in ( A.7 ), the technique of utilizing the BGK operator LBGK instead of the linearized collision operator L is applied. The pseudoinverse of LBGK has the form as 
+
+L−1BGK [g] = − 1
+
+ν (I − P )g. (A.15) Then, it is straightforward to verify 
+
+∫
+
+> R3
+
+φ(v)Akℓ M dv = 0 , φ(v) = (1 , v, |v|2)T , (A.16) so that (I − P )[ Akℓ M] = Akℓ M, L−1BGK [Akℓ M] = − 1
+
+ν Akℓ M. (A.17) Substituting ( A.17 ) into ( A.7a ), with ( A.13 ) it yields 
+
+∫
+
+> R3
+
+Aij L−1BGK [Akℓ M] d v = − 1
+
+ν
+
+∫
+
+Aij Akℓ M dv = − ρT 2
+
+ν
+
+(
+
+δik δjℓ + δiℓ δjk − 2
+
+3 δij δkℓ 
+
+)
+
+. (A.18) Comparing ( A.18 ) with ( A.7a ), it gives 
+
+C2,0 = −ρT 2. (A.19) Similarly, it holds for |c|2Akℓ M that 
+
+∫
+
+> R3
+
+φ(v)|c|2Akℓ M dv = 0 , (A.20) 23 with ( A.15 ) and ( A.13 ), we can derive that 
+
+∫
+
+> R3
+
+Aij L−1BGK 
+
+[|c|2Akℓ M] dv = − 7ρT 3
+
+ν
+
+(
+
+δik δjℓ + δiℓ δjk − 2
+
+3 δij δkℓ 
+
+)
+
+. (A.21) Comparing ( A.21 ) with ( A.7b ), it gives 
+
+C2,1 = −7T. (A.22) Moreover, for |c|2ckM, and |c|4ckM, we have that 
+
+∫
+
+> R3
+
+ci|c|2ckM dv = 5 ρT 2δik ,
+
+∫
+
+> R3
+
+ci · | c|4ckM dv = 35 ρT 3δik . (A.23) Then, it holds that 
+
+P[|c|2ckM] = 5 T c kM, P[|c|4ckM] = 35 T 2 ckM. (A.24) Using ( A.15 ),( A.13 ), ( A.23 ) and ( A.24 ), we obtain 
+
+∫
+
+> R3
+
+Bi L−1BGK [|c|2ckM] d v = − 5ρT 3
+
+ν δik ,
+
+∫
+
+> R3
+
+Bi L−1BGK [|c|4ckM] d v = − 70 ρT 4
+
+ν δik . (A.25) With ( A.25 ) and ( A.7 ), it gives 
+
+C1,1 = 5 , C1,2 = 70 . (A.26) In summary, with the BGK approximation, the coefficients Ci,j take explicit values as 
+
+C2,0 = −ρT 2, C2,1 = −7T, C1,1 = 5 , C1,2 = 70 . (A.27) 
+
+# References 
+
+[1] G. Bird. Molecular Gas Dynamics and the Direct Simulation of Gas Flows . Oxford Engineering Science Series. Oxford University Press, 1994. [2] J. E. Broadwell. Study of rarefied shear flow by the discrete velocity method. J. Fluid Mech. ,19(3):401–414, 1964. [3] C. Buet. A discrete-velocity scheme for the Boltzmann operator of rarefied gas dynamics. Transp. Theory Stat. Phys. , 25(1):33–60, 1996. [4] Z. Cai, X. Dong, and J. Hu. Symmetric Gauss–Seidel method with a preconditioned fixed-point iteration for the steady-state Boltzmann equation. SIAM J. Sci. Comput. , 47(6):B1343–B1368, 2025. [5] Z. Cai and M. Torrilhon. Approximation of the linearized Boltzmann collision operator for hard-sphere and inverse-power-law models. J. Comput. Phys. , 295:617–643, 2015. [6] S. Chen and K. Xu. A comparative study of an asymptotic preserving scheme and unified gas-kinetic scheme in continuum flow limit. J. Comput. Phys. , 288:52–65, 2015. [7] I. Gamba, J. Haack, C. Hauck, and J. Hu. A fast spectral method for the Boltzmann collision operator with general collision kernels. SIAM J. Sci. Comput. , 39(4):B658–B674, 2017. [8] I. Gamba and S. Rjasanow. Galerkin–Petrov approach for the Boltzmann equation. J. Comput. Phys. , 366:341–365, 2018. [9] A. Ganjaei and S. Nourazar. A new algorithm for the simulation of the Boltzmann equation using the direct simulation Monte-Carlo method. J. Mech. Sci. Technol. , 23:2861–2870, 2009. [10] H. Grad. On the kinetic theory of rarefied gases. Commun. Pure Appl. Math. , 2(4):331–407, 1949. 24 [11] J. Hu, X. Huang, J. Shen, and H. Yang. A fast Petrov–Galerkin spectral method for the mul-tidimensional Boltzmann equation using mapped Chebyshev functions. SIAM J. Sci. Comput. ,44(3):A1497–A1524, 2022. [12] J. Hu, J. Shen, and Y. Wang. A Petrov-Galerkin spectral method for the inelastic Boltzmann equation using mapped Chebyshev functions. Kinet. Relat. Models , 13(4):677–702, 2020. [13] Z. Hu and Z. Cai. Burnett spectral method for high-speed rarefied gas flows. SIAM J. Sci. Comput. ,42(5):B1193–B1226, 2020. [14] Z. Hu, Z. Cai, and Y. Wang. Numerical simulation of microflows using Hermite spectral methods. 
+
+SIAM J. Sci. Comput. , 42(1):B105–B134, 2020. [15] S. Jaiswal, A. Alexeenko, and J. Hu. A discontinuous Galerkin fast spectral method for the full Boltzmann equation with general collision kernels. J. Comput. Phys. , 378:178–208, 2019. [16] G. Kitzler and J. Sch¨ oberl. A polynomial spectral method for the spatially homogeneous Boltzmann equation. SIAM J. Sci. Comput. , 41(1):B27–B49, 2019. [17] J. Lihnaropoulos, S. Naris, and D. Valougeorgis. Formulation and stability analysis of rapidly convergent iteration schemes for the 2-D linearized BGK equation. Transp. Theory Stat. Phys. ,36(4-6):513–528, 2007. [18] C. Liu and K. Xu. A unified gas-kinetic scheme for micro flow simulation based on linearized kinetic equation. Adv. Aerodyn. , 2(1):21, 2020. [19] C. Liu, K. Xu, Q. Sun, and Q. Cai. A unified gas-kinetic scheme for continuum and rarefied flows IV: Full Boltzmann and model equations. J. Comput. Phys. , 314:305–340, 2016. [20] C. Liu, Y. Zhu, and K. Xu. Unified gas-kinetic wave-particle methods I: Continuum and rarefied gas flow. J. Comput. Phys. , 401:108977, 2020. [21] S. Naris and D. Valougeorgis. The driven cavity flow over the whole range of the Knudsen number. 
+
+Phys. Fluids , 17(9):097106, 2005. [22] E. S. Oran, C. K. Oh, and B. Z. Cybyk. Direct simulation Monte Carlo: recent advances and applications. Annu. Rev. Fluid Mech. , 30(1):403–441, 1998. [23] L. Pareschi and B. Perthame. A Fourier spectral method for homogeneous Boltzmann equations. 
+
+Transp. Theory Stat. Phys. , 25(3-5):369–382, 1996. [24] L. Pareschi and G. Russo. Numerical solution of the Boltzmann equation I: Spectrally accurate approximation of the collision operator. SIAM J. Numer. Anal. , 37(4):1217–1245, 2000. [25] W. Su, L. Zhu, P. Wang, Y. Zhang, and L. Wu. Can we find steady-state solutions to multiscale rarefied gas flows within dozens of iterations? J. Comput. Phys. , 407:109245, 2020. [26] W. Su, L. Zhu, and L. Wu. Fast convergence and asymptotic preserving of the general synthetic iterative scheme. SIAM J. Sci. Comput. , 42(6):B1517–B1540, 2020. [27] W. Taitano, D. Knoll, L. Chac´ on, J. Reisner, and A. Prinja. Moment based acceleration for neutral gas kinetics with BGK collision operator. J. Comput. Thero. Transp. , 43(1-7):83–108, 2014. [28] D. Valougeorgis and S. Naris. Acceleration schemes of the discrete velocity method: Gaseous flows in rectangular microchannels. SIAM J. Sci. Comput. , 25(2):534–552, 2003. [29] P. Wang, M. Ho, L. Wu, Z. Guo, and Y. Zhang. A comparative study of discrete velocity methods for low-speed rarefied gas flows. Comput. Fluids , 161:33–46, 2018. [30] L. Wu, J. Zhang, H. Liu, Y. Zhang, and J. M. Reese. A fast iterative scheme for the linearized Boltzmann equation. J. Comput. Phys. , 338:431–451, 2017. 25 [31] T. Yin, Z. Cai, and Y. Wang. A fast Fourier spectral method for the linearized Boltzmann collision operator. SIAM J. Sci. Comput. , 48(1):B83–B111, 2026. [32] L. Zhu, X. Pi, W. Su, Z. Li, Y. Zhang, and L. Wu. General synthetic iterative scheme for nonlinear gas kinetic simulation of multi-scale rarefied gas flows. J. Comput. Phys. , 430:110091, 2021. 26

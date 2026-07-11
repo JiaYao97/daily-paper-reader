@@ -1,0 +1,4852 @@
+Title: Statistical inverse learning and ℓ^1-regularization
+
+URL Source: https://arxiv.org/pdf/2607.07468v1
+
+Published Time: Thu, 09 Jul 2026 01:16:48 GMT
+
+Number of Pages: 48
+
+Markdown Content:
+# Statistical inverse learning and ℓ1-regularization 
+
+## Abhishake ∗ Tatiana A. Bubba † Tapio Helin ‡ Luca Ratti §
+
+Abstract 
+
+We study the problem of recovering a sparse function from finite, noisy, and indirect observations in the framework of statistical inverse learning. The unknown is modeled as an element of ℓ1, and observations are generated via a (possibly nonlinear) forward operator A
+
+from ℓ1 to a vector-valued Reproducing Kernel Hilbert Space (vv-RKHS) H. We introduce an ℓ1-regularized empirical risk minimizer that promotes sparsity in the recovered solution, and we develop a comprehensive theoretical analysis of this estimator. We establish almost-sure consistency of the estimator as the sample size grows under mild conditions. We then derive non-asymptotic, high-probability convergence rates in both the prediction norm and the ℓ1 reconstruction norm. The rates are expressed in terms of two intrinsic complexity parameters: the source smoothness index r, encoded through a variational source condition, and the effective dimension exponent b, which captures the polynomial spectral decay of the covariance operator associated with the vv-RKHS embedding. We further establish matching minimax lower bounds over a natural class of prior distributions, confirming that the derived upper rates are optimal. To connect the theory with concrete sparsity models, we develop a general framework for finitely smoothing operators of the form A = G ◦ S, where S is a synthesis operator, and show how approximation-space assumptions on the ground truth imply variational source condi-tions. In particular, we establish an equivalence between membership in the approximation space kt and polynomial decay of the best n-term approximation error, thereby linking sparse approximation properties directly to the convergence-rate exponents. As applications, we verify the assumptions for two representative inverse problems: the identification of a reaction coefficient in an elliptic PDE and sparse recovery in computed tomography. For filtered Radon transforms, we further derive explicit effective-dimension asymptotics, leading to concrete convergence rates for standard image models and sparsifying systems. 
+
+Keywords: Statistical inverse learning, nonlinear inverse problems, ℓ1-regularization, sparse re-covery, variational source conditions, effective dimension, minimax optimality. 
+
+2020 Mathematics Subject Classification: Primary 62G20, 47A52, 68Q32; Secondary 65J22, 62J07, 46E35, 41A46. 
+
+# 1 Introduction 
+
+Inverse problems constitute a central topic in modern applied mathematics and machine learning [34], where one aims to recover an unknown quantity from indirect and noisy observations. Typical examples include identifying material parameters in mechanics, reconstructing images in medical tomography, estimating reaction rates in biological systems, or drug evolution in pharmacokinetics [34, 26, 41, 23]. Unlike standard supervised learning [6, 29, 42, 31, 14, 9, 28], where observations 
+
+> ∗
+
+Department of Computational Engineering, LUT University, Lappeenranta, Finland. abhimaths88@gmail.com 
+
+> †
+
+Department of Mathematics and Computer Science, University of Ferrara, Ferrara, Italy. 
+
+tatiana.bubba@unife.it 
+
+> ‡
+
+Department of Computational Engineering, LUT University, Lappeenranta, Finland. tapio.helin@lut.fi 
+
+> §
+
+Department of Mathematics and Computer Science, University of Ferrara, Ferrara, Italy. 
+
+luca.ratti5@unibo.it 
+
+1arXiv:2607.07468v1 [stat.ML] 8 Jul 2026 directly reveal the value of a function at given inputs, inverse problems involve an additional layer of complexity due to the presence of the operator A, which may be compact or ill-conditioned. In these problems, the goal is to recover an unknown function fρ from random, noisy and indirect observations of the form 
+
+yi = A(fρ)( xi) + εi, i = 1 , . . . , n, (1) where A : B → H is a (possibly nonlinear) forward operator acting between the vector spaces B
+
+and H. We are going to assume that B is a Banach space of sequences, whereas H is a Hilbert space of functions from X to Y. Here, n is the sample size and z := {(xi, y i)}ni=1 are independent samples drawn from an underlying probability distribution ρ on X × Y . The observation points xi
+
+are random, and the noise terms εi are random and centered, conditional on these design points. This stochastic nature of both the inputs and the noise adds additional complexity to the inverse problem of recovering the unknown sequence fρ. When both randomness and finite sampling are explicitly taken into account, the problem becomes statistical, giving rise to the framework of 
+
+statistical inverse learning [8, 37, 38]. This viewpoint naturally connects classical inverse problems with modern machine learning, where the objective is to infer an underlying function from data through appropriate regularization and statistical principles. In real-world scenarios, such inverse problems are typically ill-posed, meaning that they may lack a unique solution or exhibit strong sensitivity to data perturbations, i.e., small perturbations in the data may lead to large deviations in the reconstructed solution. This necessitates the use of regularization to obtain stable and meaningful estimates. A standard approach for such problems is to employ regularized empirical risk minimization [14, 8, 37]. For instance, the classical Tikhonov estimator with quadratic (Hilbert-norm) regularization is given by 
+
+fz,λ = arg min  
+
+> f∈D (A)∩H ′
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥A(f )( xi) − yi∥2 
+
+> Y
+
++ λ∥f ∥2
+
+> H′
+
+)
+
+,
+
+where λ > 0 is a regularization parameter and H′ is a Hilbert space encoding smoothness or structural prior information. This regularization promotes smoothness and stability of the es-timator, but it typically leads to dense solutions, i.e., every coordinate of f contributes to the reconstruction, regardless of its statistical relevance. In many modern learning problems, however, the underlying signal or function admits a sparse representation with respect to some basis or dictionary. That is, although the data may live in a high- or even infinite-dimensional space, the essential information can often be captured by a small number of active components. This observation motivates the use of sparsity-promoting regularization schemes, most prominently the ℓ1 penalty. In this work, we consider the sparse statistical inverse learning problem defined through the functional 
+
+Jλ(f ) := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∥A(f )( xi) − yi∥2 
+
+> Y
+
++ λ∥f ∥ℓ1 . (2) The corresponding estimator is then given by 
+
+fz,λ = arg min  
+
+> f∈D (A)∩ℓ1
+
+Jλ(f ). (3) Here, the regularizer ∥f ∥ℓ1 promotes sparsity in the learned solution by shrinking many coordinates of f to zero. This mechanism effectively performs data-driven model selection during the learning process, allowing the estimator to focus on the most relevant features or directions in the hypothesis space. From a learning-theoretic perspective, ℓ1-regularization acts as a form of implicit feature se-lection that adaptively controls the model complexity in high-dimensional regimes. Unlike the ℓ2
+
+penalty, which shrinks all coefficients uniformly, the ℓ1 penalty creates a bias towards parsimonious models that are easier to interpret and potentially more robust to noise. This trade-off between stability and sparsity has been central to the success of methods such as the LASSO, compressed sensing, and sparse kernel regression. 2In the statistical learning theory for nonparametric regression, the convergence rate of an estimator toward the true solution can be exceedingly slow as the sample size increases, a phe-nomenon commonly referred to as the No Free Lunch Theorem [19]. To overcome this limitation, the complexity of data-generating distributions ρ is typically restricted by incorporating structural assumptions on the underlying data-generating process. Such a priori assumptions are crucial, as they allow prior knowledge and regularity information to be incorporated into the learning pro-cess, thereby enabling faster rates of convergence. These assumptions generally pertain to three key aspects: the smoothness of the source set of admissible solutions fρ, the mapping properties of the forward operator A (e.g., smoothness or Lipschitz continuity), and the design or marginal probability measure μ on X , which determines the sampling points ( xi)ni=1 ⊂ X n. We study how the interplay between the forward operator A, the sampling distribution μ, and the sparsity-inducing regularization affects generalization and convergence. To ensure statistical consistency and to derive convergence rates, we impose the following standard conditions: a sub-exponential noise assumption on the observational noise variables, Lipschitz continuity of the forward oper-ator A, and a variational source condition that quantifies the regularity of the true solution fρ.Furthermore, we rely on the concept of the effective dimension N (λ), which encapsulates the interplay between the sample size n and the regularization strength λ. Under a polynomial decay condition of the form N (λ) ≤ C λ −b for 0 < b < 1, we obtain quantitative estimates for the sample complexity and asymptotic convergence behavior of the estimator. The contributions of this paper can be summarized as follows: (i) We propose a general framework for sparse statistical inverse learning in vector-valued repro-ducing kernel Hilbert spaces, extending classical kernel ridge regression to an ℓ1-regularized setting with nonlinear forward operators. (ii) We establish almost-sure consistency and derive non-asymptotic high-probability convergence rates for the proposed estimator under variational source conditions, sub-exponential noise assumptions, and polynomial effective-dimension growth. (iii) We prove matching minimax lower bounds over a natural family of probability distributions, thereby establishing the minimax optimality of the obtained convergence rates. (iv) We develop a general approximation-space framework based on the spaces kt and show that polynomial decay of best n-term approximation errors implies the variational source conditions required for the statistical analysis. (v) We verify the assumptions for representative nonlinear inverse problems, including coeffi-cient identification in elliptic PDEs and sparse computed tomography, and derive explicit convergence rates for filtered Radon transforms with standard reconstruction filters. Our analysis unifies ideas from inverse problem regularization, compressed sensing, and statis-tical learning theory, providing a unified analysis of sparsity-driven estimators for operator-valued learning tasks. This study provides a unified theoretical foundation for analyzing inverse learning problems in functional and multi-dimensional output spaces, offering a rigorous bridge between deterministic regularization theory and modern statistical learning approaches. 
+
+## 1.1 Comparison with Existing Results 
+
+We situate the present work within the broader literature on statistical inverse learning and sparsity-promoting regularization, organizing the comparison along four axes: (i) the regular-ization penalty, (ii) the linearity or nonlinearity of the forward operator, (iii) the underlying hypothesis space, and (iv) the type of convergence guarantees obtained. 3Direct Supervised Learning and the Role of the Effective Dimension. The foundational reference for minimax-optimal rates in kernel-based regression is the work of Caponnetto and De Vito [14], which establishes optimal rates for regularized least-squares for the direct learning (A = I identity operator) in vector-valued reproducing kernel Hilbert spaces under an RKHS-norm penalty. A key contribution of [14] is the introduction of the effective dimension N (λ) as a measure of statistical complexity. Under a source condition ϕ(t) = tr and polynomial effective-dimension growth N (λ) ≲ λ−b, they obtain minimax rates of order n−(r+ 12 )/(2 r+b+1) in L2-norm. Rastogi and Sampath [39] extended this framework to general source conditions in vector-valued RKHSs, deriving optimal convergence rates n−r/ (2 r+b+1) in RKHS norm for a broad class of spectral regularization methods beyond the classical H¨ older-type setting. Their analysis demon-strates that the attainable learning rates are determined by the interplay between the effective dimension and the index function governing the source condition, thereby substantially generaliz-ing the results of [14]. The present paper adopts the same effective-dimension framework but considers a fundamen-tally different setting. We study nonlinear inverse problems, replace Hilbert-space regularization by sparsity-promoting ℓ1 regularization, and work in a Banach-space reconstruction framework. The resulting minimax-optimal rate of order n−r/ (1+ b−br ) reflects both the statistical complexity parameter b and the sparse regularity parameter r arising from the variational source condition. 
+
+Linear Statistical Inverse Learning with RKHS Regularization. The statistical inverse learning problem with linear forward operators was studied systematically by Blanchard and M¨ ucke [8], who derive minimax-optimal convergence rates of order n−r/ (2 r+b+1) in Hilbert-space reconstruction norm for a broad family of spectral regularization methods. These works are restricted to linear operators and Hilbert-space regularization schemes. By contrast, the present paper allows nonlinear forward operators and sparsity-promoting ℓ1 penal-ties. The resulting convergence analysis relies on variational source conditions and Banach-space techniques rather than spectral regularization theory. 
+
+Nonlinear Statistical Inverse Learning with RKHS Regularization. The closest an-tecedent of the present work is the nonlinear statistical inverse learning results of [37], which analyze Tikhonov regularization with Hilbert-space penalties in vector-valued reproducing kernel Hilbert spaces. Under suitable source and complexity assumptions, the same minimax-optimal convergence rates as in the corresponding linear setting are obtained in the Hilbert-space recon-struction norm. Compared with these works, the present paper introduces several new ingredients: (i) sparsity-promoting ℓ1 regularization in place of Hilbert-space norm regularization; (ii) a Banach-space reconstruction framework based on ℓ1;(iii) variational source conditions formulated directly in the reconstruction norm; (iv) minimax-optimal rates characterized by the regularity parameter r and the complexity pa-rameter b in this sparse setting. While the work of [37] is formulated within a Hilbert-space framework and exploit the geometry of Hilbert-space norm regularization, the present paper studies sparse recovery via ℓ1 regulariza-tion. This transition from Hilbert-space regularization to a Banach-space setting fundamentally changes the analysis and requires variational source conditions adapted to sparsity, which do not arise in the classical RKHS-based theory. 
+
+Deterministic Sparsity Regularization. Deterministic sparsity-promoting inverse problems have been extensively studied; see Flemming [20], Hohage and Miller [24], and Miller and Ho-hage [33]. 4The present work builds upon these deterministic developments but addresses a fundamen-tally different setting. Rather than deterministic perturbations characterized by a noise level δ,we consider statistical inverse learning under random sampling. Consequently, our convergence analysis must simultaneously control stochastic sampling fluctuations and operator ill-posedness through concentration inequalities and the effective dimension of the underlying vector-valued RKHS. Moreover, we establish matching minimax lower bounds, thereby extending Banach-space regularization theory into the statistical learning regime. Miller and Hohage [33] obtained the convergence rates of order δ(2 −2t)/(2 −t) in ℓ1-norm for the nonlinear inverse problem. The present paper instead considers the statistical regime n → ∞ ,where both the sampling locations and observations are random. Consequently, the effective dimension and covariance concentration phenomena play a central role and have no direct analogue in deterministic analyses. 
+
+General Convex Regularization. Bubba et al. [10, 11] study statistical inverse learning with 
+
+general convex, p-homogeneous regularization functionals and linear forward operators, deriving concentration rates in symmetric Bregman distances induced by the penalty. In contrast, the present work focuses specifically on sparsity-promoting ℓ1 regularization for possibly nonlinear 
+
+forward operators and establishes minimax-optimal convergence rates in reconstruction norms. Furthermore, our analysis connects approximation-space sparsity models to variational source conditions and provides matching minimax lower bounds. Bubba et al. [10] also measures errors primarily through Bregman distances, whereas our results are formulated directly in ℓ1 and related sequence-space norms. 
+
+Sparse Statistical Estimation and ℓ1 Regularization. The use of ℓ1 penalties for sparse estimation originates with the LASSO of Tibshirani [43], whose statistical properties were sub-sequently analyzed by [13, 7, 36]. These works establish minimax estimation rates, oracle in-equalities, and variable-selection guarantees in finite-dimensional linear regression models under assumptions such as restricted eigenvalue or restricted isometry conditions. The present work extends this line of research from finite-dimensional regression to nonlinear statistical inverse learning in infinite-dimensional Banach spaces. Instead of restricted eigenvalue assumptions, our analysis relies on variational source conditions and effective-dimension estimates associated with the covariance operator. Consequently, the convergence rates are governed jointly by the sparsity parameter r and the statistical complexity parameter b, yielding minimax-optimal reconstruction guarantees for nonlinear inverse problems under random design. 
+
+Bayesian Sparse Inverse Problems. Recent work has also investigated sparsity-promoting Bayesian methods for inverse problems. In particular, Agapiou and Wang [1] analyze Bayesian inverse problems with Laplace priors and establish posterior contraction properties for spatially in-homogeneous Besov-type models. Although Laplace priors and ℓ1 regularization are closely related through maximum a posteriori estimation, the objectives of the two approaches differ substan-tially. Their analysis focuses on posterior distributions and Bayesian uncertainty quantification, whereas the present paper develops a frequentist statistical learning framework based on empiri-cal risk minimization. Furthermore, our analysis establishes explicit high-probability convergence rates and matching minimax lower bounds for nonlinear statistical inverse learning under random sampling. 
+
+Summary Comparison. We summarize the results discussed in this section in Table 1. 
+
+Organization. The paper is organized as follows. Section 2 introduces the framework of sta-tistical inverse learning under random design and presents the vector-valued Reproducing Kernel Hilbert Space (vv-RKHS) structure used in our analysis. In this section, we also state the key assumptions required for our results, including the Bernstein-type noise condition, kernel regu-larity, smoothness assumptions on the operator A and the true solution fρ, and the polynomial 5Table 1: Comparison with related literature.                                 
+
+> Reference Operator Regularizer Reconstruction Norm Rate Minimax lower bounds Optimal rates Caponnetto–De Vito [14] Identity Tikhonov ✓✓
+> Rastogi et al. [39] Identity General n−r/ (2 r+b+1) ✓✓
+> Blanchard–M¨ ucke [8] Linear General n−r/ (2 r+b+1) ✓✓
+> Rastogi et al. [37] Nonlinear Tikhonov n−r/ (2 r+b+1) ✓✓
+> Miller–Hohage [33] Nonlinear ℓ1δ(2 −2t)/(2 −t)✓✓
+> This work Nonlinear ℓ1n−r/ (1+ b−br )✓✓
+
+decay condition on the effective dimension. Section 3 establishes consistency results for the pro-posed estimator. In Section 4, we present the main convergence results for the sparsity-promoting regularization scheme. These results provide upper convergence rates under a priori smoothness assumptions on the true solution, expressed in terms of the variational source condition. In Sec-tion 5, we derive minimax lower bounds in the class of probability measures satisfying the same assumptions as the ones employed to obtain the upper estimates: as a consequence, we deduce that the derived convergence rates are optimal. Section 6 supplements the theoretical discussion of the previous sections by showcasing some examples, fully motivated by applications, that satisfy all the introduced theoretical assumptions. Finally, Section 7 provides a detailed discussion of the derived results, including comparisons with existing literature and an analysis of the implications of our approach. In addition, the appendix contains auxiliary results and technical lemmas used throughout the analysis. 
+
+Notations. For a Banach space B, we denote its norm by ∥ · ∥ B. For a Hilbert space H, the norm and inner product are denoted by ∥ · ∥ H and ⟨· , ·⟩ H, respectively. The space of all bounded linear operators on a separable Hilbert space H is denoted by L(H). We denote the adjoint of an operator A by A∗ and its domain by D(A). The operator norm of A is written as ∥A∥, while ∥A∥HS denotes its Hilbert–Schmidt norm. 
+
+# 2 Problem Setting and Main Assumptions 
+
+We formulate the nonlinear statistical inverse learning problem in a vector-valued reproducing kernel Hilbert space (vv-RKHS) framework. In this section, we introduce the key assumptions required for our analysis, including conditions on the noise, regularity of the forward operator, smoothness of the true solution, and spectral properties of the associated covariance operators. These assumptions are essential to derive statistical guarantees, establish consistency, and obtain convergence rates for the proposed regularized estimators. Throughout, we adopt the notation and conventions introduced in the preceding section. 
+
+## 2.1 General Framework 
+
+Suppose X ⊂ Rd denotes the input domain and Y is a separable Hilbert space representing the output space. We observe data points ( x1, y 1), . . . , (xn, y n) drawn according to an unknown probability measure ρ defined on the Borel σ-algebra of X × Y . We denote by μ the marginal distribution of ρ on X , and by ρ(· | x) the conditional distribution on Y given x ∈ X , whose existence is assumed. We define the weighted Hilbert space Hμ := L2(X , μ ; Y), endowed with the inner product 
+
+⟨g1, g 2⟩μ = ⟨g1, g 2⟩Hμ := R 
+
+> X
+
+⟨g1(x), g 2(x)⟩Y μ(dx ). Henceforth, we assume that B = ℓ1 is the 6underlying sequence space. Consider a bounded nonlinear operator 
+
+A : D(A) ∩ ℓ1 → H ,
+
+where H is a vector-valued reproducing kernel Hilbert space (vv-RKHS) that is continuously embedded into Hμ via the inclusion operator 
+
+Sμ : H ,→ H μ.
+
+The embedding Sμ ensures that elements of H can be identified with square-integrable vector-valued functions while preserving the reproducing property essential for our analysis. This operator-valued kernel formulation naturally accommodates multi-output regression and structured prediction tasks, thereby extending the scope of scalar-valued learning theory to a broader class of nonlinear statistical inverse problems. Given i.i.d. samples x := {xi}ni=1 drawn from μ, the sampling operator Sx : H → Y n is defined by (Sxg)i := g(xi), i = 1 , . . . , n. (4) Then, the observed data can be expressed as 
+
+y = SxA(fρ) + ε, (5) where y := ( yi)ni=1 ∈ Y n and ε := ( εi)ni=1 is a noise vector. The noise variables {εi}ni=1 are assumed to be independent and centered, satisfying R 
+
+> Y
+
+εi ρ(dy i|xi) = 0 for all i = 1 , . . . , n .Our objective is to reconstruct the function fρ from the observed samples ( xi, y i)ni=1 by min-imizing a regularized empirical risk that incorporates ℓ1-type penalization promoting sparsity in the representation of fρ.
+
+## 2.2 True solution 
+
+The probability distribution ρ is accessible only through a training set z. The goal of supervised inverse learning is to construct an estimator fz based on z such that [ A(fz)]( x) approximates the true label y for unseen samples ( x, y ). To formalize this objective, we define the expected square loss 
+
+E(f ) = 
+
+Z
+
+> X ×Y
+
+∥[A(f )]( x) − y∥2 
+
+> Y
+
+ρ(dx, dy ),
+
+which measures the expected discrepancy between predictions and true labels. Using the marginal probability distribution μ on X and the conditional distribution ρ(· | · ) of y given x, the expected loss can be rewritten as 
+
+E(f ) = ∥A(f ) − gρ∥2 
+
+> μ
+
++ E(gρ),
+
+where gρ(x) = R 
+
+> Y
+
+y ρ (dy | x) denotes the conditional mean function . Hence, minimizing the expected loss is equivalent to minimizing ∥A(f ) − gρ∥2
+
+> μ
+
+, which corresponds to solving a classical inverse problem where data fidelity is weighted by the design measure μ. In particular, if there exists f † ∈ D (A) such that gρ = A(f †), then f † minimizes the expected risk. For the centered noise, this minimizer f † coincides with the true solution fρ for an injective operator A.In what follows, we specify the assumptions concerning the true solution of the inverse prob-lem (1); see also [8]. 
+
+Assumption 1 (True solution) . The conditional expectation of y given x, with respect to the probability distribution ρ, is assumed to exist almost surely. Moreover, there exists an element 
+
+fρ ∈ D (A) such that Z
+
+> Y
+
+y dρ (y | x) = [ A(fρ)]( x), for all x ∈ X .
+
+72.3 Noise Assumption 
+
+To ensure statistical consistency, we impose a sub-exponential noise condition analogous to Bernstein-type inequalities commonly used in empirical process theory. 
+
+Assumption 2 (Sub-exponential noise) . There exist constants M, Σ > 0 such that for almost all 
+
+x ∈ X , Z
+
+> Y
+
+
+
+e∥y−A(fρ)( x)∥Y /M − ∥y − A(fρ)( x)∥Y
+
+M − 1
+
+
+
+ρ(dy | x) ≤ Σ2
+
+2M 2 .
+
+This assumption remains valid under several settings, including cases where the noise ε is bounded or follows a sub-Gaussian distribution with zero mean and is independent of x; see, e.g., [47]. It is worth noting that the case of Gaussian white noise in infinite-dimensional spaces is excluded from this setting. It ensures concentration inequalities needed for non-asymptotic error analysis. 
+
+## 2.4 RKHS Structure 
+
+We begin by recalling the notion of a vector-valued reproducing kernel Hilbert space (RKHS). The RKHS framework provides a powerful foundation for kernel-based methods, enabling the de-velopment of efficient and theoretically grounded algorithms. Our focus lies on Hilbert spaces of vector-valued functions that admit a reproducing kernel [4, 15, 16]. Such spaces have attracted considerable interest in recent years, particularly in machine learning theory, due to their effec-tiveness in modeling and learning from complex, structured data. The concept of an RKHS originates from the seminal work of Aronszajn [5], who studied Hilbert spaces of functions associated with symmetric, positive semi-definite kernels. A defining feature of these spaces is the reproducing property, which allows pointwise evaluation of functions to be expressed as an inner product involving the kernel. This framework has been extended to vector-valued functions by Micchelli and Pontil [32], thereby generalizing the classical scalar-valued RKHS to settings in which functions take values in a Hilbert space rather than in the real line R. This generalization allows RKHS methods to model multiple, potentially correlated outputs simultaneously, and provides a unifying framework for multi-task learning, structured regression, and functional data analysis. 
+
+Definition 2.1 (Vector-valued RKHS) . Let X be a non-empty set and ( Y, ⟨· , ·⟩ Y ) be a real separable Hilbert space. A Hilbert space H of functions g : X → Y is a vector-valued reproducing kernel Hilbert space (vv-RKHS) if for all x ∈ X and y ∈ Y , the evaluation functional 
+
+Fx,y : H → R, Fx,y (g) = ⟨y, g (x)⟩Y ,
+
+is continuous. The Riesz representation theorem allows us to identify, for each x ∈ X and y ∈ Y , the continuous functional Fx,y with a unique element of H (denoted in [32] by K(x|y)) such that 
+
+⟨K(x|y), g ⟩H = Fx,y (g) = ⟨y, g (x)⟩Y , ∀g ∈ H .
+
+We observe that the dependence of K(x|y) on y is linear. Hence, for every x ∈ X , we define the linear operator 
+
+Kx : Y → H , Kxy = K(x|y).
+
+With this notation, the reproducing property becomes 
+
+⟨Kxy, g ⟩H = Fx,y (g) = ⟨y, g (x)⟩Y , ∀g ∈ H .
+
+The operator-valued kernel associated with the RKHS H is the map 
+
+K : X × X → L (Y),
+
+8which assigns to each pair x, x ′ ∈ X the linear operator defined by 
+
+K(x, x ′)y = ( Kx′ y)( x), ∀y ∈ Y .
+
+According to [32, Proposition 2.1], the kernel K satisfies the following properties: (i) For every y, y ′ ∈ Y ,
+
+⟨y, K (x, x ′)y′⟩Y = ⟨Kx′ y′, K xy⟩H;(ii) Hermitian symmetry :
+
+K(x, x ′)∗ = K(x′, x ); (iii) Positive semi-definiteness : for every finite family {xi}ni=1 ⊂ X and {yi}ni=1 ⊂ Y ,
+
+> n
+
+X
+
+> i,j =1
+
+⟨yi, K (xi, x j )yj ⟩Y ≥ 0.
+
+Conversely, any kernel satisfying the three conditions above is associated with a unique vv-RKHS, defined as span {Kxy : x ∈ X , y ∈ Y} .
+
+For theoretical analysis, we impose the following mild regularity condition on the kernel. 
+
+Assumption 3 (Kernel regularity) . Let H be a vector-valued reproducing kernel Hilbert space. The operator-valued kernel K : X × X → L (Y) associated with H satisfies: (i) For all x ∈ X , Kx : Y → H is a Hilbert–Schmidt operator with 
+
+κ2 := sup 
+
+> x∈X
+
+∥Kx∥2 
+
+> HS
+
+= sup 
+
+> x∈X
+
+tr( K∗ 
+
+> x
+
+Kx) < ∞.
+
+(ii) For all y, t ∈ Y , the real-valued function ς(x, s ) := ⟨Kxy, K st⟩H is measurable with respect to ( x, s ) ∈ X × X .Assumption 3 ensures that the kernel induces a well-behaved operator-valued feature map. The Hilbert–Schmidt condition guarantees boundedness and square-integrability, while the measura-bility requirement ensures that all integrals involving K (such as covariance operators or empirical risks) are well-defined. 
+
+## 2.5 Smoothness Assumptions 
+
+We impose two structural assumptions on the forward operator A and one on the unknown so-lution fρ. Assumptions 4 and 6 concern the regularity and stability of the operator A, while Assumption 5 characterizes the smoothness of the true solution in relation to A.The following assumption ensures the well-posedness of the forward mapping. Injectivity pre-vents ambiguity in the inverse problem, while Lipschitz continuity guarantees that the mapping is not overly sensitive to small changes in f . This property enables control over the propagation of perturbations from the data space H to the parameter space ℓ1, which is essential for the local stability of the inverse problem. 
+
+Assumption 4 (Lipschitz continuity) . We assume that D(A) has nonempty interior. The operator 
+
+A : D(A) ∩ ℓ1 → H is injective. Moreover, A is Lipschitz continuous on D(A) ∩ ℓ1, namely, there exists a constant LA < ∞ such that 
+
+∥A(f ) − A( ˜f )∥H ≤ LA ∥f − ˜f ∥ℓ1 , ∀f, ˜f ∈ D (A) ∩ ℓ1.
+
+Next, we specify the smoothness or regularity of the true solution fρ. In inverse problems, such assumptions describe how well fρ can be approximated by elements related to the range of the operator A, and they play a crucial role in determining attainable rates of convergence. 9Assumption 5 (Variational source condition) . There exists a concave, non-decreasing index function ϕ : [0 , ∞) → [0 , ∞) with ϕ(0) = 0 such that for all f ∈ D (A) ∩ ℓ1,
+
+∥f − fρ∥ℓ1 ≤ ∥ f ∥ℓ1 − ∥ fρ∥ℓ1 + ϕ
+
+
+
+∥A(f ) − A(fρ)∥2
+
+> Hμ
+
+
+
+.
+
+The variational source condition captures the intrinsic smoothness of the true solution. It establishes a quantitative link between the discrepancy in the parameter space and the residual in the data space. It connects the regularity of the true solution fρ with the sensitivity of the forward operator A. The function ϕ determines the rate at which approximation errors decay, and thus directly influences the achievable convergence rate of regularized estimators. We now introduce a family of weighted sequence spaces that will serve as model domains for the operator A.
+
+Definition 2.2 (Weighted sequence spaces) . Let w = ( wj )∞ 
+
+> j=1
+
+be a sequence of positive real numbers such that wj → 0 as j → ∞ . For p ∈ (0 , 2], the weighted space ℓpw is defined as 
+
+ℓpw := 
+
+n
+
+f ∈ R∞ : ∥f ∥w,p < ∞
+
+o
+
+, ∥f ∥w,p := 
+
+ ∞X
+
+> j=1
+
+wpj |fj |p1/p 
+
+.
+
+The next assumption provides a quantitative stability property of A with respect to the weighted norm. 
+
+Assumption 6 (Weighted bi-Lipschitz property) . For a sequence of positive weights w vanishing at ∞, assume that D(A) ⊂ ℓ2 
+
+> w
+
+is closed and (i) there exists a constant L > 0 such that for all f, ˜f ∈ D(A), 
+
+A(f ) − A( ˜f ) Hμ
+
+≤ L∥f − ˜f ∥w, 2,
+
+(ii) there exists a constant L > 0 such that for all f, ˜f ∈ D(A), 
+
+∥f − ˜f ∥w, 2 ≤ L A(f ) − A( ˜f ) Hμ
+
+.
+
+The first part of the assumption is needed to obtain uniform lower convergence rates, as discussed in Theorem 5.3. The second part is crucial to provide uniform upper convergence rates (see Corollary 4.6 and Theorem 4.7). Moreover, as shown in Theorem 5.7, the second part is a very useful tool to verify the variational source condition (Assumption 5). Finally, verifying both parts of Assumption 6 with the same weight w allows to prove the minimax optimality of the derived bounds, as discussed in Corollary 5.8. 
+
+## 2.6 Effective Dimension and Spectral Decay 
+
+We now formalize the notions of effective dimension and spectral decay through the covariance operator associated with the feature map of the kernel K.
+
+Definition 2.3 (Uncentered covariance operator) . The uncentered covariance operator associated with the kernel K is defined as the operator Tμ : H → H given by 
+
+Tμ := 
+
+Z
+
+> X
+
+KxK∗ 
+
+> x
+
+μ(dx ).
+
+The operator Tμ is positive, self-adjoint, compact, and in particular of trace class by Assump-tion 3. Let Sμ : H ,→ H μ denote the canonical embedding. Then, the covariance operator can equivalently be expressed as Tμ = S∗
+
+> μ
+
+Sμ.10 In statistical learning theory, assumptions on the marginal distribution μ are often character-ized in terms of the effective dimension (or statistical dimension ), which captures the number of effective degrees of freedom of the learning problem. Intuitively, when data are high-dimensional, only a subset of features significantly contributes to the variation in the data. The effective di-mension thus provides a measure of model complexity, reflecting how many directions in feature space remain active at a given regularization level. Formally, the effective dimension is defined as 
+
+N (λ) := tr  (Tμ + λI )−1Tμ
+
+, λ > 0,
+
+which quantifies the number of “active” degrees of freedom at scale λ.A common way to control the complexity of the hypothesis space is through a polynomial bound on N (λ). 
+
+Assumption 7 (Polynomial spectral decay) . There exist constants Cβ > 0 and 0 < b < 1 such that 
+
+N (λ) ≤ Cβ λ−b, ∀λ > 0.
+
+This spectral decay condition links the eigenvalue distribution of Tμ to the statistical complexity of the learning problem. It ensures that the hypothesis space does not grow too rapidly as λ → 0, allowing for meaningful generalization and stable regularization. Together, the definitions and assumptions introduced above provide the analytical foundation for the convergence analysis of ℓ1-regularized estimators. They guarantee well-posedness, sta-tistical consistency, and enable the derivation of non-asymptotic convergence rates under mild regularity and sparsity assumptions. 
+
+## 2.7 Class of Probability Measures 
+
+We now introduce the class of probability measures that describe the statistical framework of the nonlinear inverse problem. These measures encode both the smoothness of the true solution fρ and the spectral characteristics of the forward operator A through the induced covariance structure. 
+
+Definition 2.4 (Class of Probability Measures) . Let M, Σ, R , and Cβ be fixed positive constants. Given parameters 0 < b < 1 and 0 ≤ r ≤ 1, we define P = Pr,b as the set of probability distributions ρ on the sample space Z = X × Y such that: (i) The true solution fρ satisfies Assumption 1, ensuring that it belongs to the admissible domain of the operator. (ii) The noise condition (Assumption 2) holds with the prescribed constants M and Σ, controlling the stochastic variability in the observations. (iii) The kernel K associated with the RKHS H satisfies Assumption 3, and the range of the forward operator A is contained in H.(iv) Assumption 4 holds, so that the domain D(A) has nonempty interior. Moreover, the operator 
+
+A : D(A) ∩ ℓ1 → H is injective and Lipschitz continuous. In addition, the weighted bi-Lipschitz property stated in Assumption 6 holds, providing quantitative stability of A with respect to the weighted norm ∥ · ∥ w, 2.(v) The true solution fρ satisfies the variational source condition (Assumption 5) with index function ϕ(t) = tr , capturing its intrinsic smoothness relative to the operator A.(vi) The effective dimension of the operator Tμ satisfies the polynomial growth condition (As-sumption 7), which controls the complexity of the learning problem through the spectral decay of A.11 The class of probability measures Pr,b thus depends on two fundamental parameters: (i) The smoothness parameter r, describing the smoothness of the true solution fρ via the variational source condition with ϕ(t) = tr ;(ii) The effective dimension parameter b, which captures the number of effective degrees of free-dom of the learning problem. Accordingly, we consider throughout this work the family 
+
+Pr,b := 
+
+n
+
+ρ on Z : ρ satisfies Assumptions 1, 2, 3, 4, 5, 7 with ϕ(t) = tr o
+
+.
+
+This class defines a notion of prior distributions for RKHS-based, sparsity-promoting nonlinear inverse learning problems, encapsulating both the spectral decay of the operator A and the intrinsic regularity of the underlying solution fρ.
+
+## 2.8 Upper Rates, Lower Rates, and Minimax Optimality 
+
+Here, we introduce the notions of asymptotic upper rates, lower rates, and minimax optimality used throughout this paper. The goal is to describe precisely the asymptotic behaviour of learning procedures in terms of the sample size n.To this end, we consider a family of probability measures ( Pr,b ), indexed by regularity and complexity parameters, where each Pr,b is a collection of Borel probability measures on X × Y 
+
+defined in Definition 2.4. In the following, all expectations are taken with respect to ρn for ρ ∈ P r,b .We measure performance in terms of the q-th moment of the reconstruction error in the inter-polation norm ∥ · ∥ u,p , where q ∈ [1 , ∞), p ∈ (0 , 2] and u is defined in (27). 
+
+Definition 2.5 (Upper rate of convergence ). A family of positive sequences ( an)n∈N is called an upper rate of convergence in Lq for the interpolation norm ∥ · ∥ u,p over the model class Pr,b , if there exists a learning procedure l producing estimators ( fz,λ n )n∈N, such that lim sup 
+
+> n→∞
+
+sup 
+
+> ρ∈P r,b
+
+Eρn
+
+∥fz,λ n − fρ∥q
+
+> u,p
+
+1/q
+
+an
+
+< ∞.
+
+Definition 2.6 (Lower rates of convergence ). A family of positive sequences ( an)n∈N is called a lower rate of convergence in Lq for the interpolation norm ∥ · ∥ u,p over the model class Pr,b , if lim inf  
+
+> n→∞
+
+inf  
+
+> l
+
+sup 
+
+> ρ∈P r,b
+
+Eρn
+
+∥f l 
+
+> z
+
+− fρ∥q
+
+> u,p
+
+1/q
+
+an
+
+> 0.
+
+where the infimum is taken over all measurable learning algorithms l producing estimators ( f l
+
+> z
+
+)n∈N.
+
+Definition 2.7 (Minimax optimal rate ). A sequence of estimators ( fz,λ n )n∈N is called minimax optimal in Lq for the interpolation norm ∥ · ∥ u,p over Pr,b , with rate of convergence ( an), if ( an)is both an upper rate of convergence and a lower rate of convergence for the same model class. 
+
+# 3 Consistency 
+
+In this section, we establish the consistency of the proposed estimator defined by the minimization problem (3). Our goal is to show that, under suitable assumptions on the forward operator A, the kernel K, and the data-generating distribution ρ, the regularized estimator fz,λ converges to the true solution fρ as the sample size n increases. We now state the main high-probability consistency theorem. 12 Theorem 3.1. Suppose Assumptions 1-4 hold. Assume further that the composite operator Sμ ◦A :
+
+ℓ1 → H μ is injective and weak-to-weak sequentially continuous. Let fz,λ denote a solution to the minimization problem (3) and choose the regularization parameter λ = λn > 0 such that 
+
+λn → 0, log nλn
+
+√n → 0 as n → ∞ . (6) 
+
+Then the estimator fz,λ satisfies 
+
+∥fz,λ − fρ∥ℓ1 → 0 almost surely as n → ∞ . (7) 
+
+Proof. The proof proceeds in several steps. 
+
+Basic variational inequalities. First, by definition of fz,λ as a minimizer of (3), we have 
+
+∥SxA(fz,λ ) − y∥2 
+
+> n
+
++ λ∥fz,λ ∥ℓ1 ≤ ∥ SxA(fρ) − y∥2 
+
+> n
+
++ λ∥fρ∥ℓ1 ,
+
+where ∥y∥2 
+
+> n
+
+= 1
+
+> n
+
+Pni=1 ∥yi∥2 
+
+> Y
+
+. Expanding and rearranging terms gives 
+
+∥Sx {A(fz,λ ) − A(fρ)}∥ 2 
+
+> n
+
++ λ∥fz,λ ∥ℓ1 (8) 
+
+≤2 ⟨Sx {A(fρ) − A(fz,λ )} , S xA(fρ) − y⟩n + λ∥fρ∥ℓ1 .
+
+Using the observation model y = SxA(fρ) + ε, and applying Cauchy–Schwarz we obtain 
+
+∥Sx {A(fz,λ ) − A(fρ)}∥ 2 
+
+> n
+
++ λ∥fz,λ ∥ℓ1 (9) 
+
+≤2∥S∗
+
+> x
+
+ε∥H∥A(fz,λ ) − A(fρ)∥H + λ∥fρ∥ℓ1 .
+
+For the sampling operator defined in (4), let Tx := S∗
+
+> x
+
+Sx denote the empirical covariance operator. Adding and subtracting the term ∥Sμ{A(fz,λ ) − A(fρ)}∥ 2 
+
+> Hμ
+
+in (8) gives 
+
+∥Sμ {A(fz,λ ) − A(fρ)}∥ 2 
+
+> Hμ
+
++ λ∥fz,λ ∥ℓ1
+
+≤2 ⟨A(fρ) − A(fz,λ ), S ∗
+
+> x
+
+ε⟩H + λ∥fρ∥ℓ1
+
++ ⟨(Tμ − Tx) {A(fz,λ ) − A(fρ)} , A (fz,λ ) − A(fρ)⟩H .
+
+Applying the Cauchy–Schwarz inequality gives 
+
+∥Sμ {A(fz,λ ) − A(fρ)}∥ 2 
+
+> Hμ
+
++ λ∥fz,λ ∥ℓ1 (10) 
+
+≤2∥S∗
+
+> x
+
+ε∥H∥A(fz,λ ) − A(fρ)∥H
+
++ ∥Tμ − Tx∥L(H)∥A(fz,λ ) − A(fρ)∥2 
+
+> H
+
++ λ∥fρ∥ℓ1
+
+High-probability bounds and choice of ηn. Apply Proposition A.1 with the choice 
+
+ηn := 1
+
+n2 (n ≥ 2) .
+
+Proposition A.1 then yields constants C1, C 2 (depending only on model parameters κ, M, Σ) so that with probability at least 1 − ηn the following hold simultaneously: 
+
+∥S∗
+
+> x
+
+ε∥H ≤ C1
+
+log(1 /η n)
+
+√n = C1
+
+2 log n
+
+√n , (11) 
+
+∥Tx − Tμ∥L(H) ≤ C2
+
+log(1 /η n)
+
+√n = C2
+
+2 log n
+
+√n . (12) Because ∞P
+
+> n=1
+
+ηn = ∞P
+
+> n=1
+
+n−2 < ∞, the Borel–Cantelli lemma implies that, almost surely, for all sufficiently large n the high-probability inequalities (11)–(12) hold. 13 Almost sure boundedness of the estimator. From (9), we get the bound 
+
+λ∥fz,λ ∥ℓ1 ≤ 2∥S∗
+
+> x
+
+ε∥H∥A(fz,λ ) − A(fρ)∥H + λ∥fρ∥ℓ1 .
+
+Hence 
+
+∥fz,λ ∥ℓ1 ≤ 2
+
+λ ∥S∗
+
+> x
+
+ε∥H∥A(fz,λ ) − A(fρ)∥H + ∥fρ∥ℓ1 . (13) Using Assumption 4, we obtain 
+
+∥fz,λ ∥ℓ1 ≤ 2LA
+
+λ ∥fz,λ − fρ∥ℓ1 ∥S∗
+
+> x
+
+ε∥H + ∥fρ∥ℓ1 .
+
+Applying the triangle inequality yields 
+
+∥fz,λ ∥ℓ1 ≤ 2LA
+
+λ ∥S∗
+
+> x
+
+ε∥H(∥fz,λ ∥ℓ1 + ∥fρ∥ℓ1 ) + ∥fρ∥ℓ1 .
+
+From (11), for almost every sample z and all sufficiently large n, we have 
+
+∥fz,λ ∥ℓ1 ≤ C′
+
+> 1
+
+log nλ√n (∥fz,λ ∥ℓ1 + ∥fρ∥ℓ1 ) + ∥fρ∥ℓ1 ,
+
+which implies 
+
+1 − C′
+
+> 1
+
+log nλ√n
+
+
+
+∥fz,λ ∥ℓ1 ≤
+
+
+
+1 + C′
+
+> 1
+
+log nλ√n
+
+
+
+∥fρ∥ℓ1 .
+
+By the choice (6), we have log nλ√n → 0 as n → ∞ . Therefore, it follows that lim sup 
+
+> n→∞
+
+∥fz,λ ∥ℓ1 ≤ ∥ fρ∥ℓ1 almost surely. (14) Consequently, ( fz,λ ) is eventually bounded in ℓ1 almost surely. 
+
+Weak-* compactness. Fix a sample z for which (14) holds. Then, sup 
+
+> n
+
+∥fz,λ ∥ℓ2 ≤ sup 
+
+> n
+
+∥fz,λ ∥ℓ1 < ∞.
+
+By the Banach–Alaoglu–Bourbaki theorem, we know that there exist a subsequence fnk := fz(nk ),λ 
+
+and an element ˜f ∈ ℓ2 such that fnk ⇀ ˜f in ℓ2. This theorem also implies that ˜f ∈ ℓ1 and that 
+
+fnk ⇀∗ ˜f in ℓ1. (15) By the lower-semicontinuity of the ∥ · ∥ ℓ1 norm (which can be proved by Fatou’s lemma) and (14) we can conclude that 
+
+∥ ˜f ∥ℓ1 ≤ lim inf  
+
+> k→∞
+
+∥fnk ∥ℓ1 ≤ lim sup 
+
+> k→∞
+
+∥fnk ∥ℓ1 ≤ ∥ fρ∥ℓ1 almost surely . (16) 
+
+Almost sure convergence of the residual. Substituting the high-probability bounds (11) and (12) into (10), we obtain that for almost every sample z and all sufficiently large n,
+
+∥Sμ(A(fz,λ ) − A(fρ)) ∥2 
+
+> Hμ
+
+≤
+
+
+
+2C1
+
+2 log n
+
+√n
+
+
+
+∥A(fz,λ ) − A(fρ)∥H
+
++
+
+
+
+C2
+
+2 log n
+
+√n
+
+
+
+∥A(fz,λ ) − A(fρ)∥2 
+
+> H
+
++ λ∥fρ∥ℓ1 . (17) Since ( fz,λ ) is bounded in ℓ1, Assumption 4 implies that ∥A(fz,λ ) − A(fρ)∥H is uniformly bounded. Further, we have λ → 0 and log nλ√n → 0 by (6), hence, the right-hand side converges to zero. Consequently, 
+
+∥Sμ(A(fz,λ ) − A(fρ)) ∥Hμ → 0 almost surely as n → ∞ . (18) 14 Identification of the limit. Consider again the subsequence fnk which converges to a limit ˜f
+
+both in the weak ℓ2 and in the weak-* ℓ1 topologies. Since Sμ ◦ A is weak-to-weak continuous, we have that 
+
+SμAf nk ⇀ S μA ˜f in Hμ.
+
+On the other hand, the equation (18) gives strong convergence 
+
+SμAf nk → SμAf ρ in Hμ,
+
+Since strong convergence implies weak convergence and weak limits are unique, this implies that 
+
+SμA ˜f = SμAf ρ. Finally, since the operator Sμ ◦ A is injective, we conclude ˜f = fρ.
+
+Strong a.s. convergence. Using ˜f = fρ in (16) we get almost surely lim  
+
+> k→∞
+
+∥fnk ∥ℓ1 = ∥fρ∥ℓ1 .
+
+Via Scheff´ e’s lemma, the weak-* convergence and the norm convergence in ℓ1 imply the strong convergence, i.e., 
+
+∥fz(nk ),λ − fρ∥ℓ1 → 0.
+
+Finally, since every subsequence of fz,λ has a further subsequence fz(nk ),λ that converges strongly to fρ, we conclude that the entire sequence converges strongly almost surely: 
+
+∥fz,λ − fρ∥ℓ1 → 0 a.s. This proves (7) and completes the proof. 
+
+Remark 3.2 . Since Sμ : H → H μ is linear and bounded, with ∥Sμ∥H→H μ ≤ κ, it is weak-to-weak sequentially continuous. Suppose that the (Lipschitz continuous) operator A : D(A) ∩ ℓ1 → H is either linear and bounded, or nonlinear, continuous, and compact. In the latter case, A is weak-to-strong sequentially continuous. Since strong convergence implies weak convergence, it follows that the composite operator Sμ ◦ A : D(A) ∩ ℓ1 → H μ is weak-to-weak sequentially continuous. Moreover, if the domain D(A) is weakly closed, then Sμ ◦ A is weakly sequentially closed. 1
+
+Consequently, the regularization functional in (3) admits at least one global minimizer under the above assumptions, although uniqueness is generally not guaranteed because of the possible nonlinearity of A (see [40, Section 4.1.1]). 
+
+# 4 Upper Convergence Rates 
+
+In this section, we establish non-asymptotic convergence rates for the proposed estimator under suitable regularity and complexity assumptions. The convergence analysis presented here provides a structured framework to understand how the estimator fz,λ approximates the true solution fρ
+
+in both the reconstruction norm ∥fz,λ − fρ∥ℓ1 and the prediction norm ∥Sμ[A(fz,λ ) − A(fρ)] ∥Hμ .We begin by relating the regularization parameter λ and the sample size n through the following condition: 
+
+N (λ) ≤ nλ, 0 < λ ≤ 1. (19) This condition ensures that the regularization level is compatible with the effective sample com-plexity determined by the covariance operator Tμ.                
+
+> 1That is, if ( fm)m∈N⊂ D (A) satisfies fm⇀ f in ℓ1and SμA(fm)⇀ g in Hμ, then f∈ D (A) and g=SμA(f).
+
+15 We introduce the following auxiliary quantities that characterize the stochastic and approxi-mation errors: Θz := (Tμ + λI )−1/2S∗
+
+> x
+
+ε H, where ε = y − Sx
+
+A(fρ), (20) Ψx := (Tμ + λI )−1/2(Tμ − Tx) L(H). (21) Here, Θ z captures the fluctuations in the solution induced by noise, while Ψ x quantifies the error arising from finite and random sampling, representing the deviation between the empirical and true covariance operators. We define the error functional appearing in subsequent estimates as err( f ) := Sx
+
+A(fρ) − y 2 
+
+> n
+
+− Sx
+
+A(f ) − y 2 
+
+> n
+
++ Sμ
+
+A(f ) − A(fρ) 2 
+
+> Hμ
+
+. (22) The following lemma establishes a fundamental inequality relating the estimation error of fz,λ 
+
+to the error functional err( fz,λ ) and the variational source condition ϕ. This inequality serves as the starting point for all subsequent bounds. This lemma formalizes how regularization interacts with the source smoothness to control the estimation error. 
+
+Lemma 4.1. Suppose that Assumption 5 holds. Then, we obtain 
+
+Sμ
+
+A(fz,λ ) − A(fρ) 2
+
+> Hμ
+
++ λ fz,λ − fρ ℓ1 ≤ err( fz,λ ) + λ ϕ 
+
+
+
+Sμ
+
+A(fz,λ ) − A(fρ) 2
+
+> Hμ
+
+
+
+.
+
+Proof. Since fz,λ minimizes Jλ, we have Jλ(fz,λ ) ≤ Jλ(fρ), which implies 
+
+∥fz,λ − fρ∥ℓ1 ≤ 1
+
+λ
+
+
+
+∥Sx [A(fρ)] − y∥2 
+
+> n
+
+− ∥ Sx [A(fz,λ )] − y∥2
+
+> n
+
+
+
++ ∥fz,λ − fρ∥ℓ1 + ∥fρ∥ℓ1 − ∥ fz,λ ∥ℓ1 .
+
+Applying the variational source condition, the last term can be bounded as 
+
+∥fz,λ − fρ∥ℓ1 ≤ 1
+
+λ
+
+
+
+∥Sx [A(fρ)] − y∥2 
+
+> n
+
+− ∥ Sx [A(fz,λ )] − y∥2
+
+> n
+
+
+
++ ϕ
+
+
+
+∥Sμ (A(fz,λ ) − A(fρ)) ∥2
+
+> Hμ
+
+
+
+.
+
+Adding ∥Sμ[A(fz,λ ) − A(fρ)] ∥2 
+
+> Hμ
+
+to both sides yields 
+
+∥Sμ [A(fz,λ ) − A(fρ)] ∥2 
+
+> Hμ
+
++ λ∥fz,λ − fρ∥ℓ1
+
+≤∥ Sμ [A(fz,λ ) − A(fρ)] ∥2 
+
+> Hμ
+
++ ∥Sx [A(fρ)] − y∥2 
+
+> n
+
+− ∥ Sx [A(fz,λ )] − y∥2
+
+> n
+
++ λϕ 
+
+
+
+∥Sμ (A(fz,λ ) − A(fρ)) ∥2
+
+> Hμ
+
+
+
+= err( fz,λ ) + λ ϕ 
+
+
+
+Sμ
+
+A(fz,λ ) − A(fρ) 2
+
+> Hμ
+
+
+
+,
+
+which establishes the claim. We now derive an upper bound for the error term err( fz,λ ) defined in (22) in terms of the perturbation quantities Ψ x and Θ z. This bound separates the contributions from operator devia-tions, finite sampling, and noise, emphasizing how the error bound depends on these perturbation errors as well as on the reconstruction and prediction errors. 
+
+Lemma 4.2. Suppose that Assumption 4 holds. Then, we have 
+
+err( fz,λ ) ≤
+
+
+
+2Θ z + Ψ x LA∥fz,λ − fρ∥ℓ1
+
+ 
+
+LA
+
+√λ ∥fz,λ − fρ∥ℓ1 + ∥Sμ
+
+A(fz,λ ) − A(fρ)∥Hμ
+
+
+
+.
+
+16 Proof. We start by rewriting the error functional err( fz,λ ) as err( fz,λ ) = ∥Sμ [A(fz,λ ) − A(fρ)] ∥2 
+
+> Hμ
+
+− ∥ Sx [A(fz,λ ) − A(fρ)] ∥2
+
+> n
+
+− 2 ⟨Sx [A(fz,λ ) − A(fρ)] , S x [A(fρ)] − y⟩n
+
+= ⟨A(fz,λ ) − A(fρ), (Tμ − Tx) [ A(fz,λ ) − A(fρ)] ⟩H + 2 ⟨A(fz,λ ) − A(fρ), S ∗
+
+> x
+
+ε⟩H
+
+=⟨A(fz,λ ) − A(fρ), (Tμ − Tx) [ A(fz,λ ) − A(fρ)] + 2 S∗
+
+> x
+
+ε⟩H.
+
+To bound this term, we use the decomposition 
+
+⟨g, h ⟩H =λ g, (Tμ + λI )−1h H + g, T μ(Tμ + λI )−1h H
+
+≤
+
+n√λ∥g∥H + ∥Sμg∥Hμ
+
+o
+
+(Tμ + λI )−1/2h H
+
+.
+
+Applying this inequality with g = A(fz,λ ) − A(fρ), and h = ( Tμ − Tx) [ A(fz,λ ) − A(fρ)] + 2 S∗
+
+> x
+
+ε
+
+we obtain err( fz,λ ) = A(fz,λ ) − A(fρ), (Tμ − Tx)[ A(fz,λ ) − A(fρ)] + 2 S∗
+
+> x
+
+ε H (23) 
+
+≤  2Θ z + Ψ x∥A(fz,λ ) − A(fρ)∥H
+
+
+
+×  √λ∥A(fz,λ ) − A(fρ)∥H + ∥Sμ[A(fz,λ ) − A(fρ)] ∥Hμ
+
+
+
+≤  2Θ z + Ψ xLA∥fz,λ − fρ∥ℓ1
+
+
+
+×  LA
+
+√λ∥fz,λ − fρ∥ℓ1 + ∥Sμ[A(fz,λ ) − A(fρ)] ∥Hμ
+
+,
+
+where LA, Θ z, Ψ x are defined in Assumption 4, (20), (21), respectively. This theorem integrates Lemmas 4.1 and 4.2 and establishes non-asymptotic, high-probability bounds for both the prediction and reconstruction errors. The term involving ϕ reflects the bias arising from the variational source condition, while the term λ−b/n encodes the variance due to finite sampling and the spectral complexity of the covariance operator. Overall, this theorem provides a clear quantitative relationship between the smoothness, sample size, and the effective degrees of freedom of the model. In the following theorem, we make use of the Fenchel conjugate of the convex function −ϕ,namely, ϕ∗ : R → R ∪ { +∞} defined as (−ϕ)∗(s) := sup 
+
+> t≥0
+
+ st + ϕ(t), (24) 
+
+Theorem 4.3. Let Assumptions 1–5, 7 and condition (19) hold. Then, for all 0 < η < 1, the following bounds hold with confidence 1 − η:
+
+Sμ[A(fz,λ ) − A(fρ)] 2 
+
+> Hμ
+
+≤
+
+
+
+4λ(−ϕ)∗
+
+− 14λ
+
+
+
++ C′′ 2 λ−b
+
+n
+
+
+
+log 2
+
+ 4
+
+η
+
+
+
+, (25) 
+
+fz,λ − fρ ℓ1 ≤ 12λ
+
+
+
+4λ(−ϕ)∗
+
+− 14λ
+
+
+
++ C′′ 2 λ−b
+
+n
+
+
+
+log 2
+
+ 4
+
+η
+
+
+
+, (26) 
+
+where C′′ depends on κ, M , Σ, LA, and ∥fρ∥ℓ1 .Proof. Starting from the estimates in Lemmas 4.1 and 4.2, we have 
+
+∥Sμ[A(fz,λ ) − A(fρ)] ∥2 
+
+> Hμ
+
++ λ∥fz,λ − fρ∥ℓ1
+
+≤ λϕ  ∥Sμ[A(fz,λ ) − A(fρ)] ∥2
+
+> Hμ
+
+
+
++ ( LA∥fz,λ − fρ∥ℓ1 Ψx + 2Θ z)∥Sμ[A(fz,λ ) − A(fρ)] ∥Hμ
+
++ LA
+
+√λ(LA∥fz,λ − fρ∥ℓ1 Ψx + 2Θ z)∥fz,λ − fρ∥ℓ1 .
+
+17 Applying the inequality ab ≤ a2 
+
+> 2
+
++ b2 
+
+> 2
+
+to the cross terms gives 
+
+∥Sμ[A(fz,λ ) − A(fρ)] ∥2 
+
+> Hμ
+
++ λ∥fz,λ − fρ∥ℓ1
+
+≤ λϕ  ∥Sμ[A(fz,λ ) − A(fρ)] ∥2
+
+> Hμ
+
+
+
++ 12 (LA∥fz,λ − fρ∥ℓ1 Ψx + 2Θ z)2 + 12 ∥Sμ[A(fz,λ ) − A(fρ)] ∥2
+
+> Hμ
+
++ L2
+
+> A
+
+2 (LA∥fz,λ − fρ∥ℓ1 Ψx + 2Θ z)2∥fz,λ − fρ∥ℓ1 + λ
+
+2 ∥fz,λ − fρ∥ℓ1 .
+
+Rearranging terms yields 12 ∥Sμ[A(fz,λ ) − A(fρ)] ∥2 
+
+> Hμ
+
++ λ
+
+2 ∥fz,λ − fρ∥ℓ1
+
+≤ λϕ  ∥Sμ[A(fz,λ ) − A(fρ)] ∥2
+
+> Hμ
+
+
+
++ 12 (∥fz,λ − fρ∥ℓ1 L2 
+
+> A
+
++ 1)( LA∥fz,λ − fρ∥ℓ1 Ψx + 2Θ z)2.
+
+Multiplying both sides by 4 and rearranging the resulting inequality yields 
+
+∥Sμ [A(fz,λ ) − A(fρ)] ∥2 
+
+> Hμ
+
++ 2 λ∥fz,λ − fρ∥ℓ1
+
+≤
+
+
+
+4λϕ 
+
+
+
+∥Sμ [A(fz,λ ) − A(fρ)] ∥2
+
+> Hμ
+
+
+
+− ∥ Sμ [A(fz,λ ) − A(fρ)] ∥2
+
+> Hμ
+
+
+
++ 2( ∥fz,λ − fρ∥ℓ1 L2 
+
+> A
+
++ 1)( LA∥fz,λ − fρ∥ℓ1 Ψx + 2Θ z)2.
+
+Using the dual formulation of ϕ defined in (24), we get 
+
+∥Sμ [A(fz,λ ) − A(fρ)] ∥2 
+
+> Hμ
+
++ 2 λ∥fz,λ − fρ∥ℓ1
+
+≤ sup  
+
+> τ≥0
+
+(4 λϕ (τ ) − τ ) + 2( ∥fz,λ − fρ∥ℓ1 L2 
+
+> A
+
++ 1)( LA∥fz,λ − fρ∥ℓ1 Ψx + 2Θ z)2
+
+=4 λ (−ϕ)∗
+
+
+
+− 14λ
+
+
+
++ 2( LA∥fz,λ − fρ∥ℓ1 LA + 1)( LA∥fz,λ − fρ∥ℓ1 Ψx + 2Θ z)2.
+
+Using the bound (62) for the perturbation terms and the fact that ∥fz,λ − fρ∥ℓ1 is bounded by Proposition B.1, we obtain, with probability 1 − η,
+
+∥Sμ [A(fz,λ ) − A(fρ)] ∥2 
+
+> Hμ
+
++ 2 λ∥fz,λ − fρ∥ℓ1
+
+≤4λ (−ϕ)∗
+
+
+
+− 14λ
+
+
+
++ C′ N (λ)
+
+n log 2
+
+ 4
+
+η
+
+
+
+≤4λ (−ϕ)∗
+
+
+
+− 14λ
+
+
+
++ C′′ 2 λ−b
+
+n log 2
+
+ 4
+
+η
+
+
+
+.
+
+From this, the individual bounds follow: 
+
+∥Sμ [A(fz,λ ) − A(fρ)] ∥2 
+
+> Hμ
+
+≤
+
+
+
+4λ (−ϕ)∗
+
+
+
+− 14λ
+
+
+
++ C′′ 2 λ−b
+
+n
+
+
+
+log 2
+
+ 4
+
+η
+
+
+
+and 
+
+∥fz,λ − fρ∥ℓ1 ≤ 12λ
+
+
+
+4λ (−ϕ)∗
+
+
+
+− 14λ
+
+
+
++ C′′ 2 λ−b
+
+n
+
+
+
+log 2
+
+ 4
+
+η
+
+
+
+,
+
+where C′, C ′′ depends on κ, M , Σ, LA, ∥fρ∥ℓ1 .18 The following corollary shows how to choose the regularization parameter λ∗ optimally based on the dual of the function ψ∗. By selecting λ∗ such that 1(λ∗)b+1 ∈ ∂ψ ∗
+
+
+
+− C′′ 
+
+> 4n
+
+
+
+, the bound simultaneously balances the bias and variance contributions to the estimation error, leading to the tightest high-probability guarantees for a given sample size. This step is crucial in practice since it prescribes a data-dependent way to tune the regularization parameter according to both the smoothness of fρ and the spectral decay of Tμ.It is now straightforward to derive an explicit upper bound on the rate of convergence expressed directly in terms of the sample size n.
+
+Corollary 4.4. Under the assumptions of Theorem 4.3, let λ = λ∗ be chosen such that 
+
+1(λ∗)b+1 ∈ ∂ψ ∗
+
+
+
+− C′′ 
+
+4n
+
+
+
+, for ψ(x) = ( −ϕ)∗ − x 1
+
+> b+1
+
+4
+
+!
+
+.
+
+Then, for all 0 < η < 1, the following bounds hold with confidence 1 − η:
+
+Sμ
+
+A(fz,λ ) − A(fρ) 2
+
+> Hμ
+
+≤ − 4λ∗ ψ∗
+
+
+
+− C′′ 
+
+4n
+
+
+
+log 2
+
+ 4
+
+η
+
+
+
+,
+
+fz,λ − fρ ℓ1 ≤ − 2 ψ∗
+
+
+
+− C′′ 
+
+4n
+
+
+
+log 2
+
+ 4
+
+η
+
+
+
+,
+
+where C′′ depends on κ, M , Σ, LA, and ∥fρ∥ℓ1 .Proof. By taking the infimum over the regularization parameter λ in the inequality (26) we get 
+
+∥fz,λ − fρ∥ℓ1 ≤ inf  
+
+> λ> 0
+
+2
+
+
+
+(−ϕ)∗
+
+
+
+− 14λ
+
+
+
++ C′′ 2
+
+4λb+1 n
+
+
+
+log 2
+
+ 4
+
+η
+
+
+
+.
+
+By assuming x = 1 
+
+> λb+1
+
+and ψ(x) = ( −ϕ)∗
+
+
+
+− x 1
+
+> b+1
+> 4
+
+
+
+we obtain 
+
+∥fz,λ − fρ∥ℓ1 ≤ inf  
+
+> x> 0
+
+2
+
+(
+
+(−ϕ)∗ − x 1
+
+> b+1
+
+4
+
+!
+
++ C′′ x
+
+4n
+
+)
+
+log 2
+
+ 4
+
+η
+
+
+
+= − sup 
+
+> x> 0
+
+2
+
+
+
+− C′′ x
+
+4n − ψ(x)
+
+
+
+log 2
+
+ 4
+
+η
+
+
+
+= − 2ψ∗
+
+
+
+− C′′ 
+
+4n
+
+
+
+log 2
+
+ 4
+
+η
+
+
+
+.
+
+The infimum is attained at λ = λ∗ corresponds to 1
+
+> λb+1
+> ∗
+
+∈ ∂ψ ∗
+
+
+
+− C′′ 
+
+> 4n
+
+
+
+.Under the polynomial variational source condition ϕ(x) = xr , the preceding results yield explicit convergence rates. These expressions clearly show the influence of source smoothness r and spectral decay b on the learning rate. As r → 1 (smoother solutions), the convergence accelerates, reflecting reduced bias. As b → 0 (faster spectral decay), the effective model complexity decreases, reducing variance. Thus, the rates interpolate naturally between well-posed and mildly ill-posed inverse problems. The logarithmic factors log 2(4 /η ) account for high-probability deviations due to sampling noise. 
+
+Corollary 4.5. Under the assumptions of Theorem 4.3, suppose the variational source condition holds with an index function of the form ϕ(x) = xr for some 0 < r < 1. If the regularization parameter is chosen as 
+
+λ∗ = n− 1−r 
+
+> 1+ b−br
+
+,
+
+19 then for all 0 < η < 1, the following bounds hold with probability at least 1 − η:
+
+A(fz,λ ) − A(fρ) 2 
+
+> Hμ
+
+≤ C n − 11+ b−br log 2
+
+ 4
+
+η
+
+
+
+,
+
+∥fz,λ − fρ∥ℓ1 ≤ C n − r 
+
+> 1+ b−br
+
+log 2
+
+ 4
+
+η
+
+
+
+,
+
+where C is a constant depending on κ, M , Σ, LA, and ∥fρ∥ℓ1 .
+
+The results above establish explicit high-probability convergence rates for the estimator in both the prediction and reconstruction norms. The rates depend on the source smoothness parameter r
+
+and the spectral decay exponent b, illustrating the trade-off between regularity and complexity in the inverse learning problem. The parameter choice λ∗ = n−(1 −r)/(1+ b−br ) balances the bias and variance terms optimally under the prior Pr,b , yielding the uniform upper rate (29). For each p ∈ (0 , 2], we introduce a family of weights defined by (up)j := w 
+
+> 2p−2
+> p
+> j
+
+. (27) This construction yields a continuous scale of weighted sequence spaces that interpolate between the unweighted and weighted cases. In particular, for p = 1, we recover the standard space ℓ1,whereas for p = 2, we obtain the weighted Hilbert space ℓ2
+
+> w
+
+.By combining the previously derived bounds with Assumption 6 (ii) and applying Proposi-tion C.1 with the parameters θ = 2 
+
+
+
+1 − 1
+
+> p
+
+
+
+, q = 1, s = 2, and f = fz,λ − fρ, we establish the following convergence bounds expressed in the interpolation norms. 
+
+Corollary 4.6. Assume the hypotheses of Theorem 4.3 and Assumption 6 (ii) hold, in particular that the variational source condition holds with an index function ϕ(x) = xr for some 0 < r < 1.Choosing 
+
+λ∗ = n− 1−r
+
+> 1+ b−br
+
+and p ∈ (0 , 2] , we have, for all 0 < η < 1, with probability at least 1 − η,
+
+∥fz,λ − fρ∥u,p ≤ C n − 2r−pr +p−1 
+
+> p(1+ b−br )
+
+log 2
+
+> p
+
+ 4
+
+η
+
+
+
+, (28) 
+
+where C depends on κ, M , Σ, LA, and ∥fρ∥ℓ1 .
+
+We give a choice of the regularization parameter λ as a function of the sample size n, which provides a rate of decay of the interpolation norm uniform on the prior class Pr,b .
+
+Corollary 4.7 (Uniform upper rate under data-driven λ∗). Assume the hypotheses of Corol-lary 4.6 with λ = n− 1−r 
+
+> 1+ b−br
+
+, p ∈ (0 , 2] and q ∈ [1 , ∞). Let an := n− 2r−pr +p−1 
+
+> p(1+ b−br )
+
+. Then the sequence of estimators (fz,λ )n satisfies 
+
+lim sup 
+
+> n→∞
+
+sup 
+
+> ρ∈P r,b
+
+
+
+Eρn
+
+h
+
+∥fz,λ − fρ∥q
+
+> u,p
+
+i 1/q
+
+an
+
+< ∞. (29) 
+
+Proof. Let 
+
+X := ∥fz,λ − fρ∥u,p .
+
+From Corollary 4.6, for any 0 < η < 1, we have 
+
+Pρn
+
+
+
+X ≤ Ca n log 2/p 
+
+ 4
+
+η
+
+ 
+
+≥ 1 − η. 
+
+20 Fix t > 0 and set 
+
+η = 4 exp 
+
+
+
+− tp/ 2
+
+Cp/ 2ap/ 2
+
+> n
+
+
+
+.
+
+Then, it follows that 
+
+Pρn (X > t ) < 4 exp 
+
+
+
+−c tp/ 2
+
+ap/ 2
+
+> n
+
+
+
+,
+
+for some constant c > 0 depending only on p.We now use the identity 
+
+Eρn [Xq] = 
+
+Z ∞
+
+> 0
+
+qtq−1Pρn (X > t ) dt. 
+
+Split the integral at t0 := an,
+
+Eρn [Xq] = 
+
+Z t0
+
+> 0
+
+qtq−1P(X > t ) dt +
+
+Z ∞
+
+> t0
+
+qtq−1P(X > t ) dt. 
+
+For the first term, Z t0
+
+> 0
+
+qtq−1P(X > t ) dt ≤
+
+Z t0
+
+> 0
+
+qtq−1dt = aq
+
+> n
+
+.
+
+For the second term, using the tail bound, 
+
+Z ∞
+
+> t0
+
+qtq−1P(X > t ) dt < 
+
+Z ∞
+
+> t0
+
+4qtq−1 exp 
+
+
+
+−c tp
+
+apn
+
+
+
+dt. 
+
+Perform the change of variables u = ( t/a n)p, so that 
+
+t = anu1/p , dt = an
+
+p u 1 
+
+> p−1
+
+du. 
+
+This yields Z ∞
+
+> t0
+
+4qtq−1 exp 
+
+
+
+−c tp
+
+apn
+
+
+
+dt = 4 qaq
+
+> n
+
+Z ∞
+
+> 1
+
+u q 
+
+> p−1
+
+e−cu du. 
+
+Since q > 0 and c > 0, the integral 
+
+Z ∞
+
+> 1
+
+u q 
+
+> p−1
+
+e−cu du 
+
+is finite and bounded by a constant Cq,p,c independent of n.Hence, Z ∞
+
+> t0
+
+qtq−1Pρn (X > t ) dt ≤ C a q
+
+> n
+
+.
+
+Combining the two parts of the decomposition, we obtain 
+
+Eρn [Xq] ≤ Ca q
+
+> n
+
+.
+
+Taking q-th roots yields (Eρn [Xq]) 1/q ≤ Ca n.
+
+Finally, taking the supremum over ρ ∈ P r,b and the lim sup as n → ∞ gives lim sup 
+
+> n→∞
+
+sup 
+
+> ρ∈P r,b
+
+
+
+Eρn
+
+∥fz,λ − fρ∥q
+
+> u,p
+
+1/q
+
+an
+
+< ∞.
+
+This completes the proof. 21 The exponent 2r−pr +p−1 
+
+> p(1+ b−br )
+
+reflects the interplay between the smoothness index r, the spectral decay parameter b, and the interpolation norm index p.
+
+Remark 4.8 (Comparison with existing inverse learning results) . Compared with RKHS-based analyses such as Blanchard and M¨ ucke [8] and Rastogi et al. [37], the present result replaces Hilbert-space regularization with sparsity-promoting ℓ1 regularization in a Banach-space setting. Moreover, convergence rates are derived under variational source conditions and are shown to be minimax optimal via matching lower bounds. 
+
+# 5 Lower Convergence Rates and Optimality 
+
+The convergence rates established in Section 4 provide upper bounds on the statistical accuracy achievable by the proposed regularization method. A natural question is whether these rates are optimal, or whether faster convergence can be attained by alternative learning algorithms. To answer this question, we derive minimax lower bounds for the considered class of nonlinear statistical inverse problems. These lower bounds establish fundamental limitations that apply to every estimator, irrespective of the reconstruction procedure employed. Our analysis follows an information-theoretic approach based on carefully constructed packing sets, the Kullback–Leibler divergence, and Fano’s inequality. The lower bounds are obtained under the same approximation-space assumptions that characterize the sparsity of the unknown solution and are later shown to coincide with the variational source conditions used in the upper-bound analysis. Consequently, the resulting lower convergence rates match the upper rates established in the previous section, thereby demonstrating the minimax optimality of the proposed regularization method over the considered model class. 
+
+## 5.1 Lower Minimax Bounds 
+
+To establish the lower convergence rate, we construct a family of probability measures ρf param-eterized by suitable vectors f ∈ D (A). We assume that Y is a finite-dimensional Hilbert space with an orthonormal basis {vj }dj=1 . For each f ∈ D (A), define a probability measure on X × Y as 
+
+ρf (dx, dy ) := 12dJ 
+
+> d
+
+X
+
+> j=1
+
+
+
+aj (x) δy+dJv j + bj (x) δy−dJv j
+
+
+
+μ(dx ), (30) where 
+
+aj (x) = J − ⟨ A(f ), K xvj ⟩H, bj (x) = J + ⟨A(f ), K xvj ⟩H, J = 4 κ∥A(f )∥H,
+
+and δy−ξ denotes the Dirac measure at y = ξ. It is straightforward to verify that the marginal distribution of ρf on X coincides with μ.The following proposition is an adaptation of Proposition 4 in [14] to the setting of nonlinear statistical inverse problems. 
+
+Proposition 5.1. For the probability measure ρf defined in (30) and parameterized by f ∈ D (A),the following hold: (i) The regression function corresponding to ρf is f , that is, fρ = f .(ii) The probability measure ρf satisfies Assumption 2 if the following condition holds 
+
+dJ + J 
+
+> 4
+
+≤ M and 2dJ ≤ Σ. (31) Therefore, Assumptions 1 and 2 hold for the family of probability measures {ρf }f ∈D (A) defined above. Furthermore, assume that the eigenvalues sj of the covariance operator Tμ corresponding to the marginal distribution μ satisfy the polynomial decay condition 
+
+sj ≤ β j − 1 
+
+> b
+
+,
+
+22 which ensures that Assumption 7 is also fulfilled [14]. For t ∈ (0 , 1), the approximation space kt is defined as (see [33]) 
+
+kt := 
+
+n
+
+f : ∥f ∥kt < ∞
+
+o
+
+, ∥f ∥kt := sup 
+
+> α> 0
+
+α
+
+ ∞X
+
+> j=1
+
+w−2 
+
+> j
+
+1{α≤w2  
+
+> j|fj|}
+
+1/t 
+
+. (32) From Lemma 5.6, if f ∈ kt for some t ∈ (0 , 1) and Assumption 6 (ii) holds, then the variational source condition in Assumption 5 is satisfied with ϕ(s) = s 1−t 
+
+> 2−t
+
+.Information-theoretic tools, such as the Kullback–Leibler (KL) divergence and Fano’s inequal-ity (Lemma 3.3 in [18]), play a central role in deriving the lower bounds. For two probability measures ρ1 and ρ2, the KL divergence is defined by 
+
+K(ρ1, ρ 2) := 
+
+Z
+
+> Z
+
+log 
+
+ dρ 1
+
+dρ 2
+
+
+
+dρ 1 =
+
+Z
+
+> Z
+
+g(z) log g(z) dρ 2(z),
+
+provided that ρ1 is absolutely continuous with respect to ρ2, where g = dρ 1 
+
+> dρ 2
+
+denotes the Radon–Nikodym derivative of ρ1 with respect to ρ2. If ρ1 is not absolutely continuous with respect to ρ2, we set K(ρ1, ρ 2) := ∞. By definition, for all measurable sets E ⊂ Z, ρ1(E) = R 
+
+> E
+
+g(z) dρ 2(z). The proof of the lower bound theorem relies on a combinatorial packing result concerning binary strings. 
+
+Proposition 5.2. Let ℓ ∈ N with ℓ > 16 . Then there exist Nℓ ∈ N and vectors 
+
+σ1, . . . , σ Nℓ ∈ {± 1}ℓ
+
+such that 
+
+Ham( σi, σ j ) ≥ ℓ
+
+4 , for all i̸ = j, (33) 
+
+and 
+
+Nℓ ≥ exp 
+
+ ℓ
+
+24 
+
+
+
+. (34) 
+
+In particular, any two distinct vectors satisfy 
+
+> ℓ
+
+X
+
+> n=1
+
+|σni − σnj | ≥ ℓ
+
+2 , for all i̸ = j, 
+
+where σi = ( σ1 
+
+> i
+
+, . . . , σ ℓi ) and σj = ( σ1 
+
+> j
+
+, . . . , σ ℓj ).Proof. Let σ, σ ′ ∈ {± 1}ℓ be independent and uniformly distributed, and let h = Ham( σ, σ ′), the number of coordinates where they differ. Then h ∼ Bin( ℓ, 1/2) and Eh = ℓ/ 2. Hoeffding’s inequality gives 
+
+P
+
+
+
+h ≤ ℓ
+
+4
+
+
+
+= P
+
+
+
+h − ℓ
+
+2 ≤ − ℓ
+
+4
+
+
+
+≤ exp −2
+
+ ℓ
+
+4
+
+2
+
+/ℓ 
+
+!
+
+= exp 
+
+
+
+− ℓ
+
+8
+
+
+
+Set M := ⌈eℓ/ 24 ⌉. Then M − 1 ≤ eℓ/ 24 . The assumption ℓ > 16 ensures that M < (M − 1) 2.Draw σ1, . . . , σ M independently and uniformly from {± 1}ℓ. The number of unordered pairs is at most  M
+
+> 2
+
+. Hence, by the union bound, 
+
+P
+
+
+
+∃ i̸ = j : Ham( σi, σ j ) < ℓ
+
+4
+
+
+
+≤ M (M − 1) 2 exp 
+
+
+
+− ℓ
+
+8
+
+
+
+.
+
+Using the inequalities above, we obtain 
+
+M (M − 1) 2 exp 
+
+
+
+− ℓ
+
+8
+
+
+
+≤ M (M − 1) 21(M − 1) 3 < 12 .
+
+23 Hence, there exists a choice of {σi}Mi=1 with Ham( σi, σ j ) ≥ ℓ/ 4 for all i̸ = j. Since 
+
+|σni − σnj | =
+
+(
+
+0, σni = σnj ,
+
+2, σni̸ = σnj ,
+
+we have ℓX
+
+> n=1
+
+|σni − σnj | = 2 Ham( σi, σ j ) ≥ 2 · ℓ
+
+4 = ℓ
+
+2 .
+
+Thus, Nℓ = M ≥ exp   ℓ
+
+> 24
+
+, concluding the proof. To derive the minimax lower bounds, we briefly recall the general reduction scheme described in Chapter 2 of [45]. For each 0 < ϵ ≤ ϵ0, we construct a finite family {f i}Nϵ 
+
+> i=1
+
+⊂ D(A) ∩ kt
+
+satisfying 
+
+Nϵ ≥ exp( ℓϵ/24) , ∥f i − f j ∥u,p ≥ 2ϵ, i̸ = j, 
+
+and 
+
+K
+
+
+
+ρnf i , ρ nf j
+
+
+
+≤ c n ϵ β0 ℓβ1 
+
+> ϵ
+
+, i̸ = j. 
+
+Applying Lemma 3.3 of [18] (Fano’s method) to this family yields the corresponding minimax lower bound for the estimation error. 
+
+Theorem 5.3. Let z be i.i.d. samples drawn from a probability measure ρ ∈ P r,b with dim( Y) = 
+
+d < ∞, r = 1−t 
+
+> 2−t
+
+, t ∈ (0 , 1) , and p ∈ (t, 2] . Assume that ℓϵ is a positive decreasing function of ϵ.Suppose further that there exist constants c0, ϵ 0 > 0 (with ℓϵ0 > 16 ) and q > 1 such that, for every 
+
+ζ ∈ (0 , c 0) and every ϵ ∈ (0 , ϵ 0), there exists a set of ℓϵ indices M = {m1, . . . , m ℓϵ } for which 
+
+ζ
+
+
+
+ϵpℓ−1
+
+> ϵ
+
+ t
+
+> 2( p−t)
+
+≤ wm ≤ q ζ 
+
+
+
+ϵpℓ−1
+
+> ϵ
+
+ t
+
+> 2( p−t)
+
+, ∀ m ∈ M. 
+
+Then, for every learning algorithm l : z 7 → f l 
+
+> z
+
+, there exists a probability measure ρ∗ ∈ P r,b with regression function fρ∗ such that, for all 0 < ϵ < ϵ 0,
+
+Pρn
+
+> ∗
+
+∥f l 
+
+> z
+
+− fρ∗ ∥u,p > ϵ ≥ min 
+
+ 12 , ϑ exp 
+
+ ℓϵ
+
+48 − c n ϵ p(2 −t) 
+
+> p−t
+
+ℓ
+
+> p−2
+> p−t
+> ϵ
+
+ 
+
+,
+
+where ϑ = e−3/e .Proof. Choose ϵ0 > 0 as above such that ℓϵ0 > 16. Then, by Proposition 5.2, for every 0 < ϵ < ϵ 0
+
+(so that ℓϵ > ℓ ϵ0 ), there exist Nϵ ∈ N and sign vectors 
+
+σi = ( σ1 
+
+> i
+
+, . . . , σ ℓϵ 
+
+> i
+
+) ∈ {± 1}ℓϵ , i = 1 , . . . , N ϵ,
+
+such that Ham( σi, σ j ) ≥ ℓϵ
+
+4 , for all i̸ = j, (35) and 
+
+Nϵ ≥ exp( ℓϵ/24) . (36) For any ϱ > ϱ 0 such that (4 ϱ−p 
+
+> 0
+
+) t 
+
+> 2( p−t)
+
+< c 0, setting 
+
+ζ =
+
+
+
+4ϱ−p t
+
+> 2( p−t)
+
+,
+
+we have that there exists a set of indices M = {m1, . . . , m ℓϵ } such that every m ∈ M satisfies 
+
+
+
+4ϱ−pϵpℓ−1
+
+> ϵ
+
+ t
+
+> 2( p−t)
+
+≤ wm ≤ q
+
+
+
+4ϱ−pϵpℓ−1
+
+> ϵ
+
+ t
+
+> 2( p−t)
+
+. (37) 24 For each i = 1 , . . . , N ϵ define f i ∈ R∞ by (f i)ms := σsi ϱ w 2−2tt 
+
+> ms
+
+, s = 1 , . . . , ℓ ϵ,
+
+and set ( f i)m = 0 for m / ∈ M .We now show that f i ∈ kt. By construction, 
+
+w2 
+
+> ms
+
+|(f i)ms | = ϱ w 2/t ms , s = 1 , . . . , ℓ ϵ,
+
+and ( f i)m = 0 for m / ∈ M . Therefore, 
+
+∥f i∥kt = sup 
+
+> α> 0
+
+α
+
+> ℓϵ
+
+X
+
+> s=1
+
+w−2 
+
+> ms
+
+1{α≤ϱw 2/t ms }
+
+!1/t 
+
+.
+
+Moreover, 
+
+α ≤ ϱ w 2/t ms =⇒ αtw−2 
+
+> ms
+
+≤ ϱt.
+
+Hence, 
+
+∥f i∥kt = sup 
+
+> α> 0
+> ℓϵ
+
+X
+
+> s=1
+
+αtw−2 
+
+> ms
+
+1{α≤ϱw 2/t ms }
+
+!1/t 
+
+≤ sup 
+
+> α> 0
+> ℓϵ
+
+X
+
+> s=1
+
+ϱt1{α≤ϱw 2/t ms }
+
+!1/t 
+
+≤ ϱ ℓ 1/t ϵ < ∞.
+
+Thus, f i ∈ kt. In view of Theorem 5.7, the functions f i satisfy the variational source condition in Assumption 5 with index function ϕ(s) ≍ sr , where r = 1−t 
+
+> 2−t
+
+. Consequently, the corresponding probability measures ρf i belong to Pr,b .Fix i̸ = j, and let ∆ = {s : σsi̸ = σsj } with h := Ham( σi, σ j ) = |∆|. For each s ∈ ∆, we have 
+
+|(f i − f j )ms | = 2 ϱ w 2−2tt 
+
+> ms
+
+.
+
+Since um = w 
+
+> 2p−2
+> p
+> m
+
+, the p-norm satisfies 
+
+∥f i − f j ∥pu,p = X
+
+> s∈∆
+
+upms |(f i − f j )ms |p = 2 pϱp X
+
+> s∈∆
+
+w 2( p−t) 
+
+> t
+> ms
+
+. (38) Using the lower bound in (37) we obtain 
+
+∥f i − f j ∥pu,p ≥ 2pϱp · h ·  4ϱ−pϵpℓ−1
+
+> ϵ
+
+ = 2 pϵp
+
+ 4hℓϵ
+
+
+
+.
+
+Since h ≥ ℓϵ/4 this implies the convenient lower bound 
+
+∥f i − f j ∥u,p ≥ 2ϵ. (39) Now, we compute explicit upper bound for ∥f i − f j ∥2
+
+> w, 2
+
+:
+
+∥f i − f j ∥2 
+
+> w, 2
+
+= X
+
+> s∈∆
+
+w2 
+
+> ms
+
+|(f i − f j )ms |2 = 4 ϱ2 X
+
+> s∈∆
+
+w 2(2 −t) 
+
+> t
+> ms
+
+. (40) Set 
+
+α0 := 2(2 − t)
+
+t , α1 := 2 − tp − t .
+
+25 Using the upper bound in (37) we get for each s ∈ ∆, 
+
+wα0 
+
+> ms
+
+≤ qα0  4ϱ−pϵpℓ−1
+
+> ϵ
+
+α0 t 
+
+> 2( p−t)
+
+= qα0  4ϱ−pϵpℓ−1
+
+> ϵ
+
+α1
+
+.
+
+Summing over s ∈ ∆ (there are h terms) yields 
+
+∥f i − f j ∥2 
+
+> w, 2
+
+≤ 4ϱ2 h q α0  4ϱ−pϵpℓ−1
+
+> ϵ
+
+α1
+
+.
+
+Rewrite this inequality as 
+
+∥f i − f j ∥2 
+
+> w, 2
+
+≤ 41+ α1 qα0 h ϱ 2−pα 1 ϵ pα 1 ℓ−α1 
+
+> ϵ
+
+.
+
+A short algebraic simplification of the exponent of ϱ gives 2 − pα 1 = t(p − 2) 
+
+p − t , pα 1 = p(2 − t)
+
+p − t .
+
+Therefore the explicit bound becomes 
+
+∥f i − f j ∥2 
+
+> w, 2
+
+≤ 4 1+ 2−tp−t q 2(2 −t) 
+
+> t
+
+ϱ t(p−2) 
+
+> p−t
+
+| {z }
+
+> =: A(p,t,q,ϱ )
+
+ϵ p(2 −t) 
+
+> p−t
+
+ℓ− 2−tp−t 
+
+> ϵ
+
+h. (41) Since ϱ ≥ ϱ0 and t < p ≤ 2, we have ϱ t(p−2)  
+
+> p−t
+
+≤ ϱ 
+
+> t(p−2)
+> p−t
+> 0
+
+, hence A(p, t, q, ϱ ) ≤ A(p, t, q, ϱ 0) =: 
+
+A(p, t, q )Using h ≤ ℓϵ we also obtain the simpler bound 
+
+∥f i − f j ∥2 
+
+> w, 2
+
+≤ A(p, t, q ) ℓ 
+
+> p−2
+> p−t
+> ϵ
+
+ϵ p(2 −t) 
+
+> p−t
+
+.
+
+Define the sets 
+
+Ai =
+
+n
+
+z : ∥f l 
+
+> z
+
+− f i∥u,p < ϵ 
+
+o
+
+, 1 ≤ i ≤ Nϵ.
+
+From (39), the sets Ai are pairwise disjoint. Applying Fano’s lemma (Lemma 3.3 from [18]) to the family of product measures ρnf i (1 ≤ i ≤
+
+Nϵ), we obtain that either p := max 
+
+> 1≤i≤Nϵ
+
+ρnf i (Aci ) ≥ Nϵ
+
+Nϵ + 1 , (42) or min 
+
+> 1≤j≤Nϵ
+
+1
+
+NϵNϵX
+
+> i=1
+> i̸=j
+
+K(ρnf i , ρ nf j ) ≥ ΨNϵ (p) , (43) where ΨNϵ (p) = log( Nϵ) + (1 − p) log 
+
+ 1 − pp
+
+
+
+− p log 
+
+ Nϵ − pp
+
+
+
+.
+
+We now distinguish two cases. In the first one, we simply assume that p ≥ 12 . If instead p < 12 ,we derive an alternative lower bound for p. From the dichotomy given by Fano’s lemma, since  
+
+> Nϵ
+> Nϵ+1
+
+≥ 12 for Nϵ ≥ 1, we conclude that in this case the bound (43) holds. Thus, we obtain ΨNϵ (p) ≥ (1 − p) log Nϵ + (1 − p) log(1 − p) − log p + 2p log p .
+
+Applying x log x ≥ − 1/e, for x ∈ (0 , 1] to the negative terms yields ΨNϵ (p) ≥ (1 − p) log Nϵ − log p − 3
+
+e .
+
+26 Since we consider p ≤ 1/2, we further simplify (1 − p) log Nϵ ≥ 12 log Nϵ, hence ΨNϵ (p) ≥ log( pNϵ) − log p − 3
+
+e . (44) For the joint measures ρnf i and ρnf j , 1 ≤ i, j ≤ Nϵ, Proposition 4 in [14], together with Assump-tion 6 (i) and (39), gives 
+
+K(ρnf i , ρ nf j ) = n K(ρf i , ρ f j ) ≤ 16 n
+
+15 dJ 2 ∥Sμ [A(fi) − A(fj )] ∥2 
+
+> Hμ
+
+≤ 16 nL 2
+
+15 dJ 2 ∥f i − f j ∥2
+
+> w, 2
+
+.
+
+Using the explicit bound (41) we get, for every i̸ = j,
+
+K(ρnf i , ρ nf j ) ≤ 16 L2
+
+15 dJ 2 A(p, t, q ) · n ϵ p(2 −t) 
+
+> p−t
+
+ℓ 
+
+> p−2
+> p−t
+> ϵ
+
+.
+
+Denote c := 16 L2 
+
+> 15 dJ 2
+
+A(p, t, q ) and hence we get 
+
+K(ρnf i , ρ nf j ) ≤ c · n ϵ p(2 −t) 
+
+> p−t
+
+ℓ 
+
+> p−2
+> p−t
+> ϵ
+
+. (45) Combining (43), (44), and (45), we obtain p := max 
+
+> 1≤i≤Nϵ
+
+Pρnf i
+
+z : ∥f l 
+
+> z
+
+− f i∥u,p > ϵ ≥ min 
+
+ 12 , pNϵ exp 
+
+
+
+− 3
+
+e − cnϵ p(2 −t) 
+
+> p−t
+
+ℓ
+
+> p−2
+> p−t
+> ϵ
+
+ 
+
+.
+
+Finally, using (36), for the probability measure ρ∗ satisfying p = ρn 
+
+> ∗
+
+(Aci ), the stated result follows. We now refine this general lower bound to obtain an explicit convergence rate. 
+
+Theorem 5.4 (Minimax lower rate in expectation) . Assume the hypotheses of Theorem 5.3, and q ∈ [1 , ∞). Let A denote the class of all such learning algorithms l : z 7 → f l
+
+> z
+
+. Let an := 
+
+n− 2r−pr +p−1 
+
+> p(1+ b−br )
+
+. Then the following minimax lower bound holds: 
+
+lim inf  
+
+> n→∞
+
+inf  
+
+> l∈A
+
+sup 
+
+> ρ∈P r,b
+
+
+
+Eρn
+
+ f l 
+
+> z
+
+− fρ
+
+> q
+> u,p
+
+1/q
+
+an
+
+> 0.
+
+Consequently, the sequence (an)n≥1 is a minimax lower rate of convergence in Lq over the model class Pr,b .Proof of Theorem 5.4. The argument follows by adapting the general lower bound established in Theorem 5.3 to the present parametric setting of the packing exponent. Assume that the packing exponent satisfies ℓϵ = Γ ϵ−pb (1 −r) > 16 for some Γ. Balancing the two exponential terms in the bound of Theorem 5.3 with t = 2r−1 
+
+> r−1
+
+yields the equality Γ48 ϵ−pb (1 −r) = c n ϵ p
+
+> 2r−pr +p−1
+
+
+
+Γ ϵ−pb (1 −r) (p−2)(1 −r)2r−pr +p−1
+
+. (46) Solving (46) for ϵ gives the critical choice 
+
+ϵ = τ a n, an = n− 2r−pr +p−1 
+
+> p(1+ b−br )
+
+, τ =
+
+ 148 c
+
+(2 r−pr +p−1) 
+
+> p(1+ b−br )
+
+Γ 1 
+
+> p(1+ b−br )
+
+. (47) For this choice of ϵ, Theorem 5.3 guarantees that for any estimator f l 
+
+> z
+
+produced by an arbitrary learning algorithm l ∈ A , there exists ρ∗ ∈ P r,b such that 
+
+Pρn
+
+> ∗
+
+∥f l 
+
+> z
+
+− fρ∗ ∥u,p > τ a n ≥ min 
+
+ 12 , ϑ 
+
+
+
+= ϑ. (48) 27 Let X = f l 
+
+> z
+
+− fρ∗ u,p . For every ϵ > 0, Eρn 
+
+> ∗
+
+[Xq] ≥ ϵqPρn 
+
+> ∗
+
+(X ≥ ϵ). Hence 
+
+
+
+Eρn 
+
+> ∗
+
+[Xq]
+
+1/q
+
+≥ ϵ
+
+
+
+Pρn 
+
+> ∗
+
+(X ≥ ϵ)
+
+1/q
+
+.
+
+For ϵ = τ a n, it follows from (48) that 
+
+∀l ∈ A , ∃ρ∗ ∈ P r,b s.t. 
+
+
+
+Eρn 
+
+> ∗
+
+[Xq]
+
+1/q
+
+≥ τ a nϑ1/q
+
+⇒ ∀ l ∈ A , sup 
+
+> ρ∈P r,b
+
+
+
+Eρn [Xq]
+
+1/q
+
+≥ τ a nϑ1/q
+
+⇒ inf  
+
+> l∈A
+
+sup 
+
+> ρ∈P r,b
+
+
+
+Eρn [Xq]
+
+1/q
+
+≥ τ a nϑ1/q
+
+Finally, we obtain lim inf  
+
+> n→∞
+
+inf  
+
+> l∈A
+
+sup 
+
+> ρ∈P r,b
+
+
+
+Eρn [Xq]
+
+1/q
+
+an
+
+≥ τ ϑ 1/q > 0.
+
+This establishes the lower rate of convergence claimed in the theorem. 
+
+Remark 5.5 (On the verification of the hypothesis of Theorem 5.3) . We verify that the following condition, appearing in the statement of Theorem 5.3, 
+
+∃c0, ϵ 0 > 0, q > 1 such that ∀ζ ∈ (0 , c 0), ∀ϵ ∈ (0 , ϵ 0), ∃M = {m1, . . . , m ℓϵ } :
+
+ζ
+
+
+
+ϵpℓ−1
+
+> ϵ
+
+ t
+
+> 2( p−t)
+
+≤ wm ≤ q ζ 
+
+
+
+ϵpℓ−1
+
+> ϵ
+
+ t
+
+> 2( p−t)
+
+, ∀m ∈ M (49) is satisfied for the choice ℓϵ = Γ ϵ−pb (1 −r) used in Theorem 5.4, under mild assumptions on the weight sequence w.In particular, we assume that wm = m−a for some a > 0, which is asymptotically equivalent to 2−a⌊log m⌋, as considered in Section 6.1. For simplicity, set Γ = 1 and define γ = ( p + pb (1 −
+
+r)) t 
+
+> 2( p−t)
+
+= pt (2 −t+b)2(2 −t)( p−t) . Then (49) is equivalent to finding ϵ−pb (1 −r) integers satisfying ζϵ γ ≤
+
+m−a ≤ q ζϵ γ , that is, integers belonging to the interval (qζ ϵ γ )−1/a , (ζ ϵ γ )−1/a . The length of this interval is ζ−1/a (1 − q−1/a ) ϵ−γ/a , where Q := 1 − q−1/a > 0. Moreover, since ζ < c 0, this length is bounded from below by Qc −1/a  
+
+> 0
+
+ϵ−γ/a .To ensure that this interval contains at least ϵ−pb (1 −r) integers, it suffices that ϵ−γ/a ≳ ϵ−pb (1 −r).
+
+Since ϵ < ϵ 0 < 1, this is equivalent to γa ≥ pb (1 − r), i.e. a ≤ γpb (1 −r) . This shows that polynomially decaying weights wm = m−a are compatible with the assumptions of Theorem 5.3. Therefore, no learning algorithm can achieve a convergence rate faster than O n− (2 r−pr +p−1) 
+
+> p(1+ b−br )
+
+
+
+in the interpolation norm. Hence, the optimal lower rate of convergence for the class of nonlinear inverse problems considered here is of order O n− (2 r−pr +p−1) 
+
+> p(1+ b−br )
+
+, which matches the corresponding upper rate obtained under the same variational source and capacity conditions. 
+
+## 5.2 Optimality of Convergence Rates and Connections 
+
+The goal of this subsection is to show that the upper and lower convergence rates established in Sections 4 and 5.1 are optimal. Although this follows directly from Corollary 4.7 and Theorem 5.4, it is important to emphasize that these two results rely on different structural assumptions. In particular, the upper rates in Corollary 4.7 are expressed in terms of the variational source con-dition (Assumption 5) with index function ϕ(t) = tr . In contrast, the proof of the lower bound in Theorem 5.4 is based on the assumption that fρ belongs to the approximation space kt. The first goal of this subsection is therefore to prove Theorem 5.7, which establishes the equivalence 28 of these two requirements (under Assumption 6) and which was already used in the proof of Theorem 5.4. We then derive the optimality of the convergence rates. Finally, we provide an approximation-theoretic characterization of kt in terms of the polynomial decay rate of the best 
+
+n-term approximation error, thereby establishing a complete connection between the sparsity (or compressibility) of the true solution fρ and the optimal minimax rate of convergence. 
+
+From Approximation Spaces to Variational Source Conditions. We begin by establishing that fρ ∈ kt (together with Assumption 6) implies the variational source condition with a suitable index r. The key intermediate step is the following equivalence, which shows that membership in 
+
+kt can be reformulated as a nonlinear variational inequality involving the ℓ1 norm and the weighted 
+
+ℓ2 
+
+> w
+
+norm. 
+
+Lemma 5.6. Assume that fρ ∈ D (A) ∩ ℓ1, t ∈ (0 , 1) , and let (wj )j≥1 be a sequence of positive weights satisfying wj → 0 as j → ∞ . Then the following two statements are equivalent: (i) fρ ∈ kt (with respect to the weights (wj )j≥1). (ii) There exists a constant γ > 0 such that, for all f ∈ D (A) ∩ ℓ1,
+
+∥fρ − f ∥ℓ1 + ∥fρ∥ℓ1 − ∥ f ∥ℓ1 ≤ γ ∥fρ − f ∥ 2−2t 
+
+> 2−t
+> w, 2
+
+. (50) Lemma 5.6 is a variant of Lemma 13 in [33], adapted to the ℓ1-space. It shows that the smoothness of fρ in the approximation space kt can be equivalently expressed through a power-type inequality between the Hilbert norm and a weighted ℓ2-type norm. This equivalence provides a bridge between geometric smoothness assumptions and variational inequalities used in convergence rate analysis. Combining the above characterization with the lower estimate in Assumption (6), we immediately obtain a variational source condition. 
+
+Theorem 5.7 (Variational source condition from kt). Suppose that A satisfies Assumption 6. Let 
+
+t ∈ (0 , 1) and fρ ∈ D(A) ∩ ℓ1 be such that ∥fρ∥kt ≤ ϱ, where kt is the approximation space defined in (32) with weights (wj )j≥1 satisfying wj → 0. Then, for all f ∈ D(A) ∩ ℓ1,
+
+∥fρ − f ∥ℓ1 + ∥fρ∥ℓ1 − ∥ f ∥ℓ1 ≤ C ∥A(f ) − A(fρ)∥ 2−2t 
+
+> 2−t
+> Hμ
+
+, (51) 
+
+where C > 0 is a constant depending only on ϱ, t, and the Lipschitz constant L in Assumption 6. In particular, fρ satisfies the variational source condition (Assumption 5) with index function 
+
+ϕ(s) = C s r , r := 1 − t
+
+2 − t ∈  0, 12
+
+ . (52) 
+
+Proof. By Lemma 5.6, the condition fρ ∈ kt (with ∥fρ∥kt ≤ ϱ) implies 
+
+∥fρ − f ∥ℓ1 + ∥fρ∥ℓ1 − ∥ f ∥ℓ1 ≤ γ ∥fρ − f ∥ 2−2t
+
+> 2−t
+> w, 2
+
+for all f ∈ D (A) ∩ ℓ1, where γ = γ(ϱ, t ). By part (ii) of Assumption 6 (lower Lipschitz bound), 
+
+∥fρ − f ∥w, 2 ≤ L ∥A(fρ) − A(f )∥Hμ .
+
+Substituting and setting C := γL 2−2t 
+
+> 2−t
+
+gives (51). The exponent in (52) follows directly by com-paring ϕ(s) = Cs r with (51). Since t ∈ (0 , 1), one checks that r = (1 − t)/(2 − t) maps (0 , 1) bijectively onto (0 , 1/2), confirming r ∈ (0 , 1/2) ⊂ (0 , 1) as required by Assumption 5. Theorem 5.7 provides the fundamental link between the smoothness-space framework and the variational source condition framework. Specifically, under Assumption 6(ii), if fρ belongs to the smoothness space kt, then it satisfies the variational source condition of Assumption 5 with index function ϕ(s) ≍ sr , where r = 1−t 
+
+> 2−t
+
+. Conversely, again under Assumption 6(i), if fρ satisfies the variational source condition of Assumption 5 with ϕ(s) = sr , then fρ belongs to the smoothness space kt with t = 2r−1 
+
+> r−1
+
+. This means that the prior class Pr,b is indeed compatible with the approximation-space hypothesis used in the lower bound construction. 29 Matching Upper and Lower Rates. We now state explicitly that the upper rate of Corol-lary 4.7 and the lower rate of Theorem 5.4 coincide. 
+
+Corollary 5.8 (Minimax optimality) . Let r ∈ (0 , 12 ) and b ∈ (0 , 1) . Under Assumptions 1–6 and the polynomial spectral decay condition (Assumption 7), the ℓ1-regularized estimator (3) with regularization parameter 
+
+λ∗ = n− 1−r
+
+> 1+ b−br
+
+achieves the rate 
+
+∥fz,λ − fρ∥u,p = O
+
+
+
+n− 2r−pr +p−1
+
+> p(1+ b−br )
+
+
+
+in probability over the prior class Pr,b , and no estimator can achieve a faster rate over this class. Hence, the rate 
+
+n− 2r−pr +p−1
+
+> p(1+ b−br )
+
+is minimax optimal over Pr,b .
+
+Approximation-theoretic Characterization of kt. To make the connection with concrete sparsity models fully explicit, we recall and prove the characterization of kt in terms of best n-term approximation errors. Given a sequence f = ( fj )∞ 
+
+> j=1
+
+and weights ( wj ), define the weighted sparsity measure 
+
+S(h) := 
+
+> ∞
+
+X
+
+> j=1
+
+w−2 
+
+> j
+
+1{hj̸ =0 }
+
+and the best n-term approximation error 
+
+σn(f ) := inf 
+
+n
+
+∥f − h∥w, 2 : S(h) ≤ n
+
+o
+
+.
+
+When wj ≡ 1, S(h) equals the number of nonzero coefficients of h, recovering the standard compressed-sensing notion of sparsity. 
+
+Lemma 5.9. Let t ∈ (0 , 2) . Then f ∈ kt if and only if the approximation error satisfies 
+
+σn(f ) = O n 12 − 1
+
+> t
+
+.
+
+Proof. Let us introduce the following notation: 
+
+A(α) := 
+
+> ∞
+
+X
+
+> j=1
+
+w−2 
+
+> j
+
+1{| fj |w2  
+
+> j>α }
+
+= X  
+
+> j:|fj|w2
+> j>α
+
+w−2 
+
+> j
+
+.
+
+Suppose f ∈ kt. Then, the membership condition gives A(α) ≤ Cα −t for some C > 0 and for every α > 0. Let us define αn := sup {α > 0 : A(α) ≤ n} and the truncation h(n) such that 
+
+h(n) 
+
+> j
+
+=
+
+(fj , if |fj |w2 
+
+> j
+
+> α n
+
+0, otherwise. Then, 
+
+S(h(n)) = 
+
+> ∞
+
+X
+
+> j=1
+
+w−2 
+
+> j
+
+1{h(n)  
+
+> j̸=0 }
+
+= X  
+
+> j:|fj|w2
+> j>α n
+
+w−2 
+
+> j
+
+= A(αn) ≤ n, 
+
+we have that σn(f ) ≤ ∥ f − h(n)∥w, 2. We easily observe that 
+
+∥f − h(n)∥2 
+
+> w, 2
+
+= X  
+
+> j:|fj|w2
+> j≤αn
+
+w2 
+
+> j
+
+f 2 
+
+> j
+
+.
+
+30 To bound the last term, we use a layer estimate, relying on the following trick: 
+
+w2 
+
+> j
+
+f 2 
+
+> j
+
+= w−2 
+
+> j
+
+(|fj |w2 
+
+> j
+
+)2 = w−2
+
+> j
+
+Z |fj |w2
+
+> j
+> 0
+
+2β dβ = 2 w−2
+
+> j
+
+Z
+
+> R
+
+β1{β< |fj |w2 
+
+> j}
+
+(β) d β. 
+
+As a consequence, 
+
+X  
+
+> j:|fj|w2
+> j≤αn
+
+w2 
+
+> j
+
+f 2 
+
+> j
+
+= 2 X  
+
+> j:|fj|w2
+> j≤αn
+
+w−2
+
+> j
+
+Z
+
+> R
+
+β1{β< |fj |w2  
+
+> j}
+
+dβ
+
+≤ 2
+
+> ∞
+
+X
+
+> j=1
+
+w−2
+
+> j
+
+Z αn
+
+> 0
+
+β1{β< |fj |w2  
+
+> j}
+
+dβ
+
+= 2 
+
+Z αn
+
+> 0
+
+βA (β) d β. 
+
+Using A(β) ≤ Cβ −t,
+
+∥f − h(n)∥2 
+
+> w, 2
+
+≤ 2C
+
+Z αn
+
+> 0
+
+β1−tdβ. 
+
+Since t < 2, this yields 
+
+∥f − h(n)∥2 
+
+> w, 2
+
+≤ 2Cα 2−tn .
+
+By the definition of αn and using the bound A(α) ≤ Cα −t, we obtain 
+
+n ≤ Cα −tn ,
+
+which implies 
+
+α2−tn ≤ C 2−tt n− 2−tt .
+
+Therefore, 
+
+σn(f ) = O(n1− t 
+
+> 2
+
+).
+
+Conversely, assume that σn(f ) ≤ Cn 12 − 1 
+
+> t
+
+for all n. Fix α > 0 and let n = ⌊α−t⌋. By definition of σn(f ), there exists h with S(h) ≤ n such that ∥f − h∥w, 2 ≤ Cn 12 − 1 
+
+> t
+
+= Cα 1− t 
+
+> 2
+
+. Then, since 
+
+|fj |w2 
+
+> j
+
+> α implies w−2 
+
+> j
+
+< w 2 
+
+> j
+
+α−2f 2 
+
+> j
+
+, we have 
+
+> ∞
+
+X
+
+> j=1
+
+w−2 
+
+> j
+
+1{| fj |w2  
+
+> j>α }
+
+= X 
+
+> j:hj̸=0
+
+w−2 
+
+> j
+
+1{| fj |w2  
+
+> j>α }
+
++ X 
+
+> j:hj=0
+
+w−2 
+
+> j
+
+1{| fj |w2 
+
+> j>α }
+
+≤ S(h) + α−2 X 
+
+> j:hj=0
+
+w2 
+
+> j
+
+(fj − hj )2
+
+≤ S(h) + α−2∥f − h∥2 
+
+> w, 2
+
+≤ (1 + C2)α−t,
+
+which implies 
+
+∥f ∥kt = sup 
+
+> α> 0
+
+α
+
+ ∞X
+
+> j=1
+
+w−2 
+
+> j
+
+1{w−2  
+
+> jα< |fj|}
+
+1/t 
+
+≤ (1 + C2)1/t < ∞,
+
+hence f ∈ kt.Lemma 5.9 shows that the rate n1/2−1/t for best n-term approximation is the right measure of sparsity underlying the convergence rates in Theorems 4.7 and 5.4. Taken together, Theorem 5.7 and Lemma 5.9 establish a complete chain of implications: 
+
+σn(fρ) = O n 12 − 1
+
+> t
+
+ ⇐⇒ fρ ∈ kt (under Assumption 6) =⇒ VSC with ϕ(s) = s 1−t 
+
+> 2−t
+
+=⇒ convergence rate n− 2r−pr +p−1 
+
+> p(1+ b−br )
+
+.
+
+(53) where r = (1 − t)/(2 − t) and the last implication is provided by Theorem 4.7. The corre-sponding lower bound (Theorem 5.4) shows that no estimator can improve upon this rate, so the 
+
+ℓ1-regularized estimator is minimax optimal over the class Pr,b .31 Remark 5.10 . The mapping t 7 → r = (1 − t)/(2 − t) is strictly increasing on (0 , 1) with range (0 , 1/2). Thus, for the present ℓ1 setting, the variational source condition index r is confined to the interval (0 , 1/2). This is consistent with the known limitations of ℓ1 regularization compared to ℓ2 regularization: the ℓ1 estimator extracts sparsity information efficiently but cannot exploit smoothness beyond a certain degree. The boundary case t → 0 ( r → 0) corresponds to very sparse but almost unstructured solutions, while t → 1 ( r → 1/2) corresponds to solutions with the maximal sparsity exploitable within this framework (e.g., functions with moderately fast coefficient decay in a wavelet basis). 
+
+Remark 5.11 . The convergence rate (53) unifies three distinct complexity parameters: the sparsity exponent t (or equivalently the source smoothness r from the variational source condition), the spectral decay exponent b of the covariance operator Tμ, and the interpolation norm index p. In the special case p = 1 (the ℓ1 reconstruction norm), the exponent reduces to 2r − r + 1 − 11 · (1 + b − br ) = r
+
+1 + b − br ,
+
+recovering the rate obtained in Corollary 4.5. In the case p = 2 (the weighted ℓ2 
+
+> w
+
+norm), one obtains 2r − 2r + 2 − 12(1 + b − br ) = 12(1 + b − br ) .
+
+# 6 Motivation from Examples 
+
+In this section, we discuss two main examples that satisfy all the hypotheses introduced in the the-oretical discussion, particularly focusing on Assumptions 3-7. We first consider a general strategy to verify Assumptions 4, 5, and 6 for operators mapping on smoothness spaces (a generalization of Besov spaces) with suitable smoothing properties. We then present the two main examples falling in this category, namely the identification of a conductivity coefficient in a PDE and the inversion of the (filtered) Radon transform, carefully checking the remaining assumptions. Finally, we ob-serve that all the hypothesis can be verified also when the forward is just the synthesis operator 
+
+S : ℓ1 → H . As a consequence of this simple example, we can connect our results to classical results of statistical learning outside the context of inverse problems. 
+
+## 6.1 Finitely Smoothing Operators and Smoothness Spaces 
+
+We assume that the forward operator A can be written as a composition, 
+
+A = G ◦ S, 
+
+where G : L2(X ) → H , X is a bounded domain in Rd or the d-dimensional torus ( R/Z)d, and 
+
+S : ℓ2 → L2(X ) is the synthesis operator of a multi-resolution system, such as a wavelet basis or a shearlet frame. In particular, we consider a family of functions ( ϕM,k )(M,k )∈G×Rd , where 
+
+G is a subset of GL d(R), the group of d-dimensional invertible matrices. The simplest case is 
+
+G = {2j I : j ∈ Z}, where I is the identity matrix, corresponding to G being and isotropic dilation group. This provides a discrete wavelet system. Instead, a discrete shearlet system is obtained when the matrix M is the product of the matrices BsAj , where Aj is an anisotropic dilation matrix (whose scale is determined by j) and Bs is a shear matrix. In both examples, the role of k ∈ Rd is that of encoding translations. For ease of notation we introduce the index Λ = {(M, k ) : M ∈ G ⊂ GL d(R), k × Rd}, so that for an atom ϕλ = ϕM,k , we denote its scale as 
+
+|λ| = j. We assume that ( ϕλ)λ∈Λ is a frame of L2(X ), and define the associated synthesis operator 
+
+S as follows: (Sf )( x) = X
+
+> λ∈Λ
+
+fλϕλ(x).
+
+Such systems are usually employed to encode suitable smoothness of functions, providing an equivalent description of suitable smoothness spaces, depending on a smoothness level s and on 32 two integrability indices p and q. For our purposes, we only consider the case p = q, p ≥ 1, and, relying on the equivalence of atomic descriptions, we define the smoothness space Ssp,p associated with the frame ( ϕλ)λ∈Λ as the image, through the synthesis operator S, of the weighted sequence space ℓp,w , where the weight w depends on s, d, p , and on the frame itself. We consider two main examples: 1. Wavelet bases. If ( ϕλ)λ∈Λ is a wavelet basis, we consider wλ = 2 |λ|(s+ d   
+
+> 2−dp)
+
+. In this case, the weighted space ℓp,w is equivalent to the space bsp,p defined in [33]. Moreover, it is well known (see, e.g., [44, Chapter 7]) that, provided that p ≥ 1 and |s| < s max (depending on the regularity and vanishing moments of the wavelet ϕ), the associated smoothness space is norm-isomorphic to the Besov space Bsp,p . In particular, selecting p = 1 and s = d 
+
+> 2
+
+, we also observe that the ℓ1 sequence space is isomorphic to Bd/ 21,1 .2. Shearlet frames. If ( ϕλ)λ∈Λ is a cone-adapted shearlet smooth Parseval frame in 2D (see [27]), we consider wλ = 2 |λ|(s+ 32 − 3 
+
+> p)
+
+. The resulting smoothness spaces Ssp,p is related to Besov spaces as follows (see [27, Proposition 4.3]): Bs+ 1 
+
+> p
+> p,p
+
+,→ Ssp,p ,→ Bs+ 1  
+
+> p−1
+> p,p
+
+. In particular, selecting p = 1 and s = 32 , the sequence space ℓ1 is isomorphic to S 32
+
+> 1,1
+
+, which is not equivalent to a Besov space, but it satisfies B 52 
+
+> 1,1
+
+,→ S 32 
+
+> 1,1
+
+,→ B 32
+
+> 1,1
+
+As in [33], we require the operator G to satisfy the following requirement: there exists a > 0such that the domain DG of G is a subset of H−a(X ) and, for some constant L ≥ 1, 1
+
+L ∥u1 − u2∥H−a ≤ ∥ G(u1) − G(u2)∥Hμ ≤ L∥u1 − u2∥H−a ∀u1, u 2 ∈ DG. (54) Since Hμ = L2(X , μ ; Y), condition (54) can be interpreted as a finitely-smoothing property of G.We easily observe that (54) implies that Assumption 6(ii) is verified. Indeed, 
+
+∥A(f ) − A( ˜f )∥Hμ = ∥G(S(f )) − G(S( ˜f )) ∥Hμ ≤ ∥ S(f ) − S( ˜f )∥H−a .
+
+Since H−a(X ) = B−a 
+
+> 2,2
+
+(X ), it is enough to find a s such that Ss 
+
+> 2,2
+
+,→ B−a 
+
+> 2,2
+
+to conclude that 
+
+∥A(f ) − A( ˜f )∥Hμ ≤ ∥ S(f ) − S( ˜f )∥Ss 
+
+> 2,2
+
+= ∥f − ˜f ∥ℓ2,w .
+
+In the wavelet case, since S−a 
+
+> 2,2
+
+∼= H−a, we verify Assumption 6(ii) with wλ = 2 −| λ|a. In the shearlet case, we use S−a+ 12 
+
+> 2,2
+
+,→ H−a, thus and Assumption 6(ii) is verified with wλ = 2 −| λ|(a− 12 ).Analogously, (54) allows us to verify Assumption 6(i), by considering s s.t. H−a 
+
+> 2
+
+,→ Bs
+
+> 2,2
+
+:
+
+∥A(f ) − A( ˜f )∥Hμ ≥ ∥ S(f ) − S( ˜f )∥H−a ≥ ∥ S(f ) − S( ˜f )∥Ss 
+
+> 2,2
+
+= ∥f − ˜f ∥ℓ2,w .
+
+In the wavelet case, Assumption 6(i) is verified with the same weights as Assumption 6(ii). In the shearlet case, using H−a ,→ S−a− 12 
+
+> 2,2
+
+, thus and Assumption 6(ii) is verified with wλ = 2 −| λ|(a+ 12 ).
+
+Remark 6.1 . Recall that Hμ = L2(X , μ ; Y) and that X is a bounded subset in Rd (or the d-dimensional torus). If μ is absolutely continuous with respect to d−dimensional the Lebesgue measure and its density is bounded from below and above on its support X ′, then it is equivalent to verify (54) on Hμ or on L2(X ′; Y). A prominent example of this scenario is the uniform probability on X .Finally, we recall a strategy (derived from [33] and outlined in Section 5.2) through which it is possible to verify Assumption 5 for operators satisfying (54). Combining Lemma 5.9 and Theorem 5.7, we can ensure that, if a sequence f = ( fλ)λ∈Λ shows a polynomial decay of the best n–term approximation error with respect to ∥ · ∥ w, 2 of order 12 − 1 
+
+> t
+
+(with 0 < t < 1), then f also satisfies the variational source condition with index function ϕ(s) = s 1−t 
+
+> 2−t
+
+. Equivalently, if the decay of the 33 approximation error is σn(f †) = O(n−β ) (with β > 12 ), then t = 22β+1 and ϕ(s) = s 12 − 14β .Ultimately, to satisfy Assumption 5, it is sufficient to have a priori guarantees on the approxima-tion error decay of the ground truth fρ.Using classical results from nonlinear approximation of signals and images, we can derive some insightful examples (all referred to the case w ≡ 1): 
+
+• In dimension d = 1, if S is a wavelet synthesis operator associated to a Cq wavelet with q
+
+vanishing moments ( q > 1) and the unknown signal Sf † is piecewise C1 with a finite number of discontinuities, we know that σn(f †) = O(n−1) up to a logarithmic factor (see, e.g., [30, Theorem 9.12]). 
+
+• In dimension d = 2, if S is a wavelet synthesis operator as above and the image Sf † is of bounded variation (i.e., piecewise W 1,1 on regions of finite perimeter), then σn(f †) = O(n− 12 )up to a logarithmic factor (see [30, Theorem 9.17], [17]). The order does not improve if we consider further local regularity of the image and of the regions. 
+
+• In dimension d = 2, if S is a shearlet synthesis and the image Sf † is cartoon-like (i.e., piecewise C2 on regions of C2 boundary), then σn(f †) = O(n−1) up to a logarithmic factor (see [22]). The same holds if a curvelet dictionary is used (see [12]). In the next two subsections, we describe two possible applications in which the operator A =
+
+G ◦ S satisfies (54) and image space H verifies Assumptions 3 and 7. Both those cases are related with bounded linear operators from ℓ2 to H, which directly implies that Assumption 4 is satisfied. 
+
+## 6.2 Identification of a Reaction Coefficient 
+
+Let X ⊂ Rd with d ∈ { 1, 2, 3} be a bounded domain with C2 boundary, and select φ1 ∈ L2(X )and φ2 ∈ H 32 (∂X ). Let c ∈ L∞(X ) s.t. c ≥ 0 and consider the unique weak solution h of 
+
+−∆h + ch = φ1 in X
+
+h = φ2 on ∂X
+
+Let G : L∞(X ) → H1(X ) be operator associating the coefficient c to the solution h. We consider the inverse problem of recovering c from the knowledge of y.In [33, Example 2], it is argued that G satisfies (54) with a = 2 in a sufficiently small L2 ball of a reference solution c0.Moreover, standard elliptic regularity results (see [21, Theorem 8.12]) ensure that h ∈ H2(X ), and Sobolev embeddings guarantee that H2(X ) ⊂ C(X ) for d ≤ 3. As a consequence, we let 
+
+H = {h ∈ H2(X ) : h|∂X = φ2} is a (real-valued) reproducing kernel Hilbert space. We consider for simplicity the homogenous case, i.e., φ2 = 0, where H = H2(X ) ∩ H10 (X ). In this case, it is easy to show that the kernel of H is 
+
+K(x, y ) = 
+
+> ∞
+
+X
+
+> k=1
+
+ϕk(x)ϕk(y)(1 + λk)2 ,
+
+where ( λk, ϕ k) are the eigenvalues and eigenfunctions of the Laplace operator on X with homoge-nous Dirichlet boundary conditions. In order to verify Assumption 3, we need to show that ∥Kx∥HS is bounded uniformly in x. To do so, first notice that, for each x,
+
+∥Kx∥2 
+
+> HS
+
+=
+
+> ∞
+
+X
+
+> k=1
+
+Kx
+
+ ϕk
+
+1 + λk
+
+ 2
+
+=
+
+> ∞
+
+X
+
+> k=1
+
+ϕ2
+
+> k
+
+(x)(1 + λk)2 = K(x, x ),
+
+where we have used that 
+
+ ϕk
+
+> 1+ λk
+
+
+
+> k
+
+form an orthonormal basis of H. To get a more explicit expression of the eigenpairs, consider for simplicity the case X = [0 , 1] d. In this case, for each 34 multi-index k = ( k1, . . . , k d), 
+
+ϕk(x) = 
+
+> d
+
+Y
+
+> i=1
+
+√2 sin( kiπx i), λk = π2|k|2 = π2(k21 + . . . + k2
+
+> d
+
+).
+
+Now, since |ϕk(x)|2 ≤ 2d, we have 
+
+∥Kx∥2 
+
+> HS
+
+= K(x, x ) ≲ X
+
+> k∈Nd
+
+|k|−4,
+
+which is a convergent series if d < 4. We now aim at verifying Assumption 7. Consider for simplicity a uniform distribution μ on 
+
+X = [0 , 1] d: in this case, the covariance operator is given by (T f )( y) = 
+
+Z
+
+> X
+
+f (x)K(x, y )dx =
+
+> ∞
+
+X
+
+> k=1
+
+Z 
+
+> X
+
+f (x)ϕk(x)dx 
+
+ ϕk(y)(1 + λk)2 .
+
+As a consequence, T is diagonal with respect to the basis ( ϕk)k, with eigenvalues 
+
+μk = 1(1 + λk)2 ∼ λ−2 
+
+> k
+
+∼ | k|−4
+
+Let us now order the eigenvalues decreasingly with a single index k: since the number of indices satisfying |k| ≤ M is of order M d, we get that 
+
+μk ∼ | k|−4 ⇔ μk ∼ k− 4 
+
+> d
+
+.
+
+As a result, 
+
+N (λ) = tr(( T + λI )−1T ) = 
+
+> ∞
+
+X
+
+> k=1
+
+μk
+
+μk + λ ,
+
+and it is easy to show that μk ∼ k− 1 
+
+> b
+
+implies N (λ) ∼ λ−b, whenever 0 < b < 1. Indeed, for k
+
+greater than a sufficiently large K0,
+
+N (λ) ∼
+
+Z ∞
+
+> K0
+
+Cx − 1
+
+> b
+
+Cx − 1 
+
+> b
+
++ λ dx ≤ Cbλ−b
+
+Z ∞
+
+> 0
+
+v− 1
+
+> b
+
+v− 1 
+
+> b
+
++ 1 dv, 
+
+where we employed the change of variable x = Cbλ−bv. The latter quantity is bounded since, as 
+
+v → ∞ , the integrated function is asymptotic to v− 1 
+
+> b
+
+, which is integrable provided that 1 
+
+> b
+
+> 1. As a result, since μk ∼ λ−4/d k , we have that N (λ) ∼ λ− d 
+
+> 4
+
+, thus b = d 
+
+> 4
+
+(which verifies 0 < b < 1for d = 1 , 2, 3). 
+
+## 6.3 Filtered Radon Transform 
+
+Let us consider an application in Computed Tomography: set A = R ◦ S, where R : L2(Ω) →
+
+L2(X ; Y), where Ω = [ −1, 1] 2, X = S1 ∼= [0 , 2π) and Y = L2(−√2, √2), and R is the Radon transform in 2D. In particular, for all u ∈ L2(Ω), Ru is a function in L2(X ; Y) that associates an angle θ ∈ X to a function in Y as follows: (Ru )( θ) = ( Ru )( θ, ·) ∈ Y , (Ru )( θ, s ) = 
+
+Z
+
+> Ω
+
+δ(x · ωθ − s)u(x)dx, 
+
+where δ is the Dirac distribution and ωθ = (cos( θ), sin( θ)). Notice that, thanks to [35, Theorem 5.1], condition (54) is verified for a = 12
+
+Let us now consider the image H of L2(Ω) through R: by the injectivity of the Radon transform, if h, h ′ ∈ H , there exist unique u, u ′ ∈ L2(Ω) such that h = Ru and h′ = Ru ′. Then, the following scalar product and its induced norm are well-defined on H:
+
+⟨h, h ′⟩H = ⟨u, u ′⟩L2(Ω) , ∥h∥H = ∥u∥L2(Ω) .
+
+35 Proposition 6.2. The space H is a vector-valued RKHS with kernel 
+
+K(θ′, θ ) = Rθ′ R∗ 
+
+> θ
+
+,
+
+being Rθ the operator mapping a function u ∈ L2(Ω) to Ru (θ, ·).Proof. We first show that the (linear) operators Rθ are bounded form L2(Ω) to Y, uniformly in 
+
+θ ∈ X :
+
+∥Rθ u∥2 
+
+> Y
+
+=
+
+Z √2
+
+> −√2
+
+|Ru (θ, s )|2ds =
+
+Z √2
+
+> −√2
+
+Z
+
+> L(θ,s )∩Ω
+
+u(x)dx 
+
+> 2
+
+ds 
+
+≤
+
+Z √2
+
+> −√2
+
+|L(θ, s ) ∩ Ω|
+
+Z 
+
+> Ω
+
+u(x)2dx 
+
+
+
+ds ≤ 8∥u∥2
+
+> L2(Ω)
+
+,
+
+where L(θ, s ) denotes the line of direction θ and offset s from the origin, thus |L(θ, s ) ∩ [0 , 1] 2| ≤ 
+
+2√2. Consider now any h ∈ H and let h = Ru for u ∈ L2(Ω): then, for all θ ∈ X , y ∈ Y , the evaluation functional Fθ,y : H → R, defined as 
+
+Fθ,y (h) = ⟨h(θ), y ⟩Y =
+
+Z √2
+
+> −√2
+
+Ru (θ, s )y(s)ds = ⟨Rθ u, y ⟩Y ,
+
+is bounded for any θ, y :
+
+|Fθ,y (h)| = |⟨ Rθ u, y ⟩Y | ≤ L∥u∥L2(Ω) ∥y∥Y ≤ L∥y∥Y ∥h∥H.
+
+This guarantees that H is an RKHS. We now wish to provide an expression for its kernel. On the one hand, we have 
+
+⟨h, K (·, θ )y⟩H := Fθ,y (h) = ⟨Rθ u, y ⟩Y = ⟨u, R ∗ 
+
+> θ
+
+y⟩L2(Ω) .
+
+On the other hand, by the continuity of the evaluation operator, K(·, θ )y ∈ H , and there exists 
+
+u′ ∈ L2(Ω) such that Ru ′ = K(·, θ )y, which also implies that 
+
+⟨h, K (·, θ )y⟩H = ⟨u, u ′⟩L2(Ω) .
+
+This allows to conclude that u′ = R∗ 
+
+> θ
+
+y, hence K(θ′, θ )y = ( Ru ′)( θ′) = Rθ′ R∗ 
+
+> θ
+
+y, from which we finally deduce that K(θ′, θ ) = Rθ′ R∗ 
+
+> θ
+
+.Although H possesses the desired RKHS structure, it does not fulfill the assumptions for the theoretical discussion, and in particular the following condition holds on Kθ = K(·, θ ) as a map from y ∈ Y to K(·, θ )y ∈ H .
+
+Proposition 6.3. For every θ ∈ X , the kernel Kθ : Y → H is not a Hilbert-Schmidt operator. Proof. From K(θ′, θ ) = Rθ′ R∗ 
+
+> θ
+
+we deduce that K(·, θ )y = RR ∗ 
+
+> θ
+
+y. As a consequence, ∥K(·, θ )y∥H =
+
+∥R∗ 
+
+> θ
+
+y∥L2(Ω) , hence ∥K(·, θ )∥HS( Y;H) = ∥R∗ 
+
+> θ
+
+∥HS( Y;L2(Ω)) . Notice now that 
+
+Rθ R∗ 
+
+> θ
+
+y(s) = 
+
+Z
+
+> L(θ,s )∩Ω
+
+y(x · ωθ )dx = y(s)|L(θ, s ) ∩ Ω|,
+
+thus Rθ R∗ 
+
+> θ
+
+is a multiplication operator with the (non-zero) multiplier |L(θ, s ) ∩ Ω|, hence it cannot be compact nor Hilbert-Schmidt. In order to verify Assumptions 3 and 7, we instead consider A = Rφ ◦ S, where, for a fixed function φ ∈ L2(−√2, √2), Rφ is a smoothed version of the Radon transform: 
+
+Rφu = φ ∗s Ru =
+
+Z
+
+> R
+
+φ(s − τ )
+
+Z 
+
+> L(θ,τ )
+
+u(x)dx 
+
+!
+
+dτ =
+
+Z
+
+> Ω
+
+u(x)φ(s − x · ωθ ).
+
+36 We can also denote it by Rφ = Cφ ◦ R, where Cφ is the convolution operator with the filter 
+
+φ with respect to the s variable. We consider two main possible choices: a boxcar function 
+
+φ(τ ) = 12a χ[−a,a ](τ ) for a > 0 and a Gaussian kernel. It is immediate to verify that the image H of L2(Ω) through Rφ is a RKHS with evaluation functional Fθ,y (h) = ⟨CφRθ u, y ⟩Y and kernel K(θ′, θ ) = CφRθ′ R∗ 
+
+> θ
+
+C∗
+
+> φ
+
+. It is also possible to express the action of K(θ′, θ ) by means of a scalar kernel as follows: 
+
+ K(θ′, θ )y(s′) = 
+
+Z
+
+> S
+
+k(s′, s, θ ′, θ )y(s)ds, k(s′, s, θ ′, θ ) = 
+
+Z
+
+> Ω
+
+φ(s − x · ωθ )φ(s′ − x · ωθ′ )dx 
+
+Proposition 6.4. For every θ ∈ X , the kernel Kθ : Y → H is a Hilbert-Schmidt operator and its 
+
+HS norm is bounded uniformly in θ ∈ X .Proof. From K(θ′, θ ) = CφRθ′ R∗ 
+
+> θ
+
+C∗ 
+
+> φ
+
+we deduce that Kθ y = CφRR ∗ 
+
+> θ
+
+C∗
+
+> φ
+
+y, and in view of the isometric isomorphism induced by Rφ = CφR from L2(Ω) to H we can restrict ourselves to compute ∥R∗ 
+
+> θ
+
+C∗
+
+> φ
+
+∥HS( Y;L2(Ω)) . We immediately observe that (R∗ 
+
+> θ
+
+C∗
+
+> φ
+
+y)( x) = ( C∗
+
+> φ
+
+y)( x · ωθ ) = 
+
+Z
+
+> S
+
+φ(τ − x · ωθ )y(τ )dτ ∀x ∈ Ω,
+
+thus R∗ 
+
+> θ
+
+C∗ 
+
+> φ
+
+is an integral operator with kernel κθ (x, τ ) = φ(τ − x · ωθ ). By the isomorphism theorem for Hilbert-Schmidt operators, 
+
+∥R∗ 
+
+> θ
+
+C∗
+
+> φ
+
+∥2HS( Y;L2(Ω)) = ∥κθ ∥2 
+
+> L2([ −√2,√2] ×Ω)
+
+=
+
+Z √2
+
+> −√2
+
+Z
+
+> Ω
+
+|φ(τ − x · ωθ )|2dx ds ≤ | Ω|∥ φ∥2 
+
+> Y
+
+.
+
+We now want to investigate the spectral properties of the covariance operator Tμ. In this example, let us consider a uniform probability distribution μ on X , from which we know 
+
+Tμ = 12π
+
+Z 2π
+
+> 0
+
+Kθ K∗ 
+
+> θ
+
+dθ. 
+
+Actually, in view of the isomorphism induced by Rφ between L2(Ω) and H, the eigenvalues of Tμ
+
+coincide with the ones of 
+
+T = 12π
+
+Z 2π
+
+> 0
+
+R∗ 
+
+> θ
+
+C∗
+
+> φ
+
+CφRθ dθ. 
+
+Via the Fourier slice theorem, we can easily observe that, for u ∈ L2(Ω), 
+
+T u (x) = 12π
+
+Z 2π
+
+> 0
+
+Z
+
+> R
+
+| ˆφ(σ)|2eiσ (x·ωθ ) ˆu(σω θ )dσ dθ, 
+
+and by the change of coordinates ξ = ξ(σ, θ ) = σω θ we have 
+
+T u (x) = 
+
+Z
+
+> R2
+
+| ˆφ(|ξ|)|2
+
+|ξ| eiσ (x·ωθ ) ˆu(ξ)dξ. 
+
+As a result, we know that T is a pseudodifferential operator with symbol σT (ξ) = | ˆφ(|ξ|)|2 
+
+> |ξ|
+
+.
+
+Proposition 6.5. (Asymptotic behavior of the effective dimension) 
+
+• Let φ = 12a χ[−a,a ] (boxcar filter). Then, the eigenvalues μk of T have the asymptotic decay 
+
+μk ∼ k− 32 and the effective dimension of H grows as N (λ) ∼ λ− 23 as λ → 0.
+
+37 • Let φ be a Gaussian filter. Then, the eigenvalues μk of T decay faster than any polynomial (μk = o(k−α) ∀α > 0) and the effective dimension of H grows slower than any power (N (λ) = o(λ− 1 
+
+> α
+
+) ∀α > 0) as λ → 0.Proof. In the first case, we have ˆ φ(σ) = sin( σ) 
+
+> σ
+
+, which entails that the symbol σT (ξ) ∼ | ξ|−3 for 
+
+|ξ| → ∞ . As a consequence of the Weyl law, it is well-known (see [25, Volume IV, Chapter 29]) that the sorted eigenvalues μk of a positive, self-adjoint, compact pseudodifferential operator of order −m on bounded domain in Rd have an asymptotic decay of order k−m/d as k → ∞ . As a consequence, the eigenvalues of T (and of Tμ) decay polynomially as k−3/2.We can now employ this result to the analysis of the effective dimension N (λ): indeed, as shown in Section 6.2, if μk ∼ k− 1 
+
+> b
+
+with 0 < b < 1, then N (λ) ∼ λ−b. This allows to conclude that, in this case, N (λ) ∼ λ− 23 .In the second case, we have ˆφ(σ) = e−cσ 2
+
+, entailing an exponential decay of the symbol 
+
+σT (ξ) ∼ e−c|ξ|2
+
+. Thus, the Weyl law can be employed for all α > 0, entailing a decay faster that any power k−α (it is actually possible to prove that the eigenvalues reduce exponentially). As a consequence, we conclude that N (λ) grows slower than any power λ−1/α .As a consequence of Proposition 6.5, the operator Rφ satisfies Assumption 7 with b = 23 in the boxcar case, and with any 0 < b < 1 in the Gaussian case. We claim that, despite the unfiltered Radon filter is not compliant with all the requested assumptions, in the context of application we may always consider the presence of a small convolution along the s variable. In Remark 6.6 we also show that this phenomenon also occurs in the numerical approximation of the Radon transform. We carefully point out that, whenever in applications we fix a finite resolution for objects in the output space H, the covariance Tμ of the kernel operator becomes a finite-rank operator (of rank N ), thus 
+
+N (λ) = tr(( T + λI )−1T ) = 
+
+> N
+
+X
+
+> k=1
+
+μk
+
+μk + λ ≤ N, 
+
+thus Assumption 7 is satisfied by any b > 0. Nevertheless, according to the size of the discretization and to the level of noise on the measurement, it might be relevant to evaluate λ only in a range sufficiently far away from 0. As a consequence, the behaviour of N (λ) might be interesting also at a pre-asymptotic regime, which might be similar to the asymptotic regime of the non-discretized version of the forward operator. 
+
+Remark 6.6 . To compute the Radon transform there is a vast variety of algorithms which use different approximations of the computation for the line integral. Among the many software available, ASTRA [46] allows to simulate the parallel beam geometry (corresponding to the Radon transform) using a so called strip model in place of the line one. This means that the weight of a ray/pixel pair is given by the area of the intersection of the pixel and the ray, considered as a strip with the same width as a detector pixel, effectively averaging this value. This essentially amounts to convolving the Radon transform with a boxcar filter. To numerically inspect the asymptotic behaviour of N (λ), we compute the SVD of the matrix associated with the filtered Radon operator (generated with the ASTRA toolbox using parallel beam geometry and the strip 
+
+model) for a 128 × 128 target with angular views in [0 , π ). Because in such a case A is already a large scale object, the SVD is computed using sketching techniques, which uses a low-rank approximation and might be slightly inaccurate for smaller singular values. We show the decay rate in Figure 6.3 (red curve). As expected, due to the finite resolution of the considered discrete setting, the singular values abruptly vanish as k increases. In the pre-asymptotic regime, though, a polynomial decay kβ can be observed. In the unfiltered case, we expect a decay σk ∼ k−0.25 , associated with the asymptotics 
+
+μk ∼ k−0.5 for the eigenvalues of the covariance, which would entail N (λ) ∼ λ−2, where b = 2 is not compliant with Assumption 7. We can observe that the slope of the red curve is slightly steeper than β = −0.25, and such a behaviour is emphasized if the binning effect is increased, namely, if the discretization of the s variable gets rougher, as reported in the blue curve. 38 Figure 1: SVD decay for a 128 × 128 target with angular views in [0 , π ) using the ASTRA toolbox using parallel beam geometry and the strip model. We can finally detail the decay obtained in Corollary 4.5 for some specific examples, in which a specific decay of σn(f †) is expected. Recall that if σn(f †) = O(n−β ) with β > 12 , than, as described in 6.1, Assumption 5 is satisfied with ϕ(s) = sr , where r = 12 − 14β . Moreover, Corollary 4.5 prescribes that, if λ ∼ n− 1−r 
+
+> 1+ b−br
+
+, then ∥fz,λ − f †∥ℓ1 ∼ n− r 
+
+> 1+ b−br
+
+with high probability. 
+
+• Let S be a wavelet synthesis operator and assume the image Sf † has bounded variation: in this case, β = 12 (which implies r = 0); thus, we do not get explicit convergence rates. 
+
+• Let S be a shearlet synthesis operator and assume that Sf † is a cartoon-like image: in this case, β = 1 (which implies r = 14 ); then, if the boxcar filter is used on the Radon transform (b = 23 ), choosing λ ∼ n− 12 leads to ∥fz,λ − f †∥ℓ1 ∼ n− 16 ; if a Gaussian filter is used on the Radon transform ( b ≈ 0), choosing λ ∼ n− 34 leads to ∥fz,λ − f †∥ℓ1 ∼ n− 14 .
+
+• Let S be any synthesis operator such that image representation f † is sparse (namely, only finitely many coefficients of f † are different from 0). In this case, σn(f †) decays faster than 
+
+n−β for any β > 0, which means that we can consider r ≈ 12 . In the boxcar-filter case (b = 23 ), choosing λ ∼ n− 38 , we get ∥fz,λ − f †∥ℓ1 ∼ n− 38 ; in the Gaussian filter case ( b ≈ 0), choosing λ ∼ n− 12 , we get ∥fz,λ − f †∥ℓ1 ∼ n− 12 .
+
+## 6.4 Direct Learning Through a Synthesis Operator 
+
+We now examine the degenerate case G = I of the operator A = G ◦ S discussed in Section 6.1, in which A reduces to the synthesis operator S : ℓ1 → H . Although this setting involves no operator-induced ill-posedness, it is far from trivial. Rather, it isolates the precise role of the spectral decay of the embedding Sμ : H ,→ H μ and shows that Assumption 6 reduces to an equality .Consequently, it provides the cleanest possible verification of the abstract framework and serves as a direct point of comparison with classical (vector-valued) kernel ridge regression [14] and Lasso-type sparse learning [13, 7]. 
+
+Diagonalizing the Embedding. Assume the canonical embedding Sμ : H ,→ H μ is injective (no nonzero element of H vanishes μ-a.e.). By Assumption 3, Sμ is a Hilbert–Schmidt operator; 39 in particular, Sμ is compact. By the singular value decomposition of a compact injective operator, there exist an orthonormal basis ( ϕj )j≥1 of H, an orthonormal system ( ej )j≥1 in L2(X , μ ; Y), and numbers w1 ≥ w2 ≥ · · · > 0 with wj → 0, such that 
+
+Sμϕj = wj ej , S∗
+
+> μ
+
+ej = wj ϕj . (55) Consequently, the uncentered covariance operator Tμ := S∗
+
+> μ
+
+Sμ is diagonalized by the same basis, 
+
+Tμϕj = sj ϕj , sj := w2 
+
+> j
+
+, (56) so that the eigenvalues of Tμ are precisely the squared singular values sj = w2 
+
+> j
+
+.We define the forward operator A as the synthesis identity S:
+
+A = S : ℓ1 → H , A(f ) = X
+
+> j
+
+fj ϕj , with f = ( fj )j≥1 ∈ ℓ1. (57) This is precisely the choice G = I in the composite operator A = G ◦ S of Section 6.1, with 
+
+S the synthesis map associated with the eigenbasis ( ϕj ). Using (57) we obtain 
+
+∥A(f )∥H = X
+
+> j
+
+fj ϕj
+
+> H
+
+=
+
+X
+
+> j
+
+f 2
+
+> j
+
+
+
+> 12
+
+= ∥f ∥ℓ2 ≤ ∥ f ∥ℓ1 , (58) by orthonormality of ( ϕj ) in H. Hence, A : ℓ1 → H is bounded. Using (55), (57) and the linearity of A,
+
+∥A(f )∥2 
+
+> Hμ
+
+= ∥SμA(f )∥2 
+
+> Hμ
+
+= X
+
+> j
+
+fj wj ej
+
+> 2
+> Hμ
+
+= X
+
+> j≥1
+
+w2 
+
+> j
+
+f 2 
+
+> j
+
+= ∥f ∥2
+
+> w, 2
+
+, (59) by orthonormality of ( ej ) in Hμ. Hence the prediction norm coincides exactly with the weighted norm of Section 2, with weight sequence wj = √sj .
+
+Verification of the Structural Assumptions on A. Since A is linear, (58) gives, for all 
+
+f, ˜f ∈ ℓ1,
+
+A(f ) − A( ˜f ) H
+
+= A(f − ˜f ) H
+
+≤ f − ˜f ℓ1
+
+The map A = S is injective and Lipschitz, so Assumption 4 holds with LA = 1. Since A is linear, (59) gives, for all f, ˜f ∈ ℓ1,
+
+A(f ) − A( ˜f ) Hμ
+
+= f − ˜f w, 2. (60) Both parts of Assumption 6 therefore hold simultaneously, with the same weight w and constant 
+
+L = 1. As discussed after Assumption 6, this two-sided bound with a common weight is exactly what is needed to obtain matching upper and lower convergence rates via Corollary 5.8; here it is automatic. Further, Theorem 5.6 implies that, whenever fρ ∈ kt for some t ∈ (0 , 1), the variational source condition (Assumption 5) holds with 
+
+ϕ(θ) = θr , r = 1 − t
+
+2 − t ∈
+
+
+
+0, 12
+
+
+
+. (61) Hence, the structural assumptions on the operator A are verified. Consequently, the error bounds established in Corollary 4.5 remain applicable when A is the synthesis operator defined in (57). 40 7 Discussion 
+
+The results of this paper establish a complete statistical theory for ℓ1-regularized nonlinear inverse learning in vector-valued reproducing kernel Hilbert spaces. We discuss the significance of the main contributions, place them in the context of related literature, and outline directions for future work. 
+
+Optimality of the rates. The upper convergence rates of Corollary 4.5 and Theorem 4.7 and the minimax lower bounds of Theorem 5.4 together show that the rate 
+
+n− 2r−pr +p−1
+
+> p(1+ b−br )
+
+in the interpolated norm ∥ · ∥ u,p is minimax optimal over the prior class Pr,b . This optimality is achieved by the ℓ1-regularized estimator (3) with the explicit, closed-form regularization param-eter λ∗ = n−(1 −r)/(1+ b−br ). The matching of upper and lower bounds confirms that neither the regularization scheme, nor the choice of λ∗ introduces unnecessary suboptimality: the rates reflect the fundamental information-theoretic difficulty of the problem as captured by r and b.
+
+Role of the smoothness index r. The source smoothness parameter r ∈ (0 , 1) enters through the variational source condition (Assumption 5) with ϕ(t) = tr . This condition is broadly verifiable: as Theorem 5.7 shows, membership in the approximation space kt implies a variational source condition with r = (1 − t)/(2 − t), and the space kt is itself characterized by a polynomial decay of the best n-term approximation errors (Lemma 5.9). 
+
+Role of the effective dimension b. The effective dimension exponent b ∈ (0 , 1) encodes the polynomial spectral decay N (λ) ≲ λ−b of the covariance operator Tμ (Assumption 7). Asmaller value of b indicates faster spectral decay, meaning that the learning problem has fewer effective degrees of freedom at each regularization scale. Consequently, smaller b leads to faster convergence: the variance term C′′ 2λ−b/n in the bounds decreases more rapidly as λ → 0. In the CT example, the Gaussian filter yields super-polynomially decaying eigenvalues, so Assumption 7 holds for every b ∈ (0 , 1), and in the limit b → 0 the rate approaches n−r . By contrast, the boxcar filter produces eigenvalue decay μk ∼ k−3/2 (for d = 2), leading to b = 2 /3 and strictly slower rates. This illustrates a fundamental trade-off between spectral preservation (boxcar) and statistical efficiency (Gaussian). 
+
+Nonlinearity and ill-posedness. A key feature of the present framework is that it accom-modates nonlinear forward operators while retaining quantitative convergence guarantees. The Lipschitz condition (Assumption 4) is the structural requirement on A; it ensures the local sta-bility of the inverse map and enables the error-bounding arguments in Lemma 4.2. The weighted Lipschitz property (Assumption 6) further connects the sequence-space distance ∥ · ∥ w, 2 to the prediction error ∥A(f ) − A(fρ)∥Hμ , which is essential for the lower bound construction and the consistency results. The framework excludes infinitely smoothing operators (e.g., the backward heat equation or electrical impedance tomography), as the lower Lipschitz bound in Assumption 6 fails in those cases. Extending the theory to such severely ill-posed problems, possibly under log-arithmic source conditions or Sobolev-type variational inequalities, is an important direction for future work. 
+
+Relation to compressed sensing and LASSO. In the finite-dimensional setting with A lin-ear and X a fixed design, ℓ1-regularization reduces to the LASSO [43], and well-known results give exact support recovery and ℓ2 estimation rates under restricted isometry or irrepresentability conditions. Recently, similar results have been derived also in an infinite-dimensional setting for ill-posed problems, assuming quasi-diagonalizability of the forward operator and suitable coher-ence bounds ([3, 2]). The present paper extends this program to the nonparametric, infinite-dimensional, nonlinear, and random-design setting, where the relevant complexity measure is the 41 effective dimension rather than the sparsity level alone. In particular, our rates depend on both 
+
+r (solution smoothness) and b (spectral complexity), and the analysis does not require incoher-ence or restricted isometry conditions, relying instead on the variational source condition and the probabilistic bounds of Proposition A.1. 
+
+Comparison with RKHS regularization. The classical Tikhonov estimator with RKHS reg-ularization, analyzed in the statistical inverse learning setting by [8, 37], achieves convergence rates governed by Hilbert-space source conditions and spectral regularization theory. In contrast, the present work considers an ℓ1 penalty and variational source conditions formulated directly in a Banach-space setting. The resulting reconstruction rate n−r/ (1+ b−br ) depends explicitly on the sparsity parameter r and the effective-dimension exponent b, and is minimax optimal over the model class Pr,b . This reflects the fact that ℓ1 regularization exploits sparse structure in the unknown solution and therefore yields a substantially different statistical behavior than classical Hilbert-space regularization. 
+
+Parameter choice. The regularization parameter λ∗ = n−(1 −r)/(1+ b−br ) depends on the un-known parameters r and b. In practice, one can estimate b from data via spectral approximations of Tμ, and r can be calibrated using cross-validation or Lepskii-type balancing principles. Corol-lary 4.4 provides an alternative, dual-function-based characterization of the optimal λ∗ that is amenable to data-driven selection without explicit knowledge of r; this is analogous to the dis-crepancy principle in classical regularization theory. A rigorous adaptive procedure, along with finite-sample guarantees, would be a valuable contribution to the practical implementation of the method. 
+
+Extensions. Several natural extensions of the present framework merit investigation. (i) Linearization and Fr´ echet derivatives. When A is Fr´ echet differentiable, one may con-sider iteratively reweighted ℓ1 schemes or proximal gradient methods, and the present con-vergence analysis could serve as a reference for analyzing each linearized step. (ii) Online and streaming algorithms. The batch estimator (3) requires access to all n
+
+observations simultaneously. Stochastic gradient or online proximal algorithms adapted to the ℓ1 setting would be practically important, and one would need to analyze whether the optimal rates remain achievable in an online fashion. (iii) Stochastic noise models. The present analysis assumes sub-Gaussian noise. Extending to heavier-tailed or correlated noise, or to Gaussian white noise in infinite-dimensional output spaces (currently excluded), would broaden the applicability of the theory. 
+
+# 8 Conclusion 
+
+We developed a statistical learning theory for ℓ1-regularized nonlinear inverse problems in vector-valued reproducing kernel Hilbert spaces. Under variational source conditions and polynomial effective-dimension growth, we established almost-sure consistency, non-asymptotic high-probability convergence rates, and matching minimax lower bounds. The resulting rates are shown to be min-imax optimal over a broad family of probability distributions Pr,b characterized by the smoothness parameter r and the effective-dimension exponent b.A further contribution of the paper is the connection between sparse approximation theory and statistical inverse learning. Through the approximation spaces kt, we showed that polynomial decay of best n-term approximation errors implies the variational source conditions required for the statistical analysis, thereby linking sparsity models directly to convergence-rate exponents. Applications to coefficient identification problems and sparse computed tomography demonstrate that the abstract assumptions can be verified in concrete inverse problems and lead to explicit convergence guarantees. 42 These results provide a rigorous bridge between deterministic sparsity regularization, statistical inverse learning, and vector-valued kernel methods, and establish a general framework for analyzing sparse nonlinear inverse problems under random sampling. 
+
+# A Probabilistic Upper Bound 
+
+In this section, we present high-probability estimates that characterize the stochastic perturba-tion behavior of empirical quantities arising in the regularized learning framework. The results stated below are standard in the analysis of statistical inverse problems and are derived from [37]. These probabilistic upper bounds play a key role in controlling deviations between empirical and population-level operators under random sampling. 
+
+Proposition A.1. Suppose Assumptions 1–3 hold. Then, for any n ∈ N and 0 < η < 1, each of the following inequalities holds with confidence at least 1 − η:
+
+Ξz := ∥S∗
+
+> x
+
+ε∥H ≤ 2 κM n +
+
+r κ2Σ2
+
+n
+
+!
+
+log 
+
+ 2
+
+η
+
+
+
+,
+
+Θz := (Tμ + λI )−1/2S∗
+
+> x
+
+ε H
+
+≤ 2 κM n√λ +
+
+r Σ2N (λ)
+
+n
+
+!
+
+log 
+
+ 2
+
+η
+
+
+
+,
+
+and 
+
+Ψx := (Tμ + λI )−1/2(Tx − Tμ) L(H)
+
+≤ 2 κ2
+
+n√λ +
+
+r κ2N (λ)
+
+n
+
+!
+
+log 
+
+ 2
+
+η
+
+
+
+.
+
+Corollary A.2. Suppose Assumptions 1–3 and condition (19) hold. Then, the following bound holds with confidence at least 1 − η:
+
+Ψx + Θ z ≲
+
+r λ−b
+
+n log 
+
+ 4
+
+η
+
+
+
+. (62) 
+
+Proof. Since N (λ) is a decreasing function of λ and λ ≤ 1, the condition (19) implies that 
+
+N (1) ≤ N (λ) ≤ nλ. 
+
+Consequently, 1
+
+n√λ ≤ 1
+
+n√λ
+
+N (λ)
+
+N (1) = 1
+
+N (1) 
+
+r N (λ)
+
+nλ 
+
+r N (λ)
+
+n ≤ 1
+
+N (1) 
+
+r N (λ)
+
+n .
+
+Substituting this bound into the inequalities of Proposition A.1, we obtain with probability at least 1 − η:Θz ≤ 2
+
+ κM 
+
+N (1) + Σ 
+
+r N (λ)
+
+n log 
+
+ 4
+
+η
+
+
+
+,
+
+Ψx ≤ 2
+
+ κ2
+
+N (1) + κ
+
+r N (λ)
+
+n log 
+
+ 4
+
+η
+
+
+
+.
+
+Combining these bounds yields inequality (62) with 
+
+C′ = 2 
+
+ κ2
+
+N (1) + κ
+
+
+
++
+
+ κM 
+
+N (1) + Σ 
+
+ 
+
+.
+
+The above results establish uniform probabilistic control over the empirical quantities Ξ z,Θz, and Ψ x. These estimates are instrumental in deriving high-probability error bounds for the regularized estimator and in analyzing the stability of the inverse learning scheme. 43 B Boundedness of the Regularized Solution 
+
+In this section, we establish that the regularized solution fz,λ remains bounded in the hypothesis space ℓ1. Specifically, we show that the deviation ∥fz,λ − fρ∥ℓ1 between the regularized estima-tor fz,λ and the true function fρ is upper bounded by a constant multiple of ∥fρ∥ℓ1 under suitable conditions. 
+
+Proposition B.1. Suppose Assumptions 1–4 hold. Then, for any n ∈ N and 0 < η < 1, the following bound holds with confidence at least 1 − η:
+
+∥fz,λ − fρ∥ℓ1 ≤ 4∥fρ∥ℓ1 ,
+
+provided that 
+
+8LAκ(M + Σ) 1
+
+λ√n log 
+
+ 4
+
+η
+
+
+
+≤ 1.
+
+Proof. By the Lipschitz continuity of the nonlinear operator A (Assumption 4), we have for all f ∈D(A) ∩ ℓ1,
+
+∥A(f ) − A(fρ)∥H ≤ LA∥f − fρ∥ℓ1 .
+
+Using this property in inequality (13), we obtain 
+
+∥fz,λ ∥ℓ1 ≤ 2LA
+
+λ ∥fz,λ − fρ∥ℓ1 ∥S∗
+
+> x
+
+ε∥H + ∥fρ∥ℓ1 . (63) Applying the triangle inequality yields 
+
+∥fz,λ − fρ∥ℓ1 ≤ ∥ fz,λ ∥ℓ1 + ∥fρ∥ℓ1
+
+≤ 2LA
+
+λ ∥S∗
+
+> x
+
+ε∥H∥fz,λ − fρ∥ℓ1 + 2 ∥fρ∥ℓ1 . (64) From Proposition A.1, we know that with confidence 1 − η,
+
+∥S∗
+
+> x
+
+ε∥H ≤ 2κ(M + Σ) 1
+
+√n log 
+
+ 4
+
+η
+
+
+
+.
+
+Substituting this into the previous inequality gives 
+
+∥fz,λ − fρ∥ℓ1 ≤ 4LAκ(M + Σ) 1
+
+λ√n log 
+
+ 4
+
+η
+
+
+
+∥fz,λ − fρ∥ℓ1 + 2 ∥fρ∥ℓ1 .
+
+If the condition 8LAκ(M + Σ) 1
+
+λ√n log 
+
+ 4
+
+η
+
+
+
+≤ 1is satisfied, then the first term on the right-hand side can be absorbed into the left-hand side, yielding 12 ∥fz,λ − fρ∥ℓ1 ≤ 2∥fρ∥ℓ1 ,
+
+which simplifies to the desired bound 
+
+∥fz,λ − fρ∥ℓ1 ≤ 4∥fρ∥ℓ1 .
+
+The result confirms that the regularized estimator fz,λ remains bounded in ℓ1, provided that the regularization parameter λ and sample size n satisfy a mild condition. This boundedness plays a key role in ensuring the stability and consistency of the regularized inverse learning algorithm. 44 C Interpolation Scale of Weighted Sequence Spaces 
+
+We begin by introducing a scale of spaces that interpolates between the classical ℓ1 space and the weighted Hilbert space ℓ2 
+
+> w
+
+appearing in our setting. For p ∈ (0 , 2], we define the weights (up)j := w 
+
+> 2p−2
+> p
+> j
+
+.
+
+The corresponding weighted sequence space ℓpup consists of all f = ( fj )j≥1 such that 
+
+∥f ∥up,p := 
+
+
+
+> ∞
+
+X
+
+> j=1
+
+(up) pj |fj |p
+
+
+
+> 1/p
+
+< ∞.
+
+The next result provides an interpolation inequality that connects these spaces. 
+
+Proposition C.1 (Interpolation inequality) . Let p, q, s ∈ (0 , 2] and θ ∈ (0 , 1) satisfy 
+
+1
+
+p = 1 − θq + θs .
+
+Then, for all f ∈ ℓquq ∩ ℓsus , the following inequality holds: 
+
+∥f ∥up,p ≤ ∥ f ∥ 1−θuq ,q ∥f ∥ θus,s . (65) 
+
+Proof. We apply H¨ older’s inequality with conjugate exponents q 
+
+> (1 −θ)p
+
+and sθp . Indeed, we have 
+
+∥f ∥pup,p =
+
+> ∞
+
+X
+
+> j=1
+
+w 2p−2 
+
+> j
+
+|fj |p ≤
+
+
+
+> ∞
+
+X
+
+> j=1
+
+w 2q−2 
+
+> j
+
+|fj |q
+
+ 
+
+> (1 −θ)pq
+
+
+
+> ∞
+
+X
+
+> j=1
+
+w 2s−2 
+
+> j
+
+|fj |s
+
+
+
+> θp s
+
+.
+
+Taking the p-th root on both sides yields the desired result (65). 
+
+# References 
+
+[1] Sergios Agapiou and Sven Wang. Laplace priors and spatial inhomogeneity in Bayesian inverse problems. Bernoulli , 30(2):878–910, 2024. [2] Giovanni S Alberti, Alessandro Felisi, Matteo Santacesaria, and S Ivan Trapasso. Compressed sensing for inverse problems ii: applications to deconvolution, source recovery, and mri. arXiv preprint arXiv:2501.01929 , 2025. [3] Giovanni S Alberti, Alessandro Felisi, Matteo Santacesaria, and Salvatore Ivan Trapasso. Compressed sensing for inverse problems and the sample complexity of the sparse radon transform. Journal of the European Mathematical Society , pages 1–56, 2025. [4] Mauricio A. ´Alvarez, Lorenzo Rosasco, and Neil D. Lawrence. Kernels for vector-valued functions: A review , volume 4. Now Foundations and Trends, 2012. [5] Nachman Aronszajn. Theory of reproducing kernels. Transactions of the American Mathe-matical Society , 68:337–404, 1950. [6] Frank Bauer, Sergei Pereverzev, and Lorenzo Rosasco. On regularization algorithms in learn-ing theory. Journal of Complexity , 23(1):52 – 72, 2007. [7] Peter J. Bickel, Ya’acov Ritov, and Alexandre B. Tsybakov. Simultaneous analysis of Lasso and Dantzig selector. Annals of Statistics , 37(4):1705–1732, 2009. 45 [8] Gilles Blanchard and Nicole M¨ ucke. Optimal rates for regularization of statistical inverse learning problems. Foundations of Computational Mathematics , 18(4):971–1013, 2018. [9] Gilles Blanchard and Nicole M¨ ucke. Kernel regression, minimax rates and effective dimen-sionality: Beyond the regular case. Analysis and Applications , 18(04):683–696, 2020. [10] Tatiana A. Bubba, Martin Burger, Tapio Helin, and Luca Ratti. Convex regularization in statistical inverse learning problems. Inverse Problems and Imaging , 17(6):1193–1225, 2023. [11] Tatiana A Bubba and Luca Ratti. Shearlet-based regularization in statistical inverse learning with an application to x-ray tomography. Inverse Problems , 38(5):054001, 2022. [12] Emmanuel J Cand` es and David L Donoho. New tight frames of curvelets and optimal rep-resentations of objects with piecewise c2 singularities. Communications on Pure and Applied Mathematics: A Journal Issued by the Courant Institute of Mathematical Sciences , 57(2):219– 266, 2004. [13] Emmanuel J. Cand` es and Terence Tao. The dantzig selector: Statistical estimation when p
+
+is much larger than n. The Annals of Statistics , 35(6):2313–2351, 2007. [14] Andrea Caponnetto and Ernesto De Vito. Optimal rates for the regularized least-squares algorithm. Foundations of Computational Mathematics , 7(3):331–368, 2007. [15] Claudio Carmeli, Ernesto De Vito, and Alessandro Toigo. Vector valued reproducing ker-nel Hilbert spaces of integrable functions and Mercer theorem. Analysis and Applications ,4(04):377–408, 2006. [16] Claudio Carmeli, Ernesto De Vito, Alessandro Toigo, and Veronica Umanit´ a. Vector valued reproducing kernel Hilbert spaces and universality. Analysis and Applications , 8(01):19–61, 2010. [17] Albert Cohen, Ronald DeVore, Pencho Petrushev, and Hong Xu. Nonlinear approximation and the space bv(r2). American Journal of Mathematics , 121(3):587–628, 1999. [18] Ronald DeVore, Gerard Kerkyacharian, Dominique Picard, and Vladimir Temlyakov. Ap-proximation methods for supervised learning. Foundations of Computational Mathematics ,6(1):3–58, 2006. [19] Luc Devroye, L´ aszl´ o Gy¨ orfi, and G´ abor Lugosi. A probabilistic theory of pattern recognition ,volume 31. Applications of Mathematics, Springer, New York, 1996. [20] Jens Flemming and Daniel Gerth. Injectivity and weak*-to-weak continuity suffice for con-vergence rates in ℓ1-regularization. Journal of Inverse and Ill-posed Problems , 26(1):85–94, 2018. [21] David Gilbarg, Neil S Trudinger, David Gilbarg, and NS Trudinger. Elliptic partial differential equations of second order , volume 2. Springer, 1998. [22] Kanghui Guo and Demetrio Labate. Optimally sparse multidimensional representation using shearlets. SIAM journal on mathematical analysis , 39(1):298–318, 2007. [23] Niklas Hartung, Martin Wahl, Abhishake Rastogi, and Wilhelm Huisinga. Nonparametric goodness-of-fit testing for parametric covariate models in pharmacometric analyses. CPT: Pharmacometrics & Systems Pharmacology , 10(6):564–576, 2021. [24] Thorsten Hohage and Philip Miller. Optimal convergence rates for sparsity promoting wavelet-regularization in besov spaces. Inverse Problems , 35(6):065005, 2019. [25] Lars H¨ ormander. The Analysis of Linear Partial Differential Operators , volume IV. Springer-Verlag, Berlin Heidelberg, 1985. 46 [26] Taufiquar Khan. Inverse problems involving pdes with applications to imaging. In Pammy Manchanda, Ren´ e Pierre Lozi, and Abul Hasan Siddiqi, editors, Mathematical Modelling, Optimization, Analytic and Numerical Solutions , pages 181–195. Springer, Singapore, 2020. [27] Demetrio Labate, Lucia Mantovani, and Pooran Negi. Shearlet smoothness spaces. Journal of Fourier Analysis and Applications , 19(3):577–611, 2013. [28] Junhong Lin, Alessandro Rudi, Lorenzo Rosasco, and Volkan Cevher. Optimal rates for spec-tral algorithms with least-squares regression over Hilbert spaces. Applied and Computational Harmonic Analysis , 48(3):868–890, 2020. [29] L. Lo Gerfo, Lorenzo Rosasco, Francesca Odone, Ernesto De Vito, and Alessandro Verri. Spectral algorithms for supervised learning. Neural Computation , 20(7):1873–1897, 2008. [30] St´ ephane Mallat. A wavelet tour of signal processing . Elsevier, 1999. [31] Shahar Mendelson and Joseph Neeman. Regularization in kernel learning. The Annals of Statistics , 38(1):526 – 565, 2010. [32] Charles A Micchelli and Massimiliano Pontil. On learning vector-valued functions. Neural Computation , 17(1):177–204, 2005. [33] Philip Miller and Thorsten Hohage. Maximal spaces for approximation rates in ℓ1-regularization. Numerische Mathematik , 149(2):341–374, 2021. [34] Jennifer L Mueller and Samuli Siltanen. Linear and nonlinear inverse problems with practical applications . SIAM, Philadelphia, 2012. [35] Frank Natterer. The mathematics of computerized tomography . SIAM, 2001. [36] Garvesh Raskutti, Martin J. Wainwright, and Bin Yu. Minimax rates of estimation for high-dimensional linear regression over ℓq -balls. IEEE Transactions on Information Theory ,57(10):6976–6994, 2011. [37] Abhishake Rastogi, Gilles Blanchard, and Peter Math´ e. Convergence analysis of Tikhonov regularization for non-linear statistical inverse problems. Electronic Journal of Statistics ,14(2):2798–2841, 2020. [38] Abhishake Rastogi and Peter Math´ e. Inverse learning in Hilbert scales. Machine Learning ,112:2469–2499, 2023. [39] Abhishake Rastogi and Sivananthan Sampath. Optimal rates for the regularized learning algorithms under general source condition. Frontiers in Applied Mathematics and Statistics ,3:3, 2017. [40] Thomas Schuster, Barbara Kaltenbacher, Bernd Hofmann, and Kamil S Kazimierski. Reg-ularization methods in Banach spaces , volume 10 of Radon Series on Computational and Applied Mathematics . Walter de Gruyter GmbH & Co. KG, Berlin, 2012. [41] Khemraj Shukla, Patricio Clark Di Leoni, James Blackshire, Daniel Sparkman, and George Em Karniadakis. Physics-informed neural network for ultrasound nondestructive quantification of surface breaking cracks. Journal of Nondestructive Evaluation , 39(3):61, 2020. [42] Ingo Steinwart, Don Hush, and Clint Scovel. Optimal rates for regularized least squares regression. In S. Dasgupta and A. Klivans, editors, Proceedings of the 22nd Annual Conference on Learning Theory , pages 79–93, 2009. [43] Robert Tibshirani. Regression shrinkage and selection via the lasso. Journal of the Royal Statistical Society Series B: Statistical Methodology , 58(1):267–288, 1996. 47 [44] Hans Triebel. Theory of function spaces . Birkh¨ auser Verlag, Basel, 1983. [45] Alexandre Tsybakov. Introduction to nonparametric estimation. In Springer Series in Statis-tics , 2008. [46] W. Van Aarle, W. J. Palenstijn, J. Cant, E. Janssens, F. Bleichrodt, A. Dabravolski, J. De Beenhouwer, K. J. Batenburg, and J. Sijbers. Fast and flexible X-ray tomography using the ASTRA toolbox. Optics express , 24(22):25129–25147, 2016. [47] Aad W. van der Vaart and Jon A. Wellner. Weak convergence and empirical processes .Springer Series in Statistics, Springer-Verlag, New York, 1996. With Applications to Statistics. 48

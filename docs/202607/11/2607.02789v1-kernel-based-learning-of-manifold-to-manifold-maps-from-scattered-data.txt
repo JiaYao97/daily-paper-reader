@@ -1,0 +1,1832 @@
+Title: Kernel-based learning of manifold-to-manifold maps from scattered data
+
+URL Source: https://arxiv.org/pdf/2607.02789v1
+
+Published Time: Tue, 07 Jul 2026 00:14:34 GMT
+
+Number of Pages: 27
+
+Markdown Content:
+# Kernel-based learning of manifold-to-manifold maps from scattered data 
+
+## Daniel Fischer Department of Mathematics University of Bayreuth 95440 Bayreuth Germany daniel.fischer@uni-bayreuth.de Holger Wendland ∗
+
+## Department of Mathematics University of Bayreuth 95440 Bayreuth Germany holger.wendland@uni-bayreuth.de July 7, 2026 
+
+Abstract 
+
+We describe and analyze new methods for approximating manifold-to-manifold maps using only scattered data information. To this end, we first study kernel-based approximation meth-ods for scalar-valued functions defined on a manifold and derive a new sampling inequality and error estimates for functions from Sobolev spaces. After that, these methods are combined with a closest point projection to reconstruct manifold-to-manifold maps. The new methods are analyzed and error estimates are derived. Finally, numerical examples are given to verify the theoretical findings. 
+
+Keywords: kernel-based learning, scattered data, manifold-valued functions 
+
+# 1 Introduction 
+
+Interpolation and approximation with positive definite kernels provides a powerful framework for reconstructing a multivariate function f : Ω → R from known function values at a finite set of data sites scattered throughout the domain of definition Ω ⊆ Rd. Since these methods were first proposed, they have been generalized in various directions. On the one hand, numerous techniques have been developed for defining positive definite kernels on more specific domains of definition, such as smooth manifolds M, thereby enabling the reconstruction of functions f : M → R (see, for example, [15, 22, 20, 6]). On the other hand, the theory of positive definite kernels and the associated reproducing kernel Hilbert spaces has been extended from the scalar-valued setting to vector- and, more generally, Hilbert space-valued functions, thus allowing the approximation of mappings f : Ω → W , where W is a Hilbert space [30, 21, 5, 11]. Motivated by applications in numerous scientific and engineering domains, recent years have seen a growing interest in approximation methods for functions f : Ω → N , whose codomain N possesses the structure of a smooth manifold rather than that of a vector space. Such mappings arise, for 
+
+> ∗The work of HW has been supported by the DFG under project no. 514588180.
+
+1
+
+> arXiv:2607.02789v1 [math.NA] 2 Jul 2026
+
+instance, in parametric model order reduction [38], where the codomain typically is the Stiefel manifold St( n, r ) of column orthogonal matrices in Rn×r or the Grassmann manifold Gr( k, n ) of all 
+
+k-dimensional subspaces of an n dimensional linear space, in interpolation of diffusion tensor images created from magnetic resonance imaging [26], where the codomain is the manifold of symmetric positive definite matrices, in the context of Cosserat-type material models [25], where N = R3 ×
+
+SO(3), or in crystallographic texture analysis [17], where the codomain can be seen as quotient SO(3) /S with some finite symmetry group S.Many of the proposed manifold-valued approximation techniques have already been analyzed mathematically and can be broadly categorized into three classes: 1. Projection-based methods [9, 13, 17], where first an interpolant is constructed in the ambient space of an embedded submanifold, and the resulting values are subsequently projected onto the manifold by means of a suitable mapping; 2. Tangent space methods (Push-Interpolate-Pull methods) [36, 37, 39], where the given data are first mapped to a linear space - typically the tangent space at a chosen base point - followed by classical vector-valued interpolation and finally mapping back the reconstructed values to the manifold via an inverse transformation; 3. Riemannian mean-based methods [12, 14], where the evaluation of the interpolant involves computing a weighted mean of function values in N through nonlinear optimization. There also exist several techniques that do not fall directly into any of the aforementioned categories (e.g., [16]), or that combine multiple of the above approaches [32]. With the exception of [14], however, these methods require the sample locations to have a certain structure. In most cases, it is assumed that the function values are known on some type of regular grid. Without such a grid structure, these methods cannot be applied. Fortunately, in this situation the ideas from kernel-based interpolation of scalar-valued functions on manifolds, vector-valued kernel-based interpolation and manifold-valued approaches can be naturally combined into a method for reconstructing functions between manifolds. In this work, we derive such methods, i.e., we address the problem of reconstructing a manifold-valued function f : M → N , where M and 
+
+N are compact smooth manifolds, from known values f (x1), . . . , f (xN ) ∈ N at a set of scattered data sites X = {x1, . . . , x N } ⊆ M . To our knowledge, this problem has not been investigated in this form until now. In principle, various kernel-based approximation techniques could be combined with any of the aforementioned methods for manifold-valued interpolation. However, we restrict our attention to kernel-based interpolation (see [8]) and penalized least-squares approximation on embedded submanifolds M. In both cases, the kernel on M is obtained by restricting a positive definite kernel defined on the ambient space to the submanifold. Moreover, we employ a projection approach to ensure that the resulting interpolant indeed takes values in the target manifold N .The remainder of this article is organized as follows: In the next section, we discuss kernel-based approximation methods for scalar-valued functions, defined on some domain Ω ⊆ Rd. In the third section, we extend these results to kernel-based approximations for scalar-valued functions defined on embedded submanifolds. To this end, we first collect some necessary material on embedded submanifolds in Subsection 3.1 and then state and prove results on the norm-minimal interpolation and penalized least-squares processes. While we can rely on previous work for the interpolation operator, the results on the penalized least-squares approximation are new in this context. Par-ticularly, we discuss their approximation properties if the measured data contain noise. Section 4 then contains the core of this paper, where the kernel-based approximation methods are combined 2with a closest point projection to define manifold-to-manifold approximations. Finally, in Section 5, we numerically illustrate these results with two academic examples and a real-world application from crystallography. 
+
+# 2 Kernel-based approximation 
+
+Kernel-based learning or approximation is a well-established tool in approximation theory and statistics, it comes in the form of scattered data approximation with radial basis functions (see for example [4, 7, 34]), Gaussian processes (see for example [27]) and support vector machines (see for example [29, 31]). Usually, in this context, functions f : Ω → R that are defined on some domain Ω ⊆ Rd
+
+are learned or approximated using only information f (x1), . . . , f (xN ) measured at scattered data locations X = {x1, . . . , x N } ⊆ Ω. In this section, we will shortly review the material relevant to us. Here, we follow mainly [34]. Kernel-based learning of functions f : Ω → R usually assumes that the unknown function comes from a reproducing kernel Hilbert space H. This is a Hilbert space of real-valued functions defined on Ω, possessing a kernel K : Ω ×Ω → R satisfying K(·, x ) ∈ H for all x ∈ Ωand f (x) = ⟨f, K (·, x )⟩H for all x ∈ Ω and all f ∈ H. Obviously, this means that point evaluations 
+
+δx : H → R, x 7 → f (x) are continuous mappings and their Riesz representer is given by the kernel 
+
+K(·, x ). The reproducing kernel of a Hilbert space is uniquely determined by the Hilbert space and is positive (semi-)definite in the sense that all the matrices K(X, X ) = ( K(xi, x j )) ij ∈ RN ×N are positive (semi-)definite for any set X = {x1, . . . , x N } ⊆ Ω of N ∈ N distinct points. 
+
+Definition 2.1. Let H be a reproducing kernel Hilbert space of functions f : Ω → R. Let X =
+
+{x1, . . . , x N } ⊆ Ω be a set of pairwise distinct points. 1. The optimal recovery or norm-minimal interpolant s0 is the solution of 
+
+min {∥ s∥H : s ∈ H with s(xi) = f (xi), 1 ≤ i ≤ N } .
+
+2. Given a parameter λ > 0, the penalized least-squares approximation sλ is the solution of 
+
+min 
+
+( NX
+
+> i=1
+
+|f (xi) − s(xi)|2 + λ∥s∥2 
+
+> H
+
+: s ∈ H
+
+)
+
+.
+
+In the context of support vector machines, the least-squares loss function L(w, y ) = |w − y|2,which is used in the definition of the penalized least-squares problem is often replaced by other loss functions. This is, in principle, also possible in this context, but for simplicity, we will only deal with the least-squares loss. It is well-known that the second minimization problem always has a unique solution, while the first one has a unique solution if the reproducing kernel K : Ω × Ω → R is positive definite. 
+
+Lemma 2.2. Let H be a reproducing kernel Hilbert space of functions f : Ω → R with positive definite kernel K : Ω × Ω → R. Then the problems from Definition 2.1 have unique solutions sλ,
+
+λ ≥ 0. They can be written as 
+
+sλ =
+
+> N
+
+X
+
+> j=1
+
+αj K(·, x j ), λ ≥ 0,
+
+3where the coefficients α = ( α1, . . . , α N )T are the solution of the linear system (K(X, X ) + λI )α =
+
+f (X) with f (X) = ( f (x1), . . . , f (xN )) T . This defines linear mappings IX , Q X,λ : C(Ω) → VX := span {K(·, x 1), . . . , K (·, x N )} by setting IX f := s0 and QX,λ f := sλ.
+
+In this paper, we will only consider reproducing kernel Hilbert spaces, which are Sobolev spaces and all error analysis will take place in Sobolev spaces, which we introduce now, mainly to fix our notation. Let Ω ⊆ Rd be open. For l ∈ N0 and 1 ≤ p ≤ ∞ , we define the Sobolev space W lp(Ω) of order l to consist of all functions f ∈ Lp(Ω) with weak derivatives Dαf ∈ Lp(Ω) for all α ∈ Nd
+
+> 0
+
+with |α| ≤ l. As usual, this space is equipped with the norm 
+
+∥f ∥W lp(Ω) := 
+
+P 
+
+> |α|≤ l
+
+∥Dαf ∥pLp(Ω) 
+
+ 1
+
+> p
+
+, 1 ≤ p < ∞,
+
+max |α|≤ l ∥Dαf ∥L∞(Ω) , p = ∞.
+
+We will also consider fractional order Sobolev spaces. For τ = l + t, 0 < t < 1, 1 ≤ p < ∞, these are defined as all functions f ∈ W lp(Ω) satisfying ∥f ∥W τp (Ω) < ∞, where 
+
+∥f ∥W τp (Ω) := 
+
+∥f ∥pW lp(Ω) + X
+
+> |α|=l
+
+Z
+
+> Ω
+
+Z
+
+> Ω
+
+|Dαf (x) − Dαf (y)|p
+
+∥x − y∥d+tp 
+
+> 2
+
+dx dy 
+
+
+
+> 1
+> p
+
+.
+
+Here, , ∥ · ∥ 2 denotes the standard Euclidean norm on Rd. As usual, in the case of p = 2 we also write Hτ (Ω) := W τ 
+
+> 2
+
+(Ω). The Sobolev embedding theorem guarantees that for any τ > d/ 2 and any Ω ⊆ Rd with at least a Lipschitz boundary, the Sobolev space Hτ (Ω) is a reproducing kernel Hilbert space. However, only for very specific Ω the reproducing kernel is explicitly known. In the case Ω = Rd, we can use Fourier transform to introduce an alternative inner product with equivalent norm on Hτ (Rd)with corresponding reproducing kernel Kτ : Rd × Rd → R. According to [34, Corollary 10.13], it is possible to choose the kernel as a translation-invariant function, i.e. Kτ (x, y ) = Φ τ (x − y) with integrable Φ τ : Rd → R having a Fourier transform 
+
+cΦτ (ω) = 
+
+Z
+
+> Rd
+
+Φτ (x)e−ix Tω dx 
+
+that decays like (1 + ∥ · ∥ 22)−τ , i.e. there are two constants c1, c 2 > 0 such that 
+
+c1(1 + ∥ω∥22)−τ ≤ cΦτ (ω) ≤ c2(1 + ∥ω∥22)−τ , ω ∈ Rd. (2.1) It is also often possible to choose the function Φ τ to be radial, i.e. Φ τ = ϕτ (∥ · ∥ 2) with a function 
+
+ϕτ : [0 , ∞) → R. For example, the Matern functions are of this form with cΦτ (ω) = (1 + ∥ω∥22)−τ .Other examples are Wendland’s compactly supported radial basis functions Φ d,k = ϕd,k (∥ · ∥ 2) ∈
+
+C2k(Rd) with τ = k + d+1 2 , see [33]. As outlined in [10, 34] this can be used to introduce an alternative inner product with equiv-alent norm also on Hτ (Ω) such that the restricted kernel Ψ τ (x, y ) := Φ τ (x − y), x, y ∈ Ω, is the reproducing kernel of Hτ (Ω) with respect to this inner product. To be more precise, Lemma 2.2 in [10] states the following. 4Proposition 2.3. Assume Φτ ∈ L1(Rd) ∩ C(Rd) has a Fourier transform cΦτ satisfying (2.1) with 
+
+τ > d/ 2. Let Ω ⊆ Rd be a bounded domain with a Lipschitz boundary. Let Ψτ : Ω ×Ω → R be defined by Ψτ (x, y ) = Φ τ (x−y), x, y ∈ Ω. Then, there exists an inner product ⟨· , ·⟩ Ψτ : Hτ (Ω) ×Hτ (Ω) → R
+
+on Hτ (Ω) such that Ψτ is the reproducing kernel of Hτ (Ω) with respect to this inner product. The norm ∥ · ∥ Ψτ induced by this inner product is equivalent to the norm on Hτ (Ω) , i.e. there are constants C1, C 2 > 0 such that 
+
+C1∥u∥Ψτ ≤ ∥ u∥Hτ (Ω) ≤ C2∥u∥Ψτ , u ∈ Hτ (Ω) .
+
+In what follows, we will, if not stated otherwise, always consider Hτ (Ω) to be equipped with the norm ∥ · ∥ Ψτ and will not distinguish between this norm and ∥ · ∥ Hτ (Ω) .We end this section by stating required sampling inequalities, which were first introduced in the context of scattered data approximation in [23] and later slightly generalized in [1]. To formulate them, we need the so-called fill distance or mesh norm 
+
+hX, Ω := sup 
+
+> x∈Ω
+
+min  
+
+> xi∈X
+
+∥x − xi∥2,
+
+which measures how well the data sites X cover the domain Ω. Other relevant quantities are the separation radius qX := 1 /2 min i̸=j ∥xi −xj ∥2 and their ratio ρX, Ω := hX, Ω/q X , which measures how uniformly distributed the points are. In the following theorem, we use the notation ( t)+ = max {t, 0}
+
+for any t ∈ R and 
+
+∥v∥ℓp(X) =
+
+PNj=1 |v(xj )|p
+
+1/p 
+
+for 1 ≤ p < ∞,
+
+max 1≤j≤N |v(xj )| for p = ∞.
+
+for any v : Ω → R and X = {x1, . . . , x N } ⊆ Ω ⊆ Rd. Later on, we will extend this notation to 
+
+v : Ω → Rℓ in the obvious way, by interpreting ( v(x1), . . . v (xN )) as a vector in RN ℓ .
+
+Theorem 2.4 (Sampling Inequality) . Let Ω ⊆ Rd be a bounded domain with a Lipschitz boundary. Let p, q ∈ [1 , ∞] and n ∈ N. Let τ > d/ 2 and γ := max {2, p, q }. Then, there exist constants h0 > 0
+
+(depending on Ω and τ ) and C > 0 (depending on Ω, τ and q) such that for all X = {x1, . . . , x N } ⊆ 
+
+Ω with hX, Ω ≤ h0 and all v ∈ Hτ (Ω) , we have 
+
+|v|W μq (Ω) ≤ C
+
+
+
+hτ −μ−d(1 /2−1/q )+ 
+
+> X, Ω
+
+|v|Hτ (Ω) + hd/γ −μX, Ω ∥v∥ℓp(X)
+
+
+
+for all 0 ≤ μ ≤ ℓ(τ, d, q ), where ℓ(τ, d, q ) = ℓ0(τ, d, q ) := τ − d(1 /2 − 1/q )+ in the case of τ ∈ N
+
+and either q > 2 and ℓ0(τ, d, q ) ∈ N or q = 2 . Otherwise ℓ(τ, d, q ) = ⌈ℓ0(τ, d, q )⌉ − 1. Moreover, we require μ ∈ N0 in the case of q = ∞.
+
+# 3 Approximation of functions defined on embedded subman-ifolds 
+
+The goal of this section is to discuss and extend the results of the previous section to the approx-imation of functions f : M → R, where M is an m-dimensional smooth, compact and connected embedded submanifold of Rd. To this end, we will first remind the reader of some necessary material on embedded submanifolds, including Sobolev spaces. Then, we will discuss kernel approximation for functions defined on manifolds. After that, we will give error estimates for the interpolation and the penalized least-squares operators and finally extend these results to the approximation of functions f : M → Rℓ.53.1 Embedded submanifolds 
+
+In this section, we will collect necessary material on smooth embedded submanifolds and fix the notation for the rest of this paper. Details on the topic can, for example, be found in [19]. As usual, we describe a smooth m-dimensional submanifold M of Rd by a smooth atlas AM = {(Ui, φ i) : i ∈
+
+I} of charts ( Ui, φ i) with relatively open sets Ui ⊆ M ⊆ Rd and homeomorphisms φi : Ui → Bi := 
+
+φi(Ui) ⊆ Rm such that φ−1 
+
+> i
+
+is an immersion and any two charts ( Ui, φ i) and ( Uj , φ j ) are compatible in the sense that either Ui ∩ Uj = ∅ or the transition map φj ◦ φ−1 
+
+> i
+
+: φi(Ui ∩ Uj ) → φj (Ui ∩ Uj ) is a 
+
+C∞-diffeomorphism. Two smooth atlases AM and A∗M are called compatible if each chart of AM
+
+is compatible with each chart of A∗M.In the rest of this paper, we will use the term submanifold in this sense, i.e. we will mean an embedded submanifold. As we will only consider compact submanifolds, we can always find a finite atlas, i.e. an atlas with a finite index set I = {1, . . . , L }. However, we also need some information on the ranges 
+
+φj (Uj ), when dealing with Sobolev spaces on manifolds. In [3, Lemma 1] it is shown that given a smooth atlas A = {(Vi, φ i) : i ∈ I} of a compact manifold M, there is a finite open cover {Uj }1≤j≤L
+
+of M and associated coordinate charts {ψj }1≤j≤L such that the atlas AM = {(Uj , ψ j ) : 1 ≤ j ≤ L}
+
+is compatible to A and the image Bj = ψ(Uj ) of each chart is an open ball in Rm.
+
+Definition 3.1. A smooth, finite atlas AM = {(Uj , ψ j ) : 1 ≤ j ≤ L} for an m-dimensional smooth, compact submanifold M ⊆ Rd is called admissible if the image Bj of each coordinate domain Uj in the atlas under the respective coordinate chart is an open ball in Rm.
+
+To finalize our discussion on charts, we need one more thing. We often require a partition of unity associated to admissible atlases. The following result comes from [3, Theorem 30]. 
+
+Lemma 3.2. Let M be a compact manifold with admissible atlas AM = {(Uj , ψ j ) : 1 ≤ j ≤ L}.Then, there exists an associated partition of unity, i.e., a set {χj : 1 ≤ j ≤ L} of smooth functions 
+
+χj : M → R such that (i) 0 ≤ χj ≤ 1,(ii) PLj=1 χj = 1 ,(iii) supp( χj ) = {x ∈ M : χj (x)̸ = 0 } ⊆ Uj .We write AM = {(Uj , ψ j , χ j ) : 1 ≤ j ≤ L} and call AM an admissible augmented atlas. 
+
+For any p ∈ M , the tangent space TpM at p consists of all vectors ˙ γ(0) if γ ∈ C1(( −ϵ, ϵ ), Rd)is a curve with γ(( −ϵ, ϵ )) ⊆ M and γ(0) = p. TpM is an m-dimensional linear subspace of Rd.Its orthogonal complement NpM := ( TpM)⊥ with respect to the inner product of the ambient Rd
+
+is called the normal space at p. Often, we do not only care about the tangent space at a single point p ∈ M , but instead consider the totality of all tangent or normal spaces to the manifold. The resulting objects T M := {(p, v ) : p ∈ M , v ∈ TpM} and N M := {(p, n ) : p ∈ M , n ∈ NpM} 
+
+are called tangent and normal bundle, respectively. It can be shown that T M and N M are themselves embedded submanifolds of Rd ×Rd of dimension 2 m and d, respectively. As an embedded submanifold of Rd×d, the normal bundle carries a unique smooth structure itself. Under this structure the so-called canonical projection πN M : N M → M , (p, n ) 7 → p is a smooth map. Finally, to measure distances on an embedded submanifold M ⊆ Rd one could obviously use the Euclidean distance of the ambient Rd, i.e., ∥p −q∥2 for p, q ∈ M . However, on a connected manifold 6M it is more natural to define the distance as the length of the shortest curve on M connecting p
+
+and q. This leads to the definition of the intrinsic distance dM : M × M → R, defined as 
+
+dM(p, q ) := inf L(γ) : γ : [ a, b ] → M piecewise C1, γ (a) = p, γ (b) = q .
+
+Here, the length L(γ) of a piecewise C1 curve γ is given by L(γ) := R ba ∥ ˙γ(t)∥2 dt. 
+
+We end this section by recalling Sobolev spaces on manifolds. There are various equivalent ways to define Sobolev spaces on embedded submanifolds (via charts, via the Laplace-Beltrami operator, or via covariant derivatives); for a comprehensive review and comparison of some of these definitions see [3]. As in [8], we use a definition in terms of charts. For our later results, however, we require a substantially more detailed analysis of these spaces. To this end, we rely primarily on the comprehensive treatment in [3]. We start by defining Lebesgue spaces Lp(M) on M.
+
+Definition 3.3. Let AM = {(Uj , ψ j , χ j ) : 1 ≤ j ≤ L} be an admissible augmented atlas of M and 
+
+1 ≤ p < ∞. The space Lp(M) is the completion of C∞(M) with respect to the norm 
+
+∥f ∥Lp(M) := 
+
+> L
+
+X
+
+> j=1
+
+∥(χj f ) ◦ ψ−1 
+
+> j
+
+∥Lp(ψj (Uj )) .
+
+For p = ∞ we define L∞(M) to consist of all functions f : M → R with 
+
+∥f ∥L∞(M) := ess sup 
+
+> x∈M
+
+|f (x)| < ∞.
+
+It can be shown [3, Theorem 86] that this definition is equivalent to the usual one based on the Riemannian volume measure on M (see [3, Definition 29.2)]) in the sense of equivalent norms, and therefore is independent of the chosen admissible augmented atlas AM. Moreover, we obviously have 
+
+∥f ∥L∞(M) ≤
+
+> L
+
+X
+
+> j=1
+
+∥(χj f ) ◦ ψ−1 
+
+> j
+
+∥L∞(ψj (Uj )) .
+
+Similarly, Sobolev spaces on the compact manifold M are defined as follows [3, Remark 54.1]. 
+
+Definition 3.4. Let AM = {(Uj , ψ j , χ j ) : 1 ≤ j ≤ L} be an admissible augmented atlas of M,
+
+1 ≤ p ≤ ∞ and τ ≥ 0 (with τ ∈ N0 for p = ∞). The Sobolev space W τp (M) is defined as 
+
+W τp (M) := {f ∈ Lp(M) : ∥f ∥W τp (M) := 
+
+> L
+
+X
+
+> j=1
+
+∥(χj f ) ◦ ψ−1 
+
+> j
+
+∥W τp (ψj (Uj )) < ∞} .
+
+At first glance, W τp (M) seems to depend on the choice of the admissible augmented atlas AM.However, in Theorem 87 of [3] it is shown that for a second admissible augmented atlas, which is compatible to AM, algebraically the same space arises and the respective norms are equivalent. Note that in [3] all results are initially formulated in terms of distributions on M. However, as explained in Section 9.3 of that article, this is equivalent to our Definition 3.4, as all such distributions are regular and correspond to Lp(M) functions. For later purposes, we have to consider these spaces in more detail. Naturally, one may ask whether for every function f ∈ W τp (M) the local representation f ◦ ψ−1 
+
+> j
+
+belongs to the classical 7Sobolev space W τp (ψj (Uj )) on the open ball ψj (Uj ) ⊆ Rm. Contrary to claims made in some references, this is not true in general. A simple counterexample can be found in [3, Remark 60]. Fortunately, a slightly weaker result [3, Corollary 8] holds true. To formulate it, we define the local Sobolev space W τ,p loc (Ω) for 1 < p < ∞, τ ≥ 0 on a nonempty open set Ω ⊆ Rd by 
+
+W τ,p loc (Ω) := {f ∈ D′(Ω) : φf ∈ W τp (Ω) for all φ ∈ C∞ 
+
+> c
+
+(Ω) }.
+
+Here, D′(Ω) denotes the space of distributions on Ω as introduced in [2, Definition 50] and C∞ 
+
+> c
+
+(Ω) consist of all C∞(Ω)-functions with compact support in Ω. 
+
+Lemma 3.5. Let f ∈ W τp (M) based on the admissible augmented atlas AM = {(Uj , ψ j , χ j ) : 1 ≤
+
+j ≤ L}. Then, for all 1 ≤ j ≤ L the local representation f ◦ ψ−1 
+
+> j
+
+belongs to the local Sobolev space 
+
+W τ,p loc (ψj (Uj )) . Moreover, for ξ ∈ C∞ 
+
+> c
+
+(ψj (Uj )) we can estimate 
+
+∥ξ(f ◦ ψ−1 
+
+> j
+
+)∥W τp (ψj (Uj )) ≤ C∥f ∥W τp (M),
+
+where the implicit constant may depend on ξ.
+
+Additionally, we will need the following equivalent characterization of local Sobolev functions. 
+
+Lemma 3.6. Let Ω ⊆ Rd be an open, bounded Lipschitz domain, 1 < p < ∞ and τ ≥ 0. Then, 
+
+f ∈ D′(Ω) is in W τ,p loc (Ω) if and only if for every precompact open set V with V ⊆ Ω there is a 
+
+w ∈ W τp (Ω) such that w|V = f |V .
+
+A proof for this can be found in [2, Theorem 100]. For later, we note that the if direction can simply be established by setting w = Γ f with a function Γ ∈ C∞ 
+
+> c
+
+(Ω) satisfying Γ ≡ 1 on an open neighborhood containing V .
+
+## 3.2 Kernel-based approximation of functions defined on manifolds 
+
+Compared to the situation in Section 2, we are now interested in domains Ω = M, where M is a smooth, compact and connected m-dimensional embedded submanifold of Rd. Of course, the operators IX and QX,λ from Definition 2.1 are well-defined if Ω = M and now become operators from C(M) to VX and Lemma 2.2 still holds. However, we now have to specify what kind of positive definite kernels on M we want to use. Although there are different ways to construct kernels, particularly for specific manifolds (see for example [15, 22, 20, 6]), we will focus on kernels which arise by restricting positive definite kernels defined on the ambient space Rd to the embedded submanifold M, following particularly [8]. Consider a positive definite kernel K : Rd ×Rd → R of the form K(x, y ) = Φ( x−y) = ϕ(∥x−y∥2). Restricting it to the compact submanifold M ⊆ Rd, gives the kernel Ψ( ·, ·) := K(·, ·)|M×M : M × M → R,
+
+which is obviously positive definite on M. For our error analysis we need to know the corresponding reproducing kernel Hilbert space. Fortunately, it turns out that if we start with a kernel K of this form which is the reproducing kernel of a Sobolev space then the restricted kernel Ψ will also be the reproducing kernel of a Sobolev space on the manifold M. To be more precise, the corresponding result to Proposition 2.3 comes from [8, Theorem 5]. 8Proposition 3.7. Let τ > d/ 2, m ∈ N be given and set σ = τ − (d − m)/2. Assume Φτ ∈
+
+L1(Rd) ∩ C(Rd) has a Fourier transform cΦτ satisfying (2.1). Let M ⊆ Rd be a compact, connected and smooth m-dimensional submanifold. Let Ψσ : M × M → R be defined by Ψσ (x, y ) = Φ τ (x − y),
+
+x, y ∈ M . Then, there exists an inner product ⟨· , ·⟩ Ψσ : Hσ (M)×Hσ (M) → R on Hσ (M) such that 
+
+Ψσ is the reproducing kernel of Hσ (M) with respect to this inner product. The norm ∥ · ∥ Ψσ induced by this inner product is equivalent to the norm on Hσ (M), i.e. there are constants C1, C 2 > 0 such that 
+
+C1∥u∥Ψσ ≤ ∥ u∥Hσ (M) ≤ C2∥u∥Ψσ , u ∈ Hσ (M).
+
+Next, we analyze the approximation processes in this setting. For X = {x1, . . . , x N } ⊆ M let 
+
+VX = span {K(·, x 1), . . . , K (·, x N )} = span {Ψ( ·, x 1), . . . , Ψ( ·, x N )}, using the notation above. We now want to collect and prove error estimates for the interpolation operator IX : C(M) → VX and the approximation operator QX,λ : C(M) → VX . To formulate them, we need to introduce the fill distance, the separation radius and their ratio for a set X = {x1, . . . , x N } ⊆ M in the manifold setting by 
+
+hX, M := sup 
+
+> x∈M
+
+min  
+
+> xi∈X
+
+dM(x, x i), qX := 12 min  
+
+> xi̸=xj
+
+dM(xi, x j ), ρX, M := hX, M/q X .
+
+We obviously have qX ≤ hX, M. It will be our understanding that we will use the intrinsic metric 
+
+dM for these quantities if the data points are on M and the Euclidean distance otherwise. As usual, we will call a data set X ⊆ M quasi-uniform if there is a constant cqu ≥ 1 close to one such that hX, M ≤ cqu qX . Obviously, such a constant always exists but can become arbitrarily large. In the context of approximation results and sampling inequalities, the concept of quasi-uniform sets is best reflected if one thinks not about only one data set X but a sequence of sets ( Xj ) with 
+
+hXj ,M ≤ cqu qXj for all j.While the interpolation operator was comprehensively investigated in [8], nothing seems to be known for the penalized least-squares operator in this context. For the interpolation operator, Corollary 13 and Theorem 17 in [8] yield the following bounds. Note that these bounds were derived by employing sampling inequalities and that we have adjusted the range of μ according to the more general sampling inequalities cited in Theorem 2.4. 
+
+Theorem 3.8. Let Φ ∈ C(Rd) ∩ L1(Rd), satisfying (2.1) with τ > d/ 2. Let σ = τ − (d − m)/2 and 
+
+1 ≤ q ≤ ∞ . Then, there are constants h0 > 0 and C > 0 such that for all X ⊆ M with hX, M < h 0
+
+and all f ∈ Hβ (M) with β > m/ 2 the error between f and its interpolant IX f using the restricted kernel Ψ can be bounded as follows. 1. If β ≥ σ then 
+
+∥f − IX f ∥W μq (M) ≤ Ch σ−μ−m(1 /2−1/q )+ 
+
+> X, M
+
+∥f ∥Hσ (M)
+
+for all 0 ≤ μ ≤ ℓ(σ, m, q ) with μ ∈ N0 if q = ∞.2. If β < σ then 
+
+∥f − IX f ∥W μq (M) ≤ Ch β−μ−m(1 /2−1/q )+ 
+
+> X, M
+
+ρσ−βX, M∥f ∥Hβ (M)
+
+for all 0 ≤ μ ≤ ℓ(β, m, q ) with μ ∈ N0 if q = ∞.
+
+To derive corresponding estimates for the penalized least-squares operator, we first need to carry the sampling inequality from Theorem 2.4 over to the manifold setting. For this, we need the following result on the connection between local fill distances and global ones. 9Lemma 3.9. Let M ⊆ Rd be a smooth, connected and compact m-dimensional submanifold with admissible atlas AM = {(Uj , ψ j ) : 1 ≤ j ≤ L} with charts ψj : Uj ⊆ M → Bj := ψj (Uj ) ⊆ Rm. Set 
+
+Xj := X ∩ Uj and Yj := ψj (Xj ) for 1 ≤ j ≤ N . Then, there are constants c1, c 2 > 0, depending on the atlas such that 
+
+c1hYj ,B j ≤ hXj ,U j ≤ c2hYj ,B j , 1 ≤ j ≤ L. 
+
+Moreover, the maximum of the local fill distances is equivalent to the global one, i.e. 
+
+c1hX, M ≤ max  
+
+> 1≤j≤L
+
+hXj ,U j ≤ c2hX, M,
+
+where the last upper bound only holds for sufficiently small hX, M ≤ h0. Finally, using the mesh ration ρX, M = hX, M/q X , the fill distances of Xj and Yj , respectively, are all comparable to hX, M,if hX, M ≤ h0, i.e. 
+
+ρ−1
+
+> X, M
+
+hX, M ≤ hXj ,U j ≤ c2hX, M, 1 ≤ j ≤ L. 
+
+Proof. The first two statements follow immediately from Proposition 7 and Theorem 8 from [8]. For the last statement we note that the second statement already yields hXj,U j ≤ c2hX, M. For the lower bound we note hX, M = ρX, MqX ≤ ρX, MqXj ≤ ρX, MhXj ,U j for 1 ≤ j ≤ L. □
+
+With this at our hand, we can now formulate and prove the required sampling inequality for functions from Hσ (M). 
+
+Theorem 3.10. Let M be a compact, connected, smooth m-dimensional submanifold of Rd with ad-missible augmented atlas AM = {(Uj , ψ j , χ j ) : 1 ≤ j ≤ L}. Let p, q ∈ [1 , ∞] and γ := max {2, p, q }.Let σ > m/ 2. Then, there exist constants h0 > 0 and C > 0 such that for all X = {x1, . . . , x N } ⊆ M with hX, M ≤ h0 and all u ∈ Hσ (M), we have 
+
+|u|W μq (M) ≤ C
+
+
+
+hσ−μ−m(1 /2−1/q )+ 
+
+> X, M
+
+|u|Hσ (M) + ρ(μ−m/γ )+ 
+
+> X, M
+
+hm/γ −μX, M ∥u∥ℓp(X)
+
+
+
+for all 0 ≤ μ ≤ ℓ(σ, m, q ) with μ ∈ N0 if q = ∞.Proof. As in the last lemma, we let Xj := X ∩ Uj , Bj := ψj (Uj ) and Yj := ψj (Xj ). As u ∈ Hσ (M), we have ( χj u) ◦ ψ−1 
+
+> j
+
+∈ Hσ (Bj ) for each chart ψj , 1 ≤ j ≤ L, where Bj is an open ball in Rm and, hence, in particular a Lipschitz domain. Thus, we can apply the sampling inequality from Theorem 2.4 locally on each Bj to obtain 
+
+∥(χj u) ◦ ψ−1 
+
+> j
+
+∥W μq (Bj ) ≤ Cj
+
+
+
+hσ−μ−m(1 /2−1/q )+  
+
+> Yj,B j
+
+∥(χj u) ◦ ψ−1 
+
+> j
+
+∥Hσ (Bj ) + hm/γ −μYj ,B j ∥(χj u) ◦ ψ−1 
+
+> j
+
+∥ℓp(Yj )
+
+
+
+provided that hYj ,B j < h 0(Bj ). Continuing under the assumption 
+
+hYj ,B j ≤ h0 := min  
+
+> 1≤j≤L
+
+h0(Bj ), 1 ≤ j ≤ L, (3.1) we can sum up the contributions of the finitely many coordinate domains, yielding 
+
+∥u∥W μq (M) =
+
+> L
+
+X
+
+> j=1
+
+∥(χj u) ◦ ψ−1 
+
+> j
+
+∥W μq (Bj )
+
+≤
+
+> L
+
+X
+
+> j=1
+
+Cj
+
+
+
+hσ−μ−m(1 /2−1/q )+  
+
+> Yj,B j
+
+∥(χj u) ◦ ψ−1 
+
+> j
+
+∥Hσ (Bj ) + hm/γ −μYj ,B j ∥(χj u) ◦ ψ−1 
+
+> j
+
+∥ℓp(Yj )
+
+
+
+≤ Ch σ−μ−m(1 /2−1/q )+ 
+
+> X, M
+
+∥u∥Hσ (M) + C
+
+> L
+
+X
+
+> j=1
+
+hm/γ −μXj ,U j ∥χj u∥ℓp(Xj ),
+
+10 using Lemma 3.9, which also shows that the condition (3.1) can be rewritten as hX, M ≤ h0
+
+with a slightly modified h0. Lemma 3.9 also shows hm/γ −μXj ,U j ≤ Ch m/γ −μX, M if m/γ − μ ≥ 0 and 
+
+hm/γ −μXj ,U j ≤ Cρ μ−m/γ X, M hm/γ −μX, M if m/γ − μ < 0, which both together can be written as hm/γ −μXj ,U j ≤
+
+ρ(μ−m/γ )+ 
+
+> X, M
+
+hm/γ −μX, M .Finally, using 0 ≤ χj (x) ≤ 1 for 1 ≤ j ≤ L and x ∈ M and that we have only a finite number of charts, the sum of the discrete ℓp(Xj ) norms can be bounded by a constant times ∥u∥ℓp(X), which yields the stated result. □
+
+Note that the discrete term in the sampling inequality above means the following. If we have 
+
+m/γ − μ ≥ 0 or if the data set is quasi-uniform then the term simply becomes hm/γ −μX, M ∥u∥ℓp(X).However, if m/γ − μ < 0 and the data set is not quasi-uniform the term is actually given by 
+
+qm/γ −μX ∥u∥ℓp(X). This can also be avoided if the local fill distances are all of the same size and comparable to hX, M.The next result deals with stability of the approximation process QX,λ : C(M) → VX . However, as we will later on need to deal with mismeasured data, we will formulate and prove this in a more general way. Note that the definition of QX,λ does not require a function f ∈ C(M). It can also be defined using a vector y ∈ RN , as the operator only needs the data ( xj , f (xj )), 1 ≤ j ≤ N , which can be replaced by data of the form ( xj , y j ), 1 ≤ j ≤ N . In this situation, we will also simply write 
+
+QX,λ y for the penalized least-squares approximation using these data. 
+
+Lemma 3.11. Let X = {x1, . . . , x N } ⊆ M , f ∈ H, where H is a reproducing kernel Hilbert space of real-valued functions defined on M. Then, for any λ > 0 and y ∈ RN , the penalized least-squares approximation QX,λ y ∈ H satisfies 
+
+∥QX,λ y∥H ≤ 1
+
+√λ ∥f (X) − y∥2 + ∥f ∥H ,
+
+∥y − QX,λ y∥2 ≤ ∥f (X) − y∥2 + √λ∥f ∥H .
+
+Proof. As QX,λ y minimizes Jλ,y (s) = ∥s(X) − y∥22 + λ∥s∥2 
+
+> H
+
+over all s ∈ H, we immediately have max {λ∥QX,λ y∥2 
+
+> H
+
+, ∥y − QX,λ y∥22} ≤ Jλ,y (QX,λ y) ≤ Jλ,y (f ) = ∥y − f (X)∥22 + λ∥f ∥2 
+
+> H
+
+.
+
+Taking the square root and using the monotonicity of the square root yields the stated bounds. □
+
+With all these auxiliary results at hand, we can now formulate error estimates for the penalized least-squares operator. We will do this for mismatched data, i.e. instead of observing y = f (X) for a function f : M → R, we work with the observations y which might only be an approximation to f (X). However, we will restrict ourselves to matching smoothness, i.e. we will assume that the target function belongs to Hσ (M). Rougher target functions f ∈ Hβ (M) can also be handled very similarly to interpolation but the terms will become more involved, so that we omit the details here. For the same reason, we will assume that our data set is quasi-uniform. 
+
+Theorem 3.12. Let Φ ∈ C(Rd) ∩ L1(Rd), satisfying (2.1) with τ > d/ 2. Let σ = τ − (d − m)/2 and 
+
+1 ≤ q ≤ ∞ . Then, there are constants h0 > 0 and C > 0 such that for all quasi-uniform X ⊆ M 
+
+with hX, M < h 0 and all f ∈ Hσ (M) and all data y ∈ RN , observed at X, the error between f
+
+11 and the penalized least-squares approximant QX,λ y using the restricted kernel Ψ and λ > 0 can be bounded as 
+
+∥f − QX,λ y∥W μq (M) ≤ C
+
+
+
+hσ−μ−m(1 /2−1/q )+ 
+
+> X, M
+
++ √λh m/γ −μX, M
+
+
+
+∥f ∥Hσ (M)
+
++ C
+
+
+
+hσ−μ−m(1 /2−1/q )+
+
+> X, M
+
+1
+
+√λ + hm/γ −μX, M
+
+
+
+∥f (X) − y∥2,
+
+for all 0 ≤ μ ≤ ℓ(σ, m, q ) with μ ∈ N0 if q = ∞. In particular, if the observed data are given by 
+
+yj = f (xj ), 1 ≤ j ≤ N , this simplifies to 
+
+∥f − QX,λ f ∥W μq (M) ≤ C
+
+
+
+hσ−μ−m(1 /2−1/q )+ 
+
+> X, M
+
++ √λh m/γ −μX, M
+
+
+
+∥f ∥Hσ (M).
+
+Proof. The sampling inequality from Theorem 3.10 yields for u = f − QX,λ y the immediate bound 
+
+∥f − QX,λ y∥W μq (M) ≤ C
+
+
+
+hσ−μ−m(1 /2−1/q )+ 
+
+> X, M
+
+∥f − QX,λ y∥Hσ (M) + hm/γ −μX, M ∥f − QX,λ y∥ℓ2(X)
+
+
+
+.
+
+Next, using Lemma 3.11, we find 
+
+∥f − QX,λ y∥Hσ (M) ≤ ∥ f ∥Hσ (M) + ∥QX,λ y∥Hσ (M) ≤ 2∥f ∥Hσ (M) + 1
+
+√λ ∥f (X) − y∥2
+
+and, similarly, 
+
+∥f − QX,λ y∥ℓ2(X) ≤ 2∥f (X) − y∥2 + √λ∥f ∥Hσ (M).
+
+Plugging both of these estimates into the bound above yields the desired error estimate. □
+
+Until now we have discussed the approximation of functions f : M → R. To reuse this theory for approximating functions f : M → N , we briefly need to discuss the approximation of vector-valued functions f : M → Rℓ. Extending kernel-based methods to non-scalar codomains has already thoroughly been investigated for many years, see for example [30, 21, 5, 11]. In the most general setting, one considers functions f : Ω → W , where W is some Hilbert space. However, in our situation, where W = Rℓ, we can also simply use component-wise approximation, which corresponds to employing a diagonal kernel in the general theory. Hence, we define the vector-valued interpolation and approximation operators as follows. For f = ( f1, . . . , f ℓ) : M → Rℓ we define IX, Rℓ f : M → Rℓ by ( IX, Rℓ f )j = IX fj and QX,λ, Rℓ f : M → Rℓ by ( QX,λ, Rℓ f )j = QX,λ fj
+
+for 1 ≤ j ≤ ℓ, using the same restricted kernel Ψ : M × M → R for each component. In both cases, these operators do not actually require the data to be generated by a function f : M → Rℓ, it suffices to have observations Y = ( y1, . . . , y ℓ) with yj ∈ RN to make them well-defined. As before, we will only use this in the case of the penalized least-squares operator. To carry our estimates over to vector-valued Sobolev spaces, we formally define these as follows. 
+
+Definition 3.13. Let M ⊆ Rd be an embedded submanifold. For 1 ≤ q ≤ ∞ and μ ≥ 0, where 
+
+μ ∈ N0 if q = ∞, we define the Rℓ-valued Sobolev space W μq (M, Rℓ) := {f = ( f1, . . . , f ℓ) : fi ∈
+
+W μq (M), 1 ≤ i ≤ ℓ} with norm 
+
+∥f ∥W μq (M,Rℓ) := 
+
+> ℓ
+
+X
+
+> i=1
+
+∥fi∥2  
+
+> Wμq(M)
+
+! 12
+
+. (3.2) 12 Obviously, we could equivalently use any other norm on Rℓ for combining the component-wise contributions in (3.2). For later, we emphasize the inequality ess sup 
+
+> x∈M
+
+∥f (x)∥2 ≤ ∥ f ∥L∞(M,Rℓ), f ∈ L∞(M, Rℓ), (3.3) which is straightforward to verify from the definitions. For three vectors a, b, c ∈ Rℓ and two scalars α, β > 0, which satisfy the inequalities |ai| ≤ 
+
+α|bi| + β|ci| for 1 ≤ i ≤ ℓ, we have the bound ∥a∥2 ≤ α∥b∥2 + β∥c∥2. Moreover, the norm-minimal property of the interpolant and the minimizing property of the penalized least-squares approximant show, that these properties remain valid in the vector-valued setting, i.e. we have on the one hand 
+
+∥IX, Rℓ f ∥Hσ (M,Rℓ) ≤ ∥ f ∥Hσ (M,Rℓ) (3.4) and, using also Pℓi=1 ∥yi − fi(X)∥22 = ∥Y − f (X)∥22 for Y = ( y1, . . . , y ℓ) with yi ∈ RN , on the other hand 
+
+∥QX,λ, Rℓ Y ∥Hσ (M,Rℓ) ≤ 1
+
+√λ ∥f (X) − Y ∥2 + ∥f ∥Hσ (M,Rℓ), (3.5) 
+
+∥Y − QX,λ Y ∥2 ≤ ∥f (X) − Y ∥2 + √λ∥f ∥Hσ (M,Rℓ).
+
+This particularly shows that both Theorem 3.8 for the interpolation operator, as well as Theorem 3.12 for the penalized least-squares operator carry over to the vector-valued setting. 
+
+Corollary 3.14. Let Φ ∈ C(Rd) ∩ L1(Rd), satisfying (2.1) with τ > d/ 2. Let σ = τ − (d − m)/2
+
+and 1 ≤ q ≤ ∞ . Then, there are constants h0 > 0 and C > 0 such that for all X ⊆ M with 
+
+hX, M < h 0 and all f ∈ Hβ (M, Rℓ) with β > m/ 2 the error between f and its interpolant IX, Rℓ f
+
+using the restricted kernel Ψ can be bounded as follows. 1. If β ≥ σ then 
+
+∥f − IX, Rℓ f ∥W μq (M,Rℓ) ≤ Ch σ−μ−m(1 /2−1/q )+ 
+
+> X, M
+
+∥f ∥Hσ (M,Rℓ),
+
+for all 0 ≤ μ ≤ ℓ(σ, m, q ) with μ ∈ N0 if q = ∞.2. If β < σ then 
+
+∥f − IX, Rℓ f ∥W μq (M,Rℓ) ≤ Ch β−μ−m(1 /2−1/q )+ 
+
+> X, M
+
+ρσ−βX, M∥f ∥Hβ (M,Rℓ)
+
+for all 0 ≤ μ ≤ ℓ(β, m, q ) with μ ∈ N0 if q = ∞.
+
+Corollary 3.15. Let Φ ∈ C(Rd)∩L1(Rd), satisfying (2.1) with τ > d/ 2. Let σ = τ −(d−m)/2 and 
+
+1 ≤ q ≤ ∞ . Then, there are constants h0 > 0 and C > 0 such that for all X ⊆ M with hX, M < h 0
+
+and all f ∈ Hσ (M, Rℓ) and all at X observed data Y = ( y1, . . . , y ℓ) with yj ∈ RN , 1 ≤ j ≤ ℓ, the error between f and the penalized least-squares approximant QX,λ, Rℓ Y using the restricted kernel Ψ
+
+and λ > 0 can be bounded as 
+
+∥f − QX,λ, Rℓ Y ∥W μq (M,Rℓ) ≤ C
+
+
+
+hσ−μ−m(1 /2−1/q )+ 
+
+> X, M
+
++ √λh m/γ −μX, M
+
+
+
+∥f ∥Hσ (M,Rℓ)
+
++ C
+
+
+
+hσ−μ−m(1 /2−1/q )+
+
+> X, M
+
+1
+
+√λ + hm/γ −μX, M
+
+
+
+∥f (X) − Y ∥2,
+
+for all 0 ≤ μ ≤ ℓ(σ, m, q ) with μ ∈ N0 if q = ∞. In particular, if the observed data are given by 
+
+yj = f (xj ), 1 ≤ j ≤ N , this simplifies to 
+
+∥f − QX,λ, Rℓ f ∥W μq (M,Rℓ) ≤ C
+
+
+
+hσ−μ−m(1 /2−1/q )+ 
+
+> X, M
+
++ √λh m/γ −μX, M
+
+
+
+∥f ∥Hσ (M,Rℓ).
+
+13 4 Learning of manifold-to-manifold maps 
+
+Throughout this section, M ⊆ Rd will be a compact, smooth, connected m-dimensional submanifold of Rd and N ⊆ Rℓ will be a compact smooth, connected n-dimensional submanifold of Rℓ.After having established theory for approximating functions f : M → Rℓ from scattered data, we can now come to our main task, the approximation of manifold-valued functions f : M → N .We will achieve this by combining the approximation processes of the last section with a projection 
+
+PN : Rℓ → N . Hence, in this section, we will study the combined interpolation and approximation operators 
+
+IX, N := PN ◦ IX, Rℓ , QX,λ, N := PN ◦ QX,λ, Rℓ .
+
+An obvious choice for PN is to assign each vector u ∈ Rℓ to its closest point on N . This however, is usually only possible if u is already sufficiently close to the manifold N .
+
+## 4.1 Closest point approximation 
+
+In this subsection, we will recall and prove relevant material on the closest point projection PN :
+
+Rℓ → N . In particular, we are interested in its well-definedness. Let u ∈ Rℓ. A point p∗ ∈ N is called a closest point to u from N if p∗ = arg min p∈N ∥u − p∥2.
+
+Since N is assumed to be compact, a closest point to u ∈ Rℓ always exist. However, it does not have to be unique. As in the situation of best approximations from linear subspaces, closest points are characterized by some type of orthogonality. 
+
+Lemma 4.1. Let p ∈ N be a closest point to u ∈ Rℓ. Then u − p ∈ NpN .
+
+Proof. Let v ∈ TpN . Consider an arbitrary curve c : ( −ϵ, ϵ ) → N with c(0) = p and ˙ c(0) = v. 
+
+As p is a closest point to u, the function g : ( −ϵ, ϵ ) → R, t 7 → ∥ u − c(t)∥22 has a local minimum at 
+
+t = 0. Hence, 0 = ˙ g(0) = ddt |t=0 ⟨u − c(t), u − c(t)⟩2 = 2 ⟨c(0) , ˙c(0) ⟩2 − 2⟨u, ˙c(0) ⟩2 = 2 ⟨u − p, v ⟩2 and therefore u − p ⊥ v. □
+
+Taking a closer look at the unit sphere Sℓ−1 ⊆ Rℓ, we note that for each u ∈ Rℓ \{ 0} there exists a unique closest point from Sℓ−1, which is given by u 7 → u/ ∥u∥2. Hence, in this case there exists an open neighborhood U of Sℓ−1, such that each u ∈ U has a unique closest point from Sℓ−1. This is no particularity of the sphere, but holds in general. Such a U is called a tubular neighborhood, see [19, Chapter 6]. 
+
+Definition 4.2. A tubular neighborhood of an embedded submanifold N ⊆ Rℓ is a neighborhood 
+
+U ⊆ Rℓ of N which is the diffeomorphic image under the addition map E : N N → Rℓ, (p, n ) 7 → p+n,of an open subset V ⊆ N N of the form V = {(p, n ) ∈ N N : ∥n∥2 < δ (p)} for some positive continuous function δ : N → R. If the function δ can be chosen as constant, δ ≡ ˆδ > 0, we say that 
+
+U = E(V ) is a uniform tubular neighborhood of N .
+
+The tubular neighborhood theorem, [19, Theorem 6.24]), guarantees that every embedded sub-manifold of Rℓ has a tubular neighborhood. 
+
+Theorem 4.3 (Tubular Neighborhood Theorem) . Every embedded submanifold N of Rℓ has a tubular neighborhood. If N is compact, there also exists a uniform tubular neighborhood of N .
+
+14 Proof. The first statement is the above mentioned [19, Theorem 6.24]), The second statement follows easily: If N is compact, the positive and continuous function N ∋ p 7 → 12 δ(p) ∈ R attains a minimum on N , denoted by ˆδ. Then, Uˆδ := E({(p, n ) ∈ N N : ∥n∥2 < ˆδ}) is a uniform tubular neighborhood of N . □
+
+Uniform tubular neighborhoods and closest points are closely related. 
+
+Theorem 4.4. Let U = E(V ) be a uniform tubular neighborhood of N with V = {(p, n ) ∈ N N :
+
+∥n∥2 < ˆδ} for a ˆδ > 0. Then, for each u ∈ U there exists a unique closest point from N . The map 
+
+PN : U → N , PN (u) := arg min 
+
+> p∈N
+
+∥u − p∥2,
+
+which assigns each point u ∈ U to its closest point on N , is given by PN (u) = πN N ◦ E−1, where 
+
+πN N : N N → N denotes the canonical projection from N N to N . The map PN is smooth and is called closest point projection. Proof. Let u ∈ U . As already mentioned, compactness of N guarantees the existence of a closest point to u on N . As u ∈ U , it can be uniquely written as u = E(( p, n )) with p ∈ N , n ∈ TpN
+
+and ∥n∥2 < ˆδ. Assume a point p2 ∈ N would also be a closest point to u. Then, we must have 
+
+∥u − p2∥2 ≤ ∥ n∥2 < ˆδ. On the other hand, u − p2 ∈ Np2 N according to Lemma 4.1. Hence, (p2, u − p2) ∈ V with u = E(( p2, u − p2)). The uniqueness of such a decomposition inside the tubular neighborhood U gives p = p2. We immediately conclude that the closest point to u ∈ U
+
+is given by PN (u) = πN N ◦ E−1. As E is a diffeomorphism and πN N is smooth, the closest point projection PN : U ⊆ Rℓ → N is smooth. □
+
+We end this subsection by looking at the smoothness of the closest point projection, when applied to a function f ∈ Hσ (M, Rℓ), i.e. we are interested in the smoothness of PN ◦ f : M → N .To this end, we need the following result on the composition of functions. 
+
+Lemma 4.5. Let Ω ⊆ Rd be a bounded Lipschitz domain and σ > max {1, d/ 2}. Let g ∈ C∞(Rℓ)
+
+with g(0) = 0 . Then, there is a constant c > 0 such that 
+
+∥g ◦ f ∥Hσ (Ω) ≤ c
+
+
+
+max  
+
+> 1≤j≤ℓ
+
+∥fj ∥Hσ (Ω) 
+
+  
+
+1 + max  
+
+> 1≤j≤ℓ
+
+∥fj ∥⌊σ⌋ 
+
+> Hσ(Ω)
+
+
+
+for all f = ( f1, . . . , f ℓ) : Ω → Rℓ with fj ∈ Hσ (Ω) for 1 ≤ j ≤ ℓ.Proof. This lemma is a direct application of Theorem 2 from [28, Section 5.5.1]. To see this, first note that by [28, Section 2.1.2], the Sobolev space Hσ (Rd) coincides with the Triebel-Lizorkin space F σ 
+
+> 2,2
+
+= Fσ 
+
+> 2,2
+
+for any σ > 0 with equivalent norms. Next, besides the above assumptions on 
+
+g, Theorem 2 in [28] also requires f ∈ Hσ (Rd) ∩ L∞(Rd), which is satisfied because of σ > d/ 2and the Sobolev embedding theorem. Finally, in our situation the requirements on σ are 1 ≤ σ
+
+and 0 < σ < μ , which we satisfy with μ = ⌊σ⌋ + 1. Thus, the mentioned theorem guarantees the existence of a constant c > 0 such that 
+
+∥g ◦ f ∥Hσ (Rd) ≤ c
+
+
+
+max  
+
+> 1≤j≤ℓ
+
+∥fj ∥Hσ (Rd)
+
+  
+
+1 + max  
+
+> 1≤j≤ℓ
+
+∥fj ∥⌊σ⌋ 
+
+> Hσ(Rd)
+
+
+
+for all f : Rd → Rℓ with fj ∈ Hσ (Rd), 1 ≤ j ≤ ℓ, where we also have used the Sobolev embedding theorem, which allowed us to bound the ∥fj ∥L∞(Rd) norm by a constant times ∥fj ∥Hσ (Rd).15 As Ω ⊆ Rd is a Lipschitz domain, the functions fj ∈ Hσ (Ω) can be extended to functions ˜Ef j ∈ Hσ (Rd) with ∥ ˜Ef j ∥Hσ (Rd) ≤ C∥fj ∥Hσ (Ω) . Noticing that ∥g ◦ f ∥Hσ (Ω) ≤ ∥ g ◦ ˜Ef ∥Hσ (Rd)
+
+finalizes our proof. □
+
+The application of the above lemma to the coordinate representation of PN ◦ f gives the desired result on the smoothness of the latter function and Sobolev bounds thereof. 
+
+Theorem 4.6. Let U ⊆ Rℓ be a uniform tubular neighborhood of N with associated closest point projection PN : U → N ⊆ Rℓ. Then, for any σ > max {1, m/ 2} there is a constant C > 0 such that 
+
+∥P N ◦ f ∥Hσ (M,Rℓ) ≤ C max 
+
+n
+
+1, ∥f ∥Hσ (M,Rℓ)
+
+
+
+1 + ∥f ∥⌊σ⌋ 
+
+> Hσ(M,Rℓ)
+
+o 
+
+for all f ∈ Hσ (M, Rℓ) with f (M) ⊆ U .Proof. By potentially shrinking the tubular neighborhood U , we obtain a uniform tubular neigh-borhood eU of N and an associated closest point projection ePN : eU → N , which has a smooth extension to the boundary of eU . By the extension lemma for smooth functions, [19, Lemma 2.26], we can extend PN to all of Rℓ such that the extension G = ( g1, . . . , g ℓ) : Rℓ → Rℓ is smooth, coincides with PN on eU and has compact support contained in U . By definition we have 
+
+∥P N ◦ f ∥2  
+
+> Hσ(M,Rℓ)
+
+=
+
+> ℓ
+
+X
+
+> j=1
+
+∥(PN ◦ f )j ∥2  
+
+> Hσ(M)
+
+=
+
+> ℓ
+
+X
+
+> j=1
+> L
+
+X
+
+> i=1
+
+∥(χi ◦ ψ−1 
+
+> i
+
+)( gj ◦ f ◦ ψ−1 
+
+> i
+
+)∥Hσ (ψi(Ui)) 
+
+!2
+
+.
+
+Thus, we can restrict ourselves to estimating terms of the form ∥(χi ◦ ψ−1 
+
+> i
+
+)( gj ◦ f ◦ ψ−1 
+
+> i
+
+)∥Hσ (ψi(Ui)) .As f ∈ Hσ (M, Rℓ), each component fl ∈ Hσ (M), 1 ≤ l ≤ ℓ, and hence ( f ◦ ψ−1 
+
+> i
+
+)l ∈ Hσloc (ψi(Ui)) by Lemma 3.5. As supp( χi ◦ ψ−1 
+
+> i
+
+) ⊆ ψi(Ui) is compact, there exists an open, precompact set V
+
+with supp( χi ◦ ψ−1 
+
+> i
+
+) ⊆ V ⊆ V ⊆ ψi(Ui). According to Lemma 3.6, we can choose Γ ∈ C∞ 
+
+> c
+
+(ψi(Ui)) with Γ ≡ 1 on an open neighborhood containing V and get that wl := Γ · (f ◦ ψ−1 
+
+> i
+
+)l ∈ Hσ (ψi(Ui)) with wl|V = ( f ◦ ψ−1 
+
+> i
+
+)l|V . We write w = ( w1, . . . , w ℓ) : ψi(Ui) = Bi ⊆ Rm → Rℓ. Exploiting that multiplication with the smooth and compactly supported function χi ◦ ψ−1 
+
+> i
+
+∈ C∞ 
+
+> c
+
+(ψi(Ui)) is a continuous linear operator on Hσ (ψi(Ui)) (see, e.g., [3, Corollary 3]), we obtain 
+
+∥(χi ◦ ψ−1 
+
+> i
+
+)( gj ◦ f ◦ ψ−1 
+
+> i
+
+)∥Hσ (ψi(Ui)) = ∥(χi ◦ ψ−1 
+
+> i
+
+)( gj ◦ w)∥Hσ (ψi(Ui)) ≤ C∥gj ◦ w∥Hσ (ψi(Ui)) .
+
+Setting egj := gj − gj (0) : Rℓ → R, 1 ≤ j ≤ ℓ, we can apply Lemma 4.5 to derive 
+
+∥gj ◦ w∥Hσ (ψi(Ui)) ≤ c
+
+
+
+max  
+
+> 1≤l≤ℓ
+
+∥wl∥Hσ (ψi(Ui)) 
+
+  
+
+1 + max  
+
+> 1≤l≤ℓ
+
+∥wl∥⌊σ⌋
+
+> L∞(ψi(Ui))
+
+
+
++ ∥gj (0) ∥Hσ (ψi(Ui)) 
+
+≤ c
+
+
+
+max  
+
+> 1≤l≤ℓ
+
+∥Γ · (f ◦ ψ−1 
+
+> i
+
+)l∥Hσ (ψi(Ui)) 
+
+  
+
+1 + max  
+
+> 1≤l≤ℓ
+
+∥Γ · (f ◦ ψ−1 
+
+> i
+
+)l∥⌊σ⌋ 
+
+> Hσ(ψi(Ui))
+
+
+
++ |gj (0) |vol( ψi(Ui)) 12 .
+
+As gj ∈ C∞ 
+
+> c
+
+(Rℓ) and ψi(Ui) = Bi ⊆ Rm is bounded for 1 ≤ i ≤ L, the last summand can be bounded by a constant cM > 0 independent of f . Using Lemma 3.5 we proceed with 
+
+∥(χi ◦ ψ−1 
+
+> i
+
+)( gj ◦ f ◦ ψ−1 
+
+> i
+
+)∥Hσ (ψi(Ui)) ≤ c
+
+
+
+max  
+
+> 1≤l≤ℓ
+
+∥fl∥Hσ (M)
+
+  
+
+1 + max  
+
+> 1≤l≤ℓ
+
+∥fl∥⌊σ⌋ 
+
+> Hσ(M)
+
+
+
++ cM
+
+≤ c max 
+
+n
+
+1, ∥f ∥Hσ (M,Rℓ)
+
+
+
+1 + ∥f ∥⌊σ⌋ 
+
+> Hσ(M,Rℓ)
+
+o 
+
+.
+
+16 Overall, this gives 
+
+∥P N ◦ f ∥Hσ (M,Rℓ) ≤ c max 
+
+n
+
+1, ∥f ∥Hσ (M,Rℓ)
+
+
+
+1 + ∥f ∥⌊σ⌋ 
+
+> Hσ(M,Rℓ)
+
+o 
+
+.
+
+□
+
+## 4.2 Kernel-based learning combined with closest point projections 
+
+We now come back to studying the interpolation and approximation operators IX, N = PN ◦ IX, Rℓ
+
+and QX,λ, N = PN ◦ QX,λ, Rℓ . They are using a restricted kernel Ψ : M × M → R, Ψ( x, y ) = Φ( x − y) for each component. This kernel is supposed to be a reproducing kernel of Hσ (M)with σ > max {m/ 2, 1}, which is satisfied if Φ has a Fourier transform satisfying (2.1) with τ > 
+
+max {d/ 2, (d − m)/2 + 1 } as we have σ = τ − (d − m)/2. The condition on τ is for example satisfied if τ > d/ 2 and m ≥ 2 or if τ > (d + 1) /2. To ensure our operators to be well-defined, we need that IX, Rℓ f (x) and QX,λ, Rℓ f (x) belong to a uniform tubular neighborhood U of M. We will use standard L∞-error estimates to achieve this. To apply these estimates, we need the target function f : M → N to belong to a Sobolev space 
+
+Hβ (M, Rℓ). Thus, we aim to derive error bounds for interpolating functions from the set 
+
+Hβ (M, N ) := {f ∈ Hβ (M, Rℓ) : f (x) ∈ N almost everywhere }.
+
+Unfortunately, using standard L∞-error estimates to ensure that IX, Rℓ f and QX,λ, Rℓ f map M
+
+into the tubular neighborhood U of N also means that the necessary fill distance will depend on the function f . One way of avoiding this is to restrict ourselves to functions f ∈ Hβ (M, N ) satisfying 
+
+∥f ∥Hβ (M,Rℓ) ≤ 1, where 1 can be replaced by any other constant, which, of course, only shifts the problem to identifying whether f has a bounded norm or not. The above results now allow us to show that our interpolation operator IX, N = PN ◦ IX, Rℓ and approximation operator QX,λ, N = PN ◦ QX,λ, Rℓ are well-defined and they allow us to derive error estimates for them. We start with the interpolation operator. 
+
+Theorem 4.7. Let τ > max {d/ 2, (d − m)/2 + 1 }. Let σ = τ − (d − m)/2, β ≥ max {m/ 2, 1} and 
+
+1 ≤ q ≤ ∞ . Let U ⊆ Rℓ be a uniform tubular neighborhood of N . Let Φ ∈ C(Rd) ∩ L1(Rd) satisfy (2.1) and let Ψ : M × M → R be the restricted kernel. Then, the following statements for the interpolation operator IX, N hold. 1. If β ≥ σ then there are constants h0, C > 0 such that for all X ⊆ M with hX, M ≤ h0 and all 
+
+f ∈ Hβ (M, N ) with ∥f ∥Hσ (M,Rℓ) ≤ 1 the manifold interpolation IX, N f of f is well-defined and satisfies 
+
+∥f − IX, N f ∥W μq (M,Rℓ) ≤ Ch σ−μ−m(1 /2−1/q )+ 
+
+> X, M
+
+max 
+
+n
+
+1, ∥f ∥⌊σ⌋+1   
+
+> Hσ(M,Rℓ)
+
++ ∥f ∥Hσ (M,Rℓ)
+
+o
+
+.
+
+for all 0 ≤ μ ≤ ℓ(σ, m, q ) with μ ∈ N0 if q = ∞.2. If β < σ then there are constants h0, C > 0 such that for all quasi-uniform X ⊆ M with 
+
+hX, M ≤ h0 and all f ∈ Hβ (M, N ) with ∥f ∥Hβ (M,Rℓ) ≤ 1 the manifold interpolation IX, N f
+
+of f is well defined and satisfies 
+
+∥f − IX, N f ∥W μq (M,Rℓ) ≤ Ch β−μ−m(1 /2−1/q )+ 
+
+> X, M
+
+max 
+
+n
+
+1, ∥f ∥⌊β⌋+1   
+
+> Hβ(M,Rℓ)
+
++ ∥f ∥Hβ (M,Rℓ)
+
+o
+
+.
+
+for all 0 ≤ μ ≤ ℓ(β, m, q ) with μ ∈ N0 if q = ∞.
+
+17 Proof. Let U = E(V ) with V = {(p, n ) ∈ N N : ∥n∥2 < ˆδ} for ˆδ > 0. We start with the interpolation operator in the case of matching smoothness β ≥ σ. According to the error estimate for vector-valued interpolation from Corollary 3.14 with q = ∞ and μ = 0, there exists a constant ˜h0 > 0such that for all X with hX, M ≤ ˜h0 we have 
+
+∥f − IX, Rℓ f ∥L∞(M,Rℓ) ≤ Ch σ−m/ 2 
+
+> X, M
+
+∥f ∥Hσ (M,Rℓ) ≤ Ch σ−m/ 2 
+
+> X, M
+
+,
+
+using also the assumption on f . Thus, there is an 0 < h 0 ≤ ˜h0 such that ∥f (x)−IX, Rℓ f (x)∥2 < ˆδ by inequality (3.3), showing IX, Rℓ f (x) ∈ U for all x ∈ M and hence that the interpolant via projection 
+
+IX, N f = PN ◦ IX, Rℓ f : M → N is well-defined. To derive the stated error estimate, we can argue similarly as in [13, Section 2]: As the vector-valued interpolant only uses point information and the functions f and IX, N f coincide on the sampling points X, we have IX, Rℓ (IX, N f ) = IX, Rℓ f .Hence, applying the first statement of Corollary 3.14 once for f ∈ Hσ (M, Rℓ) and a second time for IX, N f ∈ Hσ (M, Rℓ), we obtain 
+
+∥f − IX, N f ∥W μq (M,Rℓ) ≤ ∥ f − IX, Rℓ f ∥W μq (M,Rℓ) + ∥IX, Rℓ (IX, N f ) − IX, N f ∥W μq (M,Rℓ)
+
+≤ Ch σ−μ−m(1 /2−1/q )+
+
+> X, M
+
+ ∥f ∥Hσ (M,Rℓ) + ∥IX, N f ∥Hσ (M,Rℓ)
+
+ . (4.1) By Theorem 4.6 we find 
+
+∥IX, N f ∥Hσ (M,Rℓ) = ∥P N ◦ IX, Rℓ f ∥Hσ (M,Rℓ)
+
+≤ C max 
+
+n
+
+1, ∥IX, Rℓ f ∥Hσ (M,Rℓ)
+
+
+
+1 + ∥IX, Rℓ f ∥⌊σ⌋ 
+
+> Hσ(M,Rℓ)
+
+o 
+
+≤ C max 
+
+n
+
+1, ∥f ∥Hσ (M,Rℓ)
+
+
+
+1 + ∥f ∥⌊σ⌋ 
+
+> Hσ(M,Rℓ)
+
+o 
+
+,
+
+using also the stability bound (3.4) of the interpolant. Altogether, we arrive at the stated error bound. The case of non-matching smoothness β < σ is treated similarly. Here, we only consider quasi-uniform data sets X, meaning that we assume that the mesh ratio ρX, M is uniformly bounded, so that the L∞-error now becomes 
+
+∥f − IX, Rℓ f ∥L∞(M,Rℓ) ≤ Ch β−m/ 2 
+
+> X, M
+
+∥f ∥Hβ (M,Rℓ) ≤ Ch β−m/ 2 
+
+> X, M
+
+,
+
+and we can once again assure that we have IX, Rℓ f (x) ∈ U for all x ∈ M , provided hX, M is sufficiently small. Then, the second statement of Corollary 3.14 shows that (4.1) now takes the form 
+
+∥f − IX, N f ∥W μq (M,Rℓ) ≤ Ch β−μ−m(1 /2−1/q )+
+
+> X, M
+
+ ∥f ∥Hβ (M,Rℓ) + ∥IX, N f ∥Hβ (M,Rℓ)
+
+ .
+
+An application of Theorem 4.6 this time leads to 
+
+∥IX, N f ∥Hβ (M,Rℓ) ≤ C max 
+
+n
+
+1, ∥IX, Rℓ f ∥Hβ (M,Rℓ)
+
+
+
+1 + ∥IX, Rℓ f ∥⌊β⌋ 
+
+> Hβ(M,Rℓ)
+
+o 
+
+.
+
+To bound ∥IX, Rℓ f ∥Hβ (M,Rℓ) we cannot use (3.4) directly, as we are not in the reproducing kernel Hilbert space of the employed kernel. However, the second error bound from Corollary 3.14 yields for q = 2, μ = β and quasi-uniform X the bound ∥f − IX, Rℓ f ∥Hβ (M,Rℓ) ≤ C∥f ∥Hβ (M,Rℓ), showing also ∥IX, Rℓ f ∥Hβ (M,Rℓ) ≤ C∥f ∥Hβ (M,Rℓ). □
+
+18 Finally, we discuss the manifold-valued penalized least-squares operator. As before, we only look at matching smoothness requirements to keep things simple. 
+
+Theorem 4.8. Let τ > max {d/ 2, (d − m)/2 + 1 }. Let σ = τ − (d − m)/2 and β ≥ max {m/ 2, 1}.Let U ⊆ Rℓ be a uniform tubular neighborhood of N . Let Φ ∈ C(Rd) ∩ L1(Rd) satisfy (2.1) and let 
+
+Ψ : M × M → R be the restricted kernel. Then, there exist constants C, h 0, λ 0 > 0 such that for all quasi-uniform X ⊆ M with hX, M < h 0, all λ ≤ λ0 and all f ∈ Hσ (M, N ) with ∥f ∥Hσ (M,Rℓ) ≤ 1
+
+the penalized least-squares approximation QX,λ, N f of f is well-defined and satisfies 
+
+∥f − QX,λ, N f ∥W μq (M,Rℓ)
+
+≤ Ch σ−μ−m(1 /2−1/q )+
+
+> X, M
+
+
+
+h−m/ 2 
+
+> X, M
+
++ 1
+
+√λ hσ−mX, M
+
+
+
+max 
+
+n
+
+1, ∥f ∥⌊σ⌋+1   
+
+> Hσ(M,Rℓ)
+
++ ∥f ∥Hσ (M,Rℓ)
+
+o
+
++ Ch m/γ −μX, M
+
+√λh −m/ 2 
+
+> X, M
+
++ hσ−mX, M
+
+
+
+max 
+
+n
+
+1, ∥f ∥⌊σ⌋+1   
+
+> Hσ(M,Rℓ)
+
++ ∥f ∥Hσ (M,Rℓ)
+
+o
+
+.
+
+for all 0 ≤ μ ≤ ℓ(σ, m, q ) with μ ∈ N0 if q = ∞.Proof. To simplify the notation in this proof, we will use the abbreviation Q = QX,λ, Rℓ and QN =
+
+QX,λ, N . The proof starts as in the case of the interpolation operator. We first note that Corollary 3.15 gives for exact data Y = f (X) and quasi-uniform data sets X the L∞-bound 
+
+∥f − Qf ∥L∞(M,Rℓ) ≤ C
+
+
+
+hσ−m/ 2 
+
+> X, M
+
++ √λ
+
+
+
+∥f ∥Hσ (M,Rℓ) ≤ C
+
+
+
+hσ−m/ 2 
+
+> X, M
+
++ √λ
+
+
+
+,
+
+taking also ∥f ∥Hσ (M,Rℓ) ≤ 1 into account. Thus, we can choose an h0 > 0 and a λ0 > 0 such that 
+
+∥f − Qf ∥L∞(M,Rℓ) ≤ ˆδ for all λ ≤ λ0 and hX, M ≤ h0. Hence, in this situation, the approximation 
+
+QN f = PN ◦ Qf is well-defined. Unfortunately, as we do not interpolate the data, we cannot proceed directly as in the interpolation case. Instead we split the error into three terms, 
+
+f − QN f = ( f − Qf ) + ( Qf − QQ N f ) + ( QQ N f − QN f ), (4.2) and bound each term separately. Bounds on the first and third term are easily derived from Corollary 3.15 using again exact data Y = f (X) and Y = QN f (X), respectively. For the first term we immediately have 
+
+∥f − Qf ∥W μq (M,Rℓ) ≤ C
+
+
+
+hσ−μ−m(1 /2−1/q )+ 
+
+> X, M
+
++ √λh m/γ −μX, M
+
+
+
+∥f ∥Hσ (M,Rℓ)
+
+and for the third term in (4.2) we find 
+
+∥QN f − QQ N f ∥W μq (M,Rℓ) ≤ C
+
+
+
+hσ−μ−m(1 /2−1/q )+ 
+
+> X, M
+
++ √λh m/γ −μX, M
+
+
+
+∥QN f ∥Hσ (M,Rℓ).
+
+Using (3.5) with Y = f (X) shows ∥Qf ∥Hσ (M,Rℓ) ≤ ∥ f ∥Hσ (M,Rℓ) such that Theorem 4.6 gives us once again 
+
+∥QN f ∥Hσ (M,Rℓ) = ∥P N ◦ QN f ∥Hσ (M,Rℓ)
+
+≤ C max 
+
+n
+
+1, ∥f ∥Hσ (M,Rℓ)
+
+
+
+1 + ∥f ∥⌊σ⌋ 
+
+> Hσ(M,Rℓ)
+
+o 
+
+,
+
+19 which finishes the bound on the third term in (4.2). For the second term, we notice QQ N f =
+
+QPN Qf . Hence, if we set g = Qf and eg = PN Qf then the second term becomes g − Qeg. Thus, we can apply Corollary 3.15 with f given by g and the data given by Y = eg(X). This gives the bound 
+
+∥Qf − QQ N f ∥W μq (M,Rℓ) ≤ C
+
+
+
+hσ−μ−m(1 /2−1/q )+ 
+
+> X, M
+
++ √λh m/γ −μX, M
+
+
+
+∥Qf ∥Hσ (M,Rℓ)
+
++ C
+
+
+
+hσ−μ−m(1 /2−1/q )+
+
+> X, M
+
+1
+
+√λ + hm/γ −μX, M
+
+
+
+∥Qf − P N Qf ∥ℓ2(X).
+
+As before, we have ∥Qf ∥Hσ (M,Rℓ) ≤ ∥ f ∥Hσ (M,Rℓ). Moreover, as X is quasi-uniform, the number of points N in X can be bounded by a constant times h−mX, M. As ∥Qf (x) − P MQf (x)∥2 ≤ ∥ Qf (x) −
+
+f (x)∥2 for all x ∈ Ω due to the definition of the closest point projection, we get 
+
+∥Qf − P N Qf ∥ℓ2(X) ≤ Ch −m/ 2 
+
+> X, M
+
+∥Qf − f ∥ℓ∞(X)
+
+≤ Ch −m/ 2
+
+> X, M
+
+
+
+hσ−m/ 2 
+
+> X, M
+
++ √λ
+
+
+
+∥f ∥Hσ (M,Rℓ),
+
+where we also used the arguments at the beginning of this proof. This leads to the bound 
+
+∥Qf − QQ N f ∥W μq (M,Rℓ) ≤ Ch σ−μ−m(1 /2−1/q )+
+
+> X, M
+
+
+
+h−m/ 2 
+
+> X, M
+
++ 1
+
+√λ hσ−mX, M
+
+
+
+∥f ∥Hσ (M,Rℓ)
+
++ Ch m/γ −μX, M
+
+√λh −m/ 2 
+
+> X, M
+
++ hσ−mX, M
+
+
+
+∥f ∥Hσ (M,Rℓ)
+
+when collecting only the dominant terms. All this together gives the stated error bound. □
+
+To better understand this bound, let us, for simplicity, look at the case q = 2. Using the additional assumption that ∥f ∥Hσ (M,Rℓ) ≤ 1, we have with γ = 2 and h = hX, M,
+
+∥f − QX,λ, N f ∥Hμ(M,Rℓ) ≤ Ch σ−μ
+
+
+
+h−m/ 2 + 1
+
+√λ hσ−m
+
+
+
++ Ch m/ 2−μ √λh −m/ 2 + hσ−m
+
+≤ C
+
+
+
+hσ−μ−m/ 2 + 1
+
+√λ h2σ−μ−m + √λh −μ
+
+
+
+.
+
+Thus, the choice λ = h2σ−m leads finally the bound 
+
+∥f − QX,λ, N f ∥Hμ(M,Rℓ) ≤ Ch σ−μ−m/ 2,
+
+which gives convergence for 0 ≤ μ ≤ σ − m/ 2, though it holds for 0 ≤ μ ≤ σ. The unexpected loss of m/ 2 in the approximation order is a result of bounding the ℓ2(X)-norm by h−m/ 2 times the 
+
+ℓ∞(X)-norm. Let us conclude our theoretical discussion with a few remarks concerning these error estimates. In general, it is not possible to quantify the radius ˆδ of the uniform tubular neighborhood U of N .However, as we shall see in the next section, such estimates for ˆδ can sometimes be obtained once a specific manifold N is fixed. Moreover, even when ˆδ is known, we cannot determine how small the constant h0 must be chosen, since the norm ∥f ∥Hσ (M,Rℓ) of the unknown function f is typically not available. Depending on the particular choice of the compact embedded submanifold N , one must also address how the projection operator PN can be implemented numerically. For certain manifolds, 20 efficient methods to compute best approximations for points within tubular neighborhoods exist. An example will be presented in Section 5. The choices q = ∞ and μ = 0 in our error estimates, give bounds for the pointwise error. Because of Definition 3.13 this error is measured in the Euclidean norm of the ambient space Rℓ
+
+of N . However, for a connected, compact embedded submanifold N ⊆ Rℓ this distance is strongly equivalent to the intrinsic distance dN : N × N → R according to [8, Theorem 6], so that we can expect the same convergence order in this metric. More generally, for compact manifolds arbitrary Riemannian metrics induce strongly equivalent distances and our error bounds hold analogously. So far we have only considered embedded submanifolds of Euclidean spaces. However, our method can easily be generalized to arbitrary compact manifolds M and N . The Nash embedding theorem [24] guarantees that every m-dimensional compact Riemannian manifold can be isometri-cally embedded into some Rd with d ≤ m(3 m + 11) /2. The image ι(M) ⊆ Rd of such an embedding is an m-dimensional submanifold of Rd, which is compact if M is compact. Choosing isometric em-beddings ι1 : M → Rd and ι2 : N → Rℓ we can again restrict positive definite kernels on the ambient space Rd to positive definite kernels on ι1(M). As ι1 is an isometry, we get hX, M = hι1(X),ι 1(M).At the same time, we can choose a uniform tubular neighborhood U of ι2(N ) ⊆ Rℓ, as well as an associated closest point projection. One obtains results analogous to those in Theorems 4.7 and 4.8. However, note that the choice of an embedding for a given compact manifold is far from trivial in general and obviously highly depends on the specific manifold. Even if such an embedding is known explicitly, it is not necessarily useful in practice: It is important that the corresponding tubular neighborhood is as big as possible, while at the same time the associated closest point projection is realizable numerically. Fortunately, for some manifolds appropriate embeddings and corresponding numerical realizations of the closest point projection are known. We quickly mention such an ex-ample in the following section. Of course, one also has to keep in mind the curse of dimensionality, when embedding the manifold M via the embedding ι1.
+
+# 5 Numerical examples 
+
+We conclude this article with several numerical examples that illustrate our method and the theoret-ical error bounds established in Theorem 4.7. In the first of the two following sections, we consider two academic examples, while in the second section we apply our methodology to a real-world example from crystallography taken from [17]. 
+
+## 5.1 Academic examples involving Stiefel manifolds 
+
+We consider the Stiefel manifold St( n, r ) := {S ∈ Rn×r : STS = Ir } of column-orthogonal real matrices in Rn×r , where obviously n ≥ r. (We can identify Rn×r with Rnr to perfectly fit the situation from before). For n = r, this set reduces to the orthonormal matrices St( n, n ) = O(n). For r = 1, we obtain the unit sphere St( n, 1) = Sn−1 ⊆ Rn. As St( n, r ) = Φ −1({0r×r}) with Φ : Rn×r → sym( r), S 7 → ST S − Ir ,
+
+and Φ is a smooth submersion, St( n, r ) is an embedded submanifold of Rn×r of dimension nr −
+
+r(r +1) /2 according to the Submersion level set theorem [19, Corollary 5.13]. We also conclude that St( n, r ) is closed and hence compact by Heine-Borel, as ∥S∥F = ptr( STS) = 1 for S ∈ St( n, r ). Therefore, our method is applicable for domain M and codomain N chosen as Stiefel manifolds. 21 For a first example we consider a function between M = S1 ⊆ R2 and N = S2 ⊆ R3. We have already observed that in this case, there is a uniform tubular neighborhood U of size ˆδ = 1 and the associated closest point projection reduces to normalization, PN (v) = v/ ∥v∥2 for v ∈ U . For ε > 0we consider the function 
+
+fε : S1 → S2, fε(x, y ) = S(∥(x, y ) − (1 , 0) ∥ε
+
+> 2
+
+, 3∥(x, y ) − (1 , 0) ∥ε
+
+> 2
+
+),
+
+where S(θ, ϕ ) denotes the point on the unit sphere S2 with spherical coordinates ( θ, φ ), using the convention that θ is the polar angle and φ the azimuthal angle. We extend the spherical coordinate map to all of R × R in the obvious periodic way. Extended to R2 the function fε is contained in 
+
+H2.5(R2, R2) for ε > 1.5, and thus fε ∈ H2(S1, S 2) for ε > 1.5. For ε = 1 .51, we sample fε at 
+
+N ∈ { 5 · 2i : 0 ≤ i ≤ 11 } points on S1, which are obtained by mapping equidistant points on the interval [0 , 2π] to S1 via polar coordinates. We interpolate fε based on this data and a restricted positive definite kernel Ψ = K|M×M built from the Wendland function ϕ2,1, i.e., 
+
+K(x, y ) = Φ 2,1(x − y) = ϕ2,1(∥x − y∥2) = max {0, (1 − ∥ x − y∥2)4} · (4 ∥x − y∥2 + 1) .
+
+With the notation from earlier, we have τ = d/ 2 + k + 1 /2 = 2 .5, σ = τ − (d − m)/2 = 2, and hence expect a convergence of order 2 − μ − (1 /2 − 1/q )+ for the error measured in the W μq (S1, R3)-norm. For the L∞-error this means a convergence of order O(h1.5
+
+> X, M
+
+). The approximation errors for our interpolant IX, N fε and the interpolant IX, Rℓ fε in the ambient space are displayed in Figure 1a. Convergence orders are numerically estimated in Table 1b and match our theoretical results. Here, the errors were estimated with the help of 30000 validation points, created analogously to the sample points used for interpolation. Also note that both interpolants do not differ significantly anymore, once the fill distance is below a certain threshold. Nevertheless, the ambient interpolant 
+
+IX, Rℓ fε will typically not take values in S2 outside the sample locations.        
+
+> (a) L∞(S1,R3) error of the ambient interpolant
+> IX, Rℓfεand the projected interpolant IX, Nfεplot-ted against the estimated fill distance.
+
+N hX, Ω order 5 6.28318531 × 10 −1
+
+10 3.14159265 × 10 −1 1.68180654 20 1.57079633 × 10 −1 4.74012179 40 7.85398163 × 10 −2 2.69909133 80 3.91651884 × 10 −2 1.50246076 160 1.95825942 × 10 −2 1.51022242 320 9.79129710 × 10 −3 1.51054018 640 4.89564855 × 10 −3 1.51005035 1280 2.44782428 × 10 −3 1.51000746 2560 1.22391214 × 10 −3 1.51000014 5120 6.11956069 × 10 −4 1.56084848 10240 3.05978035 × 10 −4 1.53119225    
+
+> (b) Numbers of samples, estimated fill distances and estimated convergence orders for interpolating fεby
+> IX, Nfε.
+
+Interestingly, uniform tubular neighborhoods and closest point projections are also known for St( n, r ) with general parameters n ≥ r. According to Theorem 4.1 from [18], if A ∈ Rn×r is a full rank matrix, there exists a unique closest point (with respect to the norm of the ambient 22 Rnr , i.e., the Frobenius norm) to A from St( n, r ), which is simply the factor S ∈ St( n, r ) in the polar decomposition A = SP (Recall that each full rank matrix A ∈ Rn×r , n ≥ r, has a unique decomposition A = SP into a matrix S ∈ St( n, r ) and a symmetric positive definite matrix 
+
+P ∈ Rr×r). The size of a uniform tubular neighborhood can also be quantified. According to [35, Theorem 7.41], the distance of a matrix S with non-zero singular values σ1 ≥ σ2 ≥ . . . , ≥ σr to the closest matrix of rank k < r measured in the Frobenius norm is given by 
+
+Prj=k+1 σ2
+
+> j
+
+1/2
+
+. As a Stiefel matrix S ∈ St( n, r ) has all singular values equal to 1, it follows that the closest matrix 
+
+W ∈ Rn×r to S which does not have full rank, fulfills ∥S − W ∥F = σr = 1 . Thus, there exists a uniform tubular neighborhood of St( n, r ) of size ˆδ = 1. Overall, for all matrices A ∈ Rn×r which have a Frobenius distance less than 1 to St( n, r ), we can compute a unique closest point from St( n, r ) with the help of the polar decomposition. This is used in our second example, where we interpolate a function g defined on S1 ⊆ R2,which takes values in St(4 , 2). To construct an interesting example, we use that the tangent space at A ∈ St( n, r ) can be characterized as 
+
+TA St( n, r ) = {∆ = AV + A⊥K : V ∈ skew( r), K ∈ R(n−r)×r} ⊆ Rn×r ,
+
+where A⊥ ∈ Rn×(n−r) is an orthogonal matrix whose columns span the orthogonal complement of the range of A. The corresponding Riemannian exponential exp A : TA St( n, r ) → St( n, r ) is given by exp A(∆) = ( A, A ⊥) exp m
+
+ 2V −KT
+
+K 0
+
+ 
+
+In×r exp m(−V ),
+
+where In×r := 
+
+ Ir
+
+0(n−r)×r
+
+
+
+∈ Rn×r and exp m : Rn×n → Rn×n denotes the matrix exponential. Therefore, for the function 
+
+g : S1 → St(4 , 2) , x 7 → exp A
+
+
+
+Af 1(x) ·
+
+ 0 1
+
+−1 0
+
+
+
++ A⊥f2(x) ·
+
+1 00 1
+
+ 
+
+with f1 = f2 : S1 → R, x 7 → ∥ (x, y ) − (1 , 0) ∥ε 
+
+> 2
+
+and A = In×r , we have g ∈ H4(S1, St(4 , 2)) for 
+
+ε > 3.5. We repeat our procedure with ε = 3 .51, sample sets of size N ∈ { 5 · 2i : 0 ≤ i ≤ 8}
+
+and a validation set with 20000 points, both created as before. This time we use the Wendland kernel Φ 2,3, whose restricted native space corresponds to functions in H4(S1, St(4 , 2)). According to Theorem 4.7 we expect convergence order O(h3.5
+
+> X, Ω
+
+) for the pointwise error. Corresponding results are displayed in Figure 2a and Table 2b. Again, the results match our theoretical expectations. 
+
+## 5.2 Wave velocities in crystalline materials 
+
+We conclude our numerical section with an example from crystallography, which originally stems from [17, Section 4.1]. In seismology, geologic properties of the earth can be investigated by ana-lyzing the propagation of earthquake waves. Their propagation velocity and polarization direction depend on the propagation direction, i.e., the direction in which the wave travels, relative to the crystal lattice of the minerals in the mantle of the earth. This directional dependence is commonly described by the Christoffel equation from linear elasticity, an eigenvalue problem involving the Christoffel tensor, which itself is derived from the effective stiffness tensor of the polycrystalline 23 (a) L∞(S1, St(4 , 2)) error of the ambient interpolant      
+
+> IX, Rℓgand the projected interpolant IX, Ngplotted against the estimated fill distance.
+
+N hX, Ω order 5 0.62831853 10 0.31415927 0.00000007 20 0.15707963 1.55245434 40 0.07853982 8.51857713 80 0.03916519 9.03296693 160 0.01958259 3.50802392 320 0.00979131 3.50982539 640 0.00489565 3.50989715 1280 0.00244782 3.50380197    
+
+> (b) Numbers of samples, estimated fill distances and estimated convergence orders for interpolating gby
+> IX, Ng.
+
+aggregate. The effective stiffness tensor is obtained by rotating and averaging the single-crystal stiff-ness tensors (in our case, those of the silicate mineral olivine) according to a prescribed orientation distribution function. Solving this eigenvalue problem for propagation directions in S2 (for example conveniently with the help of the open-source MATLAB toolbox MTEX), one ends up with a function f : S2 → RP 2,
+
+which maps each propagation direction to the corresponding polarization direction. Here, RP 2
+
+denotes the real projective plane, that is, the space of all lines through the origin in R3. In [17, Section 4.1], this function is reconstructed for given material properties from a finite number of measurements. To this end, RP 2 is identified with S2/∼ via the equivalence relation x ∼ − x, and afterwards embedded into the space of real symmetric matrices sym(3) ⊆ R3×3 via the embedding 
+
+ι : S2/∼ → sym(3) , ι (x) = xx T . It is shown in [17, Lemma 4.1] that 
+
+U = E({(p, n ) ∈ N (ι(S2/∼)) : ∥n∥F < ˆδ})with ˆδ = 1√2 is a uniform tubular neighborhood of ι(S2/∼). Furthermore, the closest point projec-tion PN : U ⊆ sym(3) → N = ι(S2/∼) with respect to the Frobenius norm is given by 
+
+PN (B) = uu T , B ∈ sym(3) ,
+
+where u ∈ R3 is a normalized eigenvector to the eigenvalue of B which has the largest absolute value. Calculating an ambient interpolant in sym(3) via spherical harmonics and using the closest point projection PN , the authors reconstruct f from its values at 144 Chebyshev quadrature nodes. We repeat this calculation with our interpolation method, using a Wendland kernel Φ 3,1 without further scaling. In Figure 3, we show the pointwise error (measured in the Frobenius norm) of the approximation method from [17] and of our interpolation IX, N f , and compare the difference between both approximations for directions in the upper hemisphere of S2. For computing the approximation via spherical harmonics we used the implementation made available in [17]. The results provide cautious indications that, despite its simplicity, our approximation technique can keep pace with, or even surpass, spherical harmonic interpolation. However, a more definitive assessment will require extensive further experiments. 24 (a) Pointwise error in Frobenius norm of interpolant IX, N f for propagation directions in the up-per hemisphere.        
+
+> (b) Pointwise error in Frobenius norm of reconstruction of fvia spherical harmonics from [17] for propagation directions in the up-per hemisphere.
+> (c) Pointwise Frobenius distance between both approximation methods for propagation direc-tions in the upper hemisphere.
+
+Figure 3: Reconstructing a function f : S2 → RP 2 from the analysis of crystalline materials. 
+
+# References 
+
+[1] R´ emi Arcang´ eli, Mar´ ıa Cruz L´ opez de Silanes, and Juan Jos´ e Torrens. An extension of a bound for functions in Sobolev spaces, with applications to (m, s)-spline interpolation and smoothing. 
+
+Numerische Mathematik , 107(2):181–211, 2007. [2] Ali Behzadan and Michael Holst. On the space of locally Sobolev-Slobodeckij functions. Journal of Function Spaces , 2022:1–30, 2022. [3] Ali Behzadan and Michael Holst. Sobolev-Slobodeckij spaces on compact manifolds, revisited. 
+
+Mathematics , 10(3), 2022. [4] Martin D. Buhmann. Radial basis functions. In Acta Numerica 2000 , volume 9, pages 1–38. Cambridge University Press, Cambridge, 2000. [5] Claudio Carmeli, Ernesto De Vito, and Alessandro Toigo. Vector valued reproducing kernel Hilbert spaces of integrable functions and Mercer theorem. Analysis and Applications , 4(4):377– 408, 2006. [6] Wolfgang Erb and Frank Filbir. Approximation by positive definite functions on compact groups. Numerical Functional Analysis and Optimization , 29:1082–1107, 2008. [7] Gregory Fasshauer. Meshfree Approximation Methods with MATLAB . World Scientific Pub-lishers, Singapore, 2007. [8] Edward Fuselier and Grady Wright. Scattered data interpolation on embedded submanifolds with restricted positive definite kernels: Sobolev error estimates. SIAM J. Numer. Anal. ,50:1753–1776, 2012. 25 [9] Evan S. Gawlik and Melvin Leok. Embedding-based interpolation on the special orthogonal group. SIAM Journal on Scientific Computing , 40(2):A721–A746, 2018. [10] Peter Giesl, Carlos Argaez, Sigurdur Hafstein, and Holger Wendland. Minimization with differential inequality constraints applied to complete lyapunov functions. Math. Comput. ,90:2137–2160, 2021. [11] Peter Giesl and Holger Wendland. Kernel-based discretization for solving matrix-valued pdes. 
+
+SIAM Journal on Numerical Analysis , 56(6):3386–3406, 2018. [12] Philipp Grohs, Hanne Hardering, and Oliver Sander. Optimal a priori discretization error bounds for geodesic finite elements. Foundations of Computational Mathematics , 15:1357–1411, October 2015. [13] Philipp Grohs, Hanne Hardering, Oliver Sander, and Markus Sprecher. Projection-based finite elements for nonlinear function spaces. SIAM Journal on Numerical Analysis , 57(1):404–428, 2019. [14] Philipp Grohs, Markus Sprecher, and Thomas Yu. Scattered manifold-valued data approxima-tion. Numerische Mathematik , 135:987–1010, 2017. [15] Thomas Hangelbroek, Fran J. Narcowich, and Joe D. Ward. Kernel approximation on manifolds I. Bounding the Lebesgue constant. SIAM Journal on Mathematical Analysis , 42:1732–1760, 2010. [16] Hanne Hardering and Benedikt Wirth. Quartic Lp-convergence of cubic Riemannian splines. 
+
+IMA Journal of Numerical Analysis , 42(4):3360–3385, 10 2021. [17] Ralf Hielscher and Laura Lippert. Approximating the derivative of manifold-valued functions. 
+
+Journal of Approximation Theory , 285:105832, 2023. [18] Nick Higham. Matrix Nearness Problems and Applications. In M.J.C Gover and S. Barnett, editors, Applications of Matrix Theory , pages 1–27. Oxford University Press, Oxford, 1989. [19] John M. Lee. Introduction to Smooth Manifolds . Springer New York, NY, 2012. [20] Jeremy Levesley and D. L. Ragozin. Radial basis interpolation on homogeneous manifolds: Convergence rates. Advances in Computational Mathematics , 27(2):237–246, 2007. [21] Charles A. Micchelli and Massimiliano Pontil. On learning vector-valued functions. Neural Computation , 17(1):177–204, 2005. [22] Francis J. Narcowich. Generalized hermite interpolation and positive definite kernels on a Riemannian manifold. Journal of Mathematical Analysis and Applications , 190:165–193, 1995. [23] Francis J. Narcowich, Joseph D. Ward, and Holger Wendland. Sobolev bounds on functions with scattered zeros, with applications to radial basis function surface fitting. Mathematics of Computation , 74(250):743–763, 2005. [24] John Nash. The imbedding problem for Riemannian manifolds. Annals of Mathematics ,63(1):20–63, 1956. 26 [25] Patrizio Neff. Geometrically exact cosserat theory for bulk behaviour and thin structures. Modelling and mathematical analysis, 2003. Habilitationsschrift, Technische Universit¨ at Darm-stadt. [26] Xavier Pennec. Manifold-valued image processing with SPD matrices. In Xavier Pennec, Stefan Sommer, and Tom Fletcher, editors, Riemannian Geometric Statistics in Medical Image Analysis , pages 75–134. Academic Press, 2020. [27] Carl E. Rasmussen and Christopher K. I. Williams. Gaussian Processes for Machine Learning .The MIT Press, Cambridte, Massachusetts, 2006. [28] Thomas Runst and Winfried Sickel. Sobolev Spaces of Fractional Order, Nemytskij Operators, and Nonlinear Partial Differential Equations . De Gruyter, Berlin, New York, 1996. [29] Bernhard Sch¨ olkopf and Alexander J. Smola. Learning with Kernels – Support Vector Ma-chines, Regularization, Optimization, and Beyond . MIT Press, Cambridge, Massachusetts, 2002. [30] Laurent Schwartz. Sous-espaces hilbertiens d’espaces vectoriels topologiques et noyaux associ´ es (noyaux reproduisants). Journal d’Analyse Math´ ematique , 13:115–256, 1964. Foundation of vector-valued RKHS theory. [31] Ingo Steinwart and Alexander Christmann. Support Vector Machines . Springer, New York, 2008. [32] Hang Wang, Raf Vandebril, Joeri Van der Veken, and Nick Vannieuwenhoven. Manifold-valued function approximation from multiple tangent spaces, 2025. arXiv preprint arXiv:2504.12892. [33] Holger Wendland. Error estimates for interpolation by compactly supported radial basis func-tions of minimal degree. J. Approx. Theory , 93:258–272, 1998. [34] Holger Wendland. Scattered Data Approximation . Cambridge Monographs on Applied and Computational Mathematics. Cambridge University Press, Cambridge, UK, 2005. [35] Holger Wendland. Numerical Linear Algebra - An Introduction . Cambridge University Press, Cambridge, UK, 2017. [36] Holger Wendland. Kernel-based learning of functions with positive-definite matrix values. Preprint, Bayreuth, Germany, to appear in Mathematics of Computation, 2025. [37] Ralf Zimmermann. Hermite interpolation and data processing errors on Riemannian matrix manifolds. SIAM Journal on Scientific Computing , 42(5):A2593–A2619, jan 2020. [38] Ralf Zimmermann. Manifold interpolation. In Peter Benner, Stefano Grivet-Talocia, Alfio Quarteroni, Gianluigi Rozza, Wil Schilders, and Lu´ ıs Miguel Silveira, editors, Volume 1 System-and Data-Driven Methods and Algorithms , pages 229–274. De Gruyter, Berlin, Boston, 2021. [39] Ralf Zimmermann and Ronny Bergmann. Multivariate Hermite interpolation on Riemannian manifolds. SIAM Journal on Scientific Computing , 46(2):A1276–A1297, 2024. 27

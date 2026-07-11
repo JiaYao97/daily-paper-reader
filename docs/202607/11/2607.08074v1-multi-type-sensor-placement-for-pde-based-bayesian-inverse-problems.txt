@@ -1,0 +1,1894 @@
+Title: Multi-type Sensor Placement for PDE-based Bayesian Inverse Problems
+
+URL Source: https://arxiv.org/pdf/2607.08074v1
+
+Published Time: Fri, 10 Jul 2026 00:24:36 GMT
+
+Number of Pages: 30
+
+Markdown Content:
+Multi-type Sensor Placement for PDE-based Bayesian Inverse Problems 
+
+Steven Maio ∗ , Alen Alexanderian ∗ , Karina Koval † , and Ruanui Nicholson ‡
+
+Abstract. We address optimal placement of multi-type sensors for Bayesian inverse problems governed by partial differential equations (PDEs). The proposed framework allows for sensors with different accuracies and observation types. We formulate the optimal experimental design (OED) prob-lem as a knapsack-constrained binary optimization problem for maximizing expected information gain (EIG). To approximately solve the resulting optimization problems, we propose a stochastic cost-benefit greedy algorithm, which admits theoretical guarantees for monotone submodular set functions. Specifically, these guarantees apply in the case of linear Gaussian inverse problems with uncorrelated measurement errors, where the EIG admits a convenient closed-form expression. For nonlinear inverse problems, we develop a non-intrusive approach that uses the Bayesian approxima-tion error framework to define an observation model with an error-corrected global linear model. We show that the corresponding approximate EIG is a lower bound for the exact EIG and thus provides a principled surrogate objective for the OED problem. The effectiveness of the proposed methods is demonstrated in two model inverse problems governed by PDEs. 
+
+Key words. Inverse problems, Bayesian inference, optimal sensor placement, multi-type sensors, submodularity, knapsack constraints, expected information gain, Bayesian approximation error. 
+
+MSC codes. 65C20, 62K05, 35R30, 62F15, 90C27. 
+
+1. Introduction. We consider infinite-dimensional Bayesian inverse problems governed by partial differential equations (PDEs), with data collected from a set of sensors. In such problems, the statistical quality of the estimated parameters depends strongly on the design of the sensor network, making optimal sensor placement crucial. We consider problems in which one has access to multiple sensor types. In this setting, we develop efficient methods for optimal placement of multi-type sensors for linear and nonlinear Bayesian inverse problems. The search for an optimal sensor placement can be formulated as an optimal experimental design (OED) problem [49]. OED for infinite-dimensional inverse problems governed by PDEs is challenging. Specifically, upon discretization, one obtains a difficult optimization problem with an expensive-to-evaluate objective that quantifies the uncertainty or information gain about a high-dimensional inversion parameter [2]. We focus on finding sensor placements that maximize the expected information gain (EIG), defined as the Kullback–Leibler divergence from the posterior to the prior. For such problems, it is common to consider the case where the sensors have equal deployment costs and measure the same quantity. A typical problem formulation is a cardinality-constrained binary optimization problem that seeks to identify an 
+
+Funding: The work of SM and AA was supported in part by U.S. Department of Energy, Office of Advanced Scientific Computing Research Field Work Proposal Number 23-02526. The work of KK was partially funded by the Carl Zeiss Stiftung through the project “Model-Based AI: Physical Models and Deep Learning for Imaging and Cancer Treatment”.The work of RN was partially funded by Royal Society of New Zealand Te Ap¯ arangi (Marsden Fund Council) Grant MFP-24-UOA-279 
+
+> ∗
+
+Department of Mathematics, North Carolina State University, Raleigh, NC, USA 
+
+> †
+
+Interdisciplinary Center for Scientific Computing (IWR), Heidelberg University, Heidelberg, Germany 
+
+> ‡
+
+Department of Engineering Science, University of Auckland, Auckland, New Zealand 
+
+1arXiv:2607.08074v1 [math.NA] 9 Jul 2026 optimal subset from a set of candidate sensor locations; see Section 2.2. However, in some applications, sensor placement is not limited to deploying identical sensors throughout the domain. For example, in groundwater flow applications, one may measure hydraulic head or solute concentration. One may also measure the same quantity using sensors with different levels of accuracy. Further, different types of sensors typically have different deployment costs. In such settings, the experimental design problem is not merely about determining where to take measurements—one must also determine which sensor types to deploy and what to measure. This is substantially different from a standard cardinality-constrained sensor placement problem. Instead of selecting a fixed number of identical sensors, one must select a collection of sensors that satisfies a budget constraint, while accounting for the cost and marginal information gain associated with each candidate sensor. This results in a challenging knapsack-constrained binary optimization problem. 
+
+Related work. There is a growing body of literature devoted to Bayesian OED for inverse problems governed by PDEs; see, e.g., the review [2] or the more recent efforts [1, 6, 14, 26, 52, 53]. In linear Gaussian problems, the EIG admits a closed-form expression [4] which, under the assumption of uncorrelated Gaussian measurement noise, defines a monotone submodular set function [5]. The latter enables an approximation guarantee for greedy sensor placement with cardinality constraints [27, 36, 29]; see Section 2.3 for background concepts regarding submodular optimization and the greedy method. Having nonuniform costs associated with sensors gives rise to knapsack constraints and motivates cost-benefit greedy rules [47, 28]. Since greedy methods can still require many marginal-gain evaluations, several acceler-ated variants have been developed, including lazy greedy [33], stochastic greedy [34], and threshold-based methods [8]. Stochastic greedy methods are especially relevant here because they significantly reduce the number of function evaluations while retaining approximation guarantees in expectation. Finding sensor placements that maximize the EIG in nonlinear inverse problems is con-siderably more challenging than the case of linear inverse problems. In nonlinear inverse problems, EIG is generally not available in closed-form and is often approximated using sampling [22], surrogate models [53], or Laplace approximations to the posterior [52]. An alternative approach to design of nonlinear inverse problems was presented in [26] by build-ing on the Bayesian approximation error (BAE) framework [24] and the global normal linear approximations proposed in [37]. There have also been several works that consider the design of multifidelity or multimodal sensor networks. These include data-driven multifidelity sensor selection under cost con-straints [11] for state estimation, Bayesian experimental design using a Bayesian evidential learning approach for comparing well and geophysical data [48], and multifidelity sensor place-ment for Bayesian state estimation [41]. These efforts demonstrate the importance of moving beyond the standard setting of identical sensors with equal deployment costs. However, to our knowledge, optimal placement of multi-type sensors in PDE-based Bayesian inverse problems with high-dimensional parameters is largely unexplored. 
+
+Contributions. This work takes foundational steps toward multi-type sensor placement for linear and nonlinear Bayesian inverse problems governed by PDEs. We formulate the problem of finding an optimal placement of multi-type sensors as a knapsack-constrained EIG maximization problem. The formulation allows sensors with different costs, accuracies, 
+
+> 2
+
+and observation types. To provide an accessible presentation, most of the formulations are presented in a discretized (finite-dimensional) setting. Throughout, we highlight issues that require care in infinite-dimensional formulations. The key contributions of this work are as follows. 
+
+• For linear inverse problems (see Section 3), we introduce and analyze a stochastic cost-benefit greedy algorithm for approximately solving the knapsack-constrained EIG maximization problem. The analysis yields an approximation guarantee in expectation and applies more broadly to submodular maximization under a knapsack constraint. These approximation guarantees hold in the case of EIG for linear Gaussian inverse problem with uncorrelated measurement errors. We also derive an efficient-to-evaluate expression for the EIG in the linear case. 
+
+• For nonlinear inverse problems (see Section 4), building on the developments in [26], we devise a non-intrusive computational framework based on a global linear approxi-mation of the parameter-to-observable map. We call this approximation the pure-BAE global linear model. For Gaussian priors, we prove that (i) the pure-BAE linear model coincides with the prior expectation of the Jacobian of the parameter-to-observable map; and (ii) the corresponding approximate EIG—the pure-BAE EIG—is a lower bound for the exact EIG. The first result provides further insight into the use of pure-BAE global linear model in deriving approximate measures of posterior uncertainty; the second one supports the use of the pure-BAE EIG as a principled proxy for the exact EIG within the EIG maximization setting. 
+
+• We present extensive computational results demonstrating the utility of the proposed methods for finding near optimal multi-type sensor placements in a linear source in-version problem and a nonlinear porous-medium flow problem; see Section 5. 
+
+2. Background. In this section, we introduce notation and review background materials on optimal sensor placement for Bayesian inverse problems and submodular optimization. 
+
+2.1. Notation. Throughout, we work in a finite-dimensional (discretized) setting. In the cases where the forward model is given by a PDE, we assume that the problem has been discretized so that the inversion parameter vector m ∈ Rn represents the discretized version of a functional model input. Formulation of Bayesian inverse problems and sensor selection design problems in the Hilbert space setting can be found in [46, 3]. We note that when discretizing infinite-dimensional inverse problems the finite-dimensional parameter space is equipped with a suitably weighted inner product. For example, when us-ing a finite element discretization, a mass-weighted inner product is used [3]. Working in the correct inner product is essential to ensure that the discretized quantities and operators are consistent with their infinite-dimensional counterparts. However, by weighting the operators appropriately, one can transform the problem back to the Euclidean space. Thus, to simplify notation throughout the article, we assume that all quantities have been transformed so that their matrix representations are with respect to the Euclidean inner product. For details on such transformations, we refer to [7, 51]. For a random vector x with the probability density function (PDF) π, we denote its mean and covariance matrix by x := Eπ[x] and Γxx := Cov π(x) = Eπ
+
+(x − x)( x − x)⊤, respectively. 
+
+> 3
+
+Further, the cross-covariance of random vectors y and z, with joint PDF π, is denoted by 
+
+Γyz := Cov π(y, z) = Eπ
+
+(y − y)( z − z)⊤.
+
+Throughout, with a slight abuse of notation, we denote random variables and their real-izations using the same symbol. Also, we use π(x) to denote the density of a random variable evaluated at a point, and use the same letter π for the joint, marginal, and conditional den-sities, distinguishing them with subscripts. For example, we use πm for the prior density, 
+
+πd for the data marginal, and πm|d for the posterior. Additionally, we use the shorthand 
+
+π = N (x, Γxx ) to mean a Gaussian density with mean x and covariance Γxx .Lastly, for a symmetric and positive definite matrix Γ ∈ Rn×n, we define ∥m∥2 
+
+> Γ
+
+= m⊤Γm .
+
+2.2. Sensor selection for Bayesian inverse problems. We consider the inference of an unknown parameter m ∈ Rn from the observation model (2.1) d = F(m) + e, e ∼ N (e, Γe).
+
+Here, d is a data vector, e models measurement noise, and F is a parameter-to-observable (PTO) map. In inverse problems governed PDEs, F is typically defined as a composition of a PDE solution operator and a linear observation operator that collects solution data. Working within a Bayesian paradigm, we assume a Gaussian prior, πm = N (m, Γmm ), with mean 
+
+m ∈ Rn and symmetric positive definite covariance matrix Γmm .
+
+Design-dependent observation model . We consider inverse problems in which data are collected from a set of sensors, and focus on the problem of selecting an optimal subset from a set of candidate sensor locations subject to budget constraints. To make matters concrete, here we describe the case where the only constraint is the number of sensors. This translates to the problem of finding an optimal subset of size k from a set V = {1, . . . , s }
+
+that indexes the candidate sensor locations. Herein, we assume each sensor yields a single measurement. Note that in this case, F in (2.1) maps m to a vector of s sensor measurements. For S ⊂ V , we consider the design-dependent observation model (2.2) d(S) = Π(S)( F(m) + e).
+
+Here, Π(S) ∈ { 0, 1}|S|× s is the row-selection matrix formed from the rows of the s × s identity indexed by S. Thus, Π(S) extracts the measurements at the selected sensor locations. The solution to the design-dependent Bayesian inverse problem is the posterior density 
+
+πm|d(· ; S) ∝ πd|m(· ; S)πm. One can show πd|m(m; S) ∝ exp 
+
+
+
+− 12 ∥d − F(m) − e∥2
+
+> P(S)
+
+
+
+with 
+
+P(S) := Π(S)⊤
+
+Π(S)ΓeΠ(S)⊤−1
+
+Π(S), S ⊂ V. (2.3) In general, exploring this posterior distribution is intractable—it requires using expensive sampling procedures. However, in the special case of a linear parameter-to-observable (PTO) map, the posterior is Gaussian, πm|d(S) = N (md(S), Γm|d(S)) with 
+
+md(S) = Γm|d(S)
+
+
+
+F⊤Π(S)⊤ Π(S)ΓeΠ(S)⊤−1(d − e) + Γ−1
+
+> mm
+
+m
+
+
+
+,(2.4) 
+
+Γm|d(S) =  F⊤P(S)F + Γ−1
+
+> mm
+
+−1.(2.5) 
+
+> 4
+
+Optimal sensor placement . While there are various OED criteria [2, 21], here we focus on choosing a k-sensor subset of V that maximizes the expected information gain (EIG), (2.6) Ψ( S) = Ed(S)
+
+h
+
+DKL 
+
+ πm|d(S) ∥ πm
+
+i
+
+, DKL 
+
+ πm|d(S) ∥ πm
+
+ = Em|d(S)
+
+h
+
+log 
+
+ πm|d(S)
+
+πm
+
+i 
+
+.
+
+The resulting OED problem is a notoriously challenging optimization problem of the form (2.7) max  
+
+> S⊂V
+
+Ψ( S) subject to |S| = k. 
+
+The first major challenge is the enormous cost of evaluating Ψ( S). In general, one resorts to a double-loop Monte Carlo sampling approach [22, 43]. A notable exception occurs when the PTO map is linear, in which case, the EIG admits the following closed-form expression [7]: (2.8) Ψ( S) = 12 log det  I + eF⊤P(S)eF,
+
+where eF = FΓ 12 
+
+> mm
+
+is the prior-preconditioned PTO map. Despite this explicit expression, optimizing the EIG for PDE-governed linear inverse problems is still challenging due to the high-dimensional parameter space [7] and the need for repeated forward and adjoint solves. The second challenge stems from the cardinality constraint on the set S, which results in an NP-hard combinatorial optimization problem. To address this issue, various strategies have been proposed, including relaxation techniques combined with sparsity-inducing penalties [19], continuation methods [7, 20], and greedy algorithms for sensor selection [27, 44]. In this work, we focus on greedy algorithms for sensor selection. Greedy algorithms are typically non-intrusive and straightforward to implement, requiring only the ability to eval-uate the objective function Ψ. Additionally, many greedy algorithms come with convergence guarantees when the objective is monotone and submodular [27], as we detail in the next sec-tion. While the EIG is generally not submodular, it is under certain assumptions. Specifically, under our assumptions of additive Gaussian noise and a Gaussian prior, if we further assume (i) that the PTO map is linear, and (ii) that the noise covariance Γe is diagonal, then the EIG is monotone and submodular. 
+
+2.3. Submodular optimization. Let V be a finite set and f : 2 V → R a set function. In our context, V indexes a set of candidate sensors. We identify a sensor with its index v ∈ V .For a subset S ⊂ V and v ∈ V \ S, we define the marginal gain of adding v to S as ∆( v|S) := f (S ∪ { v}) − f (S).
+
+We say f is monotone if ∆( v|A) ≥ 0 for every A ⊂ V and v ∈ V \ A. Additionally, f is 
+
+submodular if for every A ⊂ B ⊂ V and v ∈ V \ B, we have ∆( v|A) ≥ ∆( v|B). This is a diminishing returns property. In the context of sensor placement, this says that the utility of adding the sensor v to A is not enhanced by taking the sensors in B \ A.Greedy approaches are common for maximizing monotone submodular functions. These algorithms usually begin with some initial set S0, a typical choice being the empty set. Then, 
+
+> 5
+
+at each iteration i ≥ 1, one chooses a remaining sensor vi ∈ V \Si−1 that maximizes ∆( v|Si−1)and sets Si ← Si−1 ∪ { vi}. This process terminates when no remaining sensor can be added to Si. The greedy solution Sk comes with an approximation ratio of 1 − e−1 in the case of cardinality constraints [27]. Specifically, the greedy solution Sk satisfies 
+
+f (Sk) ≥ (1 − e−1) max {f (S) : |S| ≤ k}.
+
+In the present work, we consider the case where we have multiple sensor types. Thus, unlike the standard cardinality constrained problem (2.7), we need to account for the cost of different sensor types. Subsequently, we associate to each sensor v ∈ V a cost c(v) > 0determined by its sensor type. We overload this notation and write 
+
+c(S) := X
+
+> v∈S
+
+c(v), S ⊂ V. 
+
+The OED problem for the present multi-type sensor setting is formulated as a knapsack constrained problem of the form (2.9) max  
+
+> S⊂V
+
+f (S) subject to c(S) ≤ B. 
+
+The standard greedy rule applied to (2.9) can perform arbitrarily poorly, because it does not account for the cost of a sensor. This is addressed via a natural modification of the greedy rule: at iteration i select vi that maximizes the cost-benefit ratio, (2.10) vi := arg max  
+
+> v∈V\Si−1
+
+∆( v|Si−1)
+
+c(v) .
+
+This cost-benefit approach can also perform arbitrarily poorly, because the cost-benefit ratio hides the total value of a sensor. One can recover an approximation ratio by performing both approaches. Namely, we use the standard greedy approach to obtain a solution S1 and the cost-benefit approach to obtain S2. We then choose the best of S1 and S2 to ensure an approximation ratio of (1 − e−1)/2; see [28]. This procedure is organized in Algorithm 2.1. Note that Algorithm 2.1 requires O(|V |2) marginal gain computations. This theoretical worst-case cost can often be mitigated by using lazy evaluations [33]. Namely, rather than computing the marginal gains for every remaining sensor, we instead search the remaining sensors in a specific order based on the previously computed marginal gains. 
+
+3. Linear inverse problems. In this section, we consider multi-type sensor placement for linear Bayesian inverse problems. The formulation of the corresponding OED problem is presented in Section 3.1. We discuss an efficient approach for computing the OED objective in Section 3.2. Subsequently, in Section 3.3, we present our proposed stochastic greedy approach for solving the optimization problem. 
+
+3.1. Problem formulation. Suppose we have access to K sensor types. Let sensor type 
+
+i ∈ { 1, . . . , K } have si candidate locations. For each i, the associated observation model is (3.1) di = Fim + ei, ei ∼ N (ei, Γi
+
+> e
+
+).
+
+> 6
+
+Algorithm 2.1 Greedy and cost-benefit greedy selection 
+
+Input: V with |V | = d; monotone and submodular f : 2 V → R; cost function c : V → R+;budget B > 0
+
+Output: S ⊂ V with c(S) ≤ B. 
+
+> 1:
+
+S1 ← ∅  
+
+> 2:
+
+while ∃v ∈ V \ S1 such that c(S1) + c(v) ≤ B do  
+
+> 3:
+
+v∗ ← arg max ∆( v | S1) : v ∈ V \ S1, c (S1) + c(v) ≤ B 
+
+> 4:
+
+S1 ← S1 ∪ { v∗} 
+
+> 5:
+
+end while  
+
+> 6:
+
+S2 ← ∅  
+
+> 7:
+
+while ∃v ∈ V \ S2 such that c(S2) + c(v) ≤ B do  
+
+> 8:
+
+v∗ ← arg max  ∆( v|S2) 
+
+> c(v)
+
+: v ∈ V \ S2, c (S2) + c(v) ≤ B 
+
+> 9:
+
+S2 ← S2 ∪ { v∗} 
+
+> 10:
+
+end while  
+
+> 11:
+
+return arg max {f (S1), f (S2)}
+
+Here, di ∈ Rsi is a vector of sensors measurements of the ith type, Fi : Rn → Rsi is the 
+
+ith parameter-to-observable (PTO) map, and ei is again measurement noise. The different sensor types may measure different physical quantities or have different levels of accuracy. Sensor types that measure the same physical quantity with different levels of accuracy share the same PTO map. Thus, the Fi’s in (3.1) are not necessarily distinct. Note that, as before, we assume each sensor yields a single measurement. To formulate the OED problem, we first introduce the composite PTO map, (3.2) F := F⊤ 
+
+> 1
+
+F⊤ 
+
+> 2
+
+· · · F⊤
+
+> K
+
+⊤ .
+
+Note that F maps the inversion parameter m to a vector in Rd, where d = PKi=1 si. With the assumption of independent noise across sensor types, we model the full data vector d ∈ Rd as 
+
+d = Fm + e, e ∼ N (e, Γe),
+
+where e = e⊤ 
+
+> 1
+
+· · · e⊤
+
+> K
+
+⊤ and Γe = blockdiag( Γ1 
+
+> e
+
+, · · · , ΓK 
+
+> e
+
+). Let V be a set of cardinality d that indexes all candidate sensors. As in Section 2.3, we identify a sensor with its index v ∈ V , i.e., its corresponding row index in F. Each v ∈ V has an associated cost c(v) > 0 based on its sensor type. The design-dependent data model is (3.3) d(S) = Π(S)( Fm + e), S ⊂ V. 
+
+Here, Π(S) ∈ { 0, 1}|S|× d is a selection matrix, which is obtained by selecting the rows of the 
+
+d × d identity matrix specified by S.For a prespecified budget B > 0, the OED problem seeks a design S ⊂ V with c(S) ≤ B
+
+that maximizes the EIG. Letting eF = FΓ1/2
+
+> mm
+
+, the design-dependent EIG for the present multi-type OED problem takes the form (3.4) ΨMT (S) := 12 log det  eF⊤P(S)eF + I, S ⊂ V, 
+
+> 7
+
+with P(S) in (2.3). Subsequently, we state the multi-type OED problem precisely as follows: (3.5) max  
+
+> S⊂V
+
+ΨMT (S) subject to X
+
+> v∈S
+
+c(v) ≤ B. 
+
+Solving this problem requires overcoming the following fundamental challenges: (i) expen-sive function evaluations; and (ii) a knapsack constrained binary optimization problem. The remainder of this section is devoted to devising methods that address these challenges. 
+
+3.2. Fast computation of ΨMT . Evaluating (3.4) for a given S ⊂ V requires computing the determinant of an operator on the discretized parameter space. In infinite-dimensional inverse problems governed by PDEs, the dimension n of this space is typically in the order of thousands to millions. Often, n is significantly larger than the measurement dimension 
+
+d. In such cases, it is advantageous to reformulate the EIG criterion so that we only need determinants of operators on the measurement space. Examples of this approach to single-type sensor placement problems with continuous weights can be found in [2, Section 4.5]. The discrete nature of (3.4) allows us to further reduce the dimension from d to the number of selected sensors k. Since k is often much smaller than d, the expression for Ψ MT provided in the following result offers additional computational savings. 
+
+Proposition 3.1. The following holds 
+
+(3.6) ΨMT (S) = 12 log 
+
+" det  Π(S)( eFeF⊤ + Γe)Π(S)⊤
+
+det ( Π(S)ΓeΠ(S)⊤)
+
+#
+
+, S ⊂ V. 
+
+Proof. We note ΨMT (S) = 12 log det 
+
+eF⊤Π(S)⊤ 
+
+Π(S)ΓeΠ(S)⊤−1
+
+Π(S)eF + In
+
+
+
+= 12 log det 
+
+
+
+Π(S)eFeF⊤Π(S)⊤ 
+
+Π(S)ΓeΠ(S)⊤−1
+
++ Ik
+
+
+
+(3.7) = 12 log 
+
+" det  Π(S)( eFeF⊤ + Γe)Π(S)⊤
+
+det ( Π(S)ΓeΠ(S)⊤)
+
+#
+
+.(3.8) The first equality follows from Sylvester’s determinant identity; and the second one follows by rewriting Ik = ( Π(S)ΓeΠ(S)⊤)( Π(S)ΓeΠ(S)⊤)−1.
+
+Remark 3.1. A direct log determinant computation via a triangular factorization may be required when computing (3.8) to avoid a potential underflow error. 
+
+One can relieve the greedy algorithm from PDE solves by precomputing eFeF⊤. This requires an expensive initial computation. In the case of a single-type sensor placement problem, one can also compute a low-rank singular value decomposition of eF. We note that this second approach introduces some approximation errors; see, e.g., [7]. This is suitable for large-scale ill-posed inverse problems where eF exhibits rapid spectral decay. Exploration of such an approach for the case of multi-type sensor placement problems where eF is the composite forward operator is an interesting line of inquiry for further work. 
+
+> 8
+
+An alternative approach to implementing Algorithm 2.1 is to directly compute the mar-ginal gains rather than re-evaluate the objective. In the case of a diagonal Γe, a direct marginal gain formula based on the Sherman–Morrison–Woodbury identity can be derived; see [41]. This enables fast marginal gain computations at the cost of additional memory over-head. This approach also requires access to the rows of eF. If eF is too large to store in memory, then an appropriate caching strategy may reduce the frequency new rows are accessed. 
+
+3.3. Submodular optimization with knapsack constraints. The deterministic algorithm for knapsack constrained submodular maximization requires O(d2) marginal gain computa-tions, where d is the number of candidate sensor locations. When d is large and marginal gain evaluations are expensive, this cost is prohibitive. We propose a stochastic cost-benefit greedy algorithm to reduce this computational cost. As noted in the introduction, this approach is motivated by the stochastic variant of the standard greedy algorithm [34]. The main idea is to consider only a subset of the remaining sensors at each iteration. In this context, an approxi-mation parameter ε is used to control the quality of the approximation. In what follows, we show that this strategy, in expectation, achieves a problem dependent approximation ratio. Assume without a loss of generality that c(v) ≥ 1 for every v ∈ V . This can be done via normalization, and does not affect the number of samples per iteration. We additionally assume that f (∅) = 0. Thus, f is non-negative due to monotonicity. We define (3.9) f ∗ := max {f (S) : S ⊂ V, c (S) ≤ B}.
+
+The key steps in the proposed stochastic cost-benefit greedy algorithm are as follows: Begin with the empty set S0 = ∅. Then, at iteration i ≥ 1, we consider a random subset 
+
+Ri ⊂ V \Si−1 with T sensors and determine a sensor v∗ 
+
+> i
+
+∈ Ri that maximizes the weighted marginal gain ∆( v|Si−1)/c (v) for v ∈ Ri. Subsequently, we set Si = Si−1 ∪ { v∗ 
+
+> i
+
+}. The process is repeated until no remaining sensor can be added. Let ε > 0 denote the approximation parameter. Smaller values of ε produce, in expecta-tion, a better approximation ratio at the cost of additional marginal gain computations. At iteration i ≥ 1, let eVi−1 = {v ∈ V \ Si−1 : c(Si−1) + c(v) ≤ B}. We then sample v ∈ eVi−1 with probability c(v)/c ( eVi−1). Our analysis requires (3.10) T = c(V )
+
+B log(1 /ε ).
+
+In practice, T is set to the ceiling of this quantity. The pseudocode for the algorithm is presented in Algorithm 3.1. We can also exploit submodularity by using lazy evaluations to reduce the number of marginal gain computations per inner iteration. We begin the analysis of Algorithm 3.1 by considering the following result that applies to any arbitrary subset S ⊂ V after one iteration of the inner loop. 
+
+Lemma 3.2 (Expected Incremental Gain). Let f be monotone and submodular, and satisfy 
+
+f (∅) = 0 . Let S ⊂ V be an arbitrary subset. Suppose we sample with replacement T =
+
+c(V ) log(1 /ε )/B sensors from V \S, where the probability of sampling v ∈ V \S is c(v)/c (V \S).If v∗ = arg max v∈R ∆( v|S)/c (v), then the following estimate holds. 
+
+(3.11) Ef (S ∪ { v∗}) − f (S) = E∆( v∗|S) ≥ 1 − εB (f ∗ − f (S)) 
+
+> 9
+
+Algorithm 3.1 Stochastic Cost-Benefit Greedy Algorithm 
+
+Input: V with |V | = d; monotone submodular function f : 2 V → R+; cost function c : V →
+
+R+; budget B > 0; approximation parameter ε > 0
+
+Output: S ⊆ V with c(S) ≤ B 
+
+> 1:
+
+S ← ∅  
+
+> 2:
+
+T ← c(V ) log(1 /ε )/B  
+
+> 3:
+
+while ∃v ∈ V \ S such that c(S) + c(v) ≤ B do  
+
+> 4:
+
+R ← a random subset of {v ∈ V \ S : c(S) + c(v) ≤ B} with |R| = T 
+
+> 5:
+
+v∗ ← arg max  ∆( v|S) 
+
+> c(v)
+
+: v ∈ R 
+
+> 6:
+
+S ← S ∪ { v∗} 
+
+> 7:
+
+end while  
+
+> 8:
+
+return S
+
+Proof. Let S∗ satisfy f (S∗) = f ∗, where f ∗ is as in (3.9). We denote by F the event that 
+
+R ∩ (S∗\S)̸ = ∅. Then, (3.12) E∆( v∗|S) = E∆( v∗|S) | R ∈ F P(R ∈ F ) + E∆( v∗|S) | R ∈ F cP(R ∈ F c)
+
+≥ E∆( v∗|S) | R ∈ F P(R ∈ F ).
+
+Suppose that R ∈ F and consider v∗ determined by Line 5 of Algorithm 3.1. Next, we define a random variable A with values in S∗ \ S by sampling uniformly A from R ∩ (S∗ \ S). That is, if a ∈ S∗ \ S appears j times in R ∩ (S∗ \ S), then the probability of A = a is j/m with 
+
+m = |R∩(S∗ \S)|. Since A ∈ R∩(S∗ \S), we then trivially have ∆( v∗|S)/c (v) ≥ ∆( A|S)/c (A). Then by Lemma A.2, P(A = a | R ∈ F ) = c(a)/c (S∗\S) for a ∈ S∗\S. Thus, (3.13) 
+
+E∆( v∗|S) | R ∈ F  ≥ E∆( v∗|S)/c (v) | R ∈ F  ≥ E∆( A|S)/c (A) | R ∈ F 
+
+= X
+
+> a∈S∗\S
+
+∆( a|S)
+
+c(a)
+
+c(a)
+
+c(S∗\S) = X
+
+> a∈S∗\S
+
+∆( a|S)
+
+c(S∗\S) .
+
+Let S∗\S = {ai}mi=1 . Then, since f is a monotone submodular function, 
+
+f (S∗) − f (S) ≤ f (S∗ ∪ S) − f (S) = f (S ∪ { ai}mi=1 ) − f (S)=
+
+> m
+
+X
+
+> j=1
+
+ f (S ∪ { ai}ji=1 ) − f (S ∪ { ai}j−1 
+
+> i=1
+
+) =
+
+> m
+
+X
+
+> j=1
+
+∆( aj |S ∪ { ai}j−1 
+
+> i=1
+
+) ≤
+
+> m
+
+X
+
+> j=1
+
+∆( aj |S).
+
+Combining this with (3.13) yields 
+
+E [∆( v|S) | R ∈ F ] ≥ f (S∗) − f (S)
+
+c(S∗\S) .
+
+To get the desired inequality, we utilize this estimate and apply Lemma A.1 in (3.12) to find 
+
+E [∆( v∗|S)] ≥ E [∆( v∗|S) | R ∈ F ] P(R ∈ F )
+
+≥ f (S∗) − f (S)
+
+c(S∗\S) · (1 − ε)c(S∗\S)
+
+B = (1 − ε) f (S∗) − f (S)
+
+B .
+
+> 10
+
+We next present the main result of this section, which states how these expected incre-mental gains accumulate. 
+
+Theorem 3.3 (Approximation Ratio). Suppose that f is monotone and submodular, and satisfies f (∅) = 0 . If Algorithm 3.1 terminates after k iterations, then 
+
+(3.14) Ef (Sk) ≥ 1 − exp   − k(1 − ε)/B  f ∗
+
+In particular, if C = max v∈V c(v) then 
+
+(3.15) Ef (Sk) ≥ 1 − exp   − (1 − ε)/C  f ∗
+
+Moreover, the number of marginal gain computations is O(c(V ) log(1 /ε )) .Proof. We first show via induction that (3.16) E[f (Sk)] ≥
+
+n
+
+1 −
+
+
+
+1 − 1 − εB
+
+ko
+
+f ∗.
+
+For k = 1, we begin with S0 = ∅. By applying Lemma 3.2, we get 
+
+E[f (S1)] = Ef (S1) − f (S0) ≥ 1 − εB f (S∗) = 
+
+n
+
+1 −
+
+
+
+1 − 1 − εB
+
+o 
+
+f ∗.
+
+Suppose that (3.16) holds for k ≥ 1. Note that we can apply Lemma 3.2 if we condition 
+
+Sk = S for S ⊂ V . We then have 
+
+Ef (Sk+1 ) − f (Sk) = X
+
+> S⊂V
+
+Ef (Sk+1 ) − f (Sk) Sk = SP(Sk = S)
+
+≥ X
+
+> S⊂V
+
+1 − εB (f ∗ − f (S)) P(Sk = S) = 
+
+ 1 − εB
+
+
+
+Ef ∗ − f (Sk).
+
+And by applying (3.16), we find 
+
+E[f (Sk+1 )] = Ef (Sk+1 ) − f (Sk) + E[f (Sk)] ≥ 1 − εB f ∗ +
+
+
+
+1 − 1 − εB
+
+
+
+E[f (Sk)] 
+
+≥ 1 − εB f ∗ +
+
+
+
+1 − 1 − εB
+
+ 
+
+1 −
+
+
+
+1 − 1 − εB
+
+k
+
+f ∗ =
+
+n
+
+1 −
+
+
+
+1 − 1 − εB
+
+k+1 o
+
+f ∗.
+
+Thus, the statement holds for all k ≥ 1. The final result follows by an application of the inequality 1 − x ≤ e−x. Moreover, since 
+
+k ≥ B/C we arrive at (3.15). We first note that (3.15) depends on the maximum cost of a sensor. However, this is a rough estimate based on taking a lower bound on the total number of iterations of Algo-rithm 3.1. In practice, k in (3.14) may be substantially larger than the lower bound B/C .Moreover, in the case of uniform costs, we recover the approximation ratio from [34]. Also, by using the Paley–Zygmund inequality [39], we can obtain the following tail lower bound: 
+
+> 11
+
+Corollary 3.4 (Tail Lower Bound). Suppose f is monotone and submodular, and satisfies 
+
+f (∅) = 0 . If the conditions of Theorem 3.3 hold, then for any 0 < δ < 1,
+
+P
+
+
+
+f (Sk) ≥ (1 − δ)
+
+
+
+1 − exp 
+
+
+
+− 1 − ε
+
+¯C
+
+ 
+
+f ∗
+
+
+
+≥ δ2
+
+
+
+1 − exp 
+
+
+
+− 1 − ε
+
+¯C
+
+ 2
+
+Proof. By an application of Theorem 3.3 and Jensen’s inequality, we get (f ∗)2 
+
+1 − e−(1 −ε)/ ¯C 2
+
+≤ E[f (Sk)] 2 ≤ E[f (Sk)2] ≤ (f ∗)2.
+
+Also, multiplying (3.15) by 1 − δ yields (1 − δ)(1 − e−(1 −ε)/ ¯C )f ∗ ≤ (1 − δ)E[f (Sk)]. Thus, 
+
+{f (Sk) ≥ (1 − δ)E[f (Sk)] } ⊂ { f (Sk) ≥ (1 − δ)(1 − e−(1 −ε)/ ¯C )f ∗},
+
+which implies Pf (Sk) ≥ (1 − δ)E[f (Sk)]  ≤ Pf (Sk) ≥ (1 − δ)(1 − e−(1 −ε)/ ¯C )f ∗. We then apply the Paley–Zygmund inequality to find 
+
+Pf (Sk) ≥ (1 − δ)E[f (Sk)]  ≥ δ2 E[f (Sk)] 2
+
+E[f (Sk)2] ≥ δ2 
+
+1 − e−(1 −ε)/ ¯C 2
+
+.
+
+4. Nonlinear Inverse Problems. We now consider problems in which at least one of the parameter-to-observable (PTO) maps associated with the different sensor types is nonlinear. In this setting, the composite PTO map takes the form (4.1) F(m) := F1(m)⊤ F2(m)⊤ · · · FK (m)⊤⊤ ,
+
+where Fi : Rn → Rsi is the ith (potentially nonlinear) PTO map. As discussed in Section 2.2, the expected information gain generally does not admit a closed-form expression in this setting, making the optimal sensor selection problem signifi-cantly more challenging. There are several sampling methods for approximating the EIG in nonlinear settings [21]. However, using such approaches within an optimization loop becomes prohibitively expensive. To provide a tractable approach, here we focus on approaches based on linearization of the PTO maps. We account for the resulting model error using the Bayesian approximation error (BAE) approach. In particular, following the recent work [26], we outline a non-intrusive BAE-based frame-work that uses an observation model with a purely data-driven linear model—the pure-BAE global linear model . We elaborate this approach in our setting in Section 4.1. Then, in Sec-tion 4.2, we show how the proposed approach is connected to the commonly used idea of using an ensemble of local linear models and deriving an approximate expected utility based on the resulting Laplace approximations [2, 52]. To provide further theoretical justification for the proposed approach, in Section 4.3 we prove that the EIG estimate based on the data-driven linear model provides a lower bound for the exact EIG. 
+
+> 12
+
+4.1. Sensor placement via a global error-aware linear surrogate. For now we assume that all Fi’s are nonlinear. In practice, however, some Fi’s may be linear. We discuss this case in Section 4.4. We consider a global linear surrogate Rd×n ∋ bF := [ bF⊤ 
+
+> 1
+
+bF⊤ 
+
+> 2
+
+· · · bF⊤ 
+
+> K
+
+]⊤
+
+of the full PTO map F (4.1). While using such a linear surrogate for Bayesian inversion is computationally advantageous, it does entail approximation errors. As established in various sources [32, 23], if the errors and uncertainties introduced by using an approximate forward model are not accounted for, they can lead to biased reconstructions, overconfident uncer-tainty estimates, and, in some cases, entirely misleading inferences. Consequently, failure to account for such errors can undermine any OED procedure, leading to experimental setups that are grossly suboptimal for the exact problem [26, 6]. The BAE approach [25, 24] pro-vides a principled framework to mitigate these issues by treating the discrepancy between the accurate and approximate forward models as a random variable, estimating its statistics, and incorporating it into the likelihood formulation. While the BAE approach is applicable to general, potentially nonlinear, approximate forward models, we restrict our attention to linear ones. This approach begins by restating the relationship between the parameters of interest and the observations in terms of the approximate model. In our setting, the design-dependent observation model is 
+
+d(S) = Π(S) F(m) + e = Π(S) bFm + ε(m) + e = Π(S) bFm + η(m),(4.2) where ε(m) := F(m) − bFm is termed the approximation error and η(m) := ε(m) + e the 
+
+total error . The BAE approach models the joint law of ε(m) and m as Gaussian, 
+
+ ε
+
+m
+
+
+
+∼ N 
+
+ ε
+
+m
+
+
+
+,
+
+ Γεε Γεm
+
+Γmε Γmm 
+
+ 
+
+,
+
+where Γεm = Γ⊤ 
+
+> mε
+
+denotes the cross-covariance between ε and m, and ε and Γεε denote the mean and covariance of the approximation error ε(m) as described in Section 2.1. In the approximate model, the law of ε(m) is replaced by the conditional law of ε|m. It is straightforward to show that ε|m ∼ N (εm, Γε|m), with 
+
+εm = ε + ΓεmΓ−1
+
+> mm
+
+(m − m) and Γε|m = Γεε − ΓεmΓ−1
+
+> mm
+
+Γmε.(4.3) Under the Gaussian assumptions e ∼ N (e, Γe) and m ∼ πm = N (m, Γmm ) with e ⊥ m,the total error is also conditionally Gaussian: η|m ∼ N (ηm, Γη|m), with ηm = εm + e and 
+
+Γη|m = Γε|m + Γe. The error-aware likelihood induced by the approximate model (4.2) is (4.4) πbF
+
+> d|m
+
+(S) = N
+
+
+
+Π(S)( bFm + ηm), Π(S)Γη|mΠ(S)⊤
+
+,
+
+and the corresponding error-aware posterior is πbF
+
+> m|d
+
+(S) ∝ πbF
+
+> d|m
+
+(S)πm, which is also Gaussian. The error-aware likelihood was shown to be independent of the choice of bF in the design-free setting [37, Theorem 1]. This result was later extended to sensor design [26]; that is, for any two linear models bF1 and bF2,
+
+πbF1
+
+> d|m
+
+(S) = πbF2
+
+> d|m
+
+(S), for all S ⊂ V. 
+
+> 13
+
+Consequently, the posterior πbF
+
+> m|d
+
+(S) is also invariant to the choice of linearization. An alternative interpretation of this invariance is that, regardless of the choice of linear operator bF, the BAE approach always produces the same approximate observation model. To see this, recall that the BAE approach replaces the accurate model with 
+
+d(S) = Π(S)
+
+bFm + eη(m)
+
+
+
+, m ∼ N (m, Γmm ), eη(m) ∼ N (ηm, Γη|m).
+
+Since the conditional mean ηm = ε+ΓεmΓ−1
+
+> mm
+
+(m−m)+ e is affine in m, the linear component can be absorbed into the forward operator. This yields (4.5) d(S) = Π(S) ( FOm + eη) , m ∼ N (m, Γmm ), eη ∼ N (η, Γη|m), m ⊥ ˜η
+
+where FO = bF + ΓεmΓ−1 
+
+> mm
+
+and η = ε − ΓεmΓ−1
+
+> mm
+
+m + e. Crucially, the choice of bF in the approximate model cancels; cf. the proof of [37, Theorem 1]. Hence, we can restate (4.5) with 
+
+FO = ΓFmΓ−1
+
+> mm
+
+, η = F − FOm + e, Γη|m = Γe + ΓFF − ΓFmΓ−1
+
+> mm
+
+Γ⊤
+
+> Fm
+
+,(4.6) independently of bF. We call the operator FO in (4.6) the pure-BAE global linear model. The data model (4.5) can equivalently be viewed as the BAE approximation resulting from using the zero operator O : m 7 → 0 as the surrogate, in which case the approximation error is ε(m) = F(m). Thus, we have Γεm = ΓFm, Γεε = ΓFF , ε = F, and the error-corrected forward operator FO = O + ΓFmΓ−1 
+
+> mm
+
+recovers the pure-BAE global linear model directly. The resulting error-aware posterior is πOm|d(S) = N (mOd (S), ΓOm|d(S)) with (4.7) mOd (S) = ΓOm|d(S)
+
+
+
+F⊤
+
+> O
+
+Pη(S)˜d + Γ−1
+
+> mm
+
+m
+
+
+
+and ΓOm|d(S) = 
+
+
+
+F⊤
+
+> O
+
+Pη(S)FO + Γ−1
+
+> mm
+
+−1
+
+.
+
+Here Pη(S) = Π(S)⊤ Π(S)Γη|mΠ(S)⊤−1Π(S) and ˜d = d−η, where d is the full-sensor data. Using the multi-type EIG formulation for Gaussian priors and posteriors (3.6), defining the expected information gain associated with the error-corrected posterior πOm|d(S) is straight-forward. Introducing the prior-preconditioned operator, eFO := FOΓ 12
+
+> mm
+
+, the EIG associated with the error-corrected posterior πOm|d(S) is (4.8) ΨO
+
+> MT
+
+(S) = 12 log det 
+
+eF⊤
+
+> O
+
+Pη(S)eFO + I
+
+
+
+, S ⊂ V. 
+
+We propose using this objective to guide the design selection for the original nonlinear Bayesian inverse problem. In what follows, we refer to Ψ O 
+
+> MT
+
+as the pure-BAE EIG. Before addressing practical implementation details, we relate this framework to local linearization methods and establish further theoretical justification for using (4.8) in the OED problem formulation. 
+
+4.2. Global versus local linearization for optimal sensor selection. In our proposed ap-proach, we use a global linearization given by the pure-BAE forward operator FO = ΓFmΓ−1
+
+> mm
+
+;cf. (4.5). Although this operator appears to be an algebraic consequence of using the BAE ap-proach in a particular manner, as shown in this section, under suitable regularity assumptions and a Gaussian prior, FO admits a more direct interpretation: it is the prior expectation of 
+
+> 14
+
+the Jacobian of the nonlinear PTO map. This provides a connection with Laplace-based ap-proaches to OED for nonlinear inverse problems, in which the design objective is constructed using an ensemble of local Gaussian approximations of the posterior [2, 18, 52]. Since the discussion in this section applies more generally than the multi-type sensor placement framework under study, for simplicity, we consider a generic nonlinear PTO map 
+
+F. For large-scale nonlinear inverse problems, a common approach to OED is to consider the Laplace approximation to the posterior. Namely, given a data realization d, we consider the approximation πm|d(S) ≈ πLA 
+
+> m|d
+
+(S) = N (mMAP (d; S), Γpo (S)). The maximum a posteriori (MAP) point mMAP (d; S) is given by 
+
+md
+
+> MAP
+
+(S) := arg min 
+
+> m∈M
+
+− log ( πm|d(S)) .
+
+Further, the approximate posterior covariance matrix Γpo (S) satisfies 
+
+Γ−1po (S) := H(md
+
+> MAP
+
+(S)) + Γ−1
+
+> mm
+
+,
+
+where H(md
+
+> MAP
+
+(S)) := J(md
+
+> MAP
+
+(S)) ⊤P(S)J(md
+
+> MAP
+
+(S)) is the Gauss–Newton Hessian, with 
+
+P(S) as in (2.3) and J the Jacobian of the PTO map, i.e., J(mMAP ) := DmF(m) |m=mMAP .In this setting, it is common to use an approximate (empirical) expected utility Ψ( S) = Ed(S)
+
+h
+
+DKL 
+
+
+
+πm|d(S) ∥ πm
+
+i 
+
+≈ 1
+
+nd
+
+> nd
+
+X
+
+> i=1
+
+DKL 
+
+
+
+πLA  
+
+> m|di
+
+(S) ∥ πm
+
+
+
+,
+
+with di = Π(S)( F(mi) + ei), where {m1, m2, . . . , mnd } are samples from the prior. When the prior is Gaussian and the Laplace approximation to the posterior is made, the KL divergence from the approximate posterior to the prior admits a closed-form expression. Specifically, letting Hi(S) := H(mdi
+
+> MAP
+
+(S)) and ˜Hi := Γ 12
+
+> mm
+
+Hi(S)Γ 12
+
+> mm
+
+, we have 
+
+DKL 
+
+ πLA  
+
+> m|di
+
+(S) ∥ πm
+
+ = 12
+
+h
+
+log det( I+ ˜Hi(S)) −tr  Γ 12
+
+> po
+
+(S)Hi(S)Γ 12
+
+> po
+
+(S)+∥mdi
+
+> MAP
+
+(S)−m∥2
+
+> Γ−1
+> mm
+
+i
+
+.
+
+As noted in [52, Section 3.4], one may obtain a further approximation by replacing 
+
+{mdi
+
+> MAP
+
+(S)}nd 
+
+> i=1
+
+with the corresponding prior samples {mi}nd
+
+> i=1
+
+. This results in ∥mi − m∥2
+
+> Γ−1
+> mm
+
+being independent of the design and can thus be dropped from the design criterion. This relieves one from solving multiple MAP estimation problems for each evaluation of the de-sign criterion; see [52] for more details. The modified design criterion, however, still requires evaluation of the Gauss–Newton Hessian at the prior samples. Note also that, for each i, the corresponding Gauss–Newton Hessians can be obtained as the result of (locally) linearizing the forward model around the prior sample mi, i.e, using F(m) ≈ F(mi) + J(mi)( m − mi). We next show that the pure-BAE global linear model coincides with the prior expectation of the Jacobian J. Before formalizing this, we record the following technical lemma: 
+
+Lemma 4.1. Suppose F : Rn → Rd is differentiable and bounded and πm = N (m0, Γmm ).Then, we have R 
+
+> Rn
+
+Dm(F(m)πm) dm = 0.
+
+> 15
+
+Proof. Let Br(0) ⊂ Rn be the open ball of radius r centered at the origin. By the divergence theorem [16, Appendix C], R  
+
+> Br(0)
+
+Dm(F(m)πm) dm = R 
+
+> ∂B r(0)
+
+(F(m)πm) ⊗ n ds.Thus, R 
+
+> Rn
+
+Dm(F(m)πm) dm = lim r→∞ 
+
+R 
+
+> ∂B r(0)
+
+(F(m)πm) ⊗ n ds = 0. The last equality follows from the facts that F is bounded and πm is a multivariate normal PDF. The following multidimensional analogue of Stein’s lemma [45] makes the interpretation of the pure-BAE model as the expectation of the Jacobian J precise. 
+
+Theorem 4.2. Suppose F : Rn → Rd is differentiable and bounded with Jacobian J(m) ∈
+
+Rd×n. Then, letting F0 = E[F(m)] ∈ Rd be the expected value and ΓFm = E[( F(m)−F0)( m−
+
+m0)⊤] ∈ Rd×n be the cross covariance matrix, we have E[J(m)] = ΓFm Γ−1
+
+> mm
+
+.Proof. First we note that for πm = N (m0, Γmm ), direct calculation gives ∇mπm =(Dmπm)⊤ = −Γ−1
+
+> mm
+
+(m − m0)πm. Then, letting ΓFm = E[( F(m) − F0)( m − m0)⊤] = 
+
+E[F(m)( m − m0)⊤], we have 
+
+0 =
+
+Z
+
+> Rn
+
+Dm(F(m)πm) dm =
+
+Z
+
+> Rn
+
+πmJ(m) + F(m)( ∇mπm)⊤ dm
+
+=
+
+Z
+
+> Rn
+
+(J(m) − F(m)( m − m0)⊤Γ−1
+
+> mm
+
+)πm dm
+
+=
+
+Z
+
+> Rn
+
+J(m)πm dm −
+
+Z
+
+> Rn
+
+F(m)( m − m0)⊤Γ−1
+
+> mm
+
+πm dm
+
+= E[J(m)] − E[F(m)( m − m0)T ]Γ−1
+
+> mm
+
+= E[J(m)] − ΓFm Γ−1
+
+> mm
+
+.
+
+The preceding discussion shows that the pure-BAE global linear model (4.6) provides a reasonable alternative to sensor selection using sample-dependent Laplace approximations. This enables replacing Monte Carlo average of KL-divergences involving local Jacobians with a single closed-form expression (4.8) built from the expected Jacobian .
+
+Remark 4.1. The assumptions on F in Theorem 4.2 can be relaxed. This operator does not necessarily need to be bounded. We only need lim r→∞ 
+
+R 
+
+> ∂B r(0)
+
+(F(m)πm) ⊗ n ds = 0.
+
+Remark 4.2. Note that as long as F is square-integrable with respect to πm the pure-BAE operator ΓFm Γ−1 
+
+> mm
+
+is well-defined, even if F is not differentiable. 
+
+4.3. A BAE-based lower bound on the EIG. In this section, we prove a lower bound on the exact EIG in terms of the pure-BAE EIG (4.8). For readability, we suppress the design dependency in the model and densities. Since the design enters the observation model (3.3) linearly through the row-selection matrix Π(S), it can be absorbed into the forward operator and noise distribution without affecting the structure of the argument. Extending the results to the design-dependent setting is thus straightforward. Also, as in Section 4.2, we consider a generic nonlinear PTO map F. Thus, throughout this section, F and FO are replaced by F
+
+and FO, respectively, including in equations referenced from Section 4.1. Let πd,m denote the joint density of ( d, m) under the accurate model (2.2) and πOd,m the joint density under the pure-BAE global linear model (4.5). By construction, 
+
+πOd,m = N
+
+ dm
+
+
+
+,
+
+ Γdd Γdm 
+
+Γmd Γmm 
+
+ 
+
+.
+
+> 16
+
+The following technical lemma shows that the mean and the covariance matrix of πOd,m are the same as those of πd,m.
+
+Lemma 4.3. The following hold, 
+
+EπOd,m
+
+(d, m) = Eπd,m
+
+(d, m); and Cov πOd,m (( d, m), (d, m)) = Cov πd,m (( d, m), (d, m)) .
+
+Proof. The marginal mean and covariance of m match by construction. For the remaining quantities, we use the definitions (4.6), the independence ˜ η ⊥ m in the pure-BAE model, and 
+
+e ⊥ m in the accurate model. We first consider the marginal data mean. We have 
+
+d = EπOd,m [d] = FOm + η = FOm + F − FOm + e = F + e = Eπd,m [d].
+
+For the cross-covariance, independence gives Cov πO ( eη, m) = 0 and Cov π(e, m) = 0. Thus, 
+
+Γdm := Cov πO (d, m) = Cov πO (FOm, m) = FOCov πO (m, m)= ΓFm Γ−1
+
+> mm
+
+Γmm = ΓFm = Cov π(d, m).
+
+Likewise, utilizing the independence for the data covariance, we have 
+
+Γdd := Cov πO (d, d) = Cov πO (FOm, FOm) + Cov πO ( ˜ η, ˜η)= FOCov πO (m, m)F⊤ 
+
+> O
+
++ Γη|m
+
+= ΓFm Γ−1
+
+> mm
+
+Γ⊤ 
+
+> Fm
+
++ Γe + ΓFF − ΓFm Γ−1
+
+> mm
+
+Γ⊤
+
+> Fm
+
+= Γe + ΓFF = Cov π(d, d).
+
+The moment-matching property in Lemma 4.3 plays a key role in the following analysis. In what follows, we will express the EIG in terms of the differential entropy . Recall that the differential entropy of an Rn-valued random variable x with density π is 
+
+h(π) := −Eπ
+
+ log( π(x)) .
+
+When π is Gaussian, h(π) = 12 (n log(2 π) + log det(Cov π(x)) + n); see [12, Theorem 9.4.1]. The following lemma is another key tool in proving the BAE-based lower bound for the EIG. 
+
+Lemma 4.4. Let p = N (x, Γxx ), and let π be a density with Eπ[x] = x and Cov π(x, x) = 
+
+Γxx for x ∈ Rn. Then 
+
+(4.9) −Eπ
+
+ log( p) = h(p) and h(p) − h(π) = DKL (π ∥ p) .
+
+Proof. Since p is Gaussian, 
+
+−Eπ
+
+ log( p) = 12
+
+
+
+n log(2 π) + log det( Γxx ) + Eπ
+
+(x − x)⊤Γ−1 
+
+> xx
+
+(x − x)
+
+.
+
+Using the properties of matrix trace and the moment-matching assumption, we have 
+
+Eπ
+
+(x − x)⊤Γ−1 
+
+> xx
+
+(x − x) = Eπ
+
+ tr  Γ−1 
+
+> xx
+
+(x − x)( x − x)⊤ 
+
+= tr 
+
+
+
+Γ−1 
+
+> xx
+
+Eπ
+
+(x − x)( x − x)⊤
+
+= tr  Γ−1 
+
+> xx
+
+Cov π(x, x) = tr[ In] = n. 
+
+Therefore, −Eπ
+
+ log( p) = 12
+
+ n log(2 π) + log det( Γxx ) + n = h(p). The second identity in (4.9) follows directly: 
+
+h(p) − h(π) = −Eπ[log( p)] + Eπ[log( π)] = DKL (π ∥ p) .
+
+> 17
+
+We are now ready to prove the main result of this section. 
+
+Theorem 4.5. Let πd,m denote the joint density induced by the accurate model (2.2) with Gaussian prior πm = N (m, Γmm ) and assume that πd,m has finite differential entropy. Then, 
+
+ΨMT ≥ ΨO
+
+> MT
+
+,(4.10) 
+
+where ΨMT := Eπd
+
+DKL 
+
+ πm|d ∥ πm
+
+  and ΨO 
+
+> MT
+
+:= EπOd
+
+DKL 
+
+ πOm|d ∥ πOm
+
+ are the exact and pure-BAE EIG, respectively. Furthermore, ΨMT − ΨO 
+
+> MT
+
+= Eπd
+
+DKL 
+
+ πm|d ∥ πOm|d
+
+ .Proof. We first express the EIG in terms of differential entropies. Recalling that Ψ MT =
+
+Eπd
+
+DKL 
+
+ πm|d ∥ πm
+
+ and using the relation πm|d = πd,m 
+
+> πd
+
+, we have ΨMT = Eπd,m
+
+
+
+log πm|d
+
+πm
+
+
+
+= Eπd,m
+
+
+
+log πd,m
+
+πdπm
+
+
+
+= −h(πd,m) + h(πd) + h(πm).
+
+An analogous calculation gives Ψ O 
+
+> MT
+
+= −h(πOd,m) + h(πOd ) + h(πOm). Since πm is Gaussian and matches the marginal πOm, we have h(πOm) = h(πm). Thus, ΨMT − ΨO 
+
+> MT
+
+=  h(πOd,m) − h(πd,m) −  h(πOd ) − h(πd)
+
+Note that by Lemma 4.3, πOd,m and πd,m have matching mean and covariance. Since marginalization preserves first and second moments, πOd and πd also have the same mean and covariance matrix. Applying Lemma 4.4 gives: 
+
+h(πOd,m) − h(πd,m) = DKL 
+
+ πd,m ∥ πOd,m
+
+ and h(πOd ) − h(πd) = DKL 
+
+ πd ∥ πOd
+
+ .
+
+Hence, Ψ MT − ΨO 
+
+> MT
+
+= DKL 
+
+ πd,m ∥ πOd,m
+
+ − D KL 
+
+ πd ∥ πOd
+
+. We next recall that by the KL-divergence chain rule [35, Page 221], 
+
+DKL 
+
+ πd,m ∥ πOd,m
+
+ = DKL 
+
+ πd ∥ πOd
+
+ + Eπd
+
+h
+
+DKL 
+
+
+
+πm|d ∥ πOm|d
+
+i 
+
+.
+
+Therefore, Ψ MT − ΨO 
+
+> MT
+
+= Eπd
+
+DKL 
+
+ πm|d ∥ πOm|d
+
+ ≥ 0. This lower bound provides insight into when maximizing the pure-BAE EIG can be effec-tive for obtaining good quality sensor placements. Namely, the gap Eπd
+
+DKL 
+
+ πm|d ∥ πOm|d
+
+ 
+
+measures how well the error-corrected posterior approximates the true posterior on average over the data distribution. If this gap does not vary significantly across designs, then the pure-BAE EIG roughly preserves the relative ranking of designs and provides a suitable proxy for ΨMT . Our numerical results in Section 5.2 demonstrate the effectiveness of using the pure-BAE EIG in the OED problem formulation. In the case Cov π(F(m), m) ≡ 0, the pure-BAE linear model captures no (global) linear dependence between data and the parameters. Consequently, the approximate posterior in-duced by the pure-BAE linear model coincides with the prior (see (4.7)), and the associated lower bound on the EIG correctly collapses to zero (see (4.10)). This scenario can be easily detected in practice since Cov π(F(m), m) is estimated when constructing the global linear model. Also, as shown in [13, section 3.1.3], the statistics of the accurate forward model that enter the lower bound through Γη|m (specifically the covariance ΓFF ) can be used to construct an upper bound on the (exact) EIG. Comparing the gap between the two bounds provides a practical diagnostic for the quality of the pure-BAE global linear model at negligible cost. 
+
+> 18
+
+4.4. Computational considerations. In practice, the statistics of the exact PTO map, i.e., ( ΓFm, ΓFF , F), are unknown a priori. We therefore approximate them using the standard unbiased Monte Carlo sample-mean, sample-covariance and sample-cross-covariance estima-tors using samples m(i) ∼ πm and the corresponding model evaluations F(i) = F(m(i)) for 
+
+i ∈ { 1, . . . , N }. Each sample requires one (or more) PDE solve(s) to evaluate F(m(i)). How-ever, these evaluations can be performed in parallel. Once the statistics have been computed, the assembly and optimization of the pure-BAE EIG (4.8) is PDE-free, involving only linear algebra operations on the precomputed quantities. A key advantage of the proposed approach is that it is non-intrusive. The precomputation requires only access to samples {(m(i), F(m(i))}Ni=1 , with no need for adjoint solves or Jacobian computations. This makes the method applicable even in settings where the forward model is a black box, or where the model itself is unavailable and only input-output data are provided. We also note a few caveats of the proposed approach. While the BAE approach results in a Gaussian posterior that is independent of the choice of linearization bF in the infinite-sample limit, in the finite-sample setting, the choice of bF can affect the accuracy of the Monte Carlo estimators; see [37]. Choosing a linearization bF that captures the variability of the nonlinear map F can reduce the variance of the approximation error ε(m) and hence the variance of the resulting estimators. A variance reduction strategy based on Taylor approximations of the forward model has been explored in [38], and can be combined with the approach presented here to potentially reduce the number of required samples. One can also use quasi-Monte Carlo methods to accelerate the convergence of the sample statistics. Further, we note that the pure-BAE EIG (4.8) is not guaranteed to be submodular due to the non-diagonal structure of Γη|m. Therefore, the approximation guarantees in Section 3.3 do not hold. Nevertheless, the stochastic cost-benefit greedy method performs well in the numerical experiments of Section 5.2. This is consistent with prior experiences with good performance of greedy sensor placement for general non-submodular functions [6, 52, 26]. Finally, without submodularity, lazy evaluations within the greedy procedure are neither justified nor recommended. 
+
+Remark 4.3. When the composite PTO map F contains both nonlinear and linear compo-nents, the pure-BAE construction preserves the linear components exactly, applying the BAE correction only to the nonlinear components. This simplifies both the model construction and the required precomputations. In particular, if F(m) = [ Fn(m)⊤ (Flm)⊤]⊤, where the nonlin-ear ( Fn) and linear ( Fl) components are stacked together, then FO = [( ΓFnm Γ−1
+
+> mm
+
+)⊤ F⊤ 
+
+> l
+
+]⊤,so the linear components Fl enter FO exactly and do not require statistical estimation. Addi-tionally, the mean eη and covariance Γη|m of the total error differ from e and Γe only in the blocks corresponding to the nonlinear components. These blocks depend solely on the statistics of Fn, and thus only those need to be estimated during precomputation. 
+
+5. Numerical Examples. In this section, we present computational results in the context of two model inverse problems. The first one, considered in Section 5.1, is a linear inverse prob-lem involving source inversion in a steady advection-diffusion problem. The purpose of that study is to examine the performance of the proposed stochastic cost-benefit greedy method for optimal placement of multi-type sensors in a setting where the theoretical guarantees es-tablished in Section 3.3 hold. Then, in Section 5.2, we consider multi-type sensor placement 
+
+> 19
+
+for a nonlinear inverse problem governed by a porous medium flow model, where we seek to find optimal placement of pressure and concentration sensors. The study in that section demonstrates the effectiveness of our proposed approach for nonlinear inverse problems. 
+
+5.1. Source Inversion in an advection-diffusion problem. We consider an inverse prob-lem governed by a steady advection-diffusion problem to demonstrate the advantages of Algo-rithm 3.1. In the formulation of this Bayesian inverse problem, we use a Gaussian prior and an additive Gaussian noise model with uncorrelated measurement errors. Under these assump-tions, the expected information gain (EIG), as defined in (3.4), is a monotone submodular function. Therefore, the theoretical guarantees from Section 3.3 hold. 
+
+5.1.1. Problem setup. We consider the inverse problem of using sensor data to estimate the volume source term m in the following advection-diffusion equation (5.1) 
+
+−∇ · (κ∇u) + ∇ · (uv) = m in Ω ,u = 0 on Γ D,
+
+−(κ∇u) · n = 0 on Γ N .
+
+Here, Ω = (0 , 1) 2, Γ D = [0 , 1] × { 0, 1}, and Γ N = {0, 1} × [0 , 1]. In the present study, we fix 
+
+κ = 10 −1 and v = [0 − 1] ⊤. For the present computational study, we consider a ground-truth inversion parameter m that is localized in the center of the domain; see Figure 1 (left). The corresponding state variable is shown in the middle panel of the figure. The inverse problem uses measurements of u to estimate m. We consider three types of sensors. The first two sensor types take point measurements of u, but with different noise levels. Sensors of the third type observe the average value of u over small regions. The corresponding data models can then be written as (5.2) di = Biu + ei, ei ∼ N (0, σ 2 
+
+> i
+
+I), i = 1 , 2, 3,
+
+where B1 and B2 are point evaluation operators, and B3 records the average of u over a ball (within Ω) of a prescribed radius around the sensor. Note that while the first two sensor types are conceptually associated with pointwise measurements, the corresponding observation operators are still mathematically defined as localized averaging operators. This ensures that the observation operators are bounded. When the PDE solution possesses sufficient regularity, these localized averages may be interpreted as approximations of exact point evaluations. On the other hand, in the case of B3, the average state is computed within a ball around the sensor whose radius is determined by the properties of the sensing device. For simplicity, in what follows, we continue to refer to type one and two sensors as point evaluation sensors and the third type as point average sensors. The point evaluation sensors are placed on a grid of 12 × 12 equally spaced candidate points in Ω. We allow the placement of one or both sensor types in each location. We set the cost of the low and high quality sensors to 1 and 2.8, respectively. Here, we chose σ21 and σ22
+
+to produce a signal-to-noise ratio (SNR) of 20 and 10, respectively. The point average sensors are placed on a candidate sensor grid of 6 ×6 equally spaced points in Ω. Each of these sensors collects the average value of u on the intersection of Ω and a disc of radius 0.20 centered at the grid point. The cost of each point average sensor is 5, and σ23 was chosen so the SNR was 
+
+> 20 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00 0.0000
+> 0.0379
+> 0.0759
+> 0.1138
+> 0.1518
+
+Figure 1: Left: the ground-truth parameter m. Middle: the corresponding state variable. Right: a schematic of the multi-type sensor grid. The candidate locations for point evaluation sensors are indicated by circles and those of point average sensors by diamonds. 20. We thus have a data vector d = [ d⊤ 
+
+> 1
+
+d⊤ 
+
+> 2
+
+d⊤ 
+
+> 3
+
+]⊤ ∈ R12 2+12 2+6 2
+
+= R324 . The experimental configuration is illustrated in Figure 1 (right). We next specify our choice of prior. In the infinite-dimensional setting, we use a Gaussian prior measure with homogeneous mean and covariance operator given by an inverse squared elliptic differential operator. Specifically, the prior covariance operator is defined as A−2 with 
+
+A := γ∆ + δI . In the present study, we use γ = 0 .252 and δ = 0 .7. We use homogeneous Neumann boundary conditions when computing applications of A−1. For further details on defining such Gaussian priors in a function space setting, we refer to [46]. Finally, the inverse problem is discretized using linear Lagrangian finite elements on a 50 × 50 uniform triangular mesh. In total the parameter m has 2601 degrees of freedom. The experiments were implemented in Python using FEniCSx [9]. 
+
+5.1.2. Computational Results. In our numerical tests, we use the (deterministic) best-greedy method Algorithm 2.1 as a baseline. Note that in the present example, the OED criterion Ψ MT is submodular. Thus, we can use lazy evaluations to accelerate the computations. In our first set of numerical experiments, we consider a fixed budget of B = 30 for the knapsack constrained OED problem (3.5). To assess the quality of sensor placements obtained using the proposed stochastic cost-benefit greedy algorithm, we perform 500 runs of Algorithm 3.1 with approximation parameters ε ∈ { 0.001 , 0.01 , 0.1}. Figure 2 compares the performance of these trials with the best-greedy algorithm. Let ¯ΨMT and Ψ ε 
+
+> MT
+
+denote the output of the best-greedy and stochastic cost-benefit greedy methods, respectively. The histogram in Figure 2 (left) depicts the relative gap ( ¯ΨMT − Ψε
+
+> MT
+
+)/ ¯ΨMT over the computed 100 realizations of Ψ ε 
+
+> MT
+
+and our choices of ε. Note that smaller values of ε lead to a more concentrated distribution. This behavior is expected as smaller ε values result in an inner iteration closer to that of the deterministic algorithm. Moreover, the stochastic approach can also outperform the best-greedy algorithm in some of the trials. To provide further insight, we also consider the MAP points computed using the computed sensor placements. Figure 2 (middle) shows the MAP point computed using a best-greedy sensor placement. A corresponding MAP estimation result is provided using a representative sensor placement obtained using the stochastic cost-benefit greedy method. We next consider the computed sensor placements themselves in Figure 3. The sensor placement obtained using the best-greedy method is displayed in the left panel. The middle         
+
+> 21 -0.2 -0.0 0.1 0.3 0.5 0.05 0.03 0.01 0.01 0.03
+> Relative Gap
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> Frequency
+> = 0.001
+> = 0.01
+> = 0.1
+
+Figure 2: Left: Histogram of the relative gap between solutions found by stochastic greedy and the deterministic greedy solution. Right: MAP estimates found using best-greedy (middle) and stochastic greedy with ε = 10 −3 (right). 12  
+
+> 34
+> 5678
+> 910 11
+> 12
+> 13
+> 14
+
+BG SG ( ε = 10 −3) SG ( ε = 10 −2)Figure 3: Sensor placements found using Algorithms 2.1 and 3.1. The red (blue) squares correspond to a high (low) quality point evaluation sensor placement. The green diamonds correspond to a point average sensor placement. Left: sensor placements found by Algo-rithm 2.1. Middle and right: sensors frequently chosen by Algorithm 3.1 with ε = 0 .01 and 
+
+ε = 0 .001, respectively. The marker opacity indicates the frequency. and right panels summarize sensor placements obtained from 500 runs of the stochastic cost-benefit greedy method with approximation parameters of ε = 10 −3 and ε = 10 −2. In these figures the color intensity indicates the frequency of selecting specific sensors. A potential advantage of the stochastic cost-benefit greedy procedure is its ability to explore a broader set of sensor placements. The more compelling reason to use the stochastic approach is its superior computational performance over the deterministic best-greedy approach while consistently producing good quality sensor placements. This is studied next. In Figure 4, we compare the performance of best-greedy and stochastic cost-benefit greedy methods over varying budget values. For each budget B and ε, we performed 500 trials. The effect of ε is apparent: smaller values close the performance gap between the stochastic and greedy algorithm. We additionally see the computational advantages of Algorithm 3.1. The computational cost of the best-greedy method increases as the budget increases, while the cost                  
+
+> 22 050 100 150 200
+> Budget
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> 70
+> 80
+> MT
+> BG
+> SG, = 0.001
+> SG, = 0.01
+> SG, = 0.1
+> 160 180 200
+> 74
+> 76
+> 78
+> 80 050 100 150 200
+> Budget
+> 500
+> 1000
+> 1500
+> 2000
+> 2500
+> 3000
+> 3500
+> MT  Evaluations
+> BG
+> SG, = 0.001
+> SG, = 0.01
+> SG, = 0.1 Performance Computational Cost
+
+Figure 4: Performance comparison of the deterministic algorithm against the stochastic algo-rithm. The solid blue line shows the performance of the deterministic greedy algorithm. The dotted, dashed and dash-dotted lines show the performance of the stochastic greedy algorithm with ε = 0 .001 , 0.01 , 0.1. The plots for the stochastic algorithms are the mean objective val-ues. The shaded regions around the curves are within two standard deviation of the mean. of the stochastic algorithm is asymptotically independent of the budget. The initial higher cost for smaller budget values is due to the presence of B in the denominator of (3.10). 
+
+5.2. Subsurface Permeability Inference Using Two Sensor Types. To illustrate our approach for nonlinear Bayesian inverse problems, we consider a model inverse problem mo-tivated by groundwater quality monitoring applications. Specifically, we consider inference of a log-permeability field in heterogeneous medium using measurements of hydraulic head pressure or solute concentration at a few observation wells. 
+
+5.2.1. Problem setup. We first describe the domain Ω of the problem. We let Ω = (0 , 1) 2
+
+and denote its left, right, top and bottom boundaries by Γ L := {0} × [0 , 1] , ΓR := {1} × 
+
+[0 , 1] , ΓT := [0 , 1] × { 1}, ΓB = [0 , 1] × { 0}, respectively. We consider the relationship between the pressure p and the log-permeability field m as described by the following elliptic PDE: 
+
+−∇ · (em∇p) = 0 in Ω ,em∇p · n = 0 on Γ T ∪ ΓB ,p = 1 on Γ L,p = 0 on Γ R.
+
+(5.3) The transport of the solute through the medium depends on the pressure and permeability field. We assume the solute is naturally present in the aquifer and reaches a steady state at the time of measurement. The solute is advected by the Darcy velocity field v(m) = −em(x)∇p,and diffused according to a known constant diffusivity coefficient of D = 0 .001. The steady-
+
+> 23
+
+state concentration c is thus governed by the steady advection-diffusion PDE: (5.4) 
+
+−∇ (D∇c) + v(m) · ∇ c = 0 in Ω ,
+
+(v(m)c − D∇c) · n = 0 on Γ T ∪ ΓB ,
+
+−D∇c · n = 0 on Γ R,c = cin (y) on Γ L.
+
+Here, solute enters the domain at the left boundary Γ L with inflow concentration cin (y) = exp( − (y−0.7) 2 
+
+> 2(0 .1) 2
+
+). A zero net flux boundary condition is imposed on the top and bottom bound-aries, Γ T ∪ΓB , so that these boundaries are impermeable. A homogeneous Neumann condition is imposed on the right boundary Γ R, which allows the solute to exit Ω via advective transport. To formulate the sensor selection problem, we fix a candidate set of locations in the domain, shown in Figure 5, and assume measurements are taken at a subset of these locations. Borehole drilling costs depend on factors such as depth, diameter, rock type, and casing type [17, 50]. Typically, boreholes used for hydraulic head measurements require smaller diameters and less expensive casing than those installed for measuring solute concentrations. Thus, the total cost of concentration measurements, including borehole drilling and subsequent laboratory testing, is generally higher than that of pressure measurements. In our setup, the cost of a concentration measurement is taken to be 1.5 times that of a pressure measurement. For practical simplicity, we assume that at most one sensor type is permitted at each can-didate location. This assumption introduces packing constraints on the feasible designs, and the resulting optimization problem does not fit directly into the framework in Section 3.3. We note, however, that greedy approaches utilizing continuous extensions have been introduced for the more general case of multiple knapsack constraints [8, 30]. In practice, the only modi-fication to the deterministic and stochastic greedy algorithms is that when a sensor is selected at a given location, both sensor types at that location are removed from the candidate set. Measurement noise for both types is modeled as additive and Gaussian with zero mean and standard deviations σp = σc = 0 .05 for pressure and concentration, respectively. This corresponds to approximately 5% of the L∞ norm of each state. The log-permeability field m is discretized on a triangular mesh with 8192 elements using piecewise linear basis functions, resulting in a coefficient vector m ∈ R4225 . We assume a Gaussian prior N (m, Γmm ). We take m ≡ 0, and define the prior covariance matrix 
+
+Γmm as the finite element discretization of the inverse squared elliptic operator A−2, where 
+
+A = γ∆ + δI , with γ = 0 .1, δ = 0 .5. To mitigate undesirable boundary effects that can arise do the use of the PDE operator, we impose Robin boundary conditions as described in [42]. A sample from this prior, as well as the corresponding pressure and concentration fields solving (5.3) and (5.4) are visualized in Figure 5. The elliptic forward problem (5.3) is solved using a mixed formulation, employing first-order Brezzi–Douglas–Fortin–Marini elements for the velocity field v and piecewise constant elements for the pressure p [10]. The steady-state transport problem (5.4) is solved using a streamline upwind Petrov–Galerkin discretization in space to stabilize the advective term [15]. Both forward problems are implemented in FEniCS [31]. 
+
+5.2.2. Computational results. We fix a total budget of B = 15 and compute the optimal designs using the stochastic cost-benefit greedy approach outlined in Algorithm 3.1. For the 
+
+> 24
+
+Figure 5: A sample log-permeability field (left) with the corresponding pressure (middle) and concentration (right). In the middle panel, white dots mark the candidate sensor locations. present nonlinear inverse problem, we follow the strategy of using the pure-BAE global linear model, as detailed in Section 4. We use N = 5 ,000 samples to compute the first and second order statistics required by the BAE approach (see Section 4.4), as this was found to produce sufficiently stable estimates empirically. We computed sensor placements using deterministic best-greedy approach (Algorithm 2.1) and the stochastic greedy method (Algorithm 3.1). For the latter, we ran the algorithm with several choices of the approximation parameter ε, with 50 independent runs per ε; see Figure 6. We observe clearly preferred sensor regions for concentration and pressure measurements, which become increasingly localized as ε decreases. In this problem, averaged over 50 runs, the stochastic-greedy runs were approximately 12 .6, 7, and 4 .5 times faster than the best greedy approach for the tested values of ε = 0 .1, 0.01 , 0.001, respectively. 
+
+BG SG ( ε = 10 −1) SG ( ε = 10 −2) SG ( ε = 10 −3)Figure 6: Visualizations of the optimal designs for the coupled transport problem. In the left figure, the blue and red squares mark the optimal pressure and concentration sensors selected using the knapsack greedy algorithm 2.1. In the remaining columns, sensor placements found using stochastic greedy with ε ∈ { 10 −1, 10 −2, 10 −3} are visualized for 50 runs. The opacity of the circles indicate how frequently each sensor is selected by the stochastic greedy method. We next perform an empirical assessment of the quality of the optimal designs obtained using stochastic greedy with the pure-BAE EIG as proxy for the exact EIG. This is particularly important in the present nonlinear setting. Specifically, as noted in Section 4.4, Ψ O 
+
+> MT
+
+is not submodular, and thus the theoretical guarantees of the deterministic and stochastic greedy algorithms no longer hold. We compute optimal sensor placements using 
+
+> 25
+
+• Algorithm 3.1 with Ψ O 
+
+> MT
+
+in (4.8) as objective function (the proposed approach); 
+
+• Algorithm 2.1 with Ψ O 
+
+> MT
+
+as the objective function; and 
+
+• Algorithm 2.1 with a nested Monte Carlo (NMC) estimator for the EIG as the objective. The quality of the computed optimal designs are compared with 100 randomly selected designs from the candidate set. To provide an unbiased assessment, for each of the computed optimal designs and the random ones, we evaluate the EIG using an NMC estimator. Before discussing the numerical results, we briefly describe our approach for computing EIG via sampling. The standard NMC estimator of the EIG is (5.5) ΨNMC (S) = 1
+
+Nout 
+
+> Nout
+
+X
+
+> i=1
+
+h
+
+log πd|m(d(i)|m(i); S) − log 
+
+ 1
+
+Nin 
+
+> Nin
+
+X
+
+> j=1
+
+log πd|m(d(i)|m(i,j ); S)
+
+i 
+
+,
+
+where {m(i), d(i)}Nout  
+
+> i=1
+
+∼ πm,d, and {m(i,j )}Nin  
+
+> j=1
+
+∼ πm for i = 1 . . . , N out . In our setting, model evaluations are expensive, and the noise level is relatively small, leading to highly concentrated likelihoods. As a result, obtaining reliable estimates using standard NMC is prohibitively costly. We use the tractable option suggested in [22] where we reuse the outer samples to estimate the evidence. To prevent the self-likelihood term πd|m(d(i)|m(i); S) from dominating the sum under concentrated likelihoods, we exclude it via a leave-one-out estimator [40]: 
+
+πd(d(i)) ≈ 1
+
+Nout − 1
+
+> Nout
+
+X 
+
+> j=1 ,j ̸=i
+
+πd|m(d(i)|m(j); S).
+
+While this variation of NMC does not ensure asymptotically unbiased estimates of the EIG, we found that it performed significantly better than standard NMC within our sample budget. A comparison of the optimal designs obtained using the greedy approaches and randomly chosen designs is shown in Figure 7 (left). Observe that all greedy designs significantly outper-form the random designs, indicating that the greedy approaches perform well in practice. For the deterministic greedy algorithm combined with the NMC estimator, we used 50 ,000 sam-ples to construct the design (distinct from those used for performance evaluation). Although the NMC-based approach yields slightly better designs, the marginal performance gain comes at a significantly higher computational cost, requiring 10 times the number of PDE solves as the error-aware Gaussian approach described in Section 4.1. Since the stochastic cost-benefit greedy algorithm produces different designs across runs, we next compare its performance against the deterministic greedy design statistically. In Figure 7 (right), we report a histogram of the relative performance gap between these designs. While the stochastic greedy approach generally underperforms deterministic greedy, the gap is typically small and it occasionally yields better designs. This indicates that the stochastic approach can produce competitive designs at a significantly lower computational cost. 
+
+6. Conclusions. We have addressed optimal placement of multi-type sensors for Bayesian linear and nonlinear inverse problems governed by PDEs. The proposed framework provides considerable flexibility: it allows sensors with different costs, fidelities, and measurement types. Our theoretical results provide a solid foundation for the proposed methods, and our numerical results indicate their effectiveness.    
+
+> 26 510 15 10 15
+
+Figure 7: Left: EIG for designs selected using Algorithm 2.1, using both the NMC and Gaussian EIG estimators (shown as white diamonds and stars, respectively). We also show the mean EIG and the 10 −90 percentile range using designs obtained from 50 runs of Algorithm 3.1 with three values of ε along with 100 randomly sampled designs. All EIG values are evaluated using an NMC estimator with 50,000 samples. Right: Histogram of the relative gap between the deterministic greedy solution and stochastic greedy solutions for different values of ε.Our computational study of the model linear inverse problem in Section 5.1, where the theoretical guarantees of the stochastic greedy algorithm apply, illustrates the considerable advantages of stochastic greedy over the deterministic best greedy algorithm. Our results also provide insight into parameter inversion and data acquisition with multi-type sensors. Further, we emphasize that the proposed stochastic cost-benefit greedy method and its analysis are of independent interest for general submodular optimization problems with knapsack constraints. For nonlinear inverse problems, we use the pure-BAE EIG as a proxy for the exact EIG. Our theoretical results provide insight into the pure-BAE global linear model and establish that the pure-BAE EIG is a lower bound on the exact EIG. The latter leads to a principled formulation of the OED problem as a knapsack-constrained binary optimization problem with pure-BAE EIG as the objective. In that case, due to the non-diagonal total error covariance matrix of the error-corrected data likelihood, submodularity is lost and the theoretical guar-antees of the greedy methods do not apply. However, our numerical results in Section 5.2 demonstrate the effectiveness of the proposed stochastic greedy approach. At a significantly reduced cost, the stochastic greedy method yields sensor placements that are competitive with those obtained by optimizing a nested Monte Carlo estimate of the exact EIG using the de-terministic best greedy method. Furthermore, sensor placements obtained using our proposed approach consistently outperform random sensor placements. We also note that while the lower bound was established assuming a Gaussian prior, the analysis can be extended to the non-Gaussian setting. The error in the EIG approximation gains an additional (non-positive) term due to the non-Gaussianity of the prior. While the pure-BAE EIG is no longer guaranteed to lower bound the exact EIG in that setting, this additional error term is design-independent and thus does not directly affect the relative ranking of sensor configurations. 
+
+> 27
+
+REFERENCES 
+
+[1] C. Aarset. Global optimality conditions for sensor placement, with extensions to binary low-rank A-optimal designs. Inverse Problems , 41(6):065013, 2025. [2] A. Alexanderian. Optimal experimental design for infinite-dimensional Bayesian inverse problems gov-erned by PDEs: A review. Inverse Problems , 37(4):043001, 2021. [3] A. Alexanderian. Computational Inverse Problems Governed by PDEs . SIAM, 2026. [4] A. Alexanderian, P. J. Gloor, and O. Ghattas. On Bayesian A-and D-optimal experimental designs in infinite dimensions. Bayesian Anal. , 11(3):671–695, 2016. [5] A. Alexanderian and S. Maio. Submodularity of the expected information gain in infinite-dimensional linear inverse problems. arXiv preprint arXiv:2602.09285 , 2026. [6] A. Alexanderian, R. Nicholson, and N. Petra. Optimal design of large-scale nonlinear Bayesian inverse problems under model uncertainty. Inverse Problems , 40(9):095001, 2024. [7] A. Alexanderian and A. K. Saibaba. Efficient D-optimal design of experiments for infinite-dimensional Bayesian linear inverse problems. SIAM J. Sci. Comput. , 40(5):A2956–A2985, 2018. [8] A. Badanidiyuru and J. Vondr´ ak. Fast algorithms for maximizing submodular functions. In Proceedings of the twenty-fifth annual ACM-SIAM symposium on Discrete algorithms , pages 1497–1514, 2014. [9] I. A. Baratta, J. P. Dean, J. S. Dokken, M. Habera, J. S. Hale, C. N. Richardson, M. E. Rognes, M. W. Scroggs, N. Sime, and G. N. Wells. DOLFINx: The next generation FEniCS problem solving environment. Preprint, 2023. [10] F. Brezzi, J. Douglas Jr, and L. D. Marini. Two families of mixed finite elements for second order elliptic problems. Numer. Math. , 47(2):217–235, 1985. [11] E. Clark, S. L. Brunton, and J. N. Kutz. Multi-fidelity sensor selection: Greedy algorithms to place cheap and expensive sensors with cost constraints. IEEE Sens. J. , 21(1):600–611, 2020. [12] T. M. Cover. Elements of Information Theory . John Wiley & Sons, 1999. [13] T. Cui, K. Koval, R. Herzog, and R. Scheichl. Subspace accelerated measure transport methods for fast and scalable sequential experimental design, with application to photoacoustic imaging. arXiv preprint arXiv:2502.20086 , 2025. [14] D.-L. Duong, T. Helin, and J. R. Rojo-Garcia. Stability estimates for the expected utility in Bayesian optimal experimental design. Inverse Problems , 39(12):125008, 2023. [15] H. C. Elman, D. J. Silvester, and A. J. Wathen. Finite Elements and Fast Iterative Solvers: With Applications in Incompressible Fluid Dynamics . Oxford university press, 2014. [16] L. C. Evans. Partial Differential Equations , volume 19. American mathematical society, 2022. [17] L. G. Everett. Monitoring Groundwater Quality: Methods and Costs . US Environmental Protection Agency, Office of Research and Development, 1976. [18] J. Go and P. Chen. Accurate, scalable, and efficient Bayesian optimal experimental design with derivative-informed neural operators. Comput. Methods Appl. Mech. Engrg. , 438:117845, 2025. [19] E. Haber, L. Horesh, and L. Tenorio. Numerical methods for experimental design of large-scale linear ill-posed inverse problems. Inverse Problems , 24(5):055012, 2008. [20] E. Herman, A. Alexanderian, and A. K. Saibaba. Randomization and reweighted ℓ1-minimization for A-optimal design of linear inverse problems. SIAM J. Sci. Comput. , 42(3):A1714–A1740, 2020. [21] X. Huan, J. Jagalur, and Y. Marzouk. Optimal experimental design: Formulations and computations. 
+
+Acta Numer. , 33:715–840, 2024. [22] X. Huan and Y. M. Marzouk. Simulation-based optimal Bayesian experimental design for nonlinear systems. J. Comput. Phys. , 232(1):288–317, 2013. [23] J. Huttunen and J. Kaipio. Approximation error analysis in nonlinear state estimation with an application to state-space identification. Inverse Problems , 23(5):2141, 2007. [24] J. Kaipio and V. Kolehmainen. Approximate marginalization over modelling errors and uncertainties in inverse problems. In Bayesian Theory and Applications . Oxford University Press, 01 2013. [25] J. Kaipio and E. Somersalo. Statistical inverse problems: discretization, model reduction and inverse crimes. Journal of computational and applied mathematics , 198(2):493–504, 2007. [26] K. Koval and R. Nicholson. Non-intrusive optimal experimental design for large-scale nonlinear Bayesian inverse problems using a Bayesian approximation error approach. J. Sci. Comput. , 104(3):98, 2025. [27] A. Krause and D. Golovin. Submodular function maximization. In L. Bordeaux, Y. Hamadi, and P. Kohli, 
+
+28 editors, Tractability: Practical Approaches to Hard Problems , pages 71–104. Cambridge University Press, 2014. [28] A. Krause and C. Guestrin. A note on the budgeted maximization of submodular functions. Technical report, Carnegie Mellon University, 2005. [29] A. Krause, A. Singh, and C. Guestrin. Near-optimal sensor placements in Gaussian processes: Theory, efficient algorithms and empirical studies. J. Mach. Learn. Res. , 9(2), 2008. [30] A. Kulik, H. Shachnai, and T. Tamir. Maximizing submodular set functions subject to multiple linear constraints. In Proceedings of the twentieth annual ACM-SIAM symposium on Discrete algorithms ,pages 545–554, 2009. [31] A. Logg, K.-A. Mardal, and G. Wells. Automated Solution of Differential Equations by the Finite Element Method: The FEniCS Book , volume 84. Springer Science & Business Media, 2012. [32] S. Lunz, A. Hauptmann, T. Tarvainen, C.-B. Schonlieb, and S. Arridge. On learned operator correction in inverse problems. SIAM J. Imaging Sci. , 14(1):92–127, 2021. [33] M. Minoux. Accelerated greedy algorithms for maximizing submodular set functions. In J. Stoer, editor, 
+
+Optimization Techniques II , volume 7 of Lecture Notes in Control and Information Sciences , pages 234–243. Springer, Berlin, Heidelberg, 1978. [34] B. Mirzasoleiman, A. Badanidiyuru, A. Karbasi, J. Vondr´ ak, and A. Krause. Lazier than lazy greedy. In 
+
+Proceedings of the AAAI Conference on Artificial Intelligence , volume 29, pages 1867–1873, 2015. [35] K. P. Murphy. Probabilistic machine learning: Advanced topics . MIT press, 2023. [36] G. L. Nemhauser, L. A. Wolsey, and M. L. Fisher. An analysis of approximations for maximizing sub-modular set functions—I. Math. Programming , 14(1):265–294, 1978. [37] R. Nicholson, N. Petra, U. Villa, and J. P. Kaipio. On global normal linear approximations for nonlinear Bayesian inverse problems. Inverse Problems , 39(5):054001, 2023. [38] R. Nicholson, R. Vuchkov, U. Villa, and N. Petra. Taylor approximation variance reduction for ap-proximation errors in PDE-constrained Bayesian inverse problems. Inverse Problems , 42(4):045020, 2026. [39] V. V. Petrov. On lower bounds for tail probabilities. J. Statist. Plann. Inference , 137(8):2703–2705, 2007. [40] B. Poole, S. Ozair, A. Van Den Oord, A. Alemi, and G. Tucker. On variational bounds of mutual information. In International conference on machine learning , pages 5171–5180. PMLR, 2019. [41] G. Ramon, G. Sarnoski, V. Tumuluri, H. D´ ıaz, and A. K. Saibaba. Multifidelity sensor placement in Bayesian state estimation problems, 2026. arXiv:2602.07269. [42] L. Roininen, J. M. Huttunen, and S. Lasanen. Whittle-Mat´ ern priors for Bayesian statistical inversion with applications in electrical impedance tomography. Inverse Probl. Imaging , 8(2), 2014. [43] K. J. Ryan. Estimating expected information gains for experimental designs with application to the random fatigue-limit model. J. Comput. Graph. Statist. , 12(3):585–603, 2003. [44] M. Shamaiah, S. Banerjee, and H. Vikalo. Greedy sensor selection: Leveraging submodularity. In 49th IEEE Conference on Decision and Control (CDC) , pages 2572–2577, Atlanta, GA, USA, 2010. [45] C. M. Stein. Estimation of the mean of a multivariate normal distribution. The Annals of Statistics ,9(6):1135–1151, 1981. [46] A. Stuart. Inverse problems: a Bayesian perspective. Acta Numer. , 19:451–559, 2010. [47] M. Sviridenko. A note on maximizing a submodular set function subject to a knapsack constraint. Oper. Res. Lett. , 32(1):41–43, Jan. 2004. [48] R. Thibaut, N. Compaire, N. Lesparre, M. Ramgraber, E. Laloy, and T. Hermans. Comparing well and geophysical data for temperature monitoring within a Bayesian experimental design framework. 
+
+Water Resour. Res. , 58(11):e2022WR033045, 2022. [49] D. Uci´ nski. Optimal Measurement Methods for Distributed Parameter System Identification . CRC Press, Boca Raton, 2005. [50] United States Environmental Protection Agency. Ambient ground water quality monitoring cost analy-sis. Technical Report EPA 816-R-97-013, Office of Water, United States Environmental Protection Agency, Washington, DC, Oct. 1997. [51] U. Villa, N. Petra, and O. Ghattas. hippylib: An extensible software framework for large-scale inverse problems. J. Open Source Softw. , 3(30), 2018. [52] K. Wu, P. Chen, and O. Ghattas. A fast and scalable computational framework for large-scale high-dimensional Bayesian optimal experimental design. SIAM/ASA J. Uncertain. Quantif. , 11(1):235– 
+
+29 261, 2023. [53] K. Wu, T. O’Leary-Roseberry, P. Chen, and O. Ghattas. Large-scale Bayesian optimal experimental design with derivative-informed projected neural network. J. Sci. Comput. , 95(1), 2023. 
+
+Appendix A. Stochastic Cost-Benefit Greedy Auxiliary Results. 
+
+The following results are used in the analysis of Algorithm 3.1. 
+
+Lemma A.1 (Intersection Probability). Suppose that the conditions of Lemma 3.2 hold. Let 
+
+F denote the event that R ∩ (S∗\S)̸ = ∅, where S∗ is a solution to (2.9) . Then, 
+
+(A.1) P(R ∈ F ) ≥ (1 − ε) c(S∗\S)
+
+B .
+
+Proof. First, observe that 
+
+P(F c) = 
+
+
+
+1 − c(S∗\S)
+
+c(V \S)
+
+T
+
+≤ exp 
+
+
+
+− T c (S∗\S)
+
+c(V \S)
+
+
+
+≤ exp 
+
+
+
+− T c (S∗\S)
+
+c(V )
+
+
+
+.
+
+Using the fact that 1 −e−x is concave, and letting x1 = 0 , x 2 = T B/c (V ), and λ = c(S∗\S)/B ,
+
+P(F ) = 1 − P(F c) ≥ 1 − exp 
+
+
+
+− T c (S∗\S)
+
+c(V )
+
+
+
+≥ (1 − λ)(1 − e−x1 )= c(S∗\S)
+
+B
+
+
+
+1 − exp 
+
+
+
+− T B c(V )
+
+ 
+
+= (1 − ε) c(S∗\S)
+
+B .
+
+Lemma A.2 (Selecting a Remaining Optimal Sensor). Suppose the conditions of Lemma 3.2 hold. Again, denote by F the event that R ∩ (S∗\S)̸ = ∅. Suppose we uniformly sample a sensor a ∈ R ∩ (S∗\S), and denote this random variable by A. Then for a ∈ S∗\S,
+
+PA = a : R ∩ (S∗\S)̸ = ∅ = c(a)/c (S∗\S).
+
+Proof. Assume that k := |R ∩ (S∗\S)|. We will show that this does not depend on k. For 
+
+a ∈ S∗\S, the probability that a appears j ≤ k times in R ∩ (S∗\S) is distributed according to a binomial distribution with parameters k and p = c(a)/c (S∗\S). Thus, the probability that a appears j times is  kj
+
+pj (1 − p)k−j . Also, if a appears j times then the probability of uniformly sampling it from R ∩ (S∗\S) is j/k . By summing up over j we get (A.2) 
+
+PA = a : |R ∩ (S∗\S)| = k =
+
+> k
+
+X
+
+> j=0
+
+jk
+
+kj
+
+
+
+pj (1 − p)k−j
+
+= 1
+
+k
+
+> k
+
+X
+
+> j=0
+
+j
+
+kj
+
+
+
+pj (1 − p)k−j = 1
+
+k (kp ) = p. 
+
+Because this does not depend on k, it then follows that P(A = a) = c(a)/c (S∗\S).
