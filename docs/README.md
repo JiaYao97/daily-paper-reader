@@ -6,77 +6,61 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-11
-- 运行时间：2026-07-11 21:40:55 UTC
+- 最新运行日期：2026-07-12
+- 运行时间：2026-07-12 21:27:53 UTC
 - 运行状态：成功
-- 本次总论文数：19
-- 精读区：8
-- 速读区：11
+- 本次总论文数：13
+- 精读区：1
+- 速读区：12
 
 ### 今日简报（AI）
-今日共推荐19篇论文，精读2篇高分（均为9.0/10），速读11篇。最值得关注的方向是“时间不变神经算子求解时变PDE”与“物理信息神经网络学习瑞利-泰勒湍流闭合模型”。建议优先精读这两篇高分论文，了解神经算子与物理约束结合解决复杂流体动力学问题的最新进展。
-- 详情：[/202607/11/README](/202607/11/README)
+今日精读1篇、速读12篇，涵盖13篇论文，重点聚焦偏微分方程神经算子学习与压缩感知新进展。  
+最值得关注的方向是：PDEFlow实现无需求解器的自主化偏微分方程管道，以及固定读出预算下的二维傅里叶压缩感知。  
+建议优先精读《PDEFlow》，探索其自动化管道如何简化神经算子训练与推理，再辅以压缩感知方法优化数据采集。
+- 详情：[/202607/12/README](/202607/12/README)
 
 ### 精读区论文标签
-1. [Time-Invariant Neural Operators with Applications in Solving Time-Dependent PDEs](/202607/11/2607.06188v1-time-invariant-neural-operators-with-applications-in-solving-time-dependent-pdes)  
-   标签：评分：9.0/10、query:flow-pred
-   evidence：用于流体动力学的神经算子
-2. [Learning Turbulence Closures with Physics-Informed Neural Networks for the Rayleigh-Taylor Transition to Turbulence](/202607/11/2607.07020v1-learning-turbulence-closures-with-physics-informed-neural-networks-for-the-rayleigh-taylor-transition-to-turbulence)  
-   标签：评分：9.0/10、query:flow-pred
-   evidence：物理信息神经网络用于瑞利-泰勒转换湍流闭合建模
-3. [Inverse Low-Dimensional Manifold Reconstruction Framework for Spatiotemporal Reconstruction of Compressible Physical Fields](/202607/11/2607.07084v1-inverse-low-dimensional-manifold-reconstruction-framework-for-spatiotemporal-reconstruction-of-compressible-physical-fields)  
-   标签：评分：9.0/10、query:flow-pred
-   evidence：可压缩物理场的逆低维流形重建
-4. [LLT: Local Linear Transformer for PDE Operator Learning](/202607/11/2607.07718v1-llt-local-linear-transformer-for-pde-operator-learning)  
-   标签：评分：9.0/10、query:flow-pred
-   evidence：局部线性Transformer用于PDE算子学习；直接与神经算子相关
-5. [MeGA-MP: Metric Graph Advection Message Passing -- A Physics-Informed Message Passing Operator for Advection-Dominated Metric Graphs](/202607/11/2607.05167v1-mega-mp-metric-graph-advection-message-passing----a-physics-informed-message-passing-operator-for-advection-dominated-metric-graphs)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：用于度量图上对流问题的物理信息消息传递算子
-6. [Learning Stable Controlled Dynamical Systems via Input-Contraction Neural Differential Models](/202607/11/2607.05718v1-learning-stable-controlled-dynamical-systems-via-input-contraction-neural-differential-models)  
-   标签：评分：8.0/10、query:pc-latent
-   evidence：学习带外部输入的稳定潜在动力学；匹配潜在动力学和物理约束学习
-7. [Physics-guided spatiotemporal neural models for fuel density prediction](/202607/11/2607.06999v1-physics-guided-spatiotemporal-neural-models-for-fuel-density-prediction)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：使用神经算子和物理约束的时空燃料密度预测
-8. [Physics-informed neural networks for shock capturing in inviscid flows around an airfoil](/202607/11/2607.08130v1-physics-informed-neural-networks-for-shock-capturing-in-inviscid-flows-around-an-airfoil)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：PINN用于翼型无粘流激波捕获
+1. [PDEFlow: Autonomous Agentic PDE Pipelines for Neural Operator Learning and Solver-Free Inference](/202607/12/2607.05134v1-pdeflow-autonomous-agentic-pde-pipelines-for-neural-operator-learning-and-solver-free-inference)  
+   标签：评分：10.0/10、query:flow-pred
+   evidence：神经算子学习用于偏微分方程
 
 ### 速读区论文标签
-1. [PGD-NO: A Neural Operator with Precomputed Geometry Decomposition for 3D Million-scale Physics Simulations](/202607/11/2607.08025v1-pgd-no-a-neural-operator-with-precomputed-geometry-decomposition-for-3d-million-scale-physics-simulations)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：用于物理模拟（包括流体动力学）的神经算子
-2. [PhyRes-MDNF: Physics-Coupled Residual GNN Correction for Multilevel Discrete Neural Field Inversion](/202607/11/2607.06237v1-phyres-mdnf-physics-coupled-residual-gnn-correction-for-multilevel-discrete-neural-field-inversion)  
+1. [Two-dimensional Fourier compressed sensing under a fixed readout budget per channel](/202607/12/2607.03611v1-two-dimensional-fourier-compressed-sensing-under-a-fixed-readout-budget-per-channel)  
+   标签：评分：7.0/10、query:flow-pred
+   evidence：压缩感知用于稀疏信号重建
+2. [LRX-PINN: A Layer-Resolving XNet Physics-Informed Neural Network with Integrated Cauchy Activations for Convection-Dominated Problems](/202607/12/2607.03682v1-lrx-pinn-a-layer-resolving-xnet-physics-informed-neural-network-with-integrated-cauchy-activations-for-convection-dominated-problems)  
+   标签：评分：7.0/10、query:flow-pred
+   evidence：用于对流主导问题的层解析PINN
+3. [Constrained Flow Matching via Lagrangian Dual Flows](/202607/12/2607.04513v1-constrained-flow-matching-via-lagrangian-dual-flows)  
    标签：评分：7.0/10、query:pc-latent
-   evidence：物理耦合残差图神经网络用于多级离散神经场反演
-3. [Skin friction prediction for attached flows based on two-dimensional inviscid solutions](/202607/11/2607.07246v1-skin-friction-prediction-for-attached-flows-based-on-two-dimensional-inviscid-solutions)  
+   evidence：约束流匹配与拉格朗日对偶动力学，可应用于物理约束的潜在空间学习
+4. [Metagraph-Based Domain-Decomposed Galerkin Reduced-Order Model](/202607/12/2607.06011v1-metagraph-based-domain-decomposed-galerkin-reduced-order-model)  
    标签：评分：7.0/10、query:flow-pred
-   evidence：基于欧拉方程数据和符号回归的壁面摩擦预测
-4. [JAX-FVM: A differentiable, entropy-stable finite volume solver on unstructured meshes for compressible flows](/202607/11/2607.07385v1-jax-fvm-a-differentiable-entropy-stable-finite-volume-solver-on-unstructured-meshes-for-compressible-flows)  
+   evidence：基于域分解的流场降阶模型
+5. [PhyRes-MDNF: Physics-Coupled Residual GNN Correction for Multilevel Discrete Neural Field Inversion](/202607/12/2607.06237v1-phyres-mdnf-physics-coupled-residual-gnn-correction-for-multilevel-discrete-neural-field-inversion)  
+   标签：评分：7.0/10、query:pc-latent
+   evidence：物理耦合神经场反演，多级潜在表示
+6. [Scaling WaterLily.jl with MPI and an improved geometric multigrid solver](/202607/12/2607.07687v1-scaling-waterlilyjl-with-mpi-and-an-improved-geometric-multigrid-solver)  
    标签：评分：7.0/10、query:flow-pred
-   evidence：流场预测方法，可微分的可压缩流有限体积求解器
-5. [Learning the Energy Landscapes of Dynamical Systems via Energetic Variational Optimal Transport under Data Quantity--Quality Trade-offs](/202607/11/2607.07919v1-learning-the-energy-landscapes-of-dynamical-systems-via-energetic-variational-optimal-transport-under-data-quantity--quality-trade-offs)  
+   evidence：不可压缩流求解器支持大规模CFD
+7. [Scaling WaterLily.jl with MPI and an improved geometric multigrid solver](/202607/12/2607.07687v2-scaling-waterlilyjl-with-mpi-and-an-improved-geometric-multigrid-solver)  
    标签：评分：7.0/10、query:flow-pred
-   evidence：通过能量变分最优传输学习动力系统能量景观，属于流场预测方法
-6. [Cluster-Weighted Training of Deep Surrogate Models for Subgrid Turbulent Transport](/202607/11/2607.07925v1-cluster-weighted-training-of-deep-surrogate-models-for-subgrid-turbulent-transport)  
+   evidence：不可压缩流求解器支持大规模CFD
+8. [Physics-informed neural networks for shock capturing in inviscid flows around an airfoil](/202607/12/2607.08130v1-physics-informed-neural-networks-for-shock-capturing-in-inviscid-flows-around-an-airfoil)  
    标签：评分：7.0/10、query:flow-pred
-   evidence：用于亚网格湍流输运预测的深度代理模型
-7. [Multi-type Sensor Placement for PDE-based Bayesian Inverse Problems](/202607/11/2607.08074v1-multi-type-sensor-placement-for-pde-based-bayesian-inverse-problems)  
-   标签：评分：7.0/10、query:flow-pred
-   evidence：最优传感器放置用于反问题；可应用于稀疏传感器流场重建
-8. [Kernel-based learning of manifold-to-manifold maps from scattered data](/202607/11/2607.02789v1-kernel-based-learning-of-manifold-to-manifold-maps-from-scattered-data)  
+   evidence：用于无黏流激波捕获的PINN
+9. [Latent Memory Palace: Reasoning for Control as Autoregressive Variational Inference](/202607/12/2607.08724v1-latent-memory-palace-reasoning-for-control-as-autoregressive-variational-inference)  
+   标签：评分：7.0/10、query:pc-latent
+   evidence：用于推理和控制的自主回归潜在空间，涉及潜在动力学
+10. [PhysMiner: An Agentic AI Framework for Discovering Turbulence Physics](/202607/12/2607.04009v1-physminer-an-agentic-ai-framework-for-discovering-turbulence-physics)  
    标签：评分：6.0/10、query:flow-pred
-   evidence：基于核的散乱数据学习，用于重建流形到流形映射
-9. [Accelerated iterative method for solving the steady-state Boltzmann equation](/202607/11/2607.03910v1-accelerated-iterative-method-for-solving-the-steady-state-boltzmann-equation)  
+   evidence：数据驱动的湍流物理发现
+11. [BubbleSH: A Dataset of Rising Bubbles with Deformable Interfaces](/202607/12/2607.07275v1-bubblesh-a-dataset-of-rising-bubbles-with-deformable-interfaces)  
    标签：评分：6.0/10、query:flow-pred
-   evidence：加速迭代法求解稳态玻尔兹曼方程，属于流场预测方法
-10. [Automated Derivation of Lattice Boltzmann Schemes for Systems of Conservation Laws](/202607/11/2607.05668v1-automated-derivation-of-lattice-boltzmann-schemes-for-systems-of-conservation-laws)  
-   标签：评分：6.0/10、query:flow-pred
-   evidence：守恒律系统格子Boltzmann方案的自动推导，属于流场预测方法
-11. [Statistical inverse learning and $\ell^1$-regularization](/202607/11/2607.07468v1-statistical-inverse-learning-and-ell1-regularization)  
-   标签：评分：6.0/10、query:flow-pred
-   evidence：稀疏恢复与重建
+   evidence：气泡流数据集，可用于数据驱动流场建模
+12. [Progression as Latent Drift: Generative Forecasting of Slow-Evolving Pathologies](/202607/12/2607.08270v1-progression-as-latent-drift-generative-forecasting-of-slow-evolving-pathologies)  
+   标签：评分：6.0/10、query:pc-latent
+   evidence：用于时间进展预测的潜在漂移模型
 
 
 <div class="dpr-home-promo-card">

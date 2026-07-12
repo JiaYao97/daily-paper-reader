@@ -1,0 +1,2026 @@
+Title: Metagraph-Based Domain-Decomposed Galerkin Reduced-Order Model
+
+URL Source: https://arxiv.org/pdf/2607.06011v1
+
+Published Time: Wed, 08 Jul 2026 00:43:30 GMT
+
+Number of Pages: 41
+
+Markdown Content:
+# Metagraph-Based Domain-Decomposed Galerkin Reduced-Order Model 
+
+Kyohei Shintate a, Naoki Morita b, Shigeki Kaneko c, Nozomi Magome a, Naoto Mitsume b, ∗
+
+> aUniversity of Tsukuba, Degree Programs in Systems and Information Engineering, Tennodai 1-1-1, Tsukuba, 3058573, Ibaraki, Japan
+> bUniversity of Tsukuba, Institute of Systems and Information Engineering, Tennodai 1-1-1, Tsukuba, 3058573, Ibaraki, Japan
+> cGraduate School of Engineering, Nagoya Institute of Technology, Gokishocho, Showa-ku, Nagoya, 4660061, Aichi, Japan
+
+Abstract 
+
+This study proposes a metagraph-based domain-decomposed Galerkin reduced-order model (MBDD-G-ROM) for distributed-memory parallel reduced-order analysis of large-scale problems. The method provides a graph-based representation of domain-decomposed Galerkin reduced-order models defined over arbitrary domain decompositions. Calculation-point graphs describe interactions among calculation points, whereas metagraphs describe connectivity among local approximation-space subdomains. In the proper orthogonal decomposition (POD)-based implementation considered in this study, these local subdomains correspond to POD computation subdomains, where local POD bases are constructed. In the resulting metagraph, POD computation subdomains are treated as metanodes, and metaedges encode the block-sparsity pattern induced by overlaps between the supports of local POD basis functions. Based on this representation, a two-level graph-based domain-partitioning strategy decouples the POD computation subdomains from the parallel computation subdomains. This decoupling enables distributed-memory parallelization of the o ffl ine and online phases, including reduced-system assembly and the linear solver, without imposing a one-to-one correspondence between the two subdomain types in number or geometry. The metagraph structure also provides a natural way to incorporate static load balancing through metanode weights representing estimated computational costs. The method is verified using an unsteady di ff usion equation and the incompressible Navier–Stokes equations for flow around a three-dimensional cylinder; these tests assess accuracy degradation caused by model reduction and strong-scaling behavior. Numerical results show that the method maintains solution accuracy while achieving high parallel e ffi ciency in the online phase. The static load-balancing test shows that metanode weights based on estimated computational costs improve computational e ffi ciency in the tested case. 
+
+Keywords: 
+
+Parallel Computing, Domain Decomposition, Graph Structure, Reduced-Order Modeling, Proper Orthogonal Decomposition 
+
+1. Introduction 
+
+Parametric studies play an important role in many engineering applications, where analyses are repeatedly per-formed for di ff erent values of the parameters defining the governing partial di ff erential equation model. However, repeated simulations using full-order models (FOMs) entail substantial computational costs and are therefore often impractical. At the same time, because the target systems in such studies often share similar geometries and physical conditions across parameter instances, previously obtained simulation data can potentially be exploited to improve computational e ffi ciency. Recently, reduced-order models (ROMs) [1–3] have been studied extensively as fast sur-rogate models for FOMs. Among them, Galerkin reduced-order models (G-ROMs), which compute approximate solutions by projecting the governing equations onto a low-dimensional approximation space, either a linear subspace or a nonlinear manifold, have attracted considerable attention owing to their favorable balance between computational  
+
+> ∗Corresponding author. Email: mitsume@kz.tsukuba.ac.jp; Telephone: +81-29-853-5268 arXiv:2607.06011v1 [math.NA] 7 Jul 2026
+
+accuracy and e ffi ciency. Approaches to defining the low-dimensional approximation spaces used in G-ROMs can be broadly divided into two classes. The first class employs prescribed linear subspaces, as exemplified by spectral meth-ods [4], including spaces spanned by eigenmodes [5] or trigonometric basis functions [6, 7]. In this class of methods, the linear subspace is often chosen as the span of analytically defined functions, and such methods have been applied mainly to steady problems and problems with relatively simple geometries. The second class consists of data-driven methods that construct a low-dimensional approximation space from FOM snapshots so as to represent the snapshot data as accurately as possible. These data-driven approaches can be further categorized according to the form of the resulting approximation space into (A) linear-subspace-based approaches [8, 9] and (B) nonlinear-manifold-based ap-proaches [10–14]. In linear-subspace-based approaches, data-driven dimensionality-reduction techniques are applied to snapshot data to identify a basis spanning a linear subspace, and the solution field is approximated as a linear combination of the resulting basis vectors. This framework can achieve good accuracy even for problems involving complex geometries and solution fields. Representative methods include snapshot proper orthogonal decomposition (snapshot POD) [8] and balanced POD [9]. Representative examples of nonlinear-manifold-based approaches in-clude machine-learning models such as autoencoders [13, 14]. These approaches are well suited to capturing strong nonlinearities and localized structures that are di ffi cult to represent using linear subspaces. However, for problems with relatively weak nonlinearity, they can incur higher computational costs than linear-subspace-based approaches. Such data-driven G-ROMs are generally organized into two stages: an o ffl ine phase and an online phase. In the of-fline phase, FOM simulations are performed for selected parameter samples, and a low-dimensional approximation space is constructed from the resulting snapshots. In the online phase, the governing equations are projected onto the identified low-dimensional approximation space, typically by Galerkin projection, thereby substantially reducing the number of unknowns and enabling fast computation. For example, the POD-Galerkin method [3], which combines snapshot POD [8] with Galerkin projection, has been applied to a wide range of engineering problems, including shape optimization [15, 16], control [17, 18], real-time analysis [19, 20], fluid dynamics [21–32], and structural mechanics [33–35]. As discussed above, data-driven ROMs can substantially accelerate simulations and reduce the number of un-knowns. However, memory requirements remain a major challenge in both the o ffl ine and online phases when the underlying FOM discretization involves an extremely large number of degrees of freedom (DOFs), as in direct numeri-cal simulations of high-Reynolds-number flows. For such complex problems, constructing a G-ROM requires training data generated by large-scale FOM simulations. These training data consist of full-order solution vectors. Moreover, the basis or mapping that defines the low-dimensional approximation space also contains quantities whose size scales with the number of full-order DOFs. Consequently, storing, communicating, and manipulating the data needed to connect the full-order and reduced representations can become a critical bottleneck. An e ff ective way to address these issues is to use parallel computing on distributed-memory systems. A representative approach is domain decomposi-tion [36–39], in which the cells or finite elements of the target domain are geometrically partitioned to distribute the data required for the analysis and balance the computational load. Domain decomposition methods are widely used in numerical analysis and computational mechanics, particularly in finite element methods. For POD-based G-ROMs, several studies have reported distributed-memory parallel computations using domain decomposition for the singular value decomposition (SVD) in the o ffl ine phase [22–25]. However, to the best of the authors’ knowledge, a POD-based G-ROM framework with distributed-memory parallelization of the entire online phase, from the assembly of the reduced system of linear equations to its solution by a linear solver, has not yet been reported. If the linear solver is not parallelized, the cost of solving the reduced linear system becomes non-negligible as the reduced dimension increases, leading to a loss of computational e ffi ciency. This issue is particularly relevant for advection-dominated problems [28] and turbulent-flow problems [27], which tend to require a large reduced dimension [40]. Furthermore, in G-ROMs that use a global low-dimensional approximation space constructed over the entire computational domain, the reduced coe ffi cient matrix is generally dense. Consequently, even if domain decomposition is applied to paral-lelize the reduced system of linear equations, interprocess communication tends to dominate the computation, which can lead to degraded parallel e ffi ciency. A di ff erent use of domain decomposition has also been proposed in the form of domain-decomposed Galerkin reduced-order models (DD-G-ROMs), where the decomposition is used not primarily for distributed-memory parallel computing but to construct local low-dimensional approximation spaces in individual subdomains. In DD-G-ROMs, local low-dimensional approximation spaces are constructed independently from FOM data restricted to each subdo-main. For problems with spatially localized features, this construction has the advantage that local phenomena can 2often be represented in each subdomain using a relatively small number of local basis vectors. Owing to this property, DD-G-ROMs have been increasingly applied to problems involving the evolution of localized physical phenomena, such as shock waves [29] and crack propagation [33, 41], systems with repetitive geometrical components, as in component-based ROMs [42–48], and multiphysics problems [49, 50]. However, even with DD-G-ROMs, the online phase can remain computationally demanding for complex phenomena. Many existing studies do not parallelize the entire online phase and instead limit parallelization to the o ffl ine phase. Although combinations of DD-G-ROMs with techniques such as the overlapping Schwarz method [44], the Schur complement method [51], and the Lagrange multiplier method [52, 53] suggest the potential for online-phase parallelization, the parallel e ffi ciency achieved in practical computations has not yet been reported. Moreover, these approaches are designed under the assumption that the domain decomposition used to construct local low-dimensional approximation spaces coincides with that used for parallel computing. Under this assumption, increasing the number of local approximation-space subdomains requires access to high-performance computing resources capable of handling a correspondingly large number of parallel pro-cesses. In addition, when the required reduced dimension varies among subdomains, the computational load can become imbalanced across parallel processes, potentially degrading the parallel e ffi ciency. Against this background, this study aims to provide a general framework for alleviating memory constraints in large-scale DD-G-ROM analyses through distributed-memory parallelization of both the o ffl ine and online phases, while maintaining high parallel e ffi ciency. To this end, we propose a metagraph-based domain-decomposed Galerkin reduced-order model (MBDD-G-ROM). The proposed framework introduces a novel graph-based representation of DD-G-ROMs and enables the subdomains used to construct local low-dimensional approximation spaces, referred to here as local approximation-space subdomains, to be specified flexibly and independently of the subdomains used for parallel computation. We first propose a method for constructing graph representations corresponding to the discretization structures of the finite element node set and the local approximation-space subdomains. This graph-based formulation provides a general description of DD-G-ROMs for arbitrary domain decompositions. On this basis, we introduce a two-level graph-based domain-partitioning strategy that enables the local approximation-space subdomains to be specified independently of the subdomains used for distributed-memory parallelization. Specifically, as illustrated in Fig. 1, the finite element graph is first partitioned to define the local approximation-space subdomains. A graph representing the connectivity among these subdomains, referred to as the metagraph, is then constructed and partitioned again to define the subdomains for distributed-memory parallelization. In addition, by extending an overlapping domain-decomposition-based parallel computing method for finite element analyses [54], we propose a parallel computing method for dense block matrices that represent the interactions among the local approximation-space subdomains. In this study, we adopt Local POD [21], in which low-dimensional approximation spaces are constructed by applying POD separately in each subdomain. Nevertheless, the proposed framework can be extended to other methods for constructing low-dimensional approximation spaces. The remainder of this paper is organized as follows. Section 2 describes the construction of ROMs based on snapshot POD. Section 3 introduces the graph structures associated with DD-G-ROMs, which form an essential foun-dation of the proposed method, and presents a formulation applicable to arbitrary domain decompositions. Section 4 introduces the concept of a metagraph based on these graph structures and proposes a method for model reduction and parallel computing based on a hierarchical graph structure. An example of load balancing based on weighted graphs is then presented. Section 5 presents applications of the proposed method to an unsteady di ff usion equation and the incompressible Navier–Stokes equations, and evaluates both ROM accuracy, including a quantitative assessment of the accuracy degradation caused by reduced-order modeling, and parallel computing performance. 
+
+2. Snapshot POD-Based Galerkin Reduced-Order Model (ROM) 
+
+This section describes Galerkin reduced-order models (G-ROMs), which compute solutions by projecting the governing equations onto a low-dimensional approximation space (a linear subspace or a nonlinear manifold), and the POD-Galerkin method, which is a G-ROM in which such a low-dimensional approximation space is constructed using proper orthogonal decomposition (POD). 
+
+2.1. Full-Order Model 
+
+This study considers partial di ff erential equations that are first order in time. The spatial discretization is per-formed using the finite element method, and the temporal discretization is performed using an implicit time-integration 32nd mode 3rd mode                               
+
+> 2nd mode 3rd mode
+> 2nd mode 3rd mode
+> 1st mode 2nd mode 3rd mode
+> 1st mode 2nd mode 3rd mode
+> 2nd mode 3rd mode
+> 2nd mode 3rd mode
+> 2nd mode 3rd mode
+> 1st mode 2nd mode 3rd mode
+> 1st mode 2nd mode 3rd mode
+> Distributed memory
+> computer
+> 2nd mode 3rd mode
+> 2nd mode 3rd mode
+> 2nd mode 3rd mode
+> 1st mode 2nd mode 3rd mode
+> 1st mode 2nd mode 3rd mode
+> 2nd mode 3rd mode
+> 2nd mode 3rd mode
+> 2nd mode 3rd mode
+> 1st mode 2nd mode 3rd mode 1st mode 2nd mode 3rd mode
+> 2nd mode 3rd mode
+> 2nd mode 3rd mode
+> 2nd mode 3rd mode
+> 1st mode 2nd mode 3rd mode 1st mode 2nd mode 3rd mode
+> Parallel computation
+> subdomains
+> low -dimensional
+> approximation spaces
+> local approximation -space
+> subdomains
+
+Figure 1: Schematic overview of the proposed method. 
+
+scheme. The unknown vector ut+∆ t at time t + ∆ t is determined by requiring the following weak residual equation to hold for any admissible test vector w:
+
+wT  M ˙ut+∆ t + f int 
+
+ ut+∆ t
+
+ − f ext (t + ∆ t) = 0. (1) Here, ∆t denotes the time-step size, M ∈ Rd n FOM ×d n FOM is the mass matrix, ut ∈ Rd n FOM is the unknown vector at time 
+
+t, ˙ ut is the time derivative of ut, nFOM is the number of nodes in the finite element discretization, and d is the number of degrees of freedom per node. When an implicit time-integration scheme is adopted for the temporal discretization, the relation between ut and ˙ ut is determined by the selected implicit time-integration scheme, such as the implicit Euler method or the generalized-α method [55]. In any of these schemes, however, the problem is reduced to solving Eq. (1) at each time step. Furthermore, f int (ut) ∈ Rd n FOM is the internal force vector, f ext (t) ∈ Rd n FOM is the external force vector acting at time t, and w ∈ Rd n FOM is a vector derived from the test function. Although this study focuses on systems with a constant number of degrees of freedom per node, the formulation can be extended to systems in which the number of nodal degrees of freedom varies spatially, such as multiphysics problems represented by fluid–structure interaction, where the structural nodes have three degrees of freedom and the fluid nodes have four. The nonlinear equation (1) is solved by Newton–Raphson iteration. For the unknown vector ut+∆ t, the residual vector r ∈ Rd n FOM and the Jacobian matrix J ∈ Rd n FOM ×d n FOM are defined as 
+
+r(uit+∆ t) : = M ˙uit+∆ t + f int 
+
+ uit+∆ t
+
+ − f ext (t + ∆ t), J(uit+∆ t) : = ∂r(u)
+
+∂u u=uit+∆ t
+
+, (2) and the Newton–Raphson iteration is given by 
+
+wT J(uit+∆ t) ∆uit+∆ t = −wT r(uit+∆ t), (3) 
+
+ui+1
+
+t+∆ t = uit+∆ t + ∆ uit+∆ t. (4) Here, i denotes the iteration index in the Newton–Raphson method. For a linear problem in which f int 
+
+ ut
+
+ = Ku t,it is su ffi cient to solve the system of linear equations obtained at each time step only once, without applying the Newton–Raphson method. Here, K ∈ Rd n FOM ×d n FOM is the coe ffi cient matrix in this linear representation. 
+
+2.2. Galerkin ROM 
+
+To express the high-dimensional unknown vector u ∈ Rd n FOM in terms of the k-dimensional reduced coordinates 
+
+q ∈ Rk, with k ≪ d n FOM , we introduce a linear mapping Φ ∈ Rd n FOM ×k and approximate the unknown vector as follows: 
+
+uit ≈ Φqit. (5) The approximation in Eq. (5) is used in combination with the Galerkin method, and the test vector is approximated as 
+
+w ≈ Φ ˜w, (6) 4where ˜w ∈ Rk is an arbitrary vector. Using the approximations in Eqs. (5) and (6), Eqs. (3) and (4) are reduced to ˜wT ˜J(qit+∆ t) ∆qit+∆ t = − ˜wT ˜r(qit+∆ t), (7) 
+
+qi+1 
+
+> t+∆ t
+
+= qit+∆ t + ∆ qit+∆ t, (8) where ˜ J(q) : = ΦT J(Φq)Φ and ˜ r(q) : = ΦT r(Φq). In Eqs. (7) and (8), the unknown vector is ∆q ∈ Rk. Thus, the dimension of the system is reduced from d n FOM to k, enabling fast solution. Alternatively, nonlinear-manifold ROMs introduce a nonlinear mapping Γ : Rk → Rd n FOM and approximate the unknown vector u(t) as u(t) ≈ Γ q(t) to reduce the governing equations. Recent studies have actively investigated approaches based on quadratic manifolds [10–12] and autoencoders [13, 14]. However, because the primary objective of this study is to propose a new parallel analysis framework based on domain decomposition and metagraphs, we adopt the linear-subspace construction method based on POD, introduced in Section 2.3, for simplicity of discussion and ease of verification. 
+
+2.3. POD-Galerkin Method 
+
+In this study, we construct and solve ROMs using the POD-Galerkin method based on Eqs. (5) and (6), where the basis is extracted in a data-driven manner using snapshot POD. First, the snapshot matrix S ∈ Rd n FOM ×nsnap is formed from nsnap snapshot data vectors d(i) ∈ Rd n FOM (i =
+
+1, 2, . . . , nsnap ) as follows: 
+
+S = hd(1) , d(2) , . . . , d(nsnap )
+
+i . (9) We then consider obtaining nPOD basis vectors Φi ∈ Rd n FOM (i = 1, 2, . . . , nPOD ) that represent the features of the snapshot matrix S. POD determines the basis of the subspace that minimizes the error between each snapshot and its orthogonal projection onto the subspace, as follows: 
+
+{Φi}nPOD  
+
+> i=1
+
+= arg min  
+
+> gi(i=1,2,..., nPOD )
+> nsnap
+
+X
+
+> j=1
+
+d( j) −
+
+> nPOD
+
+X
+
+> l=1
+
+gl gT 
+
+> l
+
+d( j)
+
+> 2
+
+, (10) with GTG = I, G = [g1, g2, . . . , gnPOD ] ∈ Rd n FOM ×nPOD .
+
+The singular value decomposition of the snapshot matrix S is written as 
+
+S = ˆΦΣWT. (11) In Eq. (11), each column of ˆ Φ = [Φ1, Φ2, . . . , Φr] ∈ Rd n FOM ×r (r = rank S) is a left singular vector, and Σ = diag( σi) ∈
+
+Rr×r (i = 1, 2, . . . , r) is a matrix whose diagonal entries are the singular values σi. The quantity σi denotes the ith singular value, and the singular values are nonnegative and ordered in descending magnitude with respect to the index 
+
+i. Each column of W = [w1, w2, . . . , wr] ∈ Rnsnap ×r is a right singular vector. The first nPOD columns of ˆ Φ corresponding to the largest singular values are selected to obtain the POD basis Φ = Φ1, Φ2, . . . , ΦnPOD 
+
+ ∈ Rd n FOM ×nPOD . Because the singular value σi indicates the contribution of the ith basis vector, the number of basis vectors nPOD is determined using an appropriate threshold εPOD so as to satisfy 
+
+PnPOD  
+
+> i=1
+
+σi
+
+Pri=1 σi
+
+> 1 − εPOD . (12) In the POD-Galerkin method, model reduction is performed using the POD basis Φ obtained in this manner, according to Eqs. (5) and (6). 
+
+3. Graph-Based Generalization of Domain-Decomposed ROM 
+
+Existing studies on DD-G-ROMs (domain-decomposed G-ROMs) have proposed frameworks in which a physical domain or algebraic degrees of freedom are partitioned into multiple subdomains, and a low-dimensional approxi-mation space is constructed for each subdomain. Representative approaches include methods that construct a low-dimensional approximation space for each subdomain and couple the subdomains continuously based on the finite 51 2 3 4 5 6 7 8
+
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> 8
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> 8
+
+Subdomain 2 
+
+Subdomain 1   
+
+> 3
+> 46
+> 7
+> 8
+> 5
+> 6
+> 3
+> 4
+> 15
+> 1
+> 2Figure 2: Relationship between subdomains and the block-matrix structure.
+
+element method [21], methods that construct a low-dimensional approximation space for each component [42], alge-braic non-overlapping domain decomposition [52], and optimization-based approaches [45, 56]. These studies have demonstrated that DD-G-ROMs are e ff ective in terms of representing local solution structures, localizing training data in the o ffl ine phase, and extending ROMs to large-scale problems. However, many of these approaches focus on predefined components, algebraic domain decomposition, or optimization-based coupling of subdomain interfaces, and relatively few studies have directly connected arbitrary mesh partitioning to the o ffl ine- and online-phase construction procedures of DD-G-ROMs. A closely related method is the domain-decomposition non-intrusive reduced-order model (DDNIROM) [57]. In DDNIROM, the computational domain is divided into multiple subdomains, low-dimensional approximation spaces based on POD are constructed on individual subdomains, and local approximation functions in the reduced spaces are constructed using Gaussian process regres-sion, thereby representing localized nonlinear flow features. In particular, DD-ROMs that are not limited to simple geometric decompositions have been realized by domain decompositions that account for flow-field features through nodal weights [57]. However, DDNIROM belongs to the class of non-intrusive ROMs in which the online solution is predicted using machine-learning models. Its formulation therefore di ff ers from the DD-G-ROM considered in this study, in which the discrete FOM equations are projected onto low-dimensional approximation spaces and the reduced solution over the entire computational domain is reconstructed based on the governing equations. In this section, we introduce graph concepts corresponding to DD-G-ROMs and to the sparsity structures of their matrices, and present a formulation of DD-G-ROMs generalized to arbitrary domain decompositions. We then detail the formulation for the case in which Local POD is used. We begin by describing the graphs considered in this study. A graph G = (V, E) consists of a node set V =
+
+{v1, v2, . . . , vn} and an edge set E, where n denotes the number of nodes |V|. When nodes vi and v j are connected, the connection is denoted by ( vi, v j) and is referred to as an edge. The graphs defined in this paper are assumed to include self-edges ( vi, vi) ( i = 1, 2, . . . , |V|) and are treated as undirected graphs. In addition, the set V consisting of the indices of the nodes in V is defined as 
+
+V :=  i | vi ∈ V . (13) 
+
+3.1. Graph-Based Domain Decomposition Method 
+
+A calculation-point graph is a graph structure that represents interactions among computational points and corre-sponds to the nonzero structure of the coe ffi cient or Jacobian matrix appearing in Eq. (3) under consideration. For example, a calculation-point graph whose nodes are the nodes of a finite element mesh corresponds to the nonzero structure of the system of linear equations obtained by finite element discretization. Using such a graph structure, domain decomposition can be defined for an arbitrary node set with a given adjacency relation. First, under the following definitions, the node set V of the graph is partitioned without overlap into N node sets 6Figure 3: Relationship between the metagraph and the block-matrix structure (nonzero blocks are shown in color or gray). 
+
+V(i) (i = 1, 2, . . . , N): 
+
+V(i) ∩ V( j) = ∅ (i , j), (14) 
+
+> N
+
+[
+
+> i=1
+
+V(i) = V. (15) The set of graph nodes belonging to each subdomain is referred to as the internal node set, and the number of internal nodes belonging to subdomain i is denoted by |V(i)|. The node set V(i) obtained by domain decomposition is referred to as subdomain i. The set V(i) consisting of the indices of the nodes in V(i) is defined as 
+
+V(i) := { j ∈ V | v j ∈ V(i) }. (16) The node set ¯ V(i) that accounts for the overlap region is given by ¯V(i) = V(i) ∪ V(i)ovl , (17) where V(i)ovl is defined as 
+
+V(i)ovl := n v j | v j < V(i), ∃vk ∈ V(i) s.t. ( vk, v j) ∈ E o . (18) Subdomain i is said to be adjacent to subdomain j when the following condition holds: 
+
+V(i) ∩ V( j)ovl , ∅. (19) The left side of Fig. 2 shows a schematic of a finite element mesh corresponding to the node set V when it is partitioned into two subdomains. Next, we define a metagraph that corresponds to the adjacency relation among subdomains obtained by graph partitioning of a calculation-point graph. As shown on the left side of Fig. 3, a new metanode ˜ vi is defined for each internal node set V(i) obtained by partitioning the calculation-point graph. For these metanodes, a metagraph ˜G =
+
+( ˜ V, ˜E) representing the adjacency relation among the subdomains can be defined. The node set ˜ V = {˜v1, ˜v2, . . . , ˜vN }
+
+represents the partitioned subdomains, and the edge set ˜ E = (˜ vi, ˜v j) | ˜vi, ˜v j ∈ ˜V, i = j ∨ V(i) ∩ V( j)ovl , ∅ represents the self-edges corresponding to the subdomains themselves and the adjacency relations among the subdomains. We next clarify the correspondence between a matrix A and a vector x before and after graph partitioning based on the calculation-point graph. First, consider a vector x of size Pi∈V di for the calculation-point graph G = (V, E): 
+
+x =
+
+
+
+x1
+
+x2
+
+...
+
+x|V|
+
+
+
+∈ RPi∈V di . (20) Here, di denotes the number of degrees of freedom at computational point vi, and xi is the vector at computational point vi. A square matrix A of size Pi∈V di × Pi∈V di associated with the calculation-point graph G = (V, E) is 7expressed as the following block matrix: 
+
+A =
+
+
+
+A1,1 A1,2 · · · A1,|V|
+
+A2,1 A2,2 · · · A2,|V|
+
+... ... . . . ...
+
+A|V|,1 A|V|,2 · · · A|V|,|V|
+
+
+
+∈ RPi∈V di×P j∈V d j . (21) The block Ai, j ∈ Rdi×d j represents the action from computational point v j to computational point vi, and Ai, j is a zero matrix when ( vi, v j) < E.Partitioning the calculation-point graph G = (V, E) yields a partitioned graph G(i) corresponding to subdomain i.The vector x(i) corresponding to the internal node set V(i) of subdomain i is expressed as 
+
+x(i) =
+
+
+
+x(i)1
+
+x(i)2
+
+...
+
+x(i)
+
+> |V(i)|
+
+
+
+∈ RP   
+
+> j∈V (i)dj
+
+, (22) where x(i) 
+
+> p
+
+is the vector corresponding to computational point v(idx( i,p)) in subdomain i. The function idx( i, aL) maps the local number aL in subdomain i to the corresponding global number aG, that is, aG = idx( i, aL). In addition, the matrix A(i, j), which represents the action of the internal node set V( j) of subdomain j on the internal node set V(i) of subdomain i, is expressed as the following block matrix: 
+
+A(i, j) =
+
+
+
+A(i, j)1,1 A(i, j)1,2 · · · A(i, j)1,|V( j)|
+
+A(i, j)2,1 A(i, j)2,2 · · · A(i, j)2,|V( j)|
+
+... ... . . . ...
+
+A(i, j) 
+
+> |V(i)|,1
+
+A(i, j) 
+
+> |V(i)|,2
+
+· · · A(i, j) 
+
+> |V(i)|,|V(j)|
+
+
+
+∈ RP     
+
+> k∈V (i)dk×P
+> l∈V (j)dl
+
+. (23) Here, A(i, j) 
+
+> p,q
+
+represents the action from the qth computational point v(idx( j,q)) ∈ V( j) in V( j) to the pth computational point v(idx( i,p)) ∈ V(i) in V(i), and A(i, j) 
+
+> p,q
+
+is a zero matrix when ( v(idx( i,p)) , v(idx( j,q)) ) < E.The node number before domain decomposition is defined as the global number aG, and the node number in each subdomain after domain decomposition is defined as the local number aL. The relationships between the matrices A
+
+and A(i, j) and between the vectors x and x(i) before and after domain decomposition are expressed using the matrix 
+
+P(i) ∈ RP j∈V d j×P  
+
+> k∈V (i)dk
+
+. The matrix P(i) is a local-to-global Boolean assembly matrix that embeds a local vector defined on subdomain i into the corresponding entries of the global vector. Its transpose P(i)T restricts a global vector to subdomain i. These relationships are written as follows: 
+
+A =
+
+> N
+
+X
+
+> i=1
+> N
+
+X
+
+> j=1
+
+P(i) A(i, j) P( j)T, (24) 
+
+x =
+
+> N
+
+X
+
+> i=1
+
+P(i) x(i). (25) When subdomains i and j are adjacent, the block matrix A(i, j) representing the interaction between them is nonzero. Because the metagraph represents the adjacency relation among subdomains, the nonzero structure of the block ma-trices A(i, j) of the matrix A is uniquely determined by referring to the metagraph, as illustrated in Fig. 3. The matrix entries of P(i) are given by 
+
+P(i)  
+
+> m,n
+
+=
+
+
+
+I ∈ Rdm×dm m = idx( i, n)
+
+0 ∈ Rdm×didx( i,n) otherwise , (26) where dm is the number of degrees of freedom at computational point vm.8Figure 4: Schematic illustration of local POD basis functions and their overlap across adjacent subdomains. 
+
+As a concrete example of a calculation-point graph, consider a graph whose nodes are the nodes in the finite element method and whose edges represent their adjacency relations. Let V (|V| = nFOM ) be the finite element node set, and let Na and Nb be the basis functions corresponding to nodes a and b, respectively. Then, a pair of finite element nodes ( va, vb) for which the product of these basis functions is nonzero on the same element is regarded as an edge. The edge set E derived from interactions among finite elements is then defined as 
+
+E = (va, vb) | ∃ x ∈ R3 : Na(x) Nb(x) , 0 . (27) For the finite element graph G = (V, E), subgraphs are obtained by graph partitioning based on Eqs. (14) and (15). A metagraph ˜ G = ( ˜ V, ˜E) can also be defined. The Jacobian J ∈ Rd n FOM ×d n FOM corresponding to the node set V before domain decomposition, defined in Eq. (2), is expressed using the Jacobian J(i, j) ∈ Rd n (i)FOM ×d n ( j)FOM corresponding to the internal node sets V(i) and V( j) of subdomains 
+
+i and j (|V(i)| = n(i)FOM , |V( j)| = n( j)FOM ), as follows for a decomposition into N subdomains: 
+
+J =
+
+
+
+J(1 ,1) J(1 ,2) · · · J(1 ,N)
+
+J(2 ,1) J(2 ,2) · · · J(2 ,N)
+
+... ... . . . ...
+
+J(N,1) J(N,2) · · · J(N,N)
+
+
+
+. (28) Here, J(i, j) is the matrix representing the action received by metanode i from metanode j, and J(i, j) is a zero matrix when (˜ vi, ˜v j) < ˜E.The residual vector r ∈ Rd n FOM corresponding to the node set V before domain decomposition is expressed using the residual vector r(i) ∈ Rd n (i)FOM corresponding to the internal node set V(i) of subdomain i as 
+
+r =
+
+
+
+r(1) 
+
+r(2) 
+
+...
+
+r(N)
+
+
+
+. (29) 
+
+3.2. Graph-Based Generalization of Local POD (L-POD) 
+
+L-POD [21] performs singular value decomposition separately for the snapshot matrix associated with each sub-domain and assembles the resulting local bases into a global, block-structured reduced basis. The governing equations of the FOM are then projected onto the approximation space spanned by this basis using Galerkin projection. Be-cause the singular value decompositions are performed on smaller, subdomain-level snapshot matrices, L-POD can reduce the o ffl ine cost of basis construction and may permit a larger total number of basis vectors to be retained than global POD. An increase in the reduced dimension may, however, increase the computational cost of the online ROM, while potentially improving its approximation accuracy. Moreover, the local basis dimension can be selected indepen-dently for each subdomain, allowing the reduced approximation space to be tailored to spatial variations in solution complexity. 9First, the singular value decomposition in Eq. (11) is applied to each local snapshot matrix S(i) ∈ Rd n (i)FOM ×nsnap (i =
+
+1, 2, . . . , NPOD ) corresponding to the internal node set V(i) of subdomain i:
+
+S(i) = ˆΦ(i)Σ(i)W(i)T. (30) Here, NPOD denotes the number of subdomains used to obtain POD bases. Among the columns of the matrix ˆ Φ(i) ∈
+
+Rd n (i)FOM ×r(i)
+
+of left singular vectors, where r(i) = rank S(i), the first n(i)POD columns are selected and used as the POD basis 
+
+Φ(i) ∈ Rd n (i)FOM ×n(i)POD . Because the bases are obtained independently in the individual subdomains, the POD basis Φ over the entire domain is given by 
+
+Φ =
+
+
+
+Φ(1) 0 · · · 00 Φ(2) · · · 0
+
+... ... . . . ...
+
+0 0 · · · Φ(NPOD )
+
+
+
+. (31) Figure 4 shows an example of L-POD for a one-dimensional problem with linear finite element basis functions. An L-POD basis is a linear combination of finite element basis functions associated with the nodes in subdomain i.Therefore, each row component of Φ(i) corresponds to a nodal value on the finite element mesh. In Fig. 4, the green POD basis belongs to the left subdomain, and the blue POD basis belongs to the right subdomain. The red line represents the sum of the green and blue POD bases. Because the original two local POD bases are continuous, the red global POD basis is also continuous. In addition, there exists an overlap region in which both the left and right local POD bases are nonzero. The coe ffi cient vector q over the entire domain is expressed using the coe ffi cient vectors q(i) ∈ Rn(i)POD corresponding to the partitioned subdomains as 
+
+q =
+
+
+
+q(1) 
+
+q(2) 
+
+...
+
+q(NPOD )
+
+
+
+. (32) In L-POD, as in conventional POD, the solution vector is approximated using this q and Φ. The test function is also approximated using Φ by applying the Galerkin method, yielding the reduced systems of linear equations in Eq. (7). The reduced Jacobian ˜ J = ΦT JΦ has the following block matrix structure: ˜J =
+
+
+
+˜J(1 ,1) ˜J(1 ,2) · · · ˜J(1 ,NPOD )
+
+˜J(2 ,1) ˜J(2 ,2) · · · ˜J(2 ,NPOD )
+
+... ... . . . ...
+
+˜J(NPOD ,1) ˜J(NPOD ,2) · · · ˜J(NPOD ,NPOD )
+
+
+
+. (33) Each block matrix ˜ J(i, j) ∈ Rn(i)POD ×n( j)POD of the reduced Jacobian is expressed as a product with the POD bases corre-sponding to the associated nodes and is computed as follows: ˜J(i, j) = Φ(i)T J(i, j)Φ( j). (34) When subdomains i and j are adjacent, the matrix product Φ(i)T J(i, j)Φ( j) becomes nonzero; therefore, Eq. (33) has a block nonzero structure similar to that of Eq. (28). The reduced residual vector ˜ r = ΦT r is computed as the product with the POD bases belonging to the correspond-ing subdomains: ˜r =
+
+
+
+˜r(1) 
+
+˜r(2) 
+
+...
+
+˜r(NPOD )
+
+
+
+=
+
+
+
+Φ(1) T r(1) 
+
+Φ(2) T r(2) 
+
+...
+
+Φ(NPOD )T r(NPOD )
+
+
+
+. (35) Here, ˜ r(i) ∈ Rn(i)POD is the reduced residual vector in subdomain i, and r(i) ∈ Rd n (i)FOM is the residual vector in subdomain i.10 1 2 3 4 5 6 7 8              
+
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> 8
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> 8
+> Graph 2
+> Graph 3
+> 46
+> 7
+> 8
+> 5
+> 6
+> 3
+> 4
+> 15
+> 1
+> 2
+> 123456
+> 1
+> 2
+> 3
+> 4
+> 345678
+> 5
+> 6
+> 7
+> 8
+> data
+> sending
+> Vector for
+> communication Graph 1 Figure 5: Schematic illustration of parallel sparse matrix–vector multiplication on graph G.
+
+4. Metagraph-Based Domain-Decomposed Galerkin ROM 
+
+As outlined in the Introduction, distributed-memory parallelization of L-POD over arbitrary domain decomposi-tions has not yet been systematically formulated. Because L-POD has a matrix structure in which the block matrices corresponding to adjacent POD computation subdomains, namely the subdomains used to compute POD bases, are nonzero, information transfer among POD computation subdomains must be considered. In addition, in distributed-memory parallel computing, information transfer among the subdomains used for distributed-memory parallelization must also be considered for data communication among parallel processes. Therefore, distributed-memory parallel computation of L-POD requires handling information transfer over two types of hierarchical subdomains, and the key issue is how to realize this mathematically. Section 3 presented a unified graph-based formulation for DD-G-ROMs defined over arbitrary domain decompositions by introducing the concepts of calculation-point graphs and metagraphs. Building on this formulation, we propose the metagraph-based DD-G-ROM (MBDD-G-ROM) and formulate a hier-archical graph-partitioning method that decouples the POD computation subdomains from the parallel computation subdomains, thereby enabling distributed-memory parallelization of L-POD over arbitrary domain decompositions. 
+
+4.1. Metagraph-Based Parallel Computation 
+
+Methods for solving systems of linear equations can be broadly classified into direct and iterative methods. Direct methods typically rely on factorization or elimination steps that are less straightforward to parallelize e ffi ciently on distributed-memory systems, whereas iterative methods are readily expressed in terms of parallelizable algebraic kernels such as matrix–vector products and inner products. This study targets large-scale problems and therefore adopts iterative methods with high parallel e ffi ciency for parallel computers. From the algorithmic structure of iterative methods, their parallel computation can be realized by implementing parallel vector sums, vector inner products, and matrix–vector products. Except for the data communication required for parallel computation, including global reductions for inner products, these parallel algebraic operations can be performed independently in each subdomain using the block matrices and vectors assigned to that subdomain, and thus they can achieve high parallel e ffi ciency. This subsection describes parallel computation procedures for these linear algebra operations based on the calculation-point graph. In this study, parallel computation is performed using the Message Passing Interface (MPI) [58]. MPI is a communication standard for parallel computing and enables highly scalable parallel implementations. When the node set V of the graph is partitioned into Npar node sets V(i), a parallel process is assigned to the index 
+
+i representing the ith subdomain in Eqs. (24) and (25). The parallel process associated with index i is assigned the subgraph G(i) and stores the block matrices A(i, j) and the vector x(i). Here, Npar denotes the number of subdomains to which parallel processes are assigned. The vector sum z = x + y is computed as 
+
+z =
+
+> Npar
+
+X
+
+> i=1
+
+P(i) z(i) =
+
+> Npar
+
+X
+
+> i=1
+
+P(i) nx(i) + y(i)o . (36) 11 The parallel computation of the vector sum involves operations on the vectors x(i) and y(i) corresponding to the internal node set V(i) of subdomain i, and the vector sum z(i) is computed in each subdomain. This operation can be performed without MPI communication. For the vector inner product α = xT y, the following relation holds. 
+
+α =
+
+> Npar
+
+X
+
+> i=1
+
+α(i) =
+
+> Npar
+
+X
+
+> i=1
+
+x(i)T y(i). (37) Here, α(i) is the value of the vector inner product associated with subdomain i. The parallel computation of the vector inner product is performed by first computing local inner products using the vectors x(i) and y(i) corresponding to the internal node set V(i) of subdomain i, and then summing the results over all parallel processes using a global communication function, namely the allreduce function. Next, we describe the parallel computation of the matrix-vector product z = Ax . The parallel computation of the matrix-vector product is divided into the computation A(i,i) x(i) associated with subdomain i and the computation 
+
+A(i, j) x( j) associated with subdomain i and its adjacent subdomains j, as expressed in Eq. (38). 
+
+z =
+
+> Npar
+
+X
+
+> i=1
+
+P(i) z(i) =
+
+> Npar
+
+X
+
+> i=1
+
+P(i)
+
+A(i,i) x(i) +
+
+X   
+
+> j∈nbhd(˜ vi,˜G)
+
+A(i, j) x( j)
+
+ . (38) Here, nbhd(˜ vi, ˜G) is a function that returns all indices of nodes adjacent to the node ˜ vi ∈ ˜V in the graph ˜ G = ( ˜ V, ˜E), and is defined as nbhd(˜ vi, ˜G) : = n j | (˜ v j, ˜vi) ∈ ˜E, j , i o . (39) In the operations in Eqs. (36) and (38), the computational results are stored only in the vector z(i) associated with the internal node set V(i) of subdomain i. On the other hand, to compute A(i, j) x( j), the vector x( j) of the adjacent subdomain j is required, but it is not stored by the process assigned to subdomain i. Therefore, the computation is performed by obtaining x( j) through MPI communication from adjacent subdomains j satisfying j ∈ nbhd(˜ vi, ˜G). The communication table required to obtain the vector x( j) can be constructed based on the adjacency information of the metagraph ˜G. In practice, as illustrated in Fig. 5, to minimize the amount of data communication, only the vector components of x( j) corresponding to the nonzero entries of the matrix A(i, j) are communicated, based on the information of the subgraphs G(i) and G( j). The matrix A(i,i) corresponds to the internal node set V(i) of subdomain i and can be generated independently in each subdomain. Similarly, the matrix A(i, j) can also be generated independently in each subdomain without MPI communication because the overlap region V(i)ovl of subdomain i contains the graph information required to compute A(i, j). Thus, the matrix-vector product to be computed by each parallel process is defined based on the subgraph G(i) and the metagraph ˜ G.
+
+4.2. Hierarchical Metagraph-Based Parallelization 
+
+In this study, by exploiting graph structures, L-POD is generalized so that it can be computed on arbitrary subdo-mains. In addition, we propose a hierarchical domain-decomposition method based on a metagraph structure to inde-pendently define the “subdomains used to compute POD bases” in L-POD, introduced in Section 3.2, and the “subdo-mains used for domain-decomposition-based parallelization,” introduced in Section 4.1, thereby realizing distributed-memory parallel computation of L-POD. For conciseness, hereafter we refer to the subdomains used to compute POD bases as POD computation subdomains and the subdomains used for domain-decomposition-based parallelization as parallel computation subdomains. This study focuses on problems in which the number of POD computation subdo-mains is larger than the number of parallel computation subdomains. Figure 6 schematically illustrates the proposed MBDD-G-ROM and its graph hierarchy of POD computation subdomains and parallel computation subdomains. The proposed two-level domain-partitioning strategy consists of two successive partitioning stages. In the first partitioning stage, the finite element graph is partitioned to define the POD computation subdomains. In the second partitioning stage, the metagraph constructed from these subdomains is partitioned to define the parallel computation subdomains. In the first partitioning stage, based on the definitions of graphs and domain decomposition introduced in Sec-tion 3.1, the graph corresponding to the finite element nodes is partitioned (Domain decomposition 1 in Fig. 6) to 12 3rd mode                
+
+> 3rd mode
+> 3rd mode
+> 3rd mode
+> 1st mode 2nd mode 3rd mode
+> 3rd mode
+> 3rd mode
+> 3rd mode
+> 3rd mode
+> 1st mode 2nd mode 3rd mode
+> 3rd mode
+> 3rd mode
+> 3rd mode
+> 3rd mode
+> 1st mode 2nd mode 3rd mode
+> 3rd mode
+> 3rd mode
+> 3rd mode
+> 3rd mode
+> 1st mode 2nd mode 3rd mode
+> 3rd mode
+> 3rd mode
+> 3rd mode
+> 3rd mode
+> 1st mode 2nd mode 3rd mode
+> Hierarchical graph
+> Domain
+> decomposition (1)
+> Domain
+> decomposition (2)
+> Calculation -point graph Metagraph
+> Metagraph
+> Graph of
+> mesh nodes
+> Calculation -point graph
+> Mesh structure
+> Parallel computation
+> subdomains
+> POD computation
+> subdomains
+> Graph of parallel
+> computation
+> subdomains
+> Graph of POD
+> computation
+> subdomains
+> Distributed memory
+> computer POD modes
+> Metagraph -Based DD -G-ROM
+
+Figure 6: Schematic illustration of the metagraph-based DD-G-ROM framework: hierarchical graph representation of POD computation subdo-mains and parallel computation subdomains. 
+
+generate POD computation subdomains. The POD computation subdomains generated in this manner can be in-terpreted as coarse finite elements to which low-dimensional basis functions are assigned by L-POD. Usually, the basis functions generated by POD are modes defined over the entire domain, and their graph structure is all-to-all connected, corresponding to a dense matrix. Consequently, in the absence of a su ffi ciently sparse block structure, domain-decomposition-based data distribution leads to extensive interprocess communication, making it highly chal-lenging to achieve favorable strong-scaling performance on distributed-memory systems. In contrast, L-POD divides the domain and has a sparse block matrix structure corresponding to the metagraph described above, which enables model reduction and domain-decomposition-based parallel analysis to be combined. In the second partitioning stage, according to the definition of the metagraph introduced in Section 3.1, the meta-graph ˜G corresponding to the set of POD computation subdomains is constructed. At this stage, if there exists a point x ∈ R3 at which the product of the POD basis Φ(a)(x) of metanode a and the POD basis of metanode b,
+
+Φ(a)(x)TΦ(b)(x), is nonzero, namely if 
+
+∃ x ∈ R3, Φ(a)(x)TΦ(b)(x) , 0 (40) holds, metanode a is regarded as adjacent to metanode b. By applying graph partitioning again to the resulting meta-graph (Domain decomposition 2 in Fig. 6), the parallel computation subdomains can be defined. As illustrated in the lower part of Fig. 6, each parallel computation subdomain contains a specific set of POD computation subdomains, and distributed-memory parallel computation is realized by applying the domain-decomposition-based parallel com-putation described in Section 4.1. This second-stage graph partitioning is performed to define the parallel computation subdomains and does not repartition the finite element node set V or the POD bases Φ(i). Therefore, the numerical values of Φ(i), ˜ J(i, j), and ˜ r(i) remain unchanged. The following describes the specific matrix structure obtained when the proposed method is applied to L-POD. First, consider the metagraph ˜ G = ( ˜ V, ˜E) obtained by partitioning the finite element graph (upper part of Fig. 6). The global matrix of L-POD corresponding to the metagraph ˜ G is given by ˜J =
+
+
+
+˜J1,1 ˜J1,2 · · · ˜J1,| ˜V|
+
+˜J2,1 ˜J2,2 · · · ˜J2,| ˜V|
+
+... ... . . . ...
+
+˜J| ˜V|,1 ˜J| ˜V|,2 · · · ˜J| ˜V|,| ˜V|
+
+
+
+. (41) Here, each block ˜ Ji, j ∈ Rn(i)POD ×n( j)POD represents the action from metanode ˜ v j to metanode ˜ vi, and ˜ Ji, j is the zero matrix when (˜ vi, ˜v j) < ˜E.13 Next, the metagraph ˜G is graph-partitioned (Domain decomposition 2 in Fig. 6), and the action of the internal node set ˜ V( j) of parallel computation subdomain j on the internal node set ˜ V(i) of parallel computation subdomain i is expressed as the following block matrix ˜ J(i, j).˜J(i, j) =
+
+
+
+˜J(i, j)1,1 ˜J(i, j)1,2 · · · ˜J(i, j)1,| ˜V( j)|
+
+˜J(i, j)2,1 ˜J(i, j)2,2 · · · ˜J(i, j)2,| ˜V( j)|
+
+... ... . . . ...
+
+˜J(i, j)  
+
+> |˜V(i)|,1
+
+˜J(i, j)  
+
+> |˜V(i)|,2
+
+· · · ˜J(i, j)   
+
+> |˜V(i)|,|˜V(j)|
+
+
+
+. (42) Here, ˜ J(i, j) 
+
+> p,q
+
+∈ R n(idx( i,p)) POD ×n(idx( j,q)) POD represents the action from the qth metanode ˜ vidx( j,q) ∈ ˜V( j) of ˜ V( j) to the pth metanode ˜vidx( i,p) ∈ ˜V(i) of ˜ V(i), and ˜ J(i, j) 
+
+> p,q
+
+is the zero matrix when (˜ vidx( j,q), ˜vidx( i,p)) < ˜E.Finally, using the matrix P(i) ∈ RPk∈ ˜V n(k)POD ×P   
+
+> l∈˜V(i)n(l)POD
+
+, the relation between the matrices ˜ J before partitioning and ˜J(i, j) after partitioning is expressed as ˜J =
+
+> Npar
+
+X
+
+> i=1
+> Npar
+
+X
+
+> j=1
+
+P(i) ˜J(i, j) P( j)T. (43) Using the idx function defined in Section 3.1, the components of the matrix P are given by 
+
+P(i)  
+
+> m,n
+
+=
+
+
+
+I ∈ R n(m)POD ×n(m)POD , m = idx( i, n)
+
+0 ∈ R n(m)POD ×n(idx( i,n)) POD , otherwise . (44) 
+
+4.3. Metanode Weight Selection for Parallel Computation 
+
+Because the number of basis vectors stored in each POD computation subdomain di ff ers in this study, the com-putational load can become imbalanced among parallel processes, leading to a reduction in the overall computational effi ciency. To address this issue, we introduce load balancing based on a weighted graph. First, a metagraph ˜G = ( ˜ V, ˜E) is constructed by treating the POD computation subdomains as nodes and repre-senting the adjacency relations among POD computation subdomains as edges. At this stage, each metanode ˜ vi is assigned a node weight n(i)weight , which represents the estimated computational cost of the corresponding subdomain. If necessary, the estimated communication volume between adjacent POD computation subdomains can be assigned as an edge weight; however, in this study, all edge weights are set to one. Next, this weighted graph is partitioned into subgraphs ˜ G(i) (i = 1, 2, . . . , Npar ). The graph partitioning is performed so as to balance the sum of the node weights contained in each internal node set ˜ V(i), while minimizing the total weight of the edges crossing the internal node sets ˜ V(i).The proposed method described above does not depend on how the POD computation subdomains are partitioned and is applicable to arbitrary domain decompositions. Various methods have been used in previous studies for domain decomposition, including regular decomposition based on structured grids [59] and decomposition using space-filling curves [60]. However, the focus of this study is not to propose a domain-decomposition method itself, but to assign the partitioned POD computation subdomains to parallel computation subdomains while considering the computational load based on the number of basis vectors. Therefore, in this study, we adopt the same graph-partitioning-based method for partitioning both the POD computation subdomains and the parallel computation subdomains. Specifically, the partitioning is determined so as to balance the computational load by equalizing the sum of the node weights contained in each subdomain, while minimizing the sum of the edge weights crossing between subdomains, namely the edge cut. To solve this weighted graph partitioning problem, this study uses the graph partitioning library METIS [61]. 
+
+5. Numerical Examples 
+
+This section first considers an unsteady di ff usion equation, which is a linear partial di ff erential equation, and quantitatively evaluates the accuracy, parallel e ffi ciency, and computational e ffi ciency of the proposed method in 14 Table 1: Specifications of the SQUID supercomputer.            
+
+> Component Specification CPU Intel Xeon Platinum 8368 (Ice Lake, 2.4 GHz, 38 cores) ×2Memory 256 GB Peak performance 5.84 TFLOPS Number of nodes 1,520
+> Figure 7: Contours of the numerical solution at t=10 son a cross-section normal to the x-axis; FOM (left) and ROM (right).
+
+Section 5.1. An example of static load balancing is also presented. Section 5.2 then presents an analysis of the Navier–Stokes equations using MBDD-G-ROM to verify the applicability of the proposed method to nonlinear partial di ff erential equations. 
+
+5.1. Unsteady Di ff usion Equation 
+
+The distributed-memory computer used in this verification was the SQUID supercomputer system at Osaka Uni-versity [62]. The system specifications are listed in Table 1. In this verification, the following unsteady di ff usion equation is used as the governing equation: 
+
+∂u
+
+∂t − ∇ · (k ∇u) = Q. (45) Here, k is the di ff usion coe ffi cient, u is the unknown variable representing the di ff using physical quantity, and Q is the source term representing the physical quantity generated in the analysis domain Ω, where Ω is a bounded three-dimensional domain. The boundary conditions are given by 
+
+u = uD on Γg, (46) 
+
+∇u · n = qN on Γh, (47) where uD is the value of the solution u on the Dirichlet boundary Γg, n is the outward normal vector on the Neumann boundary Γh, and qN is the prescribed function representing the physical quantity on the boundary Γh. In this verifica-tion, the di ff usion coe ffi cient is set to k(x, y, z) = 1 + x3 + y3 + z3. The source term is defined as the sum of point heat sources, and its time dependence is given by 
+
+q(t) = 1000  1 + sin t. (48) Using the set of point-source locations 
+
+S = {(2 .5, 3.75 , 3.75) , (2 .5, 2.75 , 2.5) , (2 .5, 1.25 , 1.25) }, (49) the source term of the unsteady di ff usion equation can be expressed as 
+
+Q(x, t) = q(t)
+
+X
+
+> xs∈S
+
+δ(x − xs), δ(x − xs) = δ(x − xs) δ(y − ys) δ(z − zs), (50) 15 Table 2: Total number of POD basis vectors for di ff erent numbers of POD computation subdomains.             
+
+> Number of POD computation subdomains 1128 256 512 1,024 2,048 Total number of POD basis vectors 8726 1,331 2,455 4,619 8,702
+
+where δ denotes the Dirac delta distribution. In the implementation, this term was applied as point heat sources at mesh nodes. The following Dirichlet condition was imposed on the entire boundary Γ:
+
+u = sin (0 .25 x) sin (0 .5y) sin z sin t on Γ. (51) In this verification, common spatial and temporal discretization settings were used for the numerical method employed to generate the basis in the o ffl ine phase and for the numerical method to be reduced in the online phase. The finite element method was used for the spatial discretization, and the implicit Euler method was used for the temporal discretization. The analysis domain Ω was set to the three-dimensional cubic domain [0 , 5] 3, and the mesh was constructed so that all elements were cubic. First-order Lagrange interpolation functions were used as the finite element basis functions, and the time-step size ∆t was set to 0 .01s. In the online phase, ROMs were constructed and analyzed using the POD-Galerkin method. For both the finite element and ROM analyses, MONOLIS (Metagraph-Oriented Network for Linear Iterative Solvers) [63] was used for matrix computations. The CG (conjugate gradient) method was used to solve the systems of linear equations, with a convergence tolerance of 1 .0 × 10 −9 and a maximum of 10,000 iterations. Diagonal scaling was used as the preconditioner. The performance of the diagonal scaling preconditioner is independent of the number of subdomains. ScaLAPACK [64] was used to perform the distributed-memory parallel singular value decomposition. 
+
+5.1.1. Verification of the Computational Accuracy of L-POD 
+
+This subsection verifies the computational accuracy when the number of basis vectors and the number of POD computation subdomains are varied, with the aim of evaluating the accuracy in serial computations. First, finite element analyses were performed over the initial 100 time steps, and the snapshot matrix was con-structed from the solution vectors obtained during this process. The snapshot matrix was then subjected to singular value decomposition to generate the POD basis used in the ROM analysis. The number of POD basis vectors used in each POD computation subdomain was determined according to Eq. (12). The same computational settings were also used in Section 5.1.2. Subsequently, ROM analyses were performed using the generated basis over the range from time step 101 to time step 1,000, namely from t = 1.01 s to t = 10 .0 s. For error evaluation, the numerical solution uROM obtained by ROM analysis was compared with the numerical solution uFEM obtained by finite element analysis using the relative error based on the L2 norm, defined in Eq. (52). 
+
+εROM =
+
+qR 
+
+> Ω
+
+|uROM − uFEM |2dΩ
+
+qR 
+
+> Ω
+
+|uFEM |2dΩ
+
+. (52) Six cases with 1, 128, 256, 512, 1,024, and 2,048 POD computation subdomains were examined for a finite element analysis with 1,030,301 degrees of freedom. The threshold for basis selection was set to εPOD = 10 −6. The total number of POD basis vectors in the POD computation subdomains is shown in Table 2. Figure 7 shows contours of the numerical solutions at 10s on a cross-section normal to the x-axis ( x=2.5) for the finite element and ROM analyses, and Fig. 8 shows the time history of the relative error in Eq. (52). Table 2 and Fig. 8 show that increasing the number of subdomains increases the number of basis functions and improves the computational accuracy. These results demonstrate the validity of the implementation. 
+
+5.1.2. Verification of the Computational E ffi ciency of the Proposed Method 
+
+This subsection evaluates the parallel computational e ffi ciency of the proposed method through strong-scaling tests, in which the number of parallel computation subdomains is varied while the number of POD computation subdomains is fixed. As discussed in Section 4.3, node weights can be assigned to the metagraph for static load 16 1 2 3 4 5 6 7 8 9 10                
+
+> Time [s]
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> Relative  L 2 error norm  ²ROM
+> NPOD = 1
+> NPOD = 128
+> NPOD = 256
+> NPOD = 512
+> NPOD = 1024
+> NPOD = 2048 Figure 8: Relative L2error norm of L-POD for di ff erent numbers of subdomains.
+> (a)
+
+POD computation subdomains.  (b) Parallel computation subdomains.        
+
+> Figure 9: Example of the two-level decomposition into POD computation and parallel computation subdomains (degrees of freedom =1,030,301,
+> NPOD =512, Npar =128).
+
+balancing. In this verification, however, all node weights are set to unity to evaluate the baseline parallel e ffi ciency of the proposed method without load balancing. Three cases with 512, 1,024, and 2,048 POD computation subdomains were examined for two finite element models with 1,030,301 and 10,077,696 degrees of freedom. For the case with 1,030,301 degrees of freedom, the number of parallel processes was varied as 1, 8, 16, 32, 64, 128, and 256. For the case with 10,077,696 degrees of freedom, the number of parallel processes was varied as 16, 32, 64, 128, and 256. The resulting domain decomposition is shown in Fig. 9. To keep the e ff ect of memory bandwidth limitation approximately constant, the maximum number of processes per node was set to 16. Thus, the number of compute nodes used was set to 1 for 1, 8 and 16 parallel processes, and to 2, 4, 8, and 16 for 32, 64, 128, and 256 parallel processes, respectively. In the basis-selection criterion given by Eq. (12), the same threshold, εPOD = 10 −6, was used for all POD computation subdomains. Each measurement was performed three times for each case, and the average value was used for evaluation. In the case with 10,077,696 degrees of freedom, the verification problem could not be executed serially because of memory capacity limitations. Therefore, the serial computation time T1 was estimated by applying Amdahl’s law based on the results obtained with 32 and 64 parallel processes using two and four compute nodes, respectively. This computational example demonstrates that the proposed distributed-memory parallel computing method alleviates memory capacity limitations and confirms the e ff ectiveness of the proposed method. To evaluate the parallel computing performance, the ROM e ffi ciency RNpar and the speed-up factor S Npar were used as performance metrics. The ROM e ffi ciency represents the acceleration factor of the ROM analysis relative to the finite element analysis, and the two metrics are defined as 
+
+RNpar = T FEM 
+
+> Npar
+
+T ROM 
+
+> Npar
+
+, (53) 17 10 1 10 2             
+
+> Number of processes Npar
+> 0.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> 20.0
+> ROM efficiency  RNpar
+> NPOD = 512
+> NPOD = 1,024
+> NPOD = 2,048 (a) Degrees of freedom =1,030,301. 10 2
+> Number of processes Npar
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> 35
+> 40
+> ROM efficiency  RNpar
+> NPOD = 512
+> NPOD = 1,024
+> NPOD = 2,048 (b) Degrees of freedom =10,077,696.
+> Figure 10: ROM e ffi ciency based on total runtime for di ff erent numbers of parallel processes. Table 3: Total number of POD basis vectors for di ff erent numbers of POD computation subdomains and degrees of freedom.
+
+Number of POD computation subdomains 512 1,024 2,048 Degrees of freedom 1,030,301 2,455 4,619 8,702 10,077,696 2,416 4,546 8,586 
+
+S Npar = T1
+
+TNpar 
+
+. (54) Here, T FEM  
+
+> Npar
+
+and T ROM  
+
+> Npar
+
+denote the computation times using the finite element method and ROM, respectively, with Npar 
+
+parallel processes, and TNpar denotes the computation time with Npar parallel processes. First, the total computation time was measured for 100 time steps, from time step 101 to time step 200, in each analysis case. Figure 10 shows the ROM e ffi ciency evaluated using the average total computation time per time step. Figure 10 shows that the ROM e ffi ciency is largely maintained with respect to the number of parallel processes in all analysis cases, demonstrating that the proposed method achieves good parallel computing performance. The ROM e ffi ciency also tends to increase for cases with larger finite element degrees of freedom. This tendency can be interpreted as follows. The total number of POD basis vectors in the POD computation subdomains is listed in Table 3. As shown in Table 3, the number of reduced degrees of freedom in the ROM analysis is almost constant regardless of the number of degrees of freedom in the finite element analysis. Therefore, for cases with a larger number of finite element degrees of freedom, the reduction ratio in the number of degrees of freedom achieved by the ROM analysis becomes relatively larger. For these reasons, the ROM e ffi ciency is considered to increase as the number of degrees of freedom in the finite element analysis becomes larger. Next, we assess the strong-scaling performance of the proposed method in terms of speed-up. For this assessment, the ROM runtime at each time step is divided into two components: (a) reduced-system assembly, including the construction of the reduced Jacobian and residual vector; (b) solution of the reduced Newton system in Eq. (7). The total ROM runtime is defined as the sum of these two components. For the unsteady di ff usion equation (45), which is linear, the reduced coe ffi cient matrix ΦT JΦ is assembled only once for each analysis case. Because this one-time setup cost accounts for only a small fraction of the overall runtime, it is excluded from the strong-scaling assessment. Consequently, component (a) for the di ff usion problem includes only the per-time-step assembly of the reduced right-hand-side vector. Figures 11 and 12 present the speed-up factors for the total FOM runtime, the total ROM runtime, and the two ROM components. The total runtime of the proposed method exhibits favorable strong-scaling behavior in all analysis 18 cases. The reduced linear solver also scales well overall, although its scalability deteriorates at larger process counts. For the case with 1,030,301 degrees of freedom shown in Fig. 11, favorable solver scaling is maintained for NPOD =
+
+2,048. By comparison, the deterioration in solver speed-up becomes apparent at 64 processes for NPOD = 512 and at 128 processes for NPOD = 1,024. This behavior can be attributed to the size of the reduced linear system. A smaller value of NPOD results in a smaller reduced dimension and hence a lower computational workload per process. As the process count increases, this workload becomes insu ffi cient to amortize the communication and synchronization overheads, which consequently dominate the linear-solver runtime. The larger FOM case shown in Fig. 12 exhibits a similar solver-scaling trend. As indicated in Table 3, for a fixed number of POD computation subdomains, the reduced dimension is nearly independent of the number of full-order degrees of freedom. The reduced linear systems therefore have comparable sizes in the two FOM cases, resulting in similar strong-scaling behavior of the linear solver. 10 0 10 1 10 2
+
+Number of processes Npar 
+
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> Speed-up factor  SNpar
+> Ideal line
+> FEM, total
+> Proposed, total
+> Proposed, assembling reduced system
+> Proposed, solving reduced system
+
+(a) NPOD = 512. 10 0 10 1 10 2
+
+Number of processes Npar  
+
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> Speed-up factor  SNpar
+> Ideal line
+> FEM, total
+> Proposed, total
+> Proposed, assembling reduced system
+> Proposed, solving reduced system
+
+(b) NPOD = 1,024. 10 0 10 1 10 2
+
+Number of processes Npar 
+
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> Speed-up factor  SNpar
+> Ideal line
+> FEM, total
+> Proposed, total
+> Proposed, assembling reduced system
+> Proposed, solving reduced system
+
+(c) NPOD = 2,048. 
+
+Figure 11: Speed-up factors of the conventional FEM and the proposed method (Degrees of freedom = 1,030,301). 
+
+5.1.3. Verification of Static Load Balancing 
+
+As discussed in Section 4.3, the proposed method formulates static load balancing for domain-decomposed Galerkin ROMs as a problem of assigning weights to metanodes. To demonstrate the usefulness of this frame-work, we present an example of metanode weight assignment for static load balancing and quantitatively evaluate the parallel e ffi ciency. Because the number of basis vectors stored in each POD computation subdomain di ff ers from subdomain to subdomain, the computational load can become imbalanced among processes in parallel computations, 19 10 0 10 1 10 2
+
+Number of processes Npar 
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+> Speed-up factor  SNpar
+
+Ideal line 
+
+FEM, total 
+
+Proposed, total 
+
+Proposed, assembling reduced system 
+
+Proposed, solving reduced system (a) NPOD = 512. 10 0 10 1 10 2
+
+Number of processes Npar 
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+> Speed-up factor  SNpar
+
+Ideal line 
+
+FEM, total 
+
+Proposed, total 
+
+Proposed, assembling reduced system 
+
+Proposed, solving reduced system (b) NPOD = 1,024. 10 0 10 1 10 2
+
+Number of processes Npar 
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+> Speed-up factor  SNpar
+
+Ideal line 
+
+FEM, total 
+
+Proposed, total 
+
+Proposed, assembling reduced system 
+
+Proposed, solving reduced system 
+
+(c) NPOD = 2,048. 
+
+Figure 12: Speed-up factors of the conventional FEM and the proposed method (Degrees of freedom = 10,077,696). 
+
+20 potentially reducing the overall computational e ffi ciency. To address this issue, this study introduces and verifies load balancing based on weighted graphs. Hyper-reduction is also introduced to further improve the computational effi ciency. In this study, ECM (empirical cubature method) [65] is used as the hyper-reduction method, although the proposed method can be extended to arbitrary hyper-reduction methods [65–73]. The detailed formulation of the adopted hyper-reduction method is provided in Appendix B. Let the set of all elements be E = {e1, . . . , enelem }. Here, nelem denotes the total number of elements. In a hyper-reduction method combined with domain decomposition, for each subdomain i, a subset ˜ E(i) ⊂ E consisting of n(i)HROM 
+
+elements ( PNPOD  
+
+> i=1
+
+n(i)HROM ≪ nelem ) and positive weights we > 0 ( e ∈ ˜E(i)) are obtained, and the following approximations are used: 
+
+ΦT r ≈
+
+> NPOD
+
+X
+
+> i=1
+
+X 
+
+> e∈˜E(i)
+
+we ΦT 
+
+> e
+
+re, (55) 
+
+ΦT J Φ ≈
+
+> NPOD
+
+X
+
+> i=1
+
+X 
+
+> e∈˜E(i)
+
+we ΦT 
+
+> e
+
+JeΦe. (56) Here, re ∈ Rne is the residual vector associated with finite element e, Je ∈ Rne×ne is the Jacobian associated with finite element e, Φe ∈ Rne×PNPOD   
+
+> i=1n(i)POD
+
+is the POD basis assigned to finite element e, and ne is the number of degrees of freedom of finite element e. The element set ˜ E(i) selected by the hyper-reduction method and the weights we are determined by solving an NNLS (non-negative least-squares) problem. In this study, the NNLS problem was formulated using matrices and vectors constructed from the residual, and the elements selected by this problem were identified. The details of the formulation are given in Appendix B.2. Thus, the computational cost of assembling the reduced system of linear equations in the ROM analysis depends on the number of elements selected in each POD computation subdomain, n(i)HROM . Therefore, in this study, the node weight n(i)weight was set to either 1 or n(i)HROM , and the e ff ect of load balancing based on the node weights was verified. Unless otherwise stated, the basic computational settings were identical to those described in Section 5.1.2. First, finite element analyses were performed over the initial 100 time steps, and the snapshot matrix was constructed from the solution vectors obtained during this process. The snapshot matrix was then subjected to singular value decomposition to generate the POD basis used in the ROM analysis. The number of basis vectors used in each POD computation subdomain was determined according to Eq. (12). Next, the initial 100 time steps were analyzed using the ROM, and the element set ˜ E(i) and weights we (e ∈ ˜E(i)) were determined based on the hyper-reduction method. The number of POD computation subdomains was set to 512, and the number of parallel processes was varied as 8, 16, 32, 64, and 128. The number of compute nodes used was set to 1 for 8 and 16 parallel processes and to 2, 4, and 8 for 32, 64, and 128 parallel processes, respectively. The threshold for basis selection was set to εPOD = 10 −6, and the threshold for element selection in the hyper-reduction method was set to εHROM = 10 −6. Figure 13 shows the domain decomposition before and after load balancing. For each POD computation subdomain i, the node weight n(i)weight was set to either 1 or n(i)HROM .Figure 14 shows the ROM e ffi ciency for each number of parallel processes when the node weight n(i)weight in POD computation subdomain i was set to either 1 or n(i)HROM . The results show that setting the weight to n(i)HROM improved the computational e ffi ciency by up to approximately 15%. Figure 15 shows the speed-up factors. The results show that the speed-up factor was consistently improved under all computational conditions. These results suggest that using n(i)HROM 
+
+as the node weight is e ff ective for improving the parallel e ffi ciency and scaling behavior of the ROM. However, no marked improvement was observed for 8 and 128 parallel processes. On the other hand, the proposed method has the advantage that arbitrary node weights can be assigned; for example, further e ffi ciency improvements are expected by optimizing the weights while accounting for imbalance in the number of basis vectors among subdomains. In ROM analyses involving parametric studies, the computational load for the next run can be estimated sequentially from previous execution results. Based on this estimate, the overall computation time can be reduced by allocating and optimizing the required resources and the number of hyper-reduction samples in advance. Dynamic load balancing and a generally applicable method for assigning weights remain topics for future work. 21 (a) Before static load balancing ( n(i)weight = 1).  (b) After static load balancing ( n(i)weight = n(i)HROM ).           
+
+> Figure 13: Example of domain decomposition for POD computation subdomains before and after static load balancing ( NPOD =512, Npar =8). 10 110 2
+> Number of processes Npar
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> 70
+> 80
+> ROM efficiency  RNpar
+> (nweight = 1 )
+> (nweight =n(i)HROM )
+> Figure 14: ROM e ffi ciency based on total runtime for di ff erent numbers of parallel processes.
+
+5.2. Incompressible Navier–Stokes Equations 
+
+This section presents numerical simulations of unsteady flow around a three-dimensional cylinder as an application involving more complex physical phenomena and mesh structures than the numerical example in the previous section. This benchmark problem is widely used to evaluate the performance of various FOM and ROM fluid solvers, and has been adopted as a verification problem for ROMs in studies such as [31, 32]. In contrast to the linear di ff usion problem considered in the previous section, the incompressible Navier–Stokes equations considered here are nonlinear. Accordingly, the Jacobian is updated at every Newton–Raphson iteration. In the runtime decomposition defined in the previous section, component (a) therefore includes the assembly of both the reduced Jacobian and the reduced residual vector. For each time step, the reported runtime is accumulated over all Newton–Raphson iterations. The momentum and continuity equations, which are the governing equations for an incompressible viscous fluid, are given in Eqs. (57) and (58), respectively. The Dirichlet and Neumann boundary conditions are given in Eqs. (59) and (60), respectively. 
+
+ρ ∂u
+
+∂t + (u · ∇ ) u
+
+!
+
+− ∇ · σ = 0 in Ω, (57) 
+
+∇ · u = 0 in Ω, (58) 
+
+u = uD on Γg, (59) 
+
+σn = h on Γh. (60) Here, ρ is the density, u is the velocity, and p is the pressure. The Cauchy stress tensor σ is defined as 
+
+σ = −pI + μ ∇u + ∇uT , (61) 22 10 0 10 1 10 2          
+
+> Number of processes Npar
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> Speed-up factor  SNpar
+> Ideal line
+> FEM, total
+> Proposed, total ( n(i)weight = 1 )
+> Proposed, assembling reduced system ( n(i)weight = 1 )
+> Proposed, solving reduced system ( n(i)weight = 1 )
+> Proposed, total ( n(i)weight =n(i)HROM )
+> Proposed, assembling reduced system ( n(i)weight =n(i)HROM )
+> Proposed, solving reduced system ( n(i)weight =n(i)HROM )
+
+Figure 15: Speed-up factors of the conventional FEM and the proposed method. 
+
+where μ is the viscosity coe ffi cient and I is the second-order identity tensor. In this verification, common spatial and temporal discretization settings were used for the numerical method em-ployed to generate the basis in the o ffl ine phase and for the numerical method to be reduced in the online phase. The finite element method was used for the spatial discretization, and the implicit Euler method was used for the temporal discretization. For the spatial discretization, a monolithic approach was adopted in which the velocity and pressure fields are treated as simultaneous unknowns. Galerkin least-squares stabilization [74, 75] was introduced to suppress instabilities associated with advection and incompressibility. The detailed formulation of the discretization, the pa-rameter settings, and the formulation of the nonlinear discrete equations based on Newton’s method are described in Appendix A.2. This verification was performed for a Reynolds number of Re = 200. The representative length of the domain was set to the cylinder diameter D = 1 m, the density was set to ρ = 200 kg m −3, and the viscosity coe ffi cient was set to μ = 1.0 Pa · s. The computational mesh consists of hexahedral elements, with 2,488,800 elements, 2,629,200 nodes, and 10,516,800 total degrees of freedom. First-order Lagrange interpolation functions were used as the finite element basis functions. The mesh structure used in this study is shown in Fig. 16. The time-step size ∆t was set to 0.005 s and was kept constant for both the FOM and ROM. The boundary conditions were assigned according to the colors in Fig. 16(a) and (b): a uniform inflow velocity of U = 1 m /s in the x direction was imposed on the inflow boundary (red), a no-slip condition was imposed on the cylinder surface (cyan), slip conditions were imposed on the upper, lower, and spanwise boundaries (orange), and a traction-free condition was imposed on the outflow boundary (yellow). The origin of the coordinate system was placed at the cylinder center; the inflow and outflow boundaries were located at x = −10 D and x = 25 D, respectively, the upper and lower boundaries were located at y = ±10 D, and the spanwise extent was z ∈ [−D, D]The purpose of this numerical example is to reproduce the periodic vortex shedding in the cylinder wake using the proposed ROM framework. After the flow had su ffi ciently developed and periodic vortex shedding appeared steadily, the flow field at t = 100 s was used as the initial condition, and snapshots were collected for POD over a 1 s interval, 100 ≤ t ≤ 101 s. Snapshots were collected at a sampling time interval of ∆tsnap = 0.01 s, and a total of 101 snapshots were used. The ROM analysis was performed over the same interval [100 , 101] s, and model reduction was carried out using the obtained POD basis. Using the ROM solution over the interval [100 , 101] s, the element set ˜ E and weights 
+
+we, (e ∈ ˜E) were determined based on the hyper-reduction method. The number of POD computation subdomains was set to 1024, and the number of parallel processes was varied as 32, 64, 128, 256, and 512. The number of compute nodes used for 32, 64, 128, 256, and 512 parallel processes was set to 2, 2, 4, 8, and 16, respectively. The threshold for basis selection was set to εPOD = 10 −6, and the threshold for element selection in the hyper-reduction method was set to εHROM = 10 −6. The BiCGSafe method [76] was used to solve the systems of linear equations, with a convergence tolerance of 1 .0 × 10 −8 and a maximum of 10,000 iterations. Diagonal scaling was used as the preconditioner. Figure 17 shows the visualization of the POD computation subdomains, the distribution of the number of basis vectors in each POD computation subdomain, and the elements selected by the hyper-reduction method. Figure 18 shows the ROM visualization results for the velocity and pressure fields for the case with the basis 23 (a) Computational mesh in the cross-section perpendicular to the z-axis. 
+
+> (b) Computational mesh in the cross-section perpendicular to the
+> y-axis.
+> Figure 16: Computational mesh for flow past a three-dimensional cylinder.
+
+selection threshold εPOD = 10 −6 and the element selection threshold εHROM = 10 −6. The results show that the flow field obtained by the FOM is qualitatively reproduced by the ROM. Figure 19 shows the computational accuracy of the velocity and pressure fields for the same case. The relative error of the velocity field remained approximately on the order of 10 −5, whereas that of the pressure field remained approximately on the order of 10 −3. Although the error in the pressure field tended to be larger than that in the velocity field, it was also kept at an error level of approximately 10 −3, confirming that the present ROM achieves good approximation accuracy for the pressure field as well. The ROM e ffi ciency defined in Eq. (53) is shown in Fig. 20. In each analysis case, the computation time was evaluated over the first 10 time steps, and the average of three measurements was used for evaluation. The results show that a speedup of approximately 100–200 times relative to the FOM was obtained for all numbers of parallel processes, demonstrating that the proposed method also achieves high parallel computing performance in the analysis of flow around a cylinder. Figure 21 shows the speed-up factors. The results show that the speed-up factor of the total computation time of the proposed method remains high. The speed-up factor of the linear solver for the reduced system of linear equations is generally good, although it decreases as the number of parallel processes increases. As in Sections 5.1.2 and 5.1.3, this is likely because, as the number of parallel processes increases, the computation time within each process in the linear solver becomes short, making communication and synchronization overheads dominant relative to the computation time. 24 (a) POD computation subdomains ( NPOD = 1024).  (b) Number of basis vectors assigned to each subdomain (overlap-ping elements are shown in blue). 
+
+(c) Finite elements selected by hyper-reduction (sampled elements are shown in gray). 
+
+Figure 17: Domain decomposition for local POD computations and hyper-reduction sampling. 
+
+Figure 18: Contours of velocity magnitude (top) and pressure (bottom) at t = 101 s for Re = 200 on a cross-section normal to the z-axis: FOM (left column) and ROM (right column). 
+
+25 100.0 100.2 100.4 100.6 100.8 101.0 
+
+Time [s] 
+
+10 6
+
+10 5
+
+10 4
+
+10 3
+
+10 2
+
+10 1
+
+10 0
+
+> Relative  L 2 error norm
+
+Pressure 
+
+Velocity Figure 19: Relative L2 error norms of velocity and pressure between FOM and ROM using ECM. 10 2
+
+Number of processes Npar 
+
+0
+
+50 
+
+100 
+
+150 
+
+200 
+
+250 
+
+> ROM efficiency  RNpar
+
+NPOD = 1024 
+
+Figure 20: ROM e ffi ciency based on total runtime for di ff erent numbers of parallel processes. 10 0 10 1 10 2
+
+Number of processes Npar 
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+> Speed-up factor  SNpar
+> Ideal line
+> FEM, total
+> Proposed, total
+> Proposed, assembling reduced system
+> Proposed, solving reduced system
+
+Figure 21: Speed-up factors of the conventional FEM and the proposed method. 
+
+26 6. Conclusions 
+
+This study proposed the metagraph-based domain-decomposed Galerkin reduced-order model (MBDD-G-ROM), which combines a graph-based generalization of DD-G-ROMs with a hierarchical domain-partitioning strategy for distributed-memory parallel computation. The proposed method represents DD-G-ROMs defined over arbitrary do-main decompositions using calculation-point graphs and metagraphs, thereby providing a unified description of sub-domain connectivity and the associated block structure of the reduced system. Based on this representation, the hierarchical domain-partitioning strategy decouples the POD computation subdomains from the parallel computation subdomains, enabling distributed-memory parallelization of L-POD, including both reduced-system assembly and the linear solver. More specifically, each POD computation subdomain is represented as a metanode, and metaedges are defined according to the overlap of the supports of the local POD basis functions associated with di ff erent subdomains. The resulting metagraph encodes the block-sparsity pattern of the L-POD reduced system. This representation makes it possible to treat arbitrary-shaped POD computation subdomains as metanodes and to assign them independently to parallel computation subdomains through the second-stage graph partitioning. Moreover, this metagraph struc-ture provides a natural way to incorporate static load balancing through user-defined metanode weights representing estimated computational costs. The proposed method was then evaluated in terms of ROM accuracy and parallel performance. In the verification based on the unsteady di ff usion equation, increasing the number of POD computation subdomains improved the ROM accuracy, demonstrating the expected behavior of the L-POD implementation within the proposed method. Strong-scaling tests showed that the proposed method achieved high parallel e ffi ciency even for large-scale problems. The static load-balancing test further demonstrated that metanode weights based on estimated computational costs allow the second-stage graph partitioning to account for cost di ff erences among subdomains. In the tested case, this weighting improved computational e ffi ciency. Finally, the proposed method was applied to flow around a cylinder, demonstrating its applicability to complex flow fields and its ability to maintain high parallel computing e ffi ciency. Although this study employed L-POD to construct local linear reduced bases, the proposed metagraph-based gen-eralization is not restricted to POD-based basis construction. It can, in principle, accommodate a broad class of local model-reduction techniques whose inter-subdomain interactions can be represented on the metagraph. Future work will therefore include extending the present POD-based linear-subspace implementation to incorporate nonlinear-manifold-based approaches [10–14, 53], with the aim of improving ROM accuracy and e ffi ciency for problems with strongly nonlinear solution structures. In such problems, the e ff ective dimension of the local low-dimensional repre-sentations and the associated computational cost may vary with time and parameters. Dynamic load balancing within the proposed metagraph-based framework will also be investigated. 27 CRediT authorship contribution statement Kyohei Shintate : Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing – original draft, Visualization, Funding acquisition. Naoki Morita : Methodology, Software, Writing – review & editing, Supervision, Funding acquisition. Shigeki Kaneko : Methodology, Writing – review & editing, Supervision. 
+
+Nozomi Magome : Software, Writing – review & editing, Funding acquisition. Naoto Mitsume : Conceptualization, Project administration, Supervision, Writing – review & editing, Funding acquisition. 
+
+Funding 
+
+This work was supported by JST FOREST Grant Number JPMJFR215S, JST ACT-X Grant Number JPMJAX24LG, Joint Usage /Research Center for Interdisciplinary Large-scale Information Infrastructures (JHPCN) Grant Number jh240017, and JSPS KAKENHI Grant Numbers 24H00695, 26K02921, 26K21236, 26KJ0663. 
+
+Declaration of conflict of interest 
+
+The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. 28 A. Finite Element Method 
+
+In this appendix, the analysis domain is assumed to be a three-dimensional bounded domain Ω ⊂ R3, and its boundary is denoted by Γ. The boundary Γ is divided into the Dirichlet boundary Γg and the Neumann boundary Γh,satisfying Γ = Γ g ∪ Γh and Γg ∩ Γh = ∅.
+
+A.1. Unsteady Di ff usion Equation 
+
+The unsteady di ff usion equation used as the governing equation is given by 
+
+∂u
+
+∂t − ∇ · (k ∇u) = Q, (A.1) where k is the di ff usion coe ffi cient, u is the unknown representing the di ff using physical quantity, and Q is the source term representing the physical quantity generated in the analysis domain Ω. The boundary conditions are given by 
+
+u = uD on Γg, (A.2) 
+
+∇u · n = qN on Γh, (A.3) where uD is the value of the solution u on the Dirichlet boundary Γg, n is the outward normal vector on the Neumann boundary Γh, and qN is a function representing the physical quantity prescribed on the boundary Γh.The solution space and test function space are defined as 
+
+Sh := {u ∈ H1(Ω) | u|Γg = uD}, Vh := {w ∈ H1(Ω) | w|Γg = 0}. (A.4) The weak form of this problem is given as follows: 
+
+∃ u ∈ S h s.t. ∀w ∈ V h : aΩ(u, w) = ℓΩ(w), (A.5) where the bilinear form aΩ(u, w) and the linear functional ℓΩ(w) are defined by 
+
+aΩ(u, w) =  ∂u
+
+∂t , w 
+
+> Ω
+
++ (k∇u, ∇w)Ω, ℓΩ(w) = (Q, w)Ω + ⟨k q N , w⟩Γh . (A.6) Using the basis functions Ni of the finite element space Sh, the unknown u is expressed as 
+
+u ≈
+
+> nFOM
+
+X
+
+> i=1
+
+Ni ui, (A.7) where nFOM is the number of finite element nodes, Ni is the basis function defined at finite element node i, and ui is the coe ffi cient corresponding to Ni. The time derivative term is approximated by the backward di ff erence formula 
+
+∂ui
+
+∂t ≈ ut+∆ ti − uti
+
+∆t , (A.8) where uti is the coe ffi cient corresponding to the basis function Ni at time t, and ∆t is the time-step size. In this study, the di ff usion and source terms are evaluated at time t + ∆ t, yielding a temporal discretization based on the implicit Euler method. By applying Eqs. (A.7) and (A.8), together with the Galerkin method, to the weak form (A.5), the following discretized equation is obtained: 
+
+wT Ku = wT f , (A.9) where the matrix and vector components are given by 
+
+Ki j =
+
+Z
+
+> Ω
+
+Ni N j dΩ + ∆ t
+
+Z
+
+> Ω
+
+k ∇Ni · ∇ N j dΩ, (A.10) 
+
+ui = ut+∆ ti , (A.11) 
+
+fi = ∆ t
+
+Z
+
+> Ω
+
+Ni Q dΩ + ∆ t
+
+Z
+
+> Γh
+
+k N i qN dΓ + 
+
+> nFOM
+
+X
+
+> j=1
+
+Z
+
+> Ω
+
+Ni N j dΩ
+
+!
+
+utj. (A.12) 29 Here, w ∈ RnFOM is an arbitrary vector derived from the test function. The vector components wi of the weight vector 
+
+w satisfy wi = 0 ( i ∈ ηg), where ηg denotes the set of indices of finite element nodes on which Dirichlet boundary conditions are imposed. The matrix K ∈ RnFOM ×nFOM is the coe ffi cient matrix in the finite element method, u ∈ RnFOM is the solution vector, and f ∈ RnFOM is the right-hand-side vector. The solution vector u is expressed as u = ¯u + g, where 
+
+¯u is the unknown vector and g is a known vector satisfying the Dirichlet boundary conditions. The vector components ¯ui of ¯u satisfy ¯ ui = 0 ( i ∈ ηg), and the vector components gi of g satisfy gi = 0 ( i ∈ η − ηg). Here, η is the index set of the finite element nodes. The function g prescribed to satisfy the Dirichlet boundary conditions is also referred to as a lifting function [30, 77]. 
+
+A.2. Incompressible Navier–Stokes Equations 
+
+The momentum and continuity equations governing an incompressible viscous fluid are given in Eqs. (A.13) and (A.14), respectively, and the Dirichlet and Neumann boundary conditions are given in Eqs. (A.15) and (A.16), respectively. 
+
+ρ ∂u
+
+∂t + (u · ∇ ) u − f
+
+!
+
+− ∇ · σ = 0 in Ω, (A.13) 
+
+∇ · u = 0 in Ω, (A.14) 
+
+u = uD on Γg, (A.15) 
+
+σ n = h on Γh, (A.16) where ρ is the density, u is the velocity, p is the pressure, f is the body force per unit mass, and n is the outward unit normal vector. The Cauchy stress tensor σ is given by 
+
+σ = −pI + μ ∇u + (∇u)T , (A.17) where μ is the viscosity coe ffi cient and I is the second-order identity tensor. For the spatial discretization, this study adopts a monolithic formulation in which the velocity and pressure fields are treated simultaneously as unknowns. To suppress instabilities associated with advection and incompressibility, Galerkin least-squares (GLS) stabilization [74, 75] is introduced. Specifically, the streamline-upwind Petrov–Galerkin (SUPG), pressure-stabilizing Petrov–Galerkin (PSPG), and least-squares on incompressibility constraint (LSIC) terms are added. First, the solution and test function spaces are defined as 
+
+Sh := (uh, ph) ∈ V h × Q h uh|Γg = uD , Wh := (wh, qh) ∈ V h × Q h wh|Γg = 0 . (A.18) Here, uh is the finite element approximation of the velocity, ph is the finite element approximation of the pressure, wh
+
+is the test function corresponding to the velocity, and qh is the test function corresponding to the pressure. Moreover, 
+
+Vh ⊂ [H1(Ω)] 3 and Qh ⊂ L2(Ω). Next, the residuals of the momentum and continuity equations are defined as 
+
+rM (uh, ph) = ρ ∂uh
+
+∂t + (uh ·∇ )uh − f
+
+!
+
+− ∇· σ(uh, ph), (A.19) 
+
+rC (uh) = ∇· uh. (A.20) The weak form with GLS stabilization is given by 
+
+∃ (uh, ph) ∈ S h s.t. ∀ (wh, qh) ∈ W h : B(wh, qh; uh, ph) = F(wh, qh), (A.21) 30 where B and F are defined as 
+
+B(wh, qh; uh, ph) =
+
+Z
+
+> Ω
+
+wh · ρ ∂uh
+
+∂t + (uh ·∇ )uh
+
+ dΩ+
+
+Z
+
+> Ω
+> 12
+
+∇wh + (∇wh)T : σ(uh, ph) d Ω + 
+
+Z
+
+> Ω
+
+qh ∇· uh dΩ+
+
+> nelem
+
+X
+
+> e=1
+
+Z
+
+> Ωe
+
+τeM
+
+(uh ·∇ )wh + ∇ qh
+
+ρ
+
+ · rM (uh, ph) d Ω+
+
+> nelem
+
+X
+
+> e=1
+
+Z
+
+> Ωe
+
+ρ τ eC (∇· wh) rC (uh) d Ω, (A.22) 
+
+F(wh, qh) =
+
+Z
+
+> Ω
+
+wh · ρ f dΩ + 
+
+Z
+
+> Γh
+
+wh · h dΓ, (A.23) where nelem is the total number of finite elements. The element-wise stabilization parameters τeM and τeC are defined based on Taylor et al. [78] and Whiting et al. [79] as follows: 
+
+τeM = 4
+
+∆t2 + uh · Gu h + CI ν2 G : G
+
+!−1/2
+
+, (A.24) 
+
+τeC =  tr( G) τeM
+
+−1 , (A.25) where ∆t is the time-step size, ν = μ/ρ is the kinematic viscosity, and CI is an element-dependent constant. In this study, CI = 36 is used, which is the value employed for first-order hexahedral elements [80]. The tensor G is the element metric tensor, defined as 
+
+G = ∂ξ
+
+∂x
+
+!T ∂ξ
+
+∂x
+
+!
+
+, (A.26) where x is the coordinate vector in the physical coordinate system and ξ is the coordinate vector in the natural coordinate system. In this study, the weak form with the above GLS (SUPG /PSPG /LSIC) stabilization is spatially discretized using the finite element method, and the implicit Euler method is used for the temporal discretization. The resulting nonlinear system of equations is solved by Newton–Raphson iteration. The same function space is used for both velocity and pressure. First, the velocity, pressure, and test functions are approximated using the basis functions NA as follows: 
+
+uh =
+
+> nFOM
+
+X
+
+> A=1
+
+NA uA, ph =
+
+> nFOM
+
+X
+
+> A=1
+
+NA pA, (A.27) 
+
+wh =
+
+> nFOM
+
+X
+
+> A=1
+
+NA wA, qh =
+
+> nFOM
+
+X
+
+> A=1
+
+NA qA, (A.28) where nFOM is the number of finite element nodes. The time derivative term is approximated by the backward di ff er-ence formula 
+
+∂uA
+
+∂t = ut+∆ tA − utA
+
+∆t , (A.29) where utA is the velocity vector corresponding to the basis function NA at time t. In this study, the convective, viscous, and pressure terms are evaluated at time t + ∆ t, yielding a temporal discretization based on the implicit Euler method. Next, the unknown vector Ut+∆ t at time t + ∆ t is defined as 
+
+Ut+∆ t =
+
+(ut+∆ t
+
+pt+∆ t
+
+)
+
+, ut+∆ t = h(ut+∆ t 
+
+> 1
+
+)T, · · · , (ut+∆ tnFOM )TiT
+
+, pt+∆ t = hpt+∆ t 
+
+> 1
+
+, · · · , pt+∆ tnFOM 
+
+iT
+
+. (A.30) 31 After weighting by the test functions, the Newton–Raphson correction ∆U kt+∆ t satisfies 
+
+WT JU kt+∆ t
+
+ ∆U kt+∆ t = − WT rU kt+∆ t
+
+ , (A.31) 
+
+U k+1 
+
+> t+∆ t
+
+= U kt+∆ t + ∆ U kt+∆ t, (A.32) where k is the iteration index in the Newton–Raphson method. The iteration is continued until the following condition is satisfied: 
+
+rU kt+∆ t
+
+
+
+rU 0
+
+> t+∆ t
+
+ < ε NR , (A.33) where rU 0
+
+> t+∆ t
+
+ is the initial residual vector, and εNR is the convergence tolerance for the Newton–Raphson method. In this study, εNR = 10 −6 is used. The Jacobian J, correction ∆U kt+∆ t, residual vector r, and arbitrary vector W derived from the test functions are written in block form as 
+
+J =
+
+"J MM J MC 
+
+JCM JCC 
+
+#
+
+, ∆U kt+∆ t :=
+
+(∆u kt+∆ t
+
+∆pkt+∆ t
+
+)
+
+, r =
+
+(RM
+
+RC
+
+)
+
+,
+
+W =
+
+(wq
+
+)
+
+, w = h(w1)T, · · · , (wnFOM )TiT
+
+, q = hq1, · · · , qnFOM 
+
+iT
+
+.
+
+(A.34) Here, RM and RC are the residual vectors for the momentum and continuity equations, respectively. The compo-nents of the residual vectors RM and RC are defined using the basis and test functions as follows: 
+
+RM = [( RM )A,i], (A.35) (RM )A,i = B(NAei, 0; uh, ph) − F(NAei, 0) , (A.36) 
+
+RC = [( RC )A], (A.37) (RC )A = B(0, NA; uh, ph) − F(0, NA). (A.38) Here, ei (i = 1, 2, 3) denotes an orthonormal basis vector. The above equations correspond to evaluating the weak form by restricting the test functions to the velocity and pressure components, respectively. Specifically, ( RM )A,i is the di ff erence between the weak-form value B(NAei, 0; uh, ph) and the right-hand side F(NAei, 0) when only the test function for the velocity is prescribed, whereas ( RC )A is the corresponding di ff erence when only the test function for the pressure is prescribed. If RM = 0 and RC = 0, then the weak form is satisfied for all test functions, which means that the discretized equations are satisfied. Consequently, the block matrices of the Jacobian J are expressed as 
+
+J MM = ∂RM
+
+∂u t+∆ t, k
+
+, (A.39) 
+
+J MC = ∂RM
+
+∂p t+∆ t, k
+
+, (A.40) 
+
+JCM = ∂RC
+
+∂u t+∆ t, k
+
+, (A.41) 
+
+JCC = ∂RC
+
+∂p t+∆ t, k
+
+. (A.42) 32 B. Hyper-Reduction Method 
+
+B.1. Hyper-Reduction via Empirical Cubature 
+
+In G-ROMs, the computation of the projection operations for the Jacobian and residual vector, ˜ J = ΦT JΦ
+
+and ˜ r = ΦT r, can often become a computational bottleneck. To reduce this computational cost, various hyper-reduction methods have been proposed, including DEIM (discrete empirical interpolation method) [66], Gappy POD [68, 69], GNAT (Gauss–Newton with approximated tensors) [72], S-OPT [73], ECSW (energy-conserving sampling and weighting) [70, 71], and ECM (empirical cubature method) [65]. In this study, ECM [65] is employed as the hyper-reduction method, although the proposed method can be extended to other hyper-reduction methods. Through finite element discretization, the analysis domain is divided into a set of elements E = {e1, . . . , enelem }.For each element e, a Boolean matrix Le ∈ Rne×ndof is introduced to represent the correspondence between the local degrees of freedom defined within the element and the global degrees of freedom defined after element assembly. Here, ndof denotes the total number of degrees of freedom in the FOM. If node vi has di degrees of freedom, then 
+
+ndof =
+
+> nFOM
+
+X
+
+> i=1
+
+di.
+
+For systems with a constant number of degrees of freedom per node, this reduces to ndof = d n FOM , where d is the number of degrees of freedom per node. The Jacobian and residual vector can then be expressed in element-assembly form as 
+
+r =
+
+X
+
+> e∈E
+
+LT 
+
+> e
+
+re, J =
+
+X
+
+> e∈E
+
+LT 
+
+> e
+
+Je Le, (B.1) where re ∈ Rne is the residual vector associated with finite element e, Je ∈ Rne×ne is the Jacobian associated with finite element e, and ne is the number of degrees of freedom of finite element e.In ECM, a subset ˜ E ⊂ E consisting of nHROM ≪ nelem elements and nonnegative weights we (e ∈ ˜E) are determined, and the following approximations are used: 
+
+ΦT r =
+
+X
+
+> e∈E
+
+ΦT LT 
+
+> e
+
+re ≈
+
+X 
+
+> e∈˜E
+
+we ΦT LT 
+
+> e
+
+re, (B.2) 
+
+ΦT J Φ =
+
+X
+
+> e∈E
+
+ΦT LT 
+
+> e
+
+Je LeΦ ≈
+
+X 
+
+> e∈˜E
+
+we ΦT LT 
+
+> e
+
+Je LeΦ, (B.3) where ˜ E and we (e ∈ ˜E) are determined by the singular value decomposition and the NNLS (nonnegative least-squares) problem described below. In the training stage of ECM, ˜E and we are determined in a data-driven manner based on the solutions of the reduced system in (7) and (8). In the following, snapshot data {qs}nsnap  
+
+> s=1
+
+, with qs ∈ RnPOD , are prepared for the reduced problem (8) in the POD-Galerkin method, and the high-dimensional solution vector in the ROM corresponding to the 
+
+s-th snapshot data is taken as Φqs.First, for each element e, define 
+
+ges := ΦT LT 
+
+> e
+
+re(LeΦqs) ∈ RnPOD , bs :=
+
+X
+
+> e∈E
+
+ges ∈ RnPOD , (B.4) where ges is the vector associated with finite element e and the s-th snapshot data, s = 1, . . . , nsnap . Various datasets for storing ges have been proposed, including those incorporating volume-constraint conditions [81]; in this study, the residual vector for each finite element in the above expression is stored as the dataset. For the unsteady di ff usion equation in this study, ges = ΦT LT 
+
+> e
+
+Ke LeΦqs − ΦT LT 
+
+> e
+
+f e was used. Here, Ke ∈ Rne×ne is the element coe ffi cient matrix associated with finite element e, and f e ∈ Rne is the element right-hand-side vector associated with finite element e.By stacking the above quantities vertically for all snapshots, the following matrix and vector are obtained: 
+
+G =
+
+
+
+g11 · · · gnelem 
+
+> 1
+
+... . . . ...
+
+g1 
+
+> nsnap
+
+· · · gnelem 
+
+> nsnap
+
+ ∈ R(nPOD nsnap )×nelem , b =
+
+
+
+b1
+
+...
+
+bnsnap 
+
+ ∈ RnPOD nsnap . (B.5) 33 Figure B.22: Schematic overview of local POD bases and the subdomain-wise element partitioning used for ECM-based hyper-reduction. 
+
+In ECM, the singular value decomposition is applied to the matrix G:
+
+G = ZΛYT. (B.6) Based on the decay of the singular values, the dominant p left singular vectors are extracted, yielding Z p ∈ R(nPOD nsnap )×p.This provides a compressed representation of G in the subspace spanned by a small number of orthogonal basis vec-tors. Subsequently, the matrix G and vector b are projected onto the subspace compressed by the singular value decom-position, and the weight vector w = [w1, . . . , wnelem ]T is determined by 
+
+w = arg min 
+
+> z∈Rnelem
+
+∥z∥0
+
+subject to ZT 
+
+> p
+
+(Gz − b) ≤ εHROM ∥ZT 
+
+> p
+
+b∥, z ⪰ 0,
+
+(B.7) where ∥ · ∥ 0 denotes the ℓ0 pseudo-norm, that is, the number of nonzero components of its argument. The parameter 
+
+εHROM is a user-defined tolerance. The condition z ⪰ 0 indicates that each component of the candidate weight vector 
+
+z is nonnegative. Using the set of elements corresponding to the nonzero components of the solution w of Eq. (B.7), ˜E := { e ∈ E | we > 0 }, nHROM := | ˜E| ≪ nelem , (B.8) the online computation is accelerated using Eqs. (B.2) and (B.3). For Eq. (B.7), finding the solution with optimal sparsity, that is, the minimum number of elements, is known to be NP-hard. Therefore, in this study, a greedy method is used to determine the sparse weights w and element set ˜ E.Specifically, greedy NNLS [82], a greedy iterative algorithm, is adopted. Because the proposed method does not depend on the choice of hyper-reduction method, it can also be extended to other methods such as DEIM, GNAT, S-OPT, and ECSW. 
+
+B.2. Domain-Decomposition Hyper-Reduction 
+
+This subsection presents a procedure for hyper-reduction based on the ECSW method of Farhat et al. [70], in which NNLS is applied locally to each subdomain to determine the weights. In this study, as in ECM, singular value decomposition is applied to the element-contribution matrix constructed in each subdomain, and a local NNLS problem is solved on the resulting low-dimensional basis. Because POD is also performed for each subdomain in this study, the POD basis matrix has a block-diagonal form as in Eq. (31). Let the set of all elements be E = {e1, . . . , enelem }. For each subdomain i (1 ≤ i ≤ NPOD ), introduce an overlapping element set E(i) ⊂ E based on the overlapping node set ¯ V(i), such that 
+
+E =
+
+> NPOD
+
+[
+
+> i=1
+
+E(i). (B.9) 34 Because elements may be shared among subdomains, if subdomain i is adjacent to subdomain j, then 
+
+E(i) ∩ E ( j) , ∅ (B.10) may hold. To avoid double counting of elements during the hyper-reduction computation, a unique owner subdomain own( e) is assigned to each element e as own( e) : = max  i e ∈ E (i) . (B.11) This rule is adopted for reproducibility in defining the algorithm. Next, by defining the non-overlapping element set 
+
+E(i) :=  e ∈ E own( e) = i , (B.12) the collection {E (i)}NPOD  
+
+> i=1
+
+gives a mutually disjoint partition of the elements: 
+
+E(i) ∩ E ( j) = ∅ (i , j), (B.13) 
+
+> NPOD
+
+[
+
+> i=1
+
+E(i) = E. (B.14) Thus, the following relations are satisfied: 
+
+r =
+
+> NPOD
+
+X
+
+> i=1
+
+X
+
+> e∈E (i)
+
+LeT re, (B.15) 
+
+J =
+
+> NPOD
+
+X
+
+> i=1
+
+X
+
+> e∈E (i)
+
+LeT Je Le. (B.16) Figure B.22 shows the relationship between the L-POD basis and the element partition. For each subdomain i, the elements in the set E(i) are assigned local indices and expressed as 
+
+E(i) =
+
+
+
+e(i)1 , . . . , e(i)
+
+> n(i)elem
+
+
+
+, (B.17) where e(i) 
+
+> ℓ
+
+∈ E (i) denotes the ℓ-th element belonging to subdomain i, and the index ℓ is the local element number within subdomain i.In domain-decomposition ECM, the global matrix G is partitioned as 
+
+G =  G(1) , . . . , G(NPOD ), (B.18) where the matrix G(i) and vector b(i) are defined as 
+
+G(i) =
+
+
+
+ge(i)1 ,(i)1 · · · g
+
+> e(i)
+> n(i)elem
+> ,(i)1
+
+... . . . ...
+
+ge(i)1 ,(i) 
+
+> nsnap
+
+· · · g
+
+> e(i)
+> n(i)elem
+> ,(i)
+> nsnap
+
+
+
+∈ R   
+
+> nsnap
+> PNPOD
+> j=1n(j)POD
+> ×n(i)elem
+
+, (B.19) 
+
+b(i) =
+
+
+
+b(i)1
+
+...
+
+b(i)
+
+> nsnap
+
+ ∈ R nsnap    
+
+> PNPOD
+> j=1n(j)POD
+
+. (B.20) For an element e ∈ E (i) in subdomain i, the components are defined as 
+
+ge,(i) 
+
+> s
+
+:= ΦT LT 
+
+> e
+
+re(LeΦqs) ∈ RPNPOD    
+
+> j=1n(j)POD
+
+, b(i) 
+
+> s
+
+:=
+
+X
+
+> e∈E (i)
+
+ge,(i) 
+
+> s
+
+∈ RPNPOD    
+
+> j=1n(j)POD
+
+. (B.21) 35 Here, the index corresponding to the snapshot data is s = 1, . . . , nsnap , and the reduced solution vector is qs ∈
+
+RPNPOD   
+
+> i=1n(i)POD
+
+. In practical computations, G(i) and b(i) are computed using the POD bases of subdomain i and its neighbor-ing subdomains j ∈ nbhd(˜ vi, ˜G), and therefore the computation can be performed independently for each subdomain. Next, singular value decomposition is applied to the matrix G(i) constructed in each subdomain i:
+
+G(i) = Z(i)Λ(i) Y(i)T
+
+. (B.22) Based on the decay of the singular values, the dominant pi left singular vectors Z(i) 
+
+> pi
+
+are extracted: 
+
+Z(i) 
+
+> pi
+
+= hz(i)1 , . . . , z(i)
+
+> pi
+
+i ∈ R   
+
+> nsnap
+> PNPOD
+> j=1n(j)POD
+> ×pi
+
+. (B.23) This represents G(i) in each subdomain using a small number of orthogonal basis vectors. Finally, in each subdomain i, the following optimization problem in the space compressed by singular value decomposition is solved using greedy NNLS [82]: 
+
+w(i) = arg min 
+
+> z(i)∈Rn(i)elem
+
+∥z(i)∥0
+
+subject to Z(i)
+
+> pi
+
+T
+
+(G(i) z(i) − b(i)) ≤ εHROM ∥ Z(i)
+
+> pi
+
+T
+
+b(i)∥, z(i) ⪰ 0.
+
+(B.24) The resulting solution is the local weight vector w(i) ∈ Rn(i)elem .
+
+References 
+
+[1] P. Benner, S. Grivet-Talocia, A. Quarteroni, G. Rozza, W. Schilders, L. M. Silveira. Snapshot-Based Methods and Algorithms , volume 2 of Model Order Reduction . De Gruyter, 2020. [2] A. Quarteroni, A. Manzoni, F. Negri. Reduced Basis Methods for Partial Di ff erential Equations: An Introduc-tion , volume 92 of UNITEXT . Springer Cham, 2016. [3] K. Lu, Y. Jin, Y. Chen, Y. Yang, L. Hou, Z. Zhang, Z. Li, C. Fu. Review for order reduction based on proper orthogonal decomposition and outlooks of applications in mechanical systems. Mechanical Systems and Signal Processing , 123:264–297, 2019. [4] C. Canuto, M.Y. Hussaini, A. Quarteroni, T.A. Zang. Spectral methods: fundamentals in single domains .Springer Berlin Heidelberg, 2006. [5] J. K. Bennighof, R. B. Lehoucq. An automated multilevel substructuring method for eigenspace computation in linear elastodynamics. SIAM Journal on Scientific Computing , 25(6):2084–2106, 2004. [6] J. Moehlis, H. Faisst, B. Eckhardt. A low-dimensional model for turbulent shear flows. New Journal of Physics ,6:56, 2004. [7] F. Wale ff e. On a self-sustaining process in shear flows. Physics of Fluids , 9(4):883–900, 1997. [8] L. Sirovich. Turbulence and the dynamics of coherent structures. I – Coherent structures. Quarterly of Applied Mathematics , 45(3):561–571, 1987. [9] K. Willcox, J. Peraire. Balanced model reduction via the proper orthogonal decomposition. AIAA Journal ,40(11):2323–2330, 2002. [10] J.B. Rutzmoser, D.J. Rixen, P. Tiso, S. Jain. Generalization of quadratic manifolds for reduced order modeling of nonlinear structural dynamics. Computers & Structures , 192:196–209, 2017. [11] J. Barnett, C. Farhat. Quadratic approximation manifold for mitigating the Kolmogorov barrier in nonlinear projection-based model order reduction. Journal of Computational Physics , 464:111348, 2022. 36 [12] R. Geelen, S. Wright, K. Willcox. Operator inference for non-intrusive model reduction with quadratic mani-folds. Computer Methods in Applied Mechanics and Engineering , 403:115717, 2023. [13] Y. Kim, Y. Choi, B. Yoo. Gappy AE: A nonlinear approach for Gappy data reconstruction using auto-encoder. 
+
+Computer Methods in Applied Mechanics and Engineering , 426:116978, 2024. [14] K.J. Lee, K.T. Carlberg. Model reduction of dynamical systems on nonlinear manifolds using deep convolutional autoencoders. Journal of Computational Physics , 404:108973, 2020. [15] T. Lassila, G. Rozza. Parametric free-form shape design with PDE models and reduced basis method. Computer Methods in Applied Mechanics and Engineering , 199(23):1583–1592, 2010. [16] A. Manzoni, A. Quarteroni, G. Rozza. Shape optimization for viscous flows by reduced basis methods and free-form deformation. International Journal for Numerical Methods in Fluids , 70(5):646–670, 2012. [17] S.S. Ravindran. A reduced-order approach for optimal control of fluids using proper orthogonal decomposition. 
+
+Journal of Scientific Computing , 15(4):457–478, 2000. [18] M. Strazzullo, F. Ballarin, G. Rozza. POD–Galerkin model order reduction for parametrized time dependent linear quadratic optimal control problems in saddle point formulation. Journal of Scientific Computing , 83(3), 2020. [19] N. T. Son. A real time procedure for a ffi nely dependent parametric model order reduction using interpolation on Grassmann manifolds. International Journal for Numerical Methods in Engineering , 93:818–833, 2013. [20] D. Amsallem, J. Cortial, K. Carlberg, C. Farhat. A method for interpolating on manifolds structural dynamics reduced-order models. International Journal for Numerical Methods in Engineering , 80:1241–1258, 2009. [21] J. Baiges, R. Codina, S. Idelsohn. A domain decomposition strategy for reduced order models: Application to the incompressible Navier–Stokes equations. Computer Methods in Applied Mechanics and Engineering ,267:23–42, 2013. [22] C. Cao, C. Nie, S. Pan, J. Cai, K. Qu. A constrained reduced-order method for fast prediction of steady hyper-sonic flows. Aerospace Science and Technology , 91:679–690, 2019. [23] Z. Wang, B. McBee, T. Iliescu. Approximate partitioned method of snapshots for POD. Journal of Computa-tional and Applied Mathematics , 307:374–384, 2016. [24] B. Eiximeno, A. Miró, B. Begiashvili, E. Valero, I. Rodriguez, O. Lehmkhul. PyLOM: A HPC open source reduced order model suite for fluid dynamics applications. Computer Physics Communications , 308:109459, 2025. [25] I. G. Farca¸ s, R. P. Gundevia, R. Munipalli, K. E. Willcox. Distributed computing for physics-based data-driven reduced modeling at scale: Application to a rotating detonation rocket engine. Computer Physics Communica-tions , 313:109619, 2025. [26] S. W. Chung, Y. Choi, P. Roy, T. Moore, T. Roy, T. Y. Lin, D. T. Nguyen, C. Hahn, E. B. Duoss, S. E. Baker. Train small, model big: Scalable physics simulators via reduced order modeling and domain decomposition. 
+
+Computer Methods in Applied Mechanics and Engineering , 427:117041, 2024. [27] B. Peherstorfer. Model reduction for transport-dominated problems via online adaptive bases and adaptive sampling. SIAM Journal on Scientific Computing , 42(5):A2803–A2836, 2020. [28] J. Östh, B.R. Noack, S. Krajnovi´ c, D. Barros, J. Borée. On the need for a nonlinear subscale turbulence term in POD models as exemplified for a high-Reynolds-number flow over an Ahmed body. Journal of Fluid Mechanics ,747:518–544, 2014. 37 [29] D.J. Lucia, P.I. King, P.S. Beran. Reduced order modeling of a two-dimensional flow with moving shocks. 
+
+Computers & Fluids , 32(7):917–938, 2003. [30] F. Ballarin, A. Manzoni, A. Quarteroni, G. Rozza. Supremizer stabilization of POD–Galerkin approximation of parametrized steady incompressible Navier–Stokes equations. International Journal for Numerical Methods in Engineering , 102(5):1136–1161, 2015. [31] R. Reyes, R. Codina. Projection-based reduced order models for flow problems: a variational multiscale ap-proach. Computer Methods in Applied Mechanics and Engineering , 363:112844, 2020. [32] S. Dave, A. Korobenko. Consistent reduced order modeling for wind turbine wakes using variational multi-scale method and actuator line model. Computer Methods in Applied Mechanics and Engineering , 446(Part A):118194, 2025. [33] P. Kerfriden, O. Goury, T. Rabczuk, S.P.A. Bordas. A partitioned model order reduction approach to ratio-nalise computational expenses in nonlinear fracture mechanics. Computer Methods in Applied Mechanics and Engineering , 256:169–188, 2013. [34] A. Corigliano, M. Dossi, S. Mariani. Model order reduction and domain decomposition strategies for the solution of the dynamic elastic–plastic structural problem. Computer Methods in Applied Mechanics and Engineering ,290:127–155, 2015. [35] I.B.C.M. Rocha, F.P. van der Meer, L.A.T. Mororó, L.J. Sluys. Accelerating crack growth simulations through adaptive model order reduction. International Journal for Numerical Methods in Engineering , 121(10):2147– 2173, 2020. [36] V. Dolean, P. Jolivet, F. Nataf. An introduction to domain decomposition methods. 2015. [37] A. Toselli, O. Widlund. Domain decomposition methods – algorithms and theory. Springer Series in Computa-tional Mathematics , 34, 2005. [38] C. Farhat, M. Lesoinne, P. LeTallec, K. Pierson, D. Rixen. FETI-DP: a dual-primal unified FETI method – Part I: a faster alternative to the two-level FETI method. International Journal for Numerical Methods in Engineering ,50(7):1523–1544, 2001. [39] C.R. Dohrmann. A preconditioner for substructuring based on constrained energy minimization. SIAM Journal on Scientific Computing , 25(1):246–258, 2003. [40] B. Galletti, C. H. Bruneau, L. Zannetti, A. Iollo. Low-order modelling of laminar flow regimes past a confined square cylinder. Journal of Fluid Mechanics , 503:161–170, 2004. [41] P. Kerfriden, J. C. Passieux, S. P. Bordas. Local /global model order reduction strategy for the simulation of quasi-brittle fracture: Local /Global Model Order Reduction. International Journal for Numerical Methods in Engineering , 89(2):154–179, 2012. [42] D. B. Huynh, D. J. Knezevic, A. T. Patera. A Static Condensation Reduced Basis Element method: approxima-tion and a posteriori error estimation. ESAIM: Mathematical Modelling and Numerical Analysis , 47(1):213–251, 2013. [43] K. Smetana, A. T. Patera. Optimal local approximation spaces for component-based static condensation proce-dures. SIAM Journal on Scientific Computing , 38(5):A3318–A3356, 2016. [44] A. Iollo, G. Sambataro, T. Taddei. A one-shot overlapping Schwarz method for component-based model reduc-tion: application to nonlinear elasticity. Computer Methods in Applied Mechanics and Engineering , 404:115786, 2023. 38 [45] T. Taddei, X. Xu, L. Zhang. A non-overlapping optimization-based domain decomposition approach to component-based model reduction of incompressible flows. Journal of Computational Physics , 509:113038, 2024. [46] C. Huang, K. Duraisamy, C. Merkle. Component-based reduced order modeling of large-scale complex systems. 
+
+Frontiers in Physics , 10:900064, 2022. [47] L. Iapichino, A. Quarteroni, G. Rozza. Reduced basis method and domain decomposition for elliptic problems in networks and complex parametrized geometries. Computers & Mathematics with Applications , 71(1):408–430, 2016. [48] M. G. Kapteyn, D. J. Knezevic, D. B. Huynh, M. Tran, K. E. Willcox. Data-driven physics-based digital twins via a library of component-based reduced-order models. International Journal for Numerical Methods in Engi-neering , 123(13):2986–3003, 2022. [49] A. Corigliano, M. Dossi, S. Mariani. Domain decomposition and model order reduction methods applied to the simulation of multi-physics problems in MEMS. Computers & Structures , 122:113–127, 2013. [50] N. Discacciati, J. Hesthaven. Localized model order reduction and domain decomposition methods for coupled heterogeneous systems. International Journal for Numerical Methods in Engineering , 124(18):3964–3996, 2023. [51] A. de Castro, H. Lee, M. M. Wiecek. Reduced order modeling for a Schur complement method for fluid-structure interaction. Journal of Computational Physics , 515:113282, 2024. [52] C. Hoang, Y. Choi, K. Carlberg. Domain-decomposition least-squares Petrov–Galerkin (DD-LSPG) nonlinear model reduction. Computer Methods in Applied Mechanics and Engineering , 384:113997, 2021. [53] A. N. Diaz, Y. Choi, M. Heinkenschloss. A fast and accurate domain decomposition nonlinear manifold reduced order model. Computer Methods in Applied Mechanics and Engineering , 425:116943, 2024. [54] G. Yagawa, R. Shioya. Parallel finite elements on a massively parallel computer with domain decomposition. 
+
+Computing Systems in Engineering , 4(4):495–503, 1993. [55] K. E. Jansen, C. H. Whiting, G. M. Hulbert. A generalized-α method for integrating the filtered Navier–Stokes equations with a stabilized finite element method. Computer Methods in Applied Mechanics and Engineering ,190(3–4):305–319, 2000. [56] I. Prusak, M. Nonino, D. Torlo, F. Ballarin, G. Rozza. An optimisation-based domain-decomposition reduced order model for the incompressible Navier–Stokes equations. Computers & Mathematics with Applications ,151:259–276, 2023. [57] D. Xiao, C. E. Heaney, F. Fang, L. Mottet, R. Hu, D. A. Bistrian, E. Aristodemou, I. M. Navon, and C. C. Pain. A domain decomposition non-intrusive reduced order model for turbulent flows. Computers & Fluids , 182:15–27, 2019. [58] D. Walker, J. Dongarra. MPI: a standard message passing interface. Supercomputer , 12, 1995. [59] D. Pekurovsky. P3DFFT: A Framework for Parallel Computations of Fourier Transforms in Three Dimensions. 
+
+SIAM Journal on Scientific Computing , 34(4):C192–C209, 2012. [60] M. Bader. Space-Filling Curves: An Introduction with Applications in Scientific Computing . Springer, 2013. [61] G. Karypis, V. Kumar. A fast and high quality multilevel scheme for partitioning irregular graphs. SIAM Journal on Scientific Computing , 20(1):359–392, 1999. [62] Cybermedia Center, Osaka University. Supercomputer for Quest to Unsolved Interdisciplinary Datascience (SQUID), 2026. http://www.hpc.cmc.osaka-u.ac.jp/squid/ . Accessed: June 26, 2026. 39 [63] N. Morita, N. Mitsume. Metagraph-Oriented Network for Linear Iterative Solvers (MONOLIS). , 2026. Ac-cessed June 26, 2026. [64] L. Blackford, J. Choi, A. Cleary, E. D’Azevedo, J. Demmel, I. Dhillon, J. Dongarra, S. Hammarling, G. Henry, A. Petitet, K. Stanley, D. Walker, R. C. Whaley. ScaLAPACK users’ guide. Society for Industrial and Applied Mathematics , 1997. [65] J. A. Hernández, M. A. Caicedo, A. Ferrer. Dimensional hyper-reduction of nonlinear finite element models via empirical cubature. Computer Methods in Applied Mechanics and Engineering , 313:687–722, 2017. [66] S. Chaturantabut, D. C. Sorensen. Nonlinear model reduction via Discrete Empirical Interpolation. SIAM Journal on Scientific Computing , 32(5):2737–2764, 2010. [67] D. Ryckelynck. A priori hyperreduction method: an adaptive approach. Journal of Computational Physics ,202(1):346–366, 2005. [68] K. Willcox. Unsteady flow sensing and estimation via the gappy proper orthogonal decomposition. Computers 
+
+& Fluids , 35(2):208–226, 2006. [69] S. Kaneko, H. Wei, Q. He, J. Chen, S. Yoshimura. A hyper-reduction computational method for accelerated modeling of thermal cycling-induced plastic deformations. Journal of the Mechanics and Physics of Solids ,151:104385, 2021. [70] C. Farhat, T. Chapman, P. Avery. Structure-preserving, stability, and accuracy properties of the energy-conserving sampling and weighting method for the hyper reduction of nonlinear finite element dynamic models. 
+
+International Journal for Numerical Methods in Engineering , 102:1077–1110, 2015. [71] S. Grimberg, C. Farhat, R. Tezaur, C. Bou-Mosleh. Mesh sampling and weighting for the hyperreduction of nonlinear Petrov-Galerkin reduced-order models with local reduced-order bases. International Journal for Nu-merical Methods in Engineering , 122(7):1846–1874, 2021. [72] K. T. Carlberg, C. Farhat, J. Cortial, D. Amsallem. The GNAT method for nonlinear model reduction: E ff ective implementation and application to computational fluid dynamics and turbulent flows. Journal of Computational Physics , 242:623–647, 2013. [73] J. T. Lauzon, S. W. Cheung, Y. Shin, Y. Choi, D. M. Copeland, K. Huynh. S-OPT: A Points Selection Algorithm for Hyper-Reduction in Reduced Order Models. SIAM Journal on Scientific Computing , 46:B474–B501, 2024. [74] T. E. Tezduyar. Stabilized finite element formulations for incompressible flow computations. Advances in Applied Mechanics , 28:1–44, 1991. [75] T. E. Tezduyar, S. Mittal, S. E. Ray, R. Shih. Incompressible flow computations with stabilized bilinear and linear equal-order-interpolation velocity-pressure elements. Computer Methods in Applied Mechanics and En-gineering , 95(2):221–242, 1992. [76] S. Fujino, M. Fujiwara, M. Yoshida. BiCGSafe method based on minimization of associate residual. Transac-tions of the Japan Society for Computational Engineering and Science , 8:145–152, 2005. [77] G. Oxberry, T. Kostova-Vassilevska, W. Arrighi, K. Chand. Limited-memory adaptive snapshot selection for proper orthogonal decomposition. International Journal for Numerical Methods in Engineering , 109(2):198– 217, 2017. [78] C. A. Taylor, T. J. Hughes, C. K. Zarins. Finite element modeling of blood flow in arteries. Computer Methods in Applied Mechanics and Engineering , 158(1–2):155–196, 1998. [79] C. H. Whiting, K. E. Jansen. A stabilized finite element method for the incompressible Navier–Stokes equations using a hierarchical basis. International Journal for Numerical Methods in Fluids , 35(1):93–116, 2001. 40 [80] C. H. Whiting. Stabilized finite element methods for fluid dynamics using a hierarchical basis. Ph.D. thesis, Rensselaer Polytechnic Institute , 1999. [81] M. Yano. Discontinuous Galerkin reduced basis empirical quadrature procedure for model reduction of parametrized nonlinear conservation laws. Advances in Computational Mathematics , 45(5):2287–2320, 2019. [82] C. L. Lawson, R. J. Hanson. Solving least squares problems. Society for Industrial and Applied Mathematics ,1995. 41
