@@ -1,0 +1,303 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-13T21:40:41.463880+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 3,
+    "deep_divecandidates": 3,
+    "deep_cap": 8,
+    "deep_selected": 3,
+    "quick_candidates": 4,
+    "quick_skim_target": 13,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2607.07034v1",
+      "source": "arxiv",
+      "title": "Intrinsic Green's Learning: Supervised Learning on Manifolds via Inverse PDE",
+      "abstract": "We introduce Intrinsic Green's Learning (IGL), a framework that models a target function on a manifold as the solution to a linear PDE whose source term is learned from data. Rather than approximating the target directly, IGL learns a source and integrates it against a Green's kernel. An encoder discovers a low-dimensional coordinate chart on the manifold where both the source and the kernel decompose as low-rank tensors, collapsing a high-dimensional integral into independent one-dimensional integrals with cost linear in the intrinsic dimension. A two-stage algorithm separates coordinate discovery from source fitting, a near-convex linear solve, preventing the dimensional collapse of joint training. Learnable gates on each coordinate automatically discover the intrinsic dimension of the manifold. We validate IGL on synthetic manifolds and on MNIST, where it simultaneously achieves near-optimal classification and automatic recovery of the intrinsic dimension.",
+      "authors": [
+        "Alexandre Quemy"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-07-08T06:08:17+00:00",
+      "link": "https://arxiv.org/pdf/2607.07034v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "learns low-dimensional latent coordinates where target function satisfies a PDE via Green's kernel, enforcing physical constraints in latent space",
+      "llm_evidence_cn": "学习低维潜在坐标，通过格林核使目标函数满足偏微分方程，在潜在空间中施加物理约束",
+      "llm_evidence": "学习低维潜在坐标，通过格林核使目标函数满足偏微分方程，在潜在空间中施加物理约束",
+      "canonical_evidence": "学习低维潜在坐标，通过格林核使目标函数满足偏微分方程，在潜在空间中施加物理约束",
+      "llm_tldr_en": "Introduces Intrinsic Green's Learning (IGL), which models a target function on a manifold as a solution to a linear PDE, learning a source and integrating against a Green's kernel. An encoder discovers low-dimensional latent coordinates where the kernel decomposes as low-rank tensors, enabling efficient learning under physical constraints.",
+      "llm_tldr_cn": "该论文提出内在格林函数学习（IGL），将流形上的目标函数建模为线性偏微分方程的解。与传统直接逼近目标不同，IGL从数据中学习源项并与格林核积分。编码器发现低维坐标图，使源和核分解为低秩张量，将高维积分降为线性复杂度。两阶段算法分离坐标发现与源拟合，防止联合训练坍塌。该方法在潜在空间中嵌入了物理约束，适用于满足物理定律的监督学习。",
+      "llm_tldr": "该论文提出内在格林函数学习（IGL），将流形上的目标函数建模为线性偏微分方程的解。与传统直接逼近目标不同，IGL从数据中学习源项并与格林核积分。编码器发现低维坐标图，使源和核分解为低秩张量，将高维积分降为线性复杂度。两阶段算法分离坐标发现与源拟合，防止联合训练坍塌。该方法在潜在空间中嵌入了物理约束，适用于满足物理定律的监督学习。",
+      "llm_tags": [
+        "query:pc-latent"
+      ],
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "learning latent space that satisfies physical laws",
+      "matched_requirement_id": "req-20",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.09071v1",
+      "source": "arxiv",
+      "title": "Physics informed wavelet Fourier representation for multiscale fluid dynamics",
+      "abstract": "Multiscale fluid flows often contain localized flow structures, such as viscous shock layers, wet-dry fronts, steady viscous wakes, decaying vortical structures, and vortex-shedding patterns, whose accurate prediction requires the simultaneous preservation of global conservation trends and small-scale gradients. This study examines these flow-physics requirements through a physics-informed wavelet-Fourier (PIWF) representation for multiscale fluid dynamics. Instead of relying on a single monolithic neural approximator, the formulation separates two complementary components of the flow field within a physics-informed neural representation: long-range coherent modes through a Fourier-basis branch and localized steep-gradient or vortical features through a compactly supported wavelet branch. The outputs are fused with a residual multilayer perceptron using channel attention, and the governing equations, initial conditions, and boundary conditions are imposed directly through the physics-informed loss. The model is assessed on five canonical fluid-dynamics problems: Burgers' equation, the shallow water equations, Kovasznay flow, Taylor--Green vortex flow, and two-dimensional cylinder wake flow. The results show that PIWF improves the resolution of shock-like gradients, wet--dry interfaces, steady wake fields, decaying vortical structures, vorticity extrema, and broadband wake spectra relative to standard physics-informed neural networks and physics-informed Kolmogorov--Arnold networks. These findings indicate that a wavelet-Fourier physics-informed representation can provide a useful route for analyzing multiscale flow phenomena when high-fidelity interior reference data are limited or unavailable.",
+      "authors": [
+        "Chao Wang",
+        "Shilong Li",
+        "Yunpeng Wang",
+        "Tianbai Xiao",
+        "Zelong Yuan",
+        "Chenyue Xie",
+        "Chunyu Guo"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-10T03:31:48+00:00",
+      "link": "https://arxiv.org/pdf/2607.09071v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "physics-informed neural representation for multiscale fluid dynamics",
+      "llm_evidence_cn": "用于多尺度流体动力学的物理信息神经表示",
+      "llm_evidence": "用于多尺度流体动力学的物理信息神经表示",
+      "canonical_evidence": "用于多尺度流体动力学的物理信息神经表示",
+      "llm_tldr_en": "Proposes a physics-informed wavelet-Fourier (PIWF) representation that separates long-range coherent modes and localized features for multiscale fluid dynamics prediction, demonstrating accuracy on challenging flows.",
+      "llm_tldr_cn": "该论文提出了一种物理信息小波傅里叶（PIWF）表示方法，用于多尺度流体动力学。该方法将流场分解为长程相干模式（通过傅里叶基）和局部陡梯度/涡旋特征（通过小波），从而在单个神经表示中同时保留全局守恒和局部梯度。实验表明，该方法能准确预测包含激波层、涡脱落等复杂结构的多尺度流动，体现了数据驱动与物理约束结合的优势。",
+      "llm_tldr": "该论文提出了一种物理信息小波傅里叶（PIWF）表示方法，用于多尺度流体动力学。该方法将流场分解为长程相干模式（通过傅里叶基）和局部陡梯度/涡旋特征（通过小波），从而在单个神经表示中同时保留全局守恒和局部梯度。实验表明，该方法能准确预测包含激波层、涡脱落等复杂结构的多尺度流动，体现了数据驱动与物理约束结合的优势。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.04491v2",
+      "source": "arxiv",
+      "title": "Generalizable turbulence closures across bluff-body shapes by PINN-based solver-agnostic training",
+      "abstract": "Data-driven turbulence closures are usually calibrated by inverse methods that embed a CFD solver in the loop, tying the model to a particular discretization and requiring every iterate to yield a convergent solve. We instead train the closure inside a physics-informed neural network (PINN): the Reynolds-averaged Navier-Stokes residual is imposed by automatic differentiation, so the inverse problem is mesh-free, differentiable, and solver-agnostic. Because no forward solve runs during training, only the final closure need be solver-stable, arbitrary neural closures are admitted without an adjoint, and the iterative cost of adjoint or ensemble methods vanishes; each hypothesis trains in minutes on a single GPU, so the framework rapidly screens closure forms. We develop four closures: three model the Reynolds stress on a realizable tensor basis -- a local map, a non-local model transporting the turbulent kinetic energy and recovering the out-of-plane normal stress, and the same with a learned length scale l -- and a fourth models the Reynolds force F = -\\nabla \\cdot τdirectly, free of the realizability constraint. All four are trained across six two-dimensional bluff-body wakes at Re = 10^4 and deployed frozen in a standard finite-element solver, stabilized by input-gradient smoothing and a Lipschitz constraint. Under a strict leave-one-shape-out (LOSO) protocol, all four improve substantially on a steady SST k-omega baseline. The learned-length-scale closure is most accurate on the stress fields, while the force model generalizes best on the mean velocity and drag (LOSO drag error ~8.5%). The closures also train efficiently on Particle Image Velocimetry data, enabling geometries intractable for DNS.",
+      "authors": [
+        "Zhen Zhang",
+        "Theo Käufer",
+        "Louise Ronglan",
+        "Michael S. Triantafyllou",
+        "George Em Karniadakis"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-05T20:31:44+00:00",
+      "link": "https://arxiv.org/pdf/2607.04491v2",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:sfc"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "data-driven turbulence closure using PINN for fluid flow prediction",
+      "llm_evidence_cn": "使用PINN的数据驱动湍流闭合模型用于流场预测",
+      "llm_evidence": "使用PINN的数据驱动湍流闭合模型用于流场预测",
+      "canonical_evidence": "使用PINN的数据驱动湍流闭合模型用于流场预测",
+      "llm_tldr_en": "This paper proposes a PINN-based solver-agnostic training framework for data-driven turbulence closures, enabling fast training and generalization across bluff-body shapes without needing a CFD solver in the loop.",
+      "llm_tldr_cn": "该论文提出了一种基于物理信息神经网络（PINN）的求解器无关训练框架，用于数据驱动的湍流闭合模型。该框架通过自动微分施加雷诺平均纳维-斯托克斯残差约束，无需嵌入CFD求解器，每个假设在单GPU上几分钟内完成训练。实验表明该方法在不同形状的钝体湍流中具有良好的泛化能力，为流体建模提供了一种高效、通用且易于部署的解决方案。",
+      "llm_tldr": "该论文提出了一种基于物理信息神经网络（PINN）的求解器无关训练框架，用于数据驱动的湍流闭合模型。该框架通过自动微分施加雷诺平均纳维-斯托克斯残差约束，无需嵌入CFD求解器，每个假设在单GPU上几分钟内完成训练。实验表明该方法在不同形状的钝体湍流中具有良好的泛化能力，为流体建模提供了一种高效、通用且易于部署的解决方案。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.06237v1",
+      "source": "arxiv",
+      "title": "PhyRes-MDNF: Physics-Coupled Residual GNN Correction for Multilevel Discrete Neural Field Inversion",
+      "abstract": "Coefficient inversion on fine grids under PDE constraints is ill conditioned: sparse observations weakly constrain fine-scale parameters, and direct single-resolution optimization must recover state and coefficient fields across all scales simultaneously. This causes slow, initialization-sensitive convergence; learned transfer models require offline data and can introduce approximation error into the numerical physics. We propose PhyRes-MDNF, a fixed-physics multilevel discrete neural field framework. On each level, a single-level DNF represents the inverse unknowns directly as trainable fields and optimizes the discrete objective. In the full-space Darcy realization, state fields \\(U\\) and their shared coefficient field \\(K\\) are optimized jointly in one fixed-physics inverse process. Between levels, one zero-initialized PhyRes-GNN jointly performs fixed-stencil prolongation and bounded residual correction to construct an incoming target representation, which a fixed initialization map converts to the next DNF variables. It is fitted anew from the observations and unchanged numerical model, without offline pretraining or fine-grid truth. Coarse levels therefore resolve large-scale structure before refined degrees of freedom are introduced, shortening the fine-grid optimization path while retaining the original discrete operator. Under the same final-grid update budget, the multilevel Darcy realization reduces coefficient and state errors by approximately \\(85\\%\\) and \\(90\\%\\), respectively, demonstrating improved accuracy and final-grid iteration efficiency. On measured KTC2023 EIT data, the full-\\(W\\) pipeline improves mean Otsu mIoU by approximately \\(3.4\\%\\) over the official linearized CEM reconstruction and \\(16.9\\%\\) over direct single-level DNF.",
+      "authors": [
+        "Zheng Lu",
+        "Jiwei Jia",
+        "Young Ju Lee"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA"
+      ],
+      "published": "2026-07-07T13:05:56+00:00",
+      "link": "https://arxiv.org/pdf/2607.06237v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "physics-coupled neural field inversion with multilevel optimization",
+      "llm_evidence_cn": "物理耦合神经场反演与多级优化",
+      "llm_evidence": "物理耦合神经场反演与多级优化",
+      "canonical_evidence": "物理耦合神经场反演与多级优化",
+      "llm_tldr_en": "PhyRes-MDNF uses a fixed-physics multilevel discrete neural field framework for PDE-constrained coefficient inversion, correcting residuals via GNN.",
+      "llm_tldr_cn": "细网格上的PDE约束系数反演高度病态。本文提出PhyRes-MDNF，一种固定物理的多级离散神经场框架，通过GNN残差校正逐步优化反演结果。在Darcy流实现中，状态场和系数场联合优化，有效克服了稀疏观测对细尺度参数约束弱的问题，并避免了纯学习模型引入的误差。",
+      "llm_tldr": "细网格上的PDE约束系数反演高度病态。本文提出PhyRes-MDNF，一种固定物理的多级离散神经场框架，通过GNN残差校正逐步优化反演结果。在Darcy流实现中，状态场和系数场联合优化，有效克服了稀疏观测对细尺度参数约束弱的问题，并避免了纯学习模型引入的误差。",
+      "llm_tags": [
+        "query:pc-latent:composite"
+      ],
+      "matched_query_tag": "query:pc-latent:composite",
+      "matched_query_text": "Papers central to 物理约束潜在空间学习与优化, especially work that connects or combines: latent dynamics; physics constrained learning for latent space models; latent space optimization under physical constraints; latent space methods with physical constraints; latent variable models with constraints from physics; learning latent space that satisfies physical laws; optimizing latent variables with physics constraints; physics constrained autoencoder training.",
+      "matched_requirement_id": "req-composite-pc-latent",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.07687v2",
+      "source": "arxiv",
+      "title": "Scaling WaterLily.jl with MPI and an improved geometric multigrid solver",
+      "abstract": "We present recent performance-oriented developments in WaterLily, a scale-resolving incompressible flow solver written in pure Julia that runs seamlessly on CPUs and GPUs of any vendor. Supported by the newly added MPI-based parallelism, strong-scalability tests display a near-ideal linear trend, and weak-scaling efficiency is kept above 85% before node memory-concurrency contention dominates parallel performance. Inter-node weak scalability is sustained above 96% with grid size up to 1 billion cells. We further benchmark improvements to the geometric multigrid Poisson solver enabled by an adaptive under-relaxed red-black Gauss-Seidel smoother together with anisotropic coarsening operators.",
+      "authors": [
+        "Bernat Font",
+        "Marin Lauber",
+        "Tzu-Yao Huang",
+        "Gabriel D. Weymouth"
+      ],
+      "primary_category": "physics.comp-ph",
+      "categories": [
+        "physics.comp-ph",
+        "cs.DC",
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-08T17:47:21+00:00",
+      "link": "https://arxiv.org/pdf/2607.07687v2",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "scalable incompressible flow solver enabling flow data generation for prediction methods",
+      "llm_evidence_cn": "可扩展不可压缩流求解器，为流场预测方法提供数据生成能力",
+      "llm_evidence": "可扩展不可压缩流求解器，为流场预测方法提供数据生成能力",
+      "canonical_evidence": "可扩展不可压缩流求解器，为流场预测方法提供数据生成能力",
+      "llm_tldr_en": "Presents MPI parallelization and improved geometric multigrid solver for WaterLily, a Julia-based incompressible flow solver, achieving near-ideal scaling up to 1B cells, providing a high-performance tool for generating flow data needed by prediction methods.",
+      "llm_tldr_cn": "针对不可压缩流求解器WaterLily，利用MPI并行和改进的几何多重网格求解器实现性能扩展，强扩展近线性，弱扩展效率96%以上，网格规模达10亿。该工作为流场预测方法提供了高效的数据生成工具，助力数据驱动流场建模。",
+      "llm_tldr": "针对不可压缩流求解器WaterLily，利用MPI并行和改进的几何多重网格求解器实现性能扩展，强扩展近线性，弱扩展效率96%以上，网格规模达10亿。该工作为流场预测方法提供了高效的数据生成工具，助力数据驱动流场建模。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.07275v1",
+      "source": "arxiv",
+      "title": "BubbleSH: A Dataset of Rising Bubbles with Deformable Interfaces",
+      "abstract": "Bubbly flows exhibit complex multiscale dynamics, with deformable bubbles interacting through the surrounding liquid and giving rise to strongly coupled kinematic and morphological behavior. We present BubbleSH, a bubbly flows dataset consisting of transient, three-dimensional bubble-swarm dynamics obtained from high-fidelity direct numerical simulations of bubbles rising in a periodic domain. The dataset provides time-resolved bubble trajectories, velocities, and shape evolution, with bubble morphology compactly represented using spherical harmonics. Designed to be lightweight yet physically expressive, the dataset enables data-driven modeling of bubbly flow simulators where shape deformation and bubble-bubble interactions play a central role. We characterize the dataset with bubble kinematics, morphology, and interaction patterns, and introduce evaluation metrics for both trajectory and shape prediction. The sensitivity of bubble-swarm dynamics to local perturbations makes BubbleSH particularly well suited to generative models that learn distributions over possible future trajectories. We evaluate a permutationally and translationally equivariant probabilistic emulator on BubbleSH given the proposed metrics. Therefore, we establish a compact, high-fidelity dataset and a benchmark for developing and evaluating data-driven models of deformable, chaotic multiphase systems.",
+      "authors": [
+        "Rachna Ramesh",
+        "Kiet Bennema ten Brinke",
+        "Douwe Orij",
+        "Ivo Roghair",
+        "Vlado Menkovski"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-08T11:06:29+00:00",
+      "link": "https://arxiv.org/pdf/2607.07275v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Bubbly flow dataset enabling data-driven modeling of fluid dynamics",
+      "llm_evidence_cn": "气泡流数据集，支持流体动力学的数据驱动建模",
+      "llm_evidence": "气泡流数据集，支持流体动力学的数据驱动建模",
+      "canonical_evidence": "气泡流数据集，支持流体动力学的数据驱动建模",
+      "llm_tldr_en": "BubbleSH dataset provides high-fidelity DNS data of rising bubbles with deformable interfaces, enabling data-driven modeling of bubbly flows.",
+      "llm_tldr_cn": "BubbleSH数据集提供了可变形界面上浮气泡的高保真直接数值模拟数据，包含气泡轨迹、速度和形状演化。该数据集轻量且物理表达丰富，为气泡流的数据驱动建模提供了基准，可促进流场预测和重构方法的发展。",
+      "llm_tldr": "BubbleSH数据集提供了可变形界面上浮气泡的高保真直接数值模拟数据，包含气泡轨迹、速度和形状演化。该数据集轻量且物理表达丰富，为气泡流的数据驱动建模提供了基准，可促进流场预测和重构方法的发展。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.08969v1",
+      "source": "arxiv",
+      "title": "Developing Machine Learning Models of Subgrid Turbulent Transport for Quiet Sun 3D Radiative Hydrodynamic Simulations",
+      "abstract": "Numerical modeling of solar plasma dynamics is affected by the resolution of the computational grid. This often requires the estimation of subgrid processes related to the small-scale flow turbulence, as these processes play a critical role in momentum transport and energy dissipation. In this work, we investigate the use of deep learning techniques as surrogate models for subgrid turbulent transport in realistic hydrodynamic simulations of the quiet Sun. We describe the development of a 3D Convolutional Neural Network (CNN) to capture spatial dependencies in 3D velocity fields, leveraging different activation functions, as well as different architectural designs. We specifically focus on the prediction of Reynolds stress tensor components. The resultant model integrates velocity vector components and scalar features, such as plasma density, to enhance prediction accuracy. We compare the 3DCNN model to other types of models, such as a Multilayer Perceptron (MLP) and physics-based Gradient and Smagorinsky models, and show that the final model design reconstructs the Reynolds stress tensor components more accurately. Specifically, a 3DCNN model achieves an average improvement of ~31% on diagonal components and ~8% on the off-diagonal components of the stress tensor. Additionally, we show that applying a logarithmic data transformation of the target stress tensor components, to handle heavily skewed data, improves model performance. Results demonstrate the potential of deep learning, particularly CNNs, to approximate Reynolds stress tensor components for the upper solar convection zone and lower atmosphere, making them a viable candidate for modeling subgrid processes and a promising alternative to traditional turbulence models.",
+      "authors": [
+        "Rimsha Hameed Syeda",
+        "Dustin Kempton",
+        "Viacheslav Sadykov",
+        "Irina Kitiashvili",
+        "Rafal Angryk"
+      ],
+      "primary_category": "astro-ph.SR",
+      "categories": [
+        "astro-ph.SR",
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-09T22:12:26+00:00",
+      "link": "https://arxiv.org/pdf/2607.08969v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Deep learning surrogate for subgrid turbulent transport in hydrodynamic simulations",
+      "llm_evidence_cn": "流体模拟中亚网格湍流输运的深度学习替代模型",
+      "llm_evidence": "流体模拟中亚网格湍流输运的深度学习替代模型",
+      "canonical_evidence": "流体模拟中亚网格湍流输运的深度学习替代模型",
+      "llm_tldr_en": "This work develops 3D CNNs to predict subgrid turbulent transport in solar hydrodynamic simulations, leveraging different activation functions and architectures.",
+      "llm_tldr_cn": "该工作开发了三维卷积神经网络作为太阳流体模拟中亚网格湍流输运的替代模型。研究了不同激活函数和架构设计，专注于从三维速度场预测亚网格动量输运和能量耗散。为数据驱动流场预测提供了实例。",
+      "llm_tldr": "该工作开发了三维卷积神经网络作为太阳流体模拟中亚网格湍流输运的替代模型。研究了不同激活函数和架构设计，专注于从三维速度场预测亚网格动量输运和能量耗散。为数据驱动流场预测提供了实例。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

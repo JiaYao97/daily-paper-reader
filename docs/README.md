@@ -6,61 +6,45 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-12
-- 运行时间：2026-07-12 21:27:53 UTC
+- 最新运行日期：2026-07-13
+- 运行时间：2026-07-13 21:46:02 UTC
 - 运行状态：成功
-- 本次总论文数：13
-- 精读区：1
-- 速读区：12
+- 本次总论文数：7
+- 精读区：3
+- 速读区：4
 
 ### 今日简报（AI）
-今日精读1篇、速读12篇，涵盖13篇论文，重点聚焦偏微分方程神经算子学习与压缩感知新进展。  
-最值得关注的方向是：PDEFlow实现无需求解器的自主化偏微分方程管道，以及固定读出预算下的二维傅里叶压缩感知。  
-建议优先精读《PDEFlow》，探索其自动化管道如何简化神经算子训练与推理，再辅以压缩感知方法优化数据采集。
-- 详情：[/202607/12/README](/202607/12/README)
+今日推荐7篇论文，精读2篇高分研究，聚焦物理信息驱动的机器学习方法。
+
+最值得关注的是《Intrinsic Green's Learning》将逆PDE引入流形监督学习，以及《Physics informed wavelet Fourier representation》用于多尺度流体动力学，均获9.0高分。
+
+建议关注物理信息融合与数据驱动模型的结合方向，同时可留意BubbleSH气泡数据集等实验基准资源。
+- 详情：[/202607/13/README](/202607/13/README)
 
 ### 精读区论文标签
-1. [PDEFlow: Autonomous Agentic PDE Pipelines for Neural Operator Learning and Solver-Free Inference](/202607/12/2607.05134v1-pdeflow-autonomous-agentic-pde-pipelines-for-neural-operator-learning-and-solver-free-inference)  
-   标签：评分：10.0/10、query:flow-pred
-   evidence：神经算子学习用于偏微分方程
+1. [Intrinsic Green's Learning: Supervised Learning on Manifolds via Inverse PDE](/202607/13/2607.07034v1-intrinsic-greens-learning-supervised-learning-on-manifolds-via-inverse-pde)  
+   标签：评分：9.0/10、query:pc-latent
+   evidence：学习低维潜在坐标，通过格林核使目标函数满足偏微分方程，在潜在空间中施加物理约束
+2. [Physics informed wavelet Fourier representation for multiscale fluid dynamics](/202607/13/2607.09071v1-physics-informed-wavelet-fourier-representation-for-multiscale-fluid-dynamics)  
+   标签：评分：9.0/10、query:flow-pred
+   evidence：用于多尺度流体动力学的物理信息神经表示
+3. [Generalizable turbulence closures across bluff-body shapes by PINN-based solver-agnostic training](/202607/13/2607.04491v2-generalizable-turbulence-closures-across-bluff-body-shapes-by-pinn-based-solver-agnostic-training)  
+   标签：评分：8.0/10、query:flow-pred
+   evidence：使用PINN的数据驱动湍流闭合模型用于流场预测
 
 ### 速读区论文标签
-1. [Two-dimensional Fourier compressed sensing under a fixed readout budget per channel](/202607/12/2607.03611v1-two-dimensional-fourier-compressed-sensing-under-a-fixed-readout-budget-per-channel)  
-   标签：评分：7.0/10、query:flow-pred
-   evidence：压缩感知用于稀疏信号重建
-2. [LRX-PINN: A Layer-Resolving XNet Physics-Informed Neural Network with Integrated Cauchy Activations for Convection-Dominated Problems](/202607/12/2607.03682v1-lrx-pinn-a-layer-resolving-xnet-physics-informed-neural-network-with-integrated-cauchy-activations-for-convection-dominated-problems)  
-   标签：评分：7.0/10、query:flow-pred
-   evidence：用于对流主导问题的层解析PINN
-3. [Constrained Flow Matching via Lagrangian Dual Flows](/202607/12/2607.04513v1-constrained-flow-matching-via-lagrangian-dual-flows)  
+1. [PhyRes-MDNF: Physics-Coupled Residual GNN Correction for Multilevel Discrete Neural Field Inversion](/202607/13/2607.06237v1-phyres-mdnf-physics-coupled-residual-gnn-correction-for-multilevel-discrete-neural-field-inversion)  
    标签：评分：7.0/10、query:pc-latent
-   evidence：约束流匹配与拉格朗日对偶动力学，可应用于物理约束的潜在空间学习
-4. [Metagraph-Based Domain-Decomposed Galerkin Reduced-Order Model](/202607/12/2607.06011v1-metagraph-based-domain-decomposed-galerkin-reduced-order-model)  
+   evidence：物理耦合神经场反演与多级优化
+2. [BubbleSH: A Dataset of Rising Bubbles with Deformable Interfaces](/202607/13/2607.07275v1-bubblesh-a-dataset-of-rising-bubbles-with-deformable-interfaces)  
    标签：评分：7.0/10、query:flow-pred
-   evidence：基于域分解的流场降阶模型
-5. [PhyRes-MDNF: Physics-Coupled Residual GNN Correction for Multilevel Discrete Neural Field Inversion](/202607/12/2607.06237v1-phyres-mdnf-physics-coupled-residual-gnn-correction-for-multilevel-discrete-neural-field-inversion)  
-   标签：评分：7.0/10、query:pc-latent
-   evidence：物理耦合神经场反演，多级潜在表示
-6. [Scaling WaterLily.jl with MPI and an improved geometric multigrid solver](/202607/12/2607.07687v1-scaling-waterlilyjl-with-mpi-and-an-improved-geometric-multigrid-solver)  
+   evidence：气泡流数据集，支持流体动力学的数据驱动建模
+3. [Developing Machine Learning Models of Subgrid Turbulent Transport for Quiet Sun 3D Radiative Hydrodynamic Simulations](/202607/13/2607.08969v1-developing-machine-learning-models-of-subgrid-turbulent-transport-for-quiet-sun-3d-radiative-hydrodynamic-simulations)  
    标签：评分：7.0/10、query:flow-pred
-   evidence：不可压缩流求解器支持大规模CFD
-7. [Scaling WaterLily.jl with MPI and an improved geometric multigrid solver](/202607/12/2607.07687v2-scaling-waterlilyjl-with-mpi-and-an-improved-geometric-multigrid-solver)  
-   标签：评分：7.0/10、query:flow-pred
-   evidence：不可压缩流求解器支持大规模CFD
-8. [Physics-informed neural networks for shock capturing in inviscid flows around an airfoil](/202607/12/2607.08130v1-physics-informed-neural-networks-for-shock-capturing-in-inviscid-flows-around-an-airfoil)  
-   标签：评分：7.0/10、query:flow-pred
-   evidence：用于无黏流激波捕获的PINN
-9. [Latent Memory Palace: Reasoning for Control as Autoregressive Variational Inference](/202607/12/2607.08724v1-latent-memory-palace-reasoning-for-control-as-autoregressive-variational-inference)  
-   标签：评分：7.0/10、query:pc-latent
-   evidence：用于推理和控制的自主回归潜在空间，涉及潜在动力学
-10. [PhysMiner: An Agentic AI Framework for Discovering Turbulence Physics](/202607/12/2607.04009v1-physminer-an-agentic-ai-framework-for-discovering-turbulence-physics)  
+   evidence：流体模拟中亚网格湍流输运的深度学习替代模型
+4. [Scaling WaterLily.jl with MPI and an improved geometric multigrid solver](/202607/13/2607.07687v2-scaling-waterlilyjl-with-mpi-and-an-improved-geometric-multigrid-solver)  
    标签：评分：6.0/10、query:flow-pred
-   evidence：数据驱动的湍流物理发现
-11. [BubbleSH: A Dataset of Rising Bubbles with Deformable Interfaces](/202607/12/2607.07275v1-bubblesh-a-dataset-of-rising-bubbles-with-deformable-interfaces)  
-   标签：评分：6.0/10、query:flow-pred
-   evidence：气泡流数据集，可用于数据驱动流场建模
-12. [Progression as Latent Drift: Generative Forecasting of Slow-Evolving Pathologies](/202607/12/2607.08270v1-progression-as-latent-drift-generative-forecasting-of-slow-evolving-pathologies)  
-   标签：评分：6.0/10、query:pc-latent
-   evidence：用于时间进展预测的潜在漂移模型
+   evidence：可扩展不可压缩流求解器，为流场预测方法提供数据生成能力
 
 
 <div class="dpr-home-promo-card">
