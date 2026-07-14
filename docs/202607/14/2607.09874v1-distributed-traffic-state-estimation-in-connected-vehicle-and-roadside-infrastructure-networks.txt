@@ -1,0 +1,1222 @@
+Title: Distributed Traffic State Estimation in Connected Vehicle and Roadside Infrastructure Networks
+
+URL Source: https://arxiv.org/pdf/2607.09874v1
+
+Published Time: Tue, 14 Jul 2026 00:07:53 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+> 1
+
+# Distributed Traffic State Estimation in Connected Vehicle and Roadside Infrastructure Networks 
+
+Vincent de Heij, M. Umar B. Niazi, Saeed Ahmed, Karl H. Johansson 
+
+Abstract —This paper proposes a distributed traffic state es-timation framework that combines infrastructure sensors and connected vehicles as cooperative sensing nodes. Using Vehicle-to-Everything (V2X) communication, nearby nodes exchange local estimates and update them through a distributed Kalman filter designed for a second-order macroscopic traffic flow model. A consensus step fuses heterogeneous information across the net-work, while projection steps enforce physically consistent traffic states. We evaluate the method on HighD and NGSIM data, and on microscopic SUMO simulations that capture transient congestion. The results show accurate reconstruction of highway traffic states and detection of nonlinear shockwave dynamics, even with sparse infrastructure sensing and intermittent vehic-ular connectivity. A statistical analysis further shows how CV penetration rate, V2X communication range, and infrastruc-ture deployment affect estimation accuracy. In particular, with 10% CV penetration, V2X ranges of 300-400 m, and sparse infrastructure deployment, the combined infrastructure-vehicle configuration consistently outperforms approaches that rely only on infrastructure or only on connected vehicles. 
+
+Index Terms —Distributed traffic state estimation; connected vehicles; roadside units; V2X communication; distributed Kalman filter; second-order traffic flow model; ARZ model. 
+
+I. I NTRODUCTION 
+
+Modern intelligent transportation systems, especially those using cooperative driving strategies for connected and auto-mated vehicles [1], require accurate real-time macroscopic traffic states such as density, velocity, and flow. Because deploying fixed roadside sensor units (RSUs) to satisfy observ-ability requirements is expensive, traffic state estimation (TSE) reconstructs these states by fusing data from existing sensors. RSUs, such as induction loops, radars, and cameras, provide accurate but sparse and stationary measurements. Connected vehicles (CVs), equipped with onboard sensors such as GPS, cameras, and LiDAR, provide local microscopic observations. Combining both sources enables multi-scale monitoring of traffic conditions. Until recently, TSE has relied mainly on fixed infrastruc-ture, with mobile data supplied only intermittently by probe 
+
+> This work was supported by NXTGEN HighTech growthfund: Autonomous Factory, the Swedish Research Council’s Distinguished Professor Grant, the Knut and Alice Wallenberg Foundation’s Wallenberg Scholar Grant, Digital Futures’ Summer Research Internship Programme, and the Holland High Tech (TKI HTSM) strategic program PPS-I Flex HighTech under the project number 24PPS173-CABS. Vincent de Heij and Saeed Ahmed are with the Engineering and Technol-ogy Institute Groningen, Faculty of Science and Engineering, University of Groningen, 9747 AG Groningen, The Netherlands (emails: v.de.heij@rug.nl, s.ahmed@rug.nl). M. Umar B. Niazi and Karl H. Johansson are with the Department of Decision and Control Systems and with Digital Futures, KTH Royal Institute of Technology, SE-100 44 Stockholm, Sweden (emails: mubniazi@kth.se, kallej@kth.se).
+
+vehicles that report aggregated trajectories rather than real-time measurements [2]. Most existing methods also use a centralized fusion architecture, where a transportation man-agement center acts as a global estimator. This approach does not scale well and ignores key communication constraints in V2X networks. V2X protocols such as DSRC and C-V2X support only short-range direct communication, typically over a few hundred meters [3]–[6]. As CV penetration increases [7], the resulting data volume can exceed available bandwidth, causing latency and high computational cost [8]. These limits make centralized estimation unsuitable for real-time control and create a single point of failure. These issues motivate a distributed TSE (DTSE) architec-ture in which RSUs and CVs estimate traffic states locally by combining their own measurements with information received from nearby V2X nodes. This design matches the local nature of V2X connectivity and reduces the need to transmit raw sensor data to a central TMC. DTSE must still handle het-erogeneous measurements, communication limits, and time-varying network topology caused by vehicle motion. The main challenge is therefore not just measurement sparsity, but also processing dense local data streams under strict latency constraints, especially in dynamic, non-equilibrium traffic. Figure 1 illustrates the value of the distributed architecture. A downstream bottleneck creates congestion and a backward-moving shockwave as the ego-CV approaches from upstream. Because the congestion is outside the vehicle’s sensing range, its local sensors cannot detect it. If DTSE provides an accurate global state estimate, the ego-CV can anticipate the shockwave and decelerate before reaching the bottleneck. This helps avoid adding to the congestion and allows the vehicle to act as a control input that helps dissipate the wave [1]. 
+
+A. Related Work 
+
+TSE methods are commonly grouped into model-based, data-driven, and hybrid approaches [9], [10]. Since the present work is model-based, we first review methods that use macro-scopic traffic-flow models to propagate traffic states over space and time. First-order models, such as the Lighthill-Whitham-Richards (LWR) model [11], [12] and the cell transmission model (CTM) [13], describe traffic dynamics through a single conservation law for vehicle density and have been widely adopted in estimation frameworks, including ensemble and ex-tended Kalman filtering, Lagrangian probe-data assimilation, and scalable localized estimation schemes [14]–[17]. However, their equilibrium speed-density assumption limits their ability to capture non-equilibrium traffic dynamics. To address this limitation, second-order models, such as the Payne-Whitham (PW) model [18], [19] and its network-arXiv:2607.09874v1 [eess.SY] 10 Jul 2026 2 
+
+> Fig. 1. Motivating DTSE scenario on a V2X-enabled highway: an ego-CV upstream of a bottleneck cannot observe the resulting backward-propagating shockwave from its onboard sensors alone, but can reconstruct it by fusing local measurements with estimates from nearby RSUs and CVs.
+
+oriented implementations, including METANET [20], intro-duce an additional dynamic that accounts for driver antici-pation and deviations from equilibrium, making them more suitable for representing non-equilibrium phenomena such as stop-and-go waves and shockwave propagation. However, the PW model exhibits physical inconsistencies under certain traffic conditions [21], which the Aw-Rascle-Zhang (ARZ) model [22], [23] was introduced to overcome. Owing to this physical consistency, the ARZ model has become the preferred second-order basis for TSE: heterogeneous data fusion was first addressed with an extended Kalman filter [24], later extended to a nonlinear ARZ state-space formulation with on-and off-ramp dynamics in which heterogeneous RSU and CV measurements are fused via moving horizon estimation [25]. Related second-order approaches include particle filtering with generalized ARZ-type dynamics for mixed human-driven and automated traffic [26] and boundary-observer design for the ARZ model [27]. Most model-based TSE methods above are formulated around fixed infrastructure measurements, with mobile ob-servations entering mainly as Lagrangian probe data. Since RSUs provide sparse and stationary views of traffic, several works use probe vehicles or CVs to provide measurements that move with the traffic stream. Existing approaches estimate traffic states and the fundamental diagram (FD) parameters from probe-vehicle spacing measurements [28], recover den-sity and flow in mixed traffic from CV speed reports and a small number of fixed flow measurements [29], infer density and level of service from CV-generated distance headway, speed, and stop-count data [30], and use extended floating-car data in Bayesian TSE [31]. Together with the ARZ-based heterogeneous-fusion frameworks discussed above [24]–[26], these studies show that mobile sensing can enrich TSE beyond fixed-location measurements alone. Despite this progress, many existing methods remain cen-tralized, with measurements collected at a TMC before the traffic state is reconstructed. This limits scalability in V2X-enabled traffic systems, where sensing and communication are localized, mobile, and bandwidth-constrained. DTSE has therefore emerged as an alternative, with existing approaches including distributed switched observers, distributed Kalman filters, distributed state observers, and boundary observers for linearized ARZ models [32]–[36]. Among these methods, distributed Kalman filtering is especially relevant because it retains the recursive, uncertainty-aware structure of centralized Kalman filtering while replacing global measurement fusion with local prediction, correction, and neighbor-to-neighbor information exchange. However, most distributed TSE studies focus on fixed P2P networks between infrastructure sensors. Mixed RSU-CV networks, which introduce mobile sensing and estimation nodes and induce a time-varying V2X commu-nication topology, have received comparatively less attention. Data-driven TSE methods bypass explicit traffic-flow mod-eling and instead learn mappings from observed measure-ments to unobserved traffic states, often by exploiting re-curring spatiotemporal patterns in historical data. Examples include detector-error diagnosis, loop-data imputation, tensor-based completion, and section-level k-nearest-neighbor im-putation [37]–[39]. More recent hybrid learning methods combine data-driven estimation with traffic-flow physics, for example through physics-informed neural networks based on LWR or ARZ dynamics and neural-operator-based observers with sparse RSU measurements [40]–[44]. However, these learning-based methods rely on representative training data and typically require centralized training or global access to measurements, limiting their applicability to online estimation over local, time-varying communication links. 
+
+B. Our Contributions 
+
+To address the challenge of online traffic state estimation in V2X networks of CVs and infrastructure, where sensing and communication are local, heterogeneous, and time-varying, we propose a DTSE framework. The method combines a distributed Kalman filter tailored to second-order traffic-flow dynamics to reconstruct density and velocity fields from local measurements and V2X exchange. The main contributions of this paper are threefold. First, we introduce a decentralized traffic-state estimation archi-tecture in which both fixed RSUs and mobile CVs act as active sensing and estimation nodes. Instead of streaming raw measurements to a distant TMC, each node exchanges local traffic-state estimates only with its nearby V2X neigh-bors, thereby aligning the estimation architecture with the inherently local connectivity of V2X networks. Second, we develop a distributed Kalman filtering framework tailored to the second-order ARZ traffic flow model. This estimator fuses heterogeneous measurements from RSUs and CVs to reconstruct complex non-equilibrium traffic phenomena, such as stop-and-go waves and nonlinear shockwave propagation. In doing so, it preserves the uncertainty-aware, recursive structure of Kalman filtering while distributing computation and data fusion across the V2X network. Third, we provide an extensive validation of the proposed framework under realistic V2X operating conditions. Using real-world trajectory datasets (HighD and NGSIM) together with SUMO simulations, we demonstrate that fixed infrastructure nodes can reconstruct dominant spatiotemporal traffic patterns and that an ego-CV can anticipate an approaching shockwave beyond its onboard 3
+
+sensing range by leveraging V2X-distributed state estimates. Finally, through a Monte Carlo study, we quantify how es-timation accuracy depends jointly on CV penetration rate, V2X communication range, and realistic spatial infrastructure-sensor deployments. The results show that combined in-frastructure and CV configurations improve upon estimation settings that rely exclusively on either fixed infrastructure or connected-vehicle, even under low CV penetration, finite V2X communication ranges, and sparse infrastructure coverage. In our previous work [45], we presented a preliminary numerical study on a highway example to demonstrate the proof of concept of our DTSE algorithm. In contrast, the present work establishes theoretical guarantees and presents extensive numerical experiments on real data. 
+
+C. Outline 
+
+The remainder of the paper is organized as follows. Sec-tion II presents the ARZ model and derives its discretized state-space formulation. Section III describes the sensor net-work model for both RSUs and CVs. The proposed DTSE algorithm is presented in Section IV. Section V discusses the experimental setup. Section VI presents the estimation results under realistic V2X networks and traffic scenarios. Section VII provides a statistical evaluation across different V2X networks, penetration rates, and RSU deployment configurations. Finally, Section VIII concludes the paper. 
+
+D. Notation 
+
+The set of real numbers is denoted by R, and Rn and 
+
+Rm×n denote the spaces of real n-dimensional vectors and 
+
+m × n matrices, respectively. For a matrix A, the transpose and inverse are written A⊤ and A−1. A symmetric matrix 
+
+P = P ⊤ ∈ Rn×n is denoted as P ⪰ 0 (resp., P ≻ 0) if it is positive semi-definite (resp., positive definite); for two symmetric matrices A, B we write A ⪰ B if A − B ⪰ 0.The n × n identity matrix is denoted by In, and ei ∈ Rn
+
+denotes the i-th canonical basis vector. The Kronecker product is denoted by ⊗, and diag( A1, . . . , A m) denotes the block-diagonal matrix with blocks A1, . . . , A m on its diagonal. The Euclidean norm is denoted by ∥ · ∥ , and |S| denotes the cardinality of a set S. The expectation operator is E[·], and 
+
+N (μ, Σ) denotes the Gaussian distribution with mean μ and covariance Σ.II. T RAFFIC MODEL 
+
+This section reviews the ARZ model for describing highway traffic dynamics, which captures both the conservation of vehicles and the evolution of driver speed adaptation through a second-order macroscopic formulation. Then, following [25], we derive its discretized state-space formulation. 
+
+A. ARZ Model 
+
+The ARZ model [22], [23] is a second-order macroscopic traffic flow model given by 
+
+∂tρ + ∂d(ρv ) = 0 (1) 
+
+∂tψ + ∂dψv = − ρ(v − Ve(ρ)) 
+
+τ (2) where ρ(t, d ) is the density (vehicles per unit road length) and 
+
+v(t, d ) is the average speed (unit length per unit time), over time t and spatial position d. Let 
+
+χ := v + p(ρ) (3) denote the driver characteristic with p(ρ) the pressure function that represents anticipatory driving behavior. Then, in (2), the auxiliary variable ψ = ρχ denotes the relative flow, which is a momentum-like quantity that reflects deviations from the equilibrium traffic conditions, and τ > 0 is the relaxation time that determines how quickly drivers adapt their speed toward equilibrium. The pressure function is defined by 
+
+p(ρ) = vf (ρ/ρ m)γ , (4) where vf is the free-flow speed, ρm is the maximum jam density, and γ > 0 is a fundamental diagram parameter. Then, the equilibrium velocity at density ρ is given by 
+
+Ve(ρ) = vf (1 − (ρ/ρ m)γ ) (5) The parameters vf , ρ m, γ can be calibrated using empirical data and the fundamental diagram. 
+
+B. Discretized State-Space Model 
+
+Following [25], we discretize the ARZ model in space and time. The highway is partitioned into N segments/cells of uniform length ∆h, and the temporal domain is discretized using a sampling interval ∆t. This results in a discretized state-space model with ρ and ψ as finite state vectors representing the average density and relative flow within the discretized cells. The discretized ARZ model can be written in state-space form as 
+
+xk+1 = Ax k + Gf (xk, u k) + ωk (6) where xk = [ x⊤
+
+> 1,k
+
+, . . . , x ⊤
+
+> N,k
+
+]⊤ ∈ R2N denotes the state vector of the highway discretized into N cells, with 
+
+xi,k = ρi,k ψi,k 
+
+⊤ , i = 1 , . . . , N 
+
+where ρi,k is the average traffic density and ψi,k the average relative flow within cell i at time k. The variable ωk denotes the process noise. The input uk ∈ R3 in (6) specifies the boundary conditions of the model and is given by 
+
+uk = D0,k χ0,k ρN +1 ,k 
+
+⊤ (7) where D0,k is the upstream demand, i.e., the number of vehicles per unit time entering the highway at time step k,
+
+χ0,k is the driver characteristic (3) at the upstream boundary, and ρN +1 ,k specifies the density at the downstream boundary that governs the outflow of traffic. In standard TSE formulations, the input uk is typically assumed to be known at a centralized TMC. However, in the distributed setting considered here, only the boundary RSUs can directly measure the boundary conditions that determine 
+
+uk. In this paper, we assume that boundary RSUs broadcast uk
+
+to all nodes via a low-bandwidth, long-range communication 4
+
+channel (e.g., cellular LTE or LoRaWAN). This hierarchical communication architecture is well-established for ensuring scalability in heterogeneous vehicular networks [4], [46]. Since 
+
+uk consists of only three scalar values, the bandwidth overhead for this global broadcast is negligible compared to the dense covariance matrices exchanged locally via short-range V2X. In a practical deployment, this assumption can be relaxed by including the boundary variables in the consensus vector. Since the boundary RSUs can directly measure uk, they act as leader nodes for these variables, allowing the true values to diffuse rapidly across the network via a consensus protocol [47]. The system matrices A, G ∈ R2N ×2N in (6) are given by 
+
+A = IN ⊗
+
+ 1 0 
+
+> ∆t v f
+> τ
+
+1 − ∆tτ
+
+
+
+, G = IN ⊗
+
+ ∆t 
+
+> ∆h
+
+00 ∆t
+
+> ∆h
+
+
+
+where ⊗ denotes the Kronecker product, and 
+
+f (xk, u k) = 
+
+ q0,k − q1,k 
+
+ϕ0,k − ϕ1,k 
+
+⊤
+
+, . . . , 
+
+ qN −1,k − qN,k 
+
+ϕN −1,k − ϕN,k 
+
+⊤⊤
+
+represents net flows between adjacent cells. Here, qi,k denotes the traffic flux leaving cell i and entering cell i+1 at time step 
+
+k, measured in vehicles per unit time. Since we consider no on-ramps or off-ramps, the flux qi,k across the cell boundary is determined by the minimum of the upstream demand Di,k 
+
+and the downstream supply Si+1 ,k , i.e., 
+
+qi,k = min( Di,k , S i+1 ,k ).
+
+The variable ϕi,k denotes the relative flux given by 
+
+ϕi,k = qi,k χi,k = qi,k 
+
+ψi,k 
+
+ρi,k 
+
+.
+
+The demand Di,k describes the maximum flow that can exit cell i and is given by 
+
+Di,k =
+
+(
+
+ρi,k (χi,k − p(ρi,k )) , if ρi,k ≤ σ(χi,k )
+
+σ(χi,k )( χi,k − p(σ(χi,k ))) , if ρi,k > σ (χi,k )
+
+where the critical density σ(χi,k ) is given by 
+
+σ(χi,k ) = ρm
+
+ χi,k 
+
+vf (1 + γ)
+
+1/γ 
+
+.
+
+The supply Si,k describes the maximum flow that can enter cell i from upstream. Unlike demand, which depends only on the local state, the supply also accounts for the upstream driver characteristic χi−1,k , as upstream traffic conditions constrain admissible inflow. The supply 
+
+Si,k =
+
+(
+
+σ(χi,k )( χi−1,k − p(σ(χi−1,k ))) , if ρi,k ≤ σ(χi−1,k )
+
+ρi,k (χi−1,k − p(ρi,k )) , if ρi,k > σ (χi−1,k ).
+
+As with demand, the critical density σ separates the free-flow and congested regimes. When ρi,k is below the upstream criti-cal value σ(χi−1,k ), the downstream cell can accept additional inflow. When the density exceeds this threshold, congestion restricts the admissible inflow. III. S ENSOR NETWORK MODEL 
+
+Both fixed RSUs and CVs are assumed to measure the density ρi,k and relative flow ψi,k of the cell they occupy in the highway. Fixed RSUs always observe a predetermined seg-ment, while CVs provide measurements only for the segment they currently occupy. CVs measure their individual speed directly using GPS or odometry. They can also utilize on-board perception systems, such as camera-based vehicle counting and spacing estimation, to infer a local traffic density ρi,k 
+
+in cell i. The average speed vi,k of cell i can be approximated by tracking and aggregating the individual speeds of all vehicles currently in that cell. The relative flow ψi,k cannot be directly observed, but it can be reconstructed from the CVs’ local measurements by substituting the measured ρi,k 
+
+and the approximated vi,k into the model: ψi,k = ρi,k χi,k =
+
+ρi,k (vi,k + p(ρi,k )) , where χi,k is the driver characteristic in (3) and p(ρi,k ) is the anticipatory pressure term defined in (4). 
+
+A. Measurement Equation 
+
+The measurement equation for sensor l ∈ S , where S is the set of all sensors (both RSUs and CVs), is given by 
+
+ylk = Clkxk + νlk (8) where ylk ∈ R2 is the measurement vector collected by sensor 
+
+l at time k, xk ∈ R2N is the global traffic state vector at time 
+
+k evolving according to (6), νlk ∈ R2 is the measurement noise associated with sensor l. The dimension of ylk is R2 because each sensor l measures the two state components, ρil,k ,k and 
+
+ψil,k ,k , associated with cell il,k ∈ { 1, . . . , N } where sensor l
+
+is located at time k.The measurement matrix Clk ∈ R2×2N is dynamic and sparse. It extracts the state vector block xil,k ,k from xk, where 
+
+il,k denotes the index of the specific cell currently occupied by sensor l at time k. It is constructed as 
+
+Clk = e⊤ 
+
+> il,k
+
+⊗ I2
+
+where il,k ∈ { 1, . . . , N } is the cell index occupied by sensor l
+
+at time k and eil,k denotes the il,k -th canonical basis vector of 
+
+RN . This ensures that the measurement ylk is directly mapped to the two-component state vector ( ρil,k ,k and ψil,k ,k ) of the cell it occupies at time k. As RSUs are fixed, the corresponding 
+
+il,k = il is constant with respect to time k. For CVs, il,k is updated based on the vehicle’s position at time k. When a CV is outside the modelled segment, no such cell index is defined and we set Clk = 0 .
+
+B. Communication Graph 
+
+The communication network consists of persistent P2P links between neighboring RSUs and short-range V2X links involving nearby CVs. Specifically, each RSU is connected to its immediate RSU neighbors via a P2P network, which keeps the fixed infrastructure connected for the consensus-based in-formation exchange even when no CVs are nearby. In addition, both CVs and RSUs establish short-range communication links with other CVs within their respective communication ranges. An illustrative example of this communication architecture is shown in Fig. 1. 5
+
+For designing and analyzing the information flow in our DTSE algorithm, the sensor network (comprising both fixed RSUs and mobile CVs) is modeled as a dynamic undirected graph Gk = ( Sk, Ek) at each time step k. Here, Sk ⊆ S 
+
+is the subset of sensor nodes active at time k (i.e., the sensors currently occupying a highway cell), and an edge 
+
+(l, m ) ∈ Ek exists if sensor nodes l, m ∈ Sk are within the physical V2X communication range of each other, estab-lishing a bidirectional communication link for state estimate exchange. The neighbor set of an active sensor l ∈ S k is 
+
+N lk = {m ∈ S k : ( l, m ) ∈ E k}, whereas an inactive CV 
+
+l ∈ S \ S k does not form such edges and has N lk = ∅.Joint connectivity of Gk, which is required for the conver-gence analysis of the proposed algorithm in Section IV, is defined in the next section. Moreover, we adopt the simplifying technical assumption that the volume of transmitted data (the local state estimates and covariance matrices) does not exceed the capacity of any link [48]. In this paper, this assumption is justified by the relatively low instantaneous CV penetra-tion rate expected in the considered operational scenario. This keeps the node density and, consequently, the number of simultaneous communication sessions low, preventing the channel congestion and packet loss typically observed in dense vehicular ad-hoc networks [46], [49]. This allows us to neglect link-saturation effects and focus solely on the connectivity topology necessary for the distributed estimation consensus. 
+
+C. Observability Assumptions 
+
+Observability of the linearized ARZ state-space model in (6) from the available RSU and CV measurements is required for convergence of the algorithm in Section IV. A time-varying observability Gramian analysis [25] shows that full observability requires the most downstream mainline cell to be sensed at all times, as is typical in conservation-law-based traffic models. We therefore refer to this requirement as collective observability of the linearized system. In the simulations, we assume that a fixed RSU is always present on the most downstream mainline segment, which is consistent with the boundary-RSU assumption already introduced in Section II-A. In the distributed setting, observability need not hold locally at every node because upstream sensors do not directly access downstream RSU measurements. The P2P V2X communication structure helps propagate this information across the network over successive time steps. However, when CV penetration is low or communication ranges are short, the network may be too sparse for downstream information to reach all upstream nodes reliably. Section VII examines the practical impact of distributed observability under varying RSU density, CV penetration, and V2X communication range. IV. D ISTRIBUTED TRAFFIC STATE ESTIMATION 
+
+ALGORITHM AND GUARANTEES 
+
+Distributed state estimation over sensor networks is a well-established problem in control theory. Foundational work on distributed Kalman filtering introduced consensus-based schemes in which sensor nodes estimate system states by exchanging measurements and uncertainty information [48], [50]. Subsequent studies addressed stability under communi-cation constraints [51], diffusion-based information propaga-tion [52], convergence under weak observability [53], event-triggered communication [54], integrated estimation and con-trol [55], and robustness to model uncertainty [56]. Most of these methods, however, are formulated for linear systems. In traffic-flow applications, the estimator must also handle nonlinear dynamics and physical constraints such as non-negativity and saturation. The algorithm developed below builds on the information-form DKF [54] and adapts it to the nonlinear ARZ model through linearization and constrained state estimation. 
+
+A. Algorithm 
+
+Let the process noise be given by ωk ∼ N (0 , Q ), where 
+
+Q ∈ R2N ×2N is the positive definite process noise covariance matrix. Similarly, for each sensor node l ∈ S , let the local measurement noise be given by νlk ∼ N (0 , R lk), where 
+
+Rlk ∈ R2×2 is positive definite. Furthermore, let ¯x0 = E[x0]
+
+denote the prior expectation of the initial traffic state, and let 
+
+P0 ∈ R2N ×2N , with P0 ≻ 0, denote the corresponding initial error covariance. At time k = 0 , each sensor node l ∈ S is initialized with the prior information pair 
+
+Ξl 
+
+> 0|− 1
+
+= ( P0)−1, ˆxl 
+
+> 0|− 1
+
+= Π D (¯ x0), ξl 
+
+> 0|− 1
+
+= Ξ l 
+
+> 0|− 1
+
+ˆxl
+
+> 0|− 1
+
+,
+
+where ΠD is the projection operator defined later in (15) Then, for each time k ≥ 0 and for each sensor node l ∈ S ,we perform the following five steps: 
+
+Step 1 - Linearization: We linearize (6) around the current local prior estimate ˆxlk|k−1 = (Ξ lk|k−1)−1ξlk|k−1 as 
+
+Λlk = A + G ∂f (x, u k)
+
+∂x x=ˆ xlk|k−1
+
+(9a) 
+
+ηlk = G f (ˆ xlk|k−1, u k) −
+
+"
+
+∂f (x, u k)
+
+∂x x=ˆ xlk|k−1
+
+#
+
+ˆxlk|k−1
+
+!
+
+(9b) where Λlk is the linearized state transition matrix and ηlk is the offset vector. 
+
+Step 2 - Local Measurement Update: Each node assimilates its own sensor data into the information space. The local information contribution θlk and associated precision matrix 
+
+Θlk are computed as 
+
+θlk = ( Clk)⊤(Rlk)−1ylk, Θlk = ( Clk)⊤(Rlk)−1Clk.
+
+Then, the local posterior updates are given by 
+
+ξlk|k = ξlk|k−1 + θlk, Ξlk|k = Ξ lk|k−1 + Θ lk. (10) 
+
+Step 3 - Information Fusion: Nodes exchange their local information pairs (ξlk|k, Ξlk|k) with neighbors j ∈ N lk. An iterative consensus step is performed for L iterations, where 
+
+L is chosen according to the available communication budget and the desired number of information-exchange hops per time step. Let α = 0 , . . . , L be the consensus iteration index. 6
+
+Initialize ξl, (0)  
+
+> k|k
+
+= ξlk|k and Ξl, (0)  
+
+> k|k
+
+= Ξ lk|k. Then, at iteration 
+
+α = 1 , . . . , L , compute 
+
+ξl, (α) 
+
+> k|k
+
+= X  
+
+> j∈N lk∪{ l}
+
+π(l,j ),k ξj, (α−1)  
+
+> k|k
+
+(11a) 
+
+Ξl, (α) 
+
+> k|k
+
+= X  
+
+> j∈N lk∪{ l}
+
+π(l,j ),k Ξj, (α−1)  
+
+> k|k
+
+(11b) where π(l,j ),k are chosen as Metropolis weights. Let dlk =
+
+|N lk| be the degree of node l in the graph Gk. Then 
+
+π(l,j ),k =
+
+   
+
+> 11+max {dlk,d jk}
+
+, j ∈ N lk
+
+1 − P 
+
+> i∈N lk
+
+π(l,i ),k , j = l
+
+0, otherwise. Since Gk is undirected, the resulting consensus matrix is doubly stochastic. After L iterations, the fused information variables are given by 
+
+ξlk|k = ξl, (L) 
+
+> k|k
+
+, Ξlk|k = Ξ l, (L) 
+
+> k|k
+
+. (12) 
+
+Step 4 - Prediction: Using the linearized dynamics (9) and the fused information (12), we compute the prior for the next time step. We employ the matrix inversion lemma to propagate the information matrix without direct inversion of the state covariance, i.e., 
+
+Ξlk+1 |k = Q−1 − Q−1ΛlkM lk(Λ lk)⊤Q−1 (13) where M lk =
+
+
+
+Ξlk|k + (Λ lk)⊤Q−1Λlk
+
+−1
+
+. The predicted infor-mation vector accounts for ηlk in (9b) as 
+
+ξlk+1 |k = Ξ lk+1 |k
+
+
+
+Λlk(Ξ lk|k)−1ξlk|k + ηlk
+
+
+
+. (14) 
+
+Step 5 - Enforcing Physical Constraints: To ensure the traffic state estimate remains physically meaningful, we project the predicted state ˆxlk+1 |k = (Ξ lk+1 |k)−1ξlk+1 |k onto the feasible state space [25]. For each cell i ∈ {1, . . . , N },
+
+ˆxli,k +1 |k = [ˆ ρli,k +1 |k ˆψli,k +1 |k]⊤ is projected as 
+
+ˆρli,k +1 |k ← min 
+
+
+
+max(ˆ ρli,k +1 |k, 0) , ρ m
+
+
+
+(15a) 
+
+ˆψli,k +1 |k ← min 
+
+
+
+max( ˆψli,k +1 |k, 0) , v f ρm
+
+
+
+. (15b) Thus, the predicted estimate is updated as 
+
+ˆxlk+1 |k ← ΠD ((Ξ lk+1 |k)−1ξlk+1 |k)
+
+where ΠD is the projection operator defined in (15). The information matrix Ξlk+1 |k remains unchanged to preserve un-certainty characteristics, but the information vector is updated to reflect the constrained state as ξlk+1 |k ← Ξlk+1 |k ˆxlk+1 |k.
+
+B. Stochastic Stability and Covariance Bound 
+
+The projection operator in (15) ensures that the state es-timates remain within the physical domain D = [0 , ρ m] ×
+
+[0 , v f ρm]. However, this property alone only guarantees that the estimation error cannot exceed the diameter of D. A non-trivial, mathematically rigorous guarantee of convergence must be driven by the sensor network topology and measurement quality rather than mere state-space truncation. To this end, we analyze the covariance contraction induced by the distributed information fusion. To formalize the stability of the proposed DKF for the ARZ model, we first introduce two fundamental definitions. 
+
+Definition 1. The sensor network Gk = ( Sk, Ek) is said to be jointly connected over uniformly bounded time intervals if there exists an integer b > 0 such that for all k ≥ 0, the union graph Sk+b−1 
+
+> t=k
+
+Gt is connected. Joint connectivity implies that over any time window of length b, information from any node can propagate to every other node in the network via the multi-hop consensus protocol (11). Let 
+
+Ck =
+
+h
+
+(C1 
+
+> k
+
+)⊤, . . . , (C|S|  
+
+> k
+
+)⊤
+
+i⊤
+
+∈ R2|S|× 2N (16a) 
+
+Rk = diag (R1
+
+> k
+
+, . . . , R |S|  
+
+> k
+
+) ∈ R2|S|× 2|S| (16b) denote the concatenated measurement matrix and block di-agonal noise covariance matrix, respectively. Let Λk be the linearized dynamics around the true state trajectory xk, i.e., 
+
+Λk = A + G ∂f (x, u k)
+
+∂x x=xk
+
+∈ R2N ×2N . (17) 
+
+Definition 2. The global linearized system (Λ k, C k) is col-lectively observable if there exists an integer No > 0 and a constant o > 0 such that the observability Gramian satisfies 
+
+Ok,N o =
+
+> k
+
+X
+
+> t=k−No
+
+(Φ t,k −No )⊤C⊤ 
+
+> t
+
+R−1 
+
+> t
+
+CtΦt,k −No ⪰ oI 2N
+
+for all k ≥ No, where Φt,k = Λ t−1Λt−2 . . . Λk is the state transition matrix for t > k , and Φk,k = I2N .In the context of the ARZ model (6), collective observability is structurally satisfied provided the most downstream mainline cell is consistently measured by an RSU. 
+
+Assumption 1. The non-linear residual 
+
+φ(xk, ˆxlk) = G
+
+
+
+f (xk, u k) − f (ˆ xlk, u k)
+
+− ∂f ∂x ˆxlk
+
+(xk − ˆxlk)
+
+
+
+of the ARZ dynamics (6) is bounded such that, for some ϱ > 0,
+
+∥φ(xk, ˆxlk)∥ ≤ ϱ∥xk − ˆxlk∥2. (18) This assumption follows directly from Taylor’s theorem. The residual φ constitutes the remainder of the first-order Taylor expansion of the non-linear traffic dynamics around the estimate ˆxlk. Because the flux and pressure functions of the ARZ model are twice continuously differentiable over the physical domain D, their second derivatives (Hessian matrices) are uniformly bounded. Therefore, (18) holds, where the constant ϱ > 0 is proportional to the supremum of the Hessian norm over D.For the theoretical stability analysis, we evaluate the net-work over a persistently active subset of sensor nodes, S∗ ⊆ S 7
+
+(e.g., the RSUs and a fleet of CVs currently traversing the segment). Definitions 1 and 2, as well as the bounds in the theorem below, apply to this fixed-dimension sub-network. 
+
+Theorem 1. Suppose the global linearized system (Λ k, C k)
+
+is collectively observable, the communication graph Gk is jointly connected over uniformly bounded intervals, and As-sumption 1 holds. Then, the fused information matrices are uniformly bounded, satisfying 0 < σI 2N ⪯ Ξlk|k ⪯ σI 2N
+
+for all l ∈ S and k ≥ 0. Furthermore, provided the initial estimation errors and noise covariances are sufficiently small, there exist constants c1 > 0, λ ∈ (0 , 1) , and M > 0 such that the expected mean-square error for any node l ∈ S satisfies 
+
+E[∥xk − ˆxlk∥2] ≤ c1
+
+X
+
+> j∈S
+
+∥x0 − ˆxj
+
+> 0
+
+∥2
+
+ λk + M, ∀k ≥ 0
+
+(19) where the asymptotic bound M only depends on noise and is independent of the maximum density ρm.
+
+Proof. See Appendix A. Theorem 1 shows that the proposed DTSE algorithm is stochastically bounded. Its mean-square error has two parts: an exponentially decaying transient with rate λ and a steady-state noise floor M . Hence, the estimator tracks the macroscopic traffic state without diverging and ultimately remains in a bounded uncertainty region determined by sensing quality and network connectivity. Reducing this bound requires either lower sensor variance, which decreases c′, or stronger V2X connectivity, which improves λ and σ.The small-error and bounded-noise conditions are standard local assumptions for extended Kalman filtering. Because the ARZ model is nonlinear, DTSE uses a local Taylor expan-sion; the initial-error condition defines a region of attraction in which the linear contraction dominates the nonlinear re-mainder. The bounded-noise condition ensures that routine disturbances from driver behavior or sensor imperfections do not push the estimate out of this neighborhood. Within this region, the estimator remains stable and converges over time. V. E XPERIMENTAL SETUP 
+
+The proposed DTSE method is evaluated on three highway scenarios. The HighD and NGSIM datasets provide empirical trajectory data under realistic highway traffic conditions and are used to evaluate reconstruction of density and velocity fields. The SUMO scenario reproduces the motivating case illustrated in Fig. 1: a downstream bottleneck generates a backward-propagating shockwave while the ego-CV enters from upstream. This larger and controllable highway domain allows evaluation of ego-CV estimation beyond the vehicle’s onboard sensing range. Together, these scenarios support both qualitative and statis-tical evaluation. First, representative node-level estimates are analyzed to assess whether the DTSE framework reconstructs the dominant spatiotemporal traffic dynamics at fixed RSU and mobile ego-CV nodes. Second, network-level performance is evaluated by varying CV penetration rate, V2X communica-tion range, and RSU deployment density, thereby quantifying how sensing availability and communication connectivity af-fect estimation accuracy. 
+
+A. Scenarios and Ground-Truth Data 
+
+Here we provide details on the two empirical datasets and the simulated SUMO scenario used in our experiments.  
+
+> •
+
+HighD. Track 25 from Location 1 records a highway near Cologne with three lanes in each direction. The three lanes carrying right-to-left traffic are taken over the full 400 m segment, from 8:55-9:07 am.  
+
+> •
+
+NGSIM (US-101). The recording covers a 550 m, five-lane segment, including one auxiliary lane for on- and off-ramps whose flows were negligible during the selected period. The data span 8:07-8:19 am and are restricted to the 100-500 m range, giving a 400 m segment comparable in length to HighD.  
+
+> •
+
+SUMO. A two-lane, 2.7 km highway in which the first and last 100 m serve as buffer zones for extracting up-stream demand and downstream density boundary condi-tions 1, yielding an effective study domain of 2.5 km. The simulation runs for 1200 s with a speed limit of 100 km/h. Traffic demand at the upstream boundary is 3600 veh/h (1 s average interarrival time), with vehicles inserted via SUMO’s best-lane departure rule at maximum speed. Ve-hicle dynamics follow the standard Krauss car-following model with a 1.5 m minimum gap. To trigger transient, non-equilibrium conditions, a temporary bottleneck is induced at d = 2200 m by lowering the speed limit from 
+
+100 km/h to 10 km/h during t ∈ [700 , 760] s, producing a stop-and-go shock wave that propagates upstream. For all three scenarios, the raw trajectory data are aggre-gated into an Eulerian traffic state using Edie’s generalized definition on space-time cells. The HighD and NGSIM seg-ments are discretized with te = 2 s and ∆h = 40 m, yielding 
+
+N = 10 cells over a 720 s observation window, while the SUMO scenario uses te = 5 s and ∆h = 100 m, yielding 
+
+N = 25 cells over the 1200 s horizon. For each cell (i, k ), the total travel time Ti,k and traveled distance Hi,k of all assigned trajectory segments are accumulated, and the density and speed are computed as ρi,k = Ti,k /(∆ h t e) and vi,k = Hi,k /T i,k .The auxiliary relative-flow state is then ψi,k = ρi,k χi,k , with 
+
+χi,k as in (3) and p(ρ) as in (4); while ρi,k and vi,k follow directly from the Edie aggregation, ψi,k additionally requires the calibrated FD parameters vf , ρm, and γ.The ground-truth state for each scenario is shown in the left column of Figs. 2, 3, and 5. The HighD and NGSIM both capture congested-flow conditions with multiple backward-propagating stop-and-go waves, with NGSIM exhibiting no-tably higher densities (up to 500 veh/km versus 260 veh/km in HighD) and more pronounced congestion. The SUMO scenario, by contrast, evolves from largely free-flow conditions to a sharp, accident-induced bottleneck that triggers a single backward shockwave. 
+
+> 1For the empirical scenarios, the first and last cells serve as boundary cells to maximize the analyzed highway length. 8
+
+B. Parameter Calibration 
+
+The ARZ model parameters are calibrated against the ground-truth traffic state following [24]. The FD parameters are obtained by nonlinear least-squares regression of the equilibrium relation in (5) onto nearly-stationary traffic states, defined as the mean speed and density of each cell whose within-cell speed coefficient of variation is below a threshold. This threshold is 25% for HighD and NGSIM, and 50% for SUMO to retain enough samples from its accident-induced congested regime. The resulting estimates for the HighD scenario are vf =50 .90 km/h, ρm = 237 .15 veh/km, and γ = 1 .8564 . For the NGSIM scenario, the estimates are vf = 54 .03 km/h, ρm =416 .14 veh/km, and γ = 2 .2586 . For the SUMO scenario, the estimates are vf = 95 .31 km/h, ρm = 232 .56 veh/km, and 
+
+γ = 1 .1882 . The relaxation time is set to τ = 40 s for NGSIM following the calibration in [57], and likewise to τ = 40 s for HighD. For SUMO we use τ = 20 s. Numerical stability of the discretization is ensured by verifying the Courant-Friedrichs-Lewy (CFL) condition [58], vf ∆t 
+
+> ∆h
+
+< 1, which is satisfied for all three scenarios. HighD and NGSIM use ∆t = 1 s and 
+
+∆h = 40 m, while SUMO uses ∆t = 1 s and ∆h = 100 m. 
+
+C. Sensing and V2X Network Configuration 
+
+The sensing and communication setup specifies the place-ment of the RSUs, the CV penetration rate, and the V2X and P2P links that connect them. As discussed in Section III, RSUs maintain persistent P2P links with their immediate neighbors, independent of the V2X channel, while all RSU-CV and CV-CV communication is governed by a finite V2X communi-cation range. Empirical scenarios use a denser infrastructure over a short highway segment, whereas the SUMO scenario uses a sparser deployment over a much longer domain to accommodate the ego-CV setting. For the HighD and NGSIM scenarios, the fixed infras-tructure consists of two RSUs at d ∈ { 20 , 380 } m with a V2X communication range of 300 m, consistent with ranges reported in real-world highway V2X evaluations [6]. The CV penetration rate is set to approximately 10% , yielding 77 of 
+
+774 vehicles ( 9.95% ) for HighD and 167 of 1668 (10 .01% )for NGSIM. In both scenarios, the upstream RSU at 20 mserves as the representative estimator for the analysis. The SUMO scenario covers a substantially larger do-main and therefore uses four RSUs positioned at d ∈{50 , 850 , 1650 , 2450 } m, giving an inter-RSU spacing of 
+
+800 m, larger than in the empirical setups. The V2X communi-cation range is set to 400 m, deliberately shorter than the inter-RSU spacing, so any state information an RSU contributes to its peers can only reach intermediate vehicles through CV-mediated relays. This design stresses the consensus protocol’s ability to fuse information across the mobile fleet. The CV penetration rate is again set to approximately 10% . The analy-sis focuses on the time window t ∈ [700 , 845] s, defined by the traversal of a reference ego-CV that enters the network as the congestion wave is triggered. During this interval, 248 vehicles traverse the highway segment, of which 25 are designated as CVs ( 10 .08% penetration). 
+
+D. DTSE Filter Tuning and Initialization 
+
+The DTSE filter is initialized uniformly across all sensor nodes l ∈ S. At k = 0, the prior mean is chosen as 
+
+¯x0 = E[x0] = x0, with initial error covariance P0 = 10 −3I2N .This provides a common reference across configurations, so the reported results reflect estimator performance in a post-transient regime rather than an arbitrary initial mismatch, whose influence is confined to a short start-up phase. The measurement noise covariance is defined, for all l ∈ S,as Rl = diag  (βρ max )2, (βψ max )2, with β = 0.01 . To account for ARZ model mismatch and discretization er-rors, the process noise covariance is set to Q = IN ⊗
+
+diag  (κρ max )2, (κψ max )2, with κ = 0 .01 . To ensure physical realizability, the state estimates are projected onto the box constraints ρ ∈ [0 , ρ m] veh/km and ψ ∈ [0 , v f ρm] veh/h. Finally, the consensus protocol uses L = 5 communication rounds per time step to accelerate information fusion across the sensor nodes. VI. E STIMATION RESULTS 
+
+We now assess the qualitative reconstruction quality of the proposed DTSE algorithm under the baseline configuration described in Section V. For each scenario, we examine the spatiotemporal density and speed fields maintained by the representative upstream RSU and ego-CV node. 
+
+A. RSU State Estimation 
+
+Figures 2 and 3 compare the ground-truth traffic fields with the DTSE reconstructions for the HighD and NGSIM datasets, respectively. In each figure, the left column shows the ground-truth density ρ(t, d ) and speed v(t, d ), derived from Edie’s generalizations, and the right column shows the corresponding RSU estimates ˆρ(t, d ) and ˆv(t, d ).Despite the sparse 10% CV penetration rate, the DTSE method recovers the dominant wave locations, propagation slopes, and recurrence patterns in both datasets. Because HighD carries less traffic over the same window, its 77 CVs (of 774 vehicles) provide substantially fewer absolute mea-surements than NGSIM’s 167 (of 1668 ). The estimated fields still preserve the alternating high-density/low-speed and low-density/high-speed regions, showing that the RSU reconstructs traffic dynamics beyond its own sensing location through the distributed consensus network. Across both datasets, the reconstructed fields are smoother than the ground truth and omit some fine-scale variations, as expected from the model-based estimator and the projection onto the admissible state space, which attenuates local densi-ties outside the feasible model range. 
+
+B. Ego-CV State Estimation 
+
+We evaluate the SUMO scenario by examining both the evolving sensing and communication graph the ego-CV oper-ates within and the resulting spatiotemporal reconstruction it maintains onboard. Figure 4 provides a sequence of snapshots illustrating the dynamic evolution of the sensing and communication graph 9
+
+Fig. 2. Spatiotemporal reconstruction of highway density and speed by the first RSU. The left column shows the HighD density and speed fields, and the right column shows the corresponding RSU estimate. 
+
+Fig. 3. Spatiotemporal reconstruction of highway density and speed by the first RSU. The left column shows the NGSIM density and speed field, and the right column shows the RSU estimate. 
+
+Gk. The distinct node types are color-coded: fixed RSUs (blue squares), participating CVs (red dots), and non-connected vehicles (black dots). The ego-CV, whose internal estimation belief is the subject of this analysis, is highlighted in green. The yellow shaded regions delineate the instantaneous observ-able subspace of the network, i.e., areas where density and 0 500 1000 1500 2000 2500                 
+
+> Sensor network at t= 700 s
+> 0500 1000 1500 2000 2500
+> Sensor network at t= 750 s
+> 0500 1000 1500 2000 2500
+> Position along internal road [m] Sensor network at t= 800 s
+
+Fig. 4. Vehicle-sensor communication network at t = 700 , 750 , and 800 s: RSUs (blue squares), CVs (red dots), conventional vehicles (black dots), the ego-CV (green dot), and local sensing ranges (yellow). Links denote P2P (black), V2V (red), and V2I (blue) communication. The ego-CV’s accessible information changes as traffic evolves and links form and break. 
+
+Fig. 5. Spatiotemporal reconstruction of highway density and speed by the ego-CV. The left column shows the SUMO density and speed field, and the right column shows the ego-CV estimate. The bold white line is the trajectory of the ego-CV and the other white lines are the trajectories of the CV fleet. 
+
+flow are directly measurable by at least one sensor node. As evidenced by the gaps between yellow regions, the network is characterized by sparse and fragmented observability, and accurate estimation therefore relies heavily on the distributed consensus mechanism to diffuse information from observed segments to unobserved ones via V2X communication links. A comparative analysis of the ground-truth traffic dynamics and the distributed reconstruction is presented in Fig. 5. The left panel visualizes the macroscopic density field ρ(t, d ) and speed field v(t, d ) serving as the ground truth, while the right panel displays the estimated fields ˆρ(t, d ) and ˆv(t, d ) as recon-structed by the ego-CV, with the ego-CV trajectory overlaid for context. The imposition of the speed limit drop at t = 700 striggers a rapid transition from free-flow to congested condi-tions, producing a backward-propagating shockwave (the high-10  
+
+> Fig. 6. Estimation accuracy of the fused network estimate in SMAPE and RMSE for the HighD scenario across CV penetration rates and V2X communication ranges, over 100 trials.
+
+density region slanting upwards to the left). Despite the ego-CV being located far upstream of the bottleneck when the congestion initiates, its local estimate captures the onset of the congestion wave almost simultaneously with the ground truth, indicating effective information dissemination from the RSUs and CVs through the multi-hop consensus network. The estimator further reproduces the propagation speed of the shockwave front and the subsequent dissipation of the jam after the speed limit is restored at t = 760 s. The diffusion-based consensus mechanism and the spatial discretization introduce slight smoothing relative to the ground truth, but the estimated fields preserve the main spatiotemporal extent and propagation of the high-density region. This confirms that the proposed nonlinear information filter enables mobile CV nodes to maintain traffic-state awareness beyond their onboard sensing range, even when the network topology is dynamic and direct observation coverage is partial. VII. S TATISTICAL EVALUATION 
+
+To complement the previous case studies, we evaluate how CV penetration rate, RSU deployment density, and V2X communication range affect estimation accuracy. Since the communication graph Gk depends on the random spatial distribution of participating CVs, we use Monte Carlo trials to characterize performance across different CV selections. We conduct two experiments. The first varies the CV pene-tration rate and the V2X communication range while keeping the RSU deployment fixed at the baseline configuration. The tested penetration rates are p ∈ { 2, 5, 10 , 15 , 20 }%. The tested ranges are r ∈ { 75 , 150 , 300 } m for the 400 m HighD and NGSIM highway segments, and r ∈ { 300 , 400 , 500 } m for the 2.5 km SUMO scenario.                
+
+> Fig. 7. Estimation accuracy of the fused network estimate in SMAPE and RMSE for the NGSIM scenario across CV penetration rates and V2X communication ranges, over 100 trials. TABLE I RSU DEPLOYMENT POSITIONS IN METERS .HighD / NGSIM SUMO
+> d0no RSUs no RSUs
+> d1380 2450
+> d220, 380 50, 2450
+> d320, 220, 380 50, 1250, 2450
+> d420, 140, 260, 380 50, 850, 1650, 2450
+> d520, 100, 220, 300, 380 50, 650, 1250, 1850, 2450
+
+The second experiment varies RSU deployment density 
+
+d0, . . . , d 5 and CV penetration rate p ∈ { 0, 2, 5, 10 , 15 , 20 }%
+
+at the baseline V2X communication range ( 300 m for HighD and NGSIM, and 400 m for SUMO). The RSU deployment configurations d0, . . . , d 5 are listed in Table I. In Fig. 9, the row d0 corresponds to CV-only configurations, the column 
+
+0% to RSU-only configurations, and the remaining cells to combined RSU and CV deployments. For each parameter combination, we conduct 100 indepen-dent trials with different random CV subsets. For HighD and NGSIM, CVs are drawn uniformly from the vehicles active during the observation window ( 774 vehicles for HighD and 
+
+1668 for NGSIM). For SUMO, the ego-CV is retained in all CV-based trials, and the remaining CVs are drawn uniformly from the other 248 vehicles active during its traversal window. In the 0% penetration case, no vehicles are designated as CVs, giving an RSU-only baseline. Since there is no CV-sampling randomness, this case is evaluated in a single run. Performance is evaluated using the fused network estimate, obtained by averaging the local estimates of the active sensor nodes at each time step ¯xk,j = 1 
+
+> |S k,j |
+
+P 
+
+> l∈S k,j
+
+ˆx lk,j , where Sk,j 
+
+is the set of active sensor nodes in trial j at time k. This fused 11  
+
+> Fig. 8. Estimation accuracy of the fused network estimate in SMAPE and RMSE for the SUMO scenario across CV penetration rates and V2X communication ranges, over 100 trials.
+
+estimate measures the collective accuracy of the distributed network rather than the estimate at a single node. For each trial j and state variable z ∈ { ρ, v }, we first compute the Root Mean Square Error (RMSE) as 
+
+RMSE j (z) = 
+
+vuut 1
+
+Nsteps N
+
+> Nsteps
+
+X
+
+> k=1
+
+∥zk − ¯zk,j ∥2
+
+and then the Symmetric Mean Absolute Percentage Error (SMAPE) as 
+
+SMAPE j (z) = 100 
+
+Nsteps N
+
+> Nsteps
+
+X
+
+> k=1
+> N
+
+X
+
+> i=1
+
+2|zi,k − ¯zi,k,j ||zi,k | + |¯zi,k,j | .
+
+The RMSE measures the absolute error in physical units, while the SMAPE measures relative error on a bounded, unit-independent scale. For the first experiment, we report the full trial distributions of RMSE j and SMAPE j using boxplots. For the second, each configuration is summarized by the average of the median 
+
+SMAPE j (ρ) and median SMAPE j (v) over the 100 trials. 
+
+A. HighD and NGSIM: CV Penetration and V2X Range 
+
+Figures 6 and 7 show the HighD and NGSIM error dis-tributions for varying V2X range r ∈ { 75 , 150 , 300 } m and CV penetration rate, using the baseline RSU deployment d2.For both datasets, the median error decreases and the in-terquartile range narrows as the CV penetration rate increases, confirming that a denser CV fleet improves both the accuracy and robustness of the DTSE estimates for density and speed alike. At the baseline range r = 300 m, as the penetration rate increases from 2% to 20% , SMAPE( ρ) decreases from            
+
+> Fig. 9. Average median SMAPE( ρ)and SMAPE( v)of the fused network estimate over 100 trials for varying CV penetration rates (columns) and RSU deployments d0, . . . , d 5(rows) in HighD, NGSIM, and SUMO. The row d0corresponds to CV-only configurations, the column 0% to RSU-only configurations, and the remaining cells to combined RSU and CV deployments.
+
+approximately 17% to 8.5% for HighD and from 13% to 4.5% 
+
+for NGSIM, while SMAPE( v) decreases from approximately 
+
+17% to 10% for HighD and from 17% to 12% for NGSIM. 
+
+RMSE( v) decreases to approximately 4.4 km/h for HighD and 
+
+3.9 km/h for NGSIM at the highest penetration rate. At the baseline penetration rate of 10% , consistent with Section VI, 
+
+SMAPE( ρ) is approximately 11% for HighD and 6% for NGSIM, while SMAPE( v) is approximately 12% for HighD and 13% for NGSIM. The effect of V2X communication range is more modest than that of CV penetration for HighD, where the 150 and 
+
+300 m ranges produce nearly indistinguishable error distribu-tions and only the shortest 75 m range yields slightly higher density errors. This reflects a saturation pattern: since the two RSUs remain connected through persistent P2P links, range mainly determines how effectively mobile CV measurements reach the consensus network, with shorter ranges giving weaker, more intermittent connectivity and diminishing returns beyond a moderate range. NGSIM deviates from this pattern 12 
+
+at short range, where errors are markedly worse across nearly all penetration rates and metrics (e.g., SMAPE( ρ) at p = 2% 
+
+is roughly 40% higher). We attribute this to NGSIM’s more severe, spatially uneven congestion (Fig. 3). Sharp density gradients between congested and free-flowing regions leave some CVs beyond the communication range of their neigh-bors, fragmenting the network into weakly connected clusters. The resulting isolated nodes degrade the fused network-wide estimate far more than they would affect the estimate of a single, favorably placed reference node. Conversely, at the highest penetration rate, shorter V2X ranges achieve marginally lower speed errors than the 300 mbaseline, possibly because a densely connected network at high penetration introduces redundancy in overlapping neighbor updates that mildly conflict during the fusion step, although density errors continue to favor larger ranges. Overall, CV penetration is the dominant driver of estimation accuracy in this setting, while V2X range plays a secondary, saturating role once a moderate communication range is reached. Even at the realistic baseline of 10% CV penetration and a 300 m range, the DTSE algorithm achieves accurate, robust spatiotemporal reconstruction across both datasets. 
+
+B. SUMO: CV Penetration and V2X Range 
+
+Figure 8 shows the SUMO error distributions for V2X range 
+
+r ∈ { 300 , 400 , 500 } m, using the baseline RSU deployment 
+
+d4. As in the empirical datasets, increasing the CV penetration rate reduces both the median error and its variability for density and speed alike. The effect of V2X communication range remains modest, but unlike HighD and NGSIM, where accuracy saturates beyond moderate ranges, the errors here decrease monotonically with range across penetration rates. At the baseline r = 400 m, SMAPE( ρ) decreases from approximately 24% to 16% and SMAPE( v) from approxi-mately 15% to 10% as p increases from 2% to 20% . This weaker saturation, compared to HighD and NGSIM, is likely a consequence of scale. The tested ranges span only 12 -20% of the 2.5 km SUMO domain, compared to 19 -75% of the 400 mHighD/NGSIM segment, so each additional 100 m still mean-ingfully extends the ego-CV’s reachable neighborhood. The same scale difference is visible in the spread of the boxplots, whose interquartile ranges and whiskers are noticeably wider than for HighD or NGSIM, since a fixed CV penetration rate admits far more distinct spatial configurations over a 2.5 km domain than over a 400 m segment. The sensitivity to CV penetration is further amplified by the nature of the SUMO scenario. Unlike the recurring, spatially distributed congestion in HighD and NGSIM, the SUMO shockwave is a single, localized event confined to a narrow region of the domain (Fig. 5), so accurately capturing it depends partly on whether a CV happens to be nearby when it forms. Higher penetration rates make this far more likely, explaining why increasing p has an outsized benefit here relative to the more uniformly congested empirical datasets. At the realistic baseline of 10% CV penetration and r =400 m, consistent with the scenario in Section VI, the ego-CV reconstructs the shockwave with SMAPE( ρ) of approximately 
+
+18% and SMAPE( v) of approximately 11% , accuracy com-parable to the empirical RSU deployments despite the sparser, time-varying V2X connectivity. 
+
+C. CV Penetration and RSU Deployment 
+
+Figure 9 reports the average of the median SMAPE( ρ) and median SMAPE( v) over the Monte Carlo trials for varying CV penetration rates and RSU deployments. The row d0 cor-responds to CV-only configurations, the column 0% to RSU-only configurations, and the remaining entries to combined RSU and CV deployments. The V2X communication range is fixed at 300 m for HighD and NGSIM and 400 m for SUMO, so that the experiment isolates the effects of RSU deployment density and CV penetration rate. The results show that both sensing modalities improve the reconstruction accuracy, but in different ways. In the CV-only configurations, increasing the penetration rate consistently reduces the SMAPE, since additional CVs provide more spa-tially distributed measurements along the corridor. Similarly, in the RSU-only configurations, denser RSU deployments reduce the SMAPE by increasing the spatial coverage of the fixed sensing infrastructure. At the baseline configurations used in the preceding ex-periments, the combined RSU and CV deployments outper-form the corresponding single-modality cases. For HighD, the baseline configuration gives a SMAPE of 11 .4% , compared with 22 .6% for RSU-only sensing and 13 .1% for CV-only sensing. For NGSIM, the corresponding values are 9.3% ,
+
+26 .1% , and 9.9% , respectively. For SUMO, the combined configuration gives 14 .4% , compared with 26 .5% for RSU-only sensing and 21 .3% for CV-only sensing. Thus, while CV-only sensing already performs well in the empirical datasets at moderate penetration rates, the addition of RSUs still improves the fused estimate, and in SUMO the combined deployment substantially outperforms CV-only sensing. Conversely, RSUs alone approach the combined accuracy only under dense deployments in the empirical datasets, and remain markedly less accurate in SUMO even with five RSUs. The combined deployments highlight the complementary roles of the two sensing modalities, with CVs providing mobile spatial measurements along the traffic stream and RSUs pro-viding fixed reference measurements and improved consensus connectivity. This benefit is most evident when either modality alone gives incomplete coverage, particularly in the larger SUMO scenario with a localized transient shockwave, where accurate reconstruction depends more strongly on network-wide information exchange. VIII. C ONCLUSION AND FUTURE WORK 
+
+This paper presented a distributed traffic-state estimation framework that uses connected vehicles and roadside infras-tructure as sensing and estimation nodes. It combines an information-form distributed Kalman filter for the second-order ARZ model with consensus-based information exchange and projection onto a physically admissible state space. This allows RSU and CV measurements to be fused locally while 13 
+
+maintaining physical consistency and reconstructing non-equilibrium traffic dynamics. The framework was evaluated on three highway scenar-ios. HighD and NGSIM provide empirical traffic data over highway segments with recurring stop-and-go traffic. These datasets allowed us to evaluate our estimation algorithm under real-world congested conditions. The SUMO scenario uses a longer controlled highway segment with a temporary downstream bottleneck. This allowed us to evaluate whether an ego-CV can estimate an approaching congestion wave before it enters its onboard sensing range. Under sparse RSU deployments, V2X communication ranges of 300 –400 m, and a 10% CV penetration rate, the estimator recovered the spa-tiotemporal density and speed patterns across these scenarios. Monte Carlo experiments on HighD, NGSIM, and SUMO quantified the effects of CV penetration, V2X communication range, and RSU deployment density. Higher CV penetration consistently improved accuracy, increasing the V2X range helped until the communication graph was sufficiently con-nected, and denser RSU deployments also improved perfor-mance. Combined RSU-CV deployments outperformed the corresponding single-modality setups in nearly all tested con-figurations, and under sparse RSU deployments and realistic V2X conditions they reduced estimation errors by about a factor of two relative to RSU-only sensing. The results high-lighted the complementary roles of the two modalities, with mobile CV measurements providing spatial coverage that fixed infrastructure alone attains only under dense deployment. Future work will consider packet loss, latency, asynchronous updates, and temporary network disconnections. Other ex-tensions include online ARZ parameter calibration and the consideration of larger highway networks with ramps, lane changes, and multiple interacting bottlenecks. APPENDIX 
+
+A. Proof of Theorem 1 
+
+In the fusion steps (11) and (12), let Πk ∈ R|S ∗|×|S ∗|
+
+be the doubly stochastic weight matrix corresponding to the communication graph Gk, where the entry [Π k]lj = π(l,j ),k .For α = 1 , we have Ξl, (1)  
+
+> k|k
+
+= P 
+
+> j∈S ∗
+
+[Π k]lj Ξjk|k. Applying this linear protocol iteratively for L steps is equivalent to multiplying the initial state by the matrix Πk raised to the power of L. Define this effective multi-step consensus weight matrix as Wk = (Π k)L. Since Πk is doubly stochastic, Wk
+
+is also doubly stochastic. After L iterations, the final fused information matrix Ξlk|k for node l is given by 
+
+Ξlk|k = X
+
+> j∈S ∗
+
+[Wk]lj Ξjk|k = X
+
+> j∈S ∗
+
+[Wk]lj (Ξ jk|k−1 + Θ jk)
+
+where we used (10). Because the matrix inversion is strictly convex on the cone of positive definite matrices, Jensen’s inequality and the fact that Θjk = ( Cjk)⊤(Rjk)−1Cjk ⪰ 0 imply 
+
+(Ξ lk|k)−1 ⪯ X
+
+> j∈S ∗
+
+[Wk]lj (Ξ jk|k)−1. (20) By the Woodbury matrix identity, the local prior information update (13) can be rewritten as 
+
+Ξjk|k−1 =
+
+
+
+Λjk−1(Ξ jk−1|k−1)−1(Λ jk−1)⊤ + Q
+
+−1
+
+(21) Because the local state estimates are random variables, their corresponding Jacobians Λlk−1 fluctuate stochastically. To es-tablish a deterministic baseline for observability, we substitute the estimated Jacobians with Λk−1 in (17). This substitution is justified by the principles of local stability: because the ARZ flux and pressure functions are continuously differentiable, the discrepancy (Λ k−1 − Λlk−1) is bounded proportionally to the estimation error. The perturbation introduced by evaluating the system along the true trajectory is of second order and is entirely absorbed by the Taylor series remainder bound (18) within the filter’s local region of attraction. Because Ξlk−1|k−1 ≻ 0 and the discretized transition matrix Λk−1 is non-singular (guaranteed by the CFL stabil-ity condition of the ARZ spatial discretization), the matrix 
+
+Λk−1(Ξ lk−1|k−1)−1Λ⊤ 
+
+> k−1
+
+is symmetric positive definite. Fur-thermore, the process noise covariance Q ≻ 0. Because the Λk
+
+and Q are uniformly bounded, there exists a constant c > 0
+
+such that Q ⪯ c
+
+
+
+Λk−1(Ξ lk−1|k−1)−1Λ⊤
+
+> k−1
+
+
+
+. Substituting this into (21) and reversing the L¨ owner partial order via matrix in-version yields a uniform decay factor δ = 11+ c ∈ (0 , 1) , giving 
+
+Ξlk|k−1 ⪰ δΛ−⊤ 
+
+> k−1
+
+Ξlk−1|k−1Λ−1
+
+> k−1
+
+. Substituting this inequality into (20) and using (10), we obtain 
+
+Ξlk|k ⪰ X
+
+> j∈S ∗
+
+[Wk]lj Θjk + δ X
+
+> j∈S ∗
+
+[Wk]lj Λ−⊤ 
+
+> k−1
+
+Ξjk−1|k−1Λ−1
+
+> k−1
+
+.
+
+Define the multi-step effective weight matrix Wt,k =
+
+WkWk−1 . . . W t+1 (with Wk,k = Wk). Unrolling the above recursive inequality backward in time over a window K =max( b, N o), where b and No are defined in Definitions 1 and 2, we obtain 
+
+Ξlk|k ⪰
+
+> k
+
+X
+
+> t=k−K
+
+δk−t X
+
+> j∈S ∗
+
+[Wt,k ]lj (Φ t,k )⊤Θjt Φt,k .
+
+Since the communication graph Gk is jointly connected over the window b (and consequently over K ≥ b), the product of doubly stochastic matrices over a jointly connected sequence guarantees that the resulting multi-step weight matrix Wt,k is element-wise positive. That is, there exists w > 0 such that 
+
+[Wt,k ]lj ≥ w for all nodes l, j ∈ S ∗ and all times t ∈ [k −
+
+K, k ]. Factoring the worst-case decay δK and the connectivity bound w out of the summations gives 
+
+Ξlk|k ⪰ wδ KkX
+
+> t=k−K
+
+(Φ t,k )⊤
+
+ X
+
+> j∈S ∗
+
+(Cjt )⊤(Rjt )−1Cjt
+
+ Φt,k 
+
+= wδ KkX
+
+> t=k−K
+
+(Φ t,k )⊤C⊤ 
+
+> t
+
+R−1 
+
+> t
+
+CtΦt,k = wδ K Ok,K .
+
+By the collective observability assumption, Ok,K ⪰ oI 2N .Setting σ = wδ K o > 0, we conclude that Ξlk|k ⪰ σI 2N .Furthermore, because Q ≻ 0 and Rlk ≻ 0 are bounded, (10) and (21) imply Ξlk|k ⪯ σI 2N for some σ ≥ σ.14 
+
+To prove the exponential mean-square boundedness of the estimation error, let elk = xk −ˆxlk be the projected error at node 
+
+l. The updated prior information vector is ξlk|k−1 = Ξ lk|k−1 ˆxlk
+
+and, following the similar arguments as with Ξlk|k, we have 
+
+ξlk|k = X
+
+> j∈S ∗
+
+[Wk]lj 
+
+
+
+Ξjk|k−1 ˆxjk + ( Cjk)⊤(Rjk)−1yjk
+
+
+
+.
+
+Let xlk|k = (Ξ lk|k)−1ξlk|k define the fused posterior estimate, and elk|k = xk−xlk|k be the fused posterior error. By expanding the true state as xk = (Ξ lk|k)−1 P 
+
+> j
+
+[Wk]lj (Ξ jk|k−1 + Θ jk)xk,and substituting yjk = Cjkxk + νjk, we subtract the estimate from the true state. The Θjkxk terms cancel, yielding 
+
+elk|k = (Ξ lk|k)−1 X
+
+> j∈S ∗
+
+[Wk]lj 
+
+h
+
+Ξjk|k−1ejk − (Cjk)⊤(Rjk)−1νjk
+
+i
+
+.
+
+The unprojected prior estimate for the next time step is 
+
+ˇxlk+1 |k = (Ξ lk+1 |k)−1ξlk+1 |k = Λ lkxlk|k + ηlk.
+
+Substituting ηlk and Λlk from (9), we obtain 
+
+ˇxlk+1 |k = Ax lk|k + Gf (xlk|k, u k).
+
+Let ˇelk+1 |k = xk+1 − ˇxlk+1 |k be the unprojected prior error. Subtracting the prediction from the true state (6) yields 
+
+ˇelk+1 |k = A(xk − xlk|k) + G
+
+
+
+f (xk, u k) − f (xlk|k, u k)
+
+
+
++ ωk.
+
+By adding and subtracting G∇f (xlk|k)elk|k, we obtain 
+
+ˇelk+1 |k = Λ lkelk|k + φlk + ωk (22) where φlk = φ(xk, x lk|k). By Assumption 1, its norm satisfies 
+
+∥φlk∥ ≤ ϱ∥elk|k∥2. To establish stability, we analyze the prediction matrix update (13), which, by the Woodbury matrix identity, is equivalent to 
+
+Ξlk+1 |k =
+
+
+
+Q + Λ lk(Ξ lk|k)−1(Λ lk)⊤−1
+
+.
+
+Because Ξlk|k ⪰ σI and the system state is physi-cally bounded, Λlk(Ξ lk|k)−1(Λ lk)⊤ is bounded from above. Thus, there exists a strictly positive scalar ϑ > 0
+
+such that Q ⪰ ϑΛlk(Ξ lk|k)−1(Λ lk)⊤, which implies (Q +Λlk(Ξ lk|k)−1(Λ lk)⊤) ⪰ (1 + ϑ)Λ lk(Ξ lk|k)−1(Λ lk)⊤ and yields 
+
+Ξlk+1 |k ⪯ 11 + ϑ (Λ lk)−⊤ Ξlk|k(Λ lk)−1.
+
+Defining the contraction parameter ζ ∈ (0 , 1) such that 1−ζ =(1 + ϑ)−1, we obtain the prediction contraction bound as 
+
+(Λ lk)⊤Ξlk+1 |kΛlk ⪯ (1 − ζ)Ξ lk|k. (23) Let cω and cν be such that 
+
+sup 
+
+> k≥0
+
+X
+
+> j∈S ∗
+
+Tr 
+
+
+
+Ξjk+1 |kQ
+
+
+
+≤ cω
+
+sup 
+
+> k≥0
+
+X
+
+> l∈S ∗
+
+E
+
+h
+
+(˜ νlk)⊤Ξlk|k ˜νlk
+
+i
+
+≤ cν
+
+where ˜νlk = (Ξ lk|k)−1 P 
+
+> j∈S ∗
+
+[Wk]lj (Cjk)⊤(Rjk)−1νjk is the effective measurement noise at node l after consensus. Define the global stochastic Lyapunov function 
+
+Vk+1 = X
+
+> l∈S ∗
+
+(elk+1 |k+1 )⊤Ξlk+1 |k+1 elk+1 |k+1 .
+
+Recall a standard fact for doubly stochastic weights, 
+
+(P wizi)⊤(P wiMi)−1(P wizi) ≤ P wiz⊤ 
+
+> i
+
+M −1 
+
+> i
+
+zi, for some zi and Mi. Recall another fact that Ξjk+1 |k(Ξ jk+1 |k +Θjk+1 )−1Ξjk+1 |k ⪯ Ξjk+1 |k. Therefore, we obtain 
+
+E[Vk+1 ]
+
+≤ E
+
+ X
+
+> l∈S ∗
+
+X
+
+> j∈S ∗
+
+[Wk+1 ]lj (ejk+1 )⊤Ξjk+1 |k(Ξ jk+1 |k
+
++ Θ jk+1 )−1Ξjk+1 |kejk+1 
+
+
+
++ cν
+
+≤ E
+
+ X
+
+> j∈S ∗
+
+(ejk+1 )⊤Ξjk+1 |kejk+1 
+
+
+
++ cν .
+
+The state estimate ˆxjk+1 = Π D (ˇ xjk+1 |k). Because the true state satisfies xk+1 ∈ D , and D is a hyperrectangle aligned with the state axes (bounds on ρ and ψ), the projection ΠD is non-expansive. Given the diagonal dominance of the informa-tion matrices, the projection preserves the weighted quadratic norm: (ejk+1 )⊤Ξjk+1 |kejk+1 ≤ (ˇ ejk+1 |k)⊤Ξjk+1 |k ˇejk+1 |k. Substi-tuting (22) into the above bound, and noting that the cross-terms involving the zero-mean process noise ωk vanish strictly under expectation, yields 
+
+E[Vk+1 ] ≤ E
+
+ X
+
+> j∈S ∗
+
+(ejk|k)⊤(Λ jk)⊤Ξjk+1 |kΛjkejk|k
+
+
+
++ E
+
+ X
+
+> j∈S ∗
+
+Ψ( φjk)
+
+ + cν + cω
+
+where Ψ( φjk) = ( φjk)⊤Ξjk+1 |kφjk + 2( ejk|k)⊤(Λ jk)⊤Ξjk+1 |kφjk.From Assumption 1, we have 
+
+X
+
+> j∈S ∗
+
+Ψ( φjk) ≤ c2
+
+X
+
+> j∈S ∗
+
+∥ejk|k∥3 + c3
+
+X
+
+> j∈S ∗
+
+∥ejk|k∥4
+
+for some c2, c 3 > 0 that depend on ϱ in (18). Applying (23) reduces the nominal term to (1 − ζ)Vk. The noise traces aggregate into a uniform constant c′ = cν + cω . Provided the initial error is within a small region of attraction, these terms are absorbed into the linear decay rate, yielding a strict factor 
+
+λ ∈ (1 − ζ, 1) such that E[Vk+1 ] ≤ λE[Vk] + c′. Unrolling this linear difference inequality from k = 0 gives the geometric series bound: E[Vk] ≤ λkV0 + c′ 
+
+> 1−λ
+
+. By applying the Rayleigh bounds ( σ P 
+
+> j
+
+∥ejk|k∥2 ≤ Vk ≤ σ P 
+
+> j
+
+∥ejk|k∥2), we translate the Lyapunov bound back to the expected squared local error norm for an individual node l:
+
+E[∥elk|k∥2] ≤ 1
+
+σ E[Vk]
+
+≤
+
+ σσ
+
+  X
+
+> j∈S ∗
+
+∥x0 − ˆxj
+
+> 0
+
+∥2
+
+ λk +
+
+ c′
+
+σ(1 − λ)
+
+
+
+.15 
+
+Assuming uniform initialization across all nodes (ˆxj 
+
+> 0
+
+=ˆxl
+
+> 0
+
+, ∀j ∈ S ∗), the summation over j simplifies to |S ∗|∥ x0 −
+
+ˆxl
+
+> 0
+
+∥2. Setting c1 = |S ∗|σσ and M = c′ 
+
+> σ(1 −λ)
+
+verifies (19). Be-cause c′ is derived solely from the bounded covariance traces of the process and measurement noise, and σ is determined by network observability, the asymptotic bound M is structurally independent of the physical density limit ρm. This concludes the proof. REFERENCES [1] J. W. Lee, H. Wang, K. Jang, N. Lichtl´ e, A. Hayat, M. Bunting, A. Alanqary, W. Barbour, Z. Fu, X. Gong et al. , “Traffic control via connected and automated vehicles (CAVs): An open-road field experiment with 100 CAVs,” IEEE Control Systems , vol. 45, no. 1, pp. 28–60, 2025. [2] A. Keimer, N. Laurent-Brouty, F. Farokhi, H. Signargout, V. Cvetkovic, A. M. Bayen, and K. H. Johansson, “Information patterns in the modeling and design of mobility management services,” Proceedings of the IEEE , vol. 106, no. 4, pp. 554–576, 2018. [3] K. Ansari, “Joint use of DSRC and C-V2X for V2X communications in the 5.9 GHz ITS band,” IET Intelligent Transport Systems , vol. 15, no. 2, pp. 213–224, 2021. [4] E. Zadobrischi and S. Havriliuc, “Enhancing scalability of C-V2X and DSRC vehicular communication protocols with LoRa 2.4 GHz in the scenario of urban traffic systems,” Electronics , vol. 13, no. 14, p. 2845, 2024. [5] B. Mendes, M. Araujo, A. Goes, D. Corujo, and A. S. Oliveira, “Ex-ploring V2X in 5G networks: A comprehensive survey of location-based services in hybrid scenarios,” Vehicular Communications , p. 100878, 2025. [6] V. Maglogiannis, D. Naudts, S. Hadiwardoyo, D. van den Akker, J. Marquez-Barja, and I. Moerman, “Experimental V2X evaluation for C-V2X and ITS-G5 technologies in a real-life highway environment,” 
+
+IEEE Transactions on Network and Service Management , vol. 19, no. 2, pp. 1521–1538, 2022. [7] STATISTA, “Connected cars as a share of the total car parc in the EU,” https://www.statista.com/statistics/1276381/connected- car- fleet- a s-a-share-of-total-car-parc-in-european-union/, 2025, accessed on: 2025-11-28. [8] P. Arthurs, L. Gillam, P. Krause, N. Wang, K. Halder, and A. Mouzakitis, “A taxonomy and survey of edge cloud computing for intelligent transportation systems and connected vehicles,” IEEE Transactions on Intelligent Transportation Systems , vol. 23, no. 7, pp. 6206–6221, 2021. [9] T. Seo, A. M. Bayen, T. Kusakabe, and Y. Asakura, “Traffic state estimation on highway: A comprehensive survey,” Annual reviews in control , vol. 43, pp. 128–151, 2017. [10] X. Di and R. Shi, “A survey on autonomous vehicle control in the era of mixed-autonomy: From physics-based to ai-guided driving policy learning,” Transportation Research Part C: Emerging Technologies , vol. 125, p. 103008, 2021. [11] M. J. Lighthill and G. B. Whitham, “On kinematic waves II. a theory of traffic flow on long crowded roads,” Proceedings of the Royal Society of London. Series A. Mathematical and Physical Sciences , vol. 229, no. 1178, pp. 317–345, 1955. [12] P. I. Richards, “Shock waves on the highway,” Operations Research ,vol. 4, no. 1, pp. 42–51, 1956. [13] C. F. Daganzo, “The cell transmission model: A dynamic representation of highway traffic consistent with the hydrodynamic theory,” Transporta-tion Research Part B: Methodological , vol. 28, no. 4, pp. 269–287, 1994. [14] D. B. Work, O.-P. Tossavainen, S. Blandin, A. M. Bayen, T. Iwuchukwu, and K. Tracton, “An ensemble Kalman filtering approach to highway traffic estimation using GPS enabled mobile devices,” in IEEE Confer-ence on Decision and Control , 2008, pp. 5062–5068. [15] J. C. Herrera and A. M. Bayen, “Incorporation of lagrangian measure-ments in freeway traffic state estimation,” Transportation Research Part B: Methodological , vol. 44, no. 4, pp. 460–481, 2010. [16] C. P. I. J. Van Hinsbergen, T. Schreiter, F. S. Zuurbier, J. W. C. Van Lint, and H. J. Van Zuylen, “Localized extended kalman filter for scalable real-time traffic state estimation,” IEEE Transactions on intelligent transportation systems , vol. 13, no. 1, pp. 385–394, 2011. [17] Y. Yuan, J. Van Lint, R. E. Wilson, F. van Wageningen-Kessels, and S. P. Hoogendoorn, “Real-time Lagrangian traffic state estimator for freeways,” IEEE Transactions on Intelligent Transportation Systems ,vol. 13, no. 1, pp. 59–70, 2012. [18] H. J. Payne, “Models of freeway traffic and control,” in Mathematical Models of Public Systems , G. A. Bekey, Ed. La Jolla: Simulation Council, 1971, vol. 1, pp. 51–61. [19] G. B. Whitham, Linear and Nonlinear Waves . John Wiley & Sons, Ltd, 1999. [20] A. Kotsialos, M. Papageorgiou, C. Diakaki, Y. Pavlis, and F. Middelham, “Traffic flow modeling of large-scale motorway networks using the macroscopic modeling tool metanet,” IEEE Transactions on Intelligent Transportation Systems , vol. 3, no. 4, pp. 282–292, 2002. [21] C. F. Daganzo, “Requiem for second-order fluid approximations of traffic flow,” Transportation Research Part B: Methodological , vol. 29, no. 4, pp. 277–286, 1995. [22] A. Aw and M. Rascle, “Resurrection of “second order” models of traffic flow,” SIAM journal on applied mathematics , vol. 60, no. 3, pp. 916– 938, 2000. [23] H. Zhang, “A non-equilibrium traffic model devoid of gas-like behavior,” 
+
+Transportation Research Part B: Methodological , vol. 36, no. 3, pp. 275–290, 2002. [24] T. Seo and A. M. Bayen, “Traffic state estimation method with efficient data fusion based on the aw-rascle-zhang model,” in IEEE Conference on Intelligent Transportation Systems , 2017, pp. 1–6. [25] S. C. Vishnoi, S. A. Nugroho, A. F. Taha, and C. G. Claudel, “Traffic state estimation for connected vehicles using the second-order Aw-Rascle-Zhang traffic model,” IEEE Transactions on Intelligent Trans-portation Systems , vol. 25, no. 11, pp. 16 719–16 733, 2024. [26] R. Wang, Y. Li, and D. B. Work, “Comparing traffic state estimators for mixed human and automated traffic flows,” Transportation Research Part C: Emerging Technologies , vol. 78, pp. 95–110, 2017. [27] H. Yu, Q. Gan, A. Bayen, and M. Krstic, “Pde traffic observer validated on freeway data,” IEEE Transactions on Control Systems Technology ,vol. 29, no. 3, pp. 1048–1060, 2021. [28] T. Seo, T. Kusakabe, and Y. Asakura, “Traffic state estimation with the advanced probe vehicles using data assimilation,” in IEEE International Conference on Intelligent Transportation Systems , 2015, pp. 824–830. [29] N. Bekiaris-Liberis, C. Roncoli, and M. Papageorgiou, “Highway traffic state estimation with mixed connected and conventional vehicles,” IEEE Transactions on Intelligent Transportation Systems , vol. 17, no. 12, pp. 3484–3497, 2016. [30] S. M. Khan, K. C. Dey, and M. Chowdhury, “Real-time traffic state estimation with connected vehicles,” IEEE Transactions on Intelligent Transportation Systems , vol. 18, no. 7, pp. 1687–1699, 2017. [31] V. Kyriacou, Y. Englezou, C. G. Panayiotou, and S. Timotheou, “Bayesian traffic state estimation using extended floating car data,” IEEE Transactions on Intelligent Transportation Systems , vol. 24, no. 2, pp. 1518–1532, 2023. [32] C. Vivas, S. Siri, A. Ferrara, S. Sacone, G. Cavanna, and F. R. Rubio, “Distributed consensus-based switched observers for freeway traffic density estimation,” in IEEE Conference on Decision and Control , 2015, pp. 3445–3450. [33] Y. Sun and D. B. Work, “A distributed local kalman consensus filter for traffic estimation,” in IEEE Conference on Decision and Control , 2014, pp. 6484–6491. [34] ——, “Scaling the Kalman filter for large-scale traffic estimation,” IEEE Transactions on Control of Network Systems , vol. 5, no. 3, pp. 968–980, 2017. [35] Y. Guo, Y. Chen, W. Li, and C. Zhang, “Distributed state-observer-based traffic density estimation of urban freeway network,” in IEEE Conference on Intelligent Transportation Systems , 2017, pp. 1177–1182. [36] L. Zhang and Y. Lu, “Distributed consensus-based boundary observers for freeway traffic estimation with sensor networks,” in American Control Conference , 2020, pp. 4497–4502. [37] C. Chen, J. Kwon, J. Rice, A. Skabardonis, and P. Varaiya, “Detecting errors and imputing missing data for single-loop surveillance systems,” 
+
+Transportation Research Record , vol. 1855, no. 1, pp. 160–167, 2003. [38] B. Ran, H. Tan, Y. Wu, and P. J. Jin, “Tensor based missing traffic data completion with spatial-temporal correlation,” Physica A: Statistical Mechanics and its Applications , vol. 446, pp. 54–63, 2016. [39] S. Tak, S. Woo, and H. Yeo, “Data-driven imputation method for traffic data in sectional units of road links,” IEEE Transactions on Intelligent Transportation Systems , vol. 17, no. 6, pp. 1762–1771, 2016. [40] R. Shi, Z. Mo, K. Huang, X. Di, and Q. Du, “A physics-informed deep learning paradigm for traffic state and fundamental diagram estimation,” 16 
+
+IEEE Transactions on Intelligent Transportation Systems , vol. 23, no. 8, pp. 11 688–11 698, 2022. [41] J. Zhang, S. Mao, L. Yang, W. Ma, S. Li, and Z. Gao, “Physics-informed deep learning for traffic state estimation based on the traffic flow model and computational graph method,” Information Fusion , vol. 101, p. 101971, 2024. [42] S. B. Giraldo, J. M˚ artensson, and M. Barreau, “Second order physics-informed learning of road density using probe vehicles,” 2026. [Online]. Available: https://arxiv.org/abs/2604.07918 [43] M. Barreau, M. Aguiar, J. Liu, and K. H. Johansson, “Physics-informed learning for identification and state reconstruction of traffic density,” in 
+
+IEEE Conference on Decision and Control , 2021, pp. 2653–2658. [44] A. Harting, K. H. Johansson, and M. Barreau, “Closed-loop neural operator-based observer of traffic density,” in IEEE Conference on Decision and Control , 2025, pp. 5845–5852. [45] V. de Heij, M. U. B. Niazi, S. Ahmed, and K. H. Johansson, “Distributed traffic state estimation in V2X-enabled connected vehicle networks,” 2026, accepted to the 23rd IFAC World Congress, Busan, Republic of Korea. arXiv:2512.18558. [Online]. Available: https://arxiv.org/abs/2512.06765 [46] K. Abboud, H. A. Omar, and W. Zhuang, “Interworking of DSRC and cellular network technologies for V2X communications: A survey,” 
+
+IEEE Transactions on Vehicular Technology , vol. 65, no. 12, pp. 9457– 9470, 2016. [47] W. Ren and R. W. Beard, Distributed Consensus in Multi-Vehicle Cooperative Control: Theory and Applications . Springer, 2008. [48] R. Olfati-Saber, “Distributed Kalman filtering for sensor networks,” in 
+
+IEEE Conference on Decision and Control , 2007, pp. 5492–5498. [49] J. B. Kenney, “Dedicated short-range communications (DSRC) standards in the United States,” Proceedings of the IEEE , vol. 99, no. 7, pp. 1162– 1182, 2011. [50] R. Olfati-Saber, “Distributed Kalman filter with embedded consensus filters,” in IEEE Conference on Decision and Control , 2005, pp. 8179– 8184. [51] R. Carli, A. Chiuso, L. Schenato, and S. Zampieri, “Distributed Kalman filtering based on consensus strategies,” IEEE Journal on Selected Areas in Communications , vol. 26, no. 4, pp. 622–633, 2008. [52] F. S. Cattivelli and A. H. Sayed, “Diffusion strategies for distributed Kalman filtering and smoothing,” IEEE Transactions on Automatic Control , vol. 55, no. 9, pp. 2069–2084, 2010. [53] S. Das and J. M. Moura, “Consensus+innovations distributed Kalman filter with optimized gains,” IEEE Transactions on Signal Processing ,vol. 65, no. 2, pp. 467–481, 2016. [54] G. Battistelli, L. Chisci, and D. Selvi, “A distributed Kalman filter with event-triggered communication and guaranteed stability,” Automatica ,vol. 93, pp. 75–82, 2018. [55] S. P. Talebi and S. Werner, “Distributed Kalman filtering and control through embedded average consensus information fusion,” IEEE Trans-actions on Automatic Control , vol. 64, no. 10, pp. 4396–4403, 2019. [56] M. Zorzi, “Distributed Kalman filtering under model uncertainty,” IEEE Transactions on Control of Network Systems , vol. 7, no. 2, pp. 990–1001, 2019. [57] F. Belletti, M. Huo, X. Litrico, and A. M. Bayen, “Prediction of traffic convective instability with spectral analysis of the Aw–Rascle–Zhang model,” Physics Letters A , vol. 379, no. 38, pp. 2319–2330, 2015. [58] R. Courant, K. Friedrichs, and H. Lewy, “On the partial difference equations of mathematical physics,” IBM Journal of Research and Development , vol. 11, no. 2, pp. 215–234, 1967. 
+
+Vincent de Heij is a Ph.D. student in Systems and Control at the University of Groningen, The Netherlands. He received the B.Sc. degree in Indus-trial Engineering and Management and the M.Sc. degree in Systems and Control from the University of Groningen. During his graduate studies, he was a research intern at KTH Royal Institute of Tech-nology, Stockholm, Sweden. His research interests include distributed estimation and control, multi-agent formation control, and intelligent transporta-tion systems. 
+
+M. Umar B. Niazi is a research scientist at the KTH Royal Institute of Technology, Sweden. Prior to that, he was a postdoctoral researcher at the Massachusetts Institute of Technology, USA, and KTH Royal Institute of Technology, Sweden. He received the MS degree in Electrical and Electronics Engineering from Bilkent University, Turkey, and the PhD in Automatic Control from Grenoble INP, Universit´ e Grenoble Alpes, France, where he was affiliated with INRIA Grenoble and GIPSA-Lab as a graduate research assistant. His research focuses on the security, resilience, and optimization of socio-cyber-physical systems, with particular emphasis on intelligent transportation networks and urban mobility. He is a recipient of the Marie-Curie postdoctoral fellowship from the European Commission. He was a finalist for the Best Student Paper Award at the 2019 European Control Conference. 
+
+Saeed Ahmed is a tenured Assistant Professor of Systems and Control at the University of Gronin-gen, The Netherlands, where he is affiliated with the Engineering and Technology Institute Gronin-gen and the Jan C. Willems Center for Systems and Control. Prior to joining this position, he held postdoctoral positions at the University of Groningen and at the Technical University of Kaiserslautern (now RPTU), Germany. He completed his Ph.D. at Bilkent University, Turkey, in collaboration with Inria, CentraleSup´ elec, University of Paris-Saclay, France. His research interests span various topics in systems and control engineering. From a theoretical point of view, he is interested in stability and control, feedback optimization, observer design, and nonlinear and hybrid (switched and impulsive) systems. From an application point of view, he is interested in designing intelligent control algorithms for autonomous vehicles and energy systems. He received the best presentation award in the Control/Robotics/Communications/Network category at the IEEE Graduate Research Conference 2018 held in Bilkent University, Turkey, the outstanding reviewer award from the European Journal of Control in 2017, and the Investments in Practical Innovations (IPI) Award 2025 from the University of Groningen, The Netherlands. He was the supervisor of the Champion team of the National RDW Self-Driving team 2026. He is an associate editor of IEEE Transactions on Automatic Control (starting August 2026), Systems and Control Letters, and the IEEE Technology Conference Editorial Board (TCEB). He is a member of the IFAC Technical Committees on Networked Systems, Non-linear Control Systems, and Distributed Parameter Systems. 
+
+Karl Henrik Johansson is Swedish Research Coun-cil Distinguished Professor in Electrical Engineer-ing and Computer Science at KTH Royal Institute of Technology in Sweden and Founding Director of Digital Futures. He earned his MSc degree in Electrical Engineering and PhD in Automatic Con-trol from Lund University. He has held visiting positions at UC Berkeley, Caltech, NTU and other prestigious institutions. His research interests focus on networked control systems and cyber-physical systems with applications in transportation, energy, and automation networks. For his scientific contributions, he has received numerous best paper awards and various other distinctions from IEEE, IFAC, and other organizations. He has been awarded Distinguished Professor by the Swedish Research Council, Wallenberg Scholar by the Knut and Alice Wallenberg Foundation, Future Research Leader by the Swedish Foundation for Strategic Research. He has also received the triennial IFAC Young Author Prize, IEEE CSS Distinguished Lecturer, IFAC Outstanding Service Award, and IEEE CSS Hendrik W. Bode Lecture Prize. His extensive service to the academic community includes being President of the European Control Association, IEEE CSS Vice President Diversity, Outreach and Development, and Member of IEEE CSS Board of Governors and IFAC Council. He has served on the editorial boards of Automatica, IEEE TAC, IEEE TCNS and many other journals. He has also been a member of the Swedish Scientific Council for Natural Sciences and Engineering Sciences. He is Fellow of both the IEEE and the Royal Swedish Academy of Engineering Sciences.
