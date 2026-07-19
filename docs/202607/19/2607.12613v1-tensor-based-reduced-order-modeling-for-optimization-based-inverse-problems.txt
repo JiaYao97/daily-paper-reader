@@ -1,0 +1,1150 @@
+Title: Tensor-Based Reduced-Order Modeling for Optimization-Based Inverse Problems
+
+URL Source: https://arxiv.org/pdf/2607.12613v1
+
+Published Time: Wed, 15 Jul 2026 12:01:41 GMT
+
+Number of Pages: 29
+
+Markdown Content:
+TENSOR-BASED REDUCED-ORDER MODELING FOR OPTIMIZATION-BASED INVERSE PROBLEMS ∗
+
+SAHIDUL ISLAM † , ANDREAS MANG † , AND MAXIM OLSHANSKII †
+
+Abstract. We develop a tensor reduced-order modeling (TROM) framework for optimization-based inverse problems governed by parameter-dependent dynamical systems. The approach ap-proximates the parameter-to-observation map directly in tensor-train format, using either TT-SVD or TT-Cross compression, and integrates the resulting representation into a regularized nonlinear least-squares formulation. Beyond accelerating forward evaluations, the low-rank tensor structure is used to reformulate the inverse problem in reduced coordinates, assemble the Gauss–Newton quantities without forming the full observation-space Jacobian, and perform TROM-based objective minimization over the discrete parameter grid. This tensor optimization step can be used either as a stand-alone approximate minimization procedure or as a data-informed initialization for a subsequent Gauss–Newton solve. The method is studied for two inverse problems: an inverse heat-transfer prob-lem in a heterogeneous medium, where the unknown parameters describe the locations of multiple low-conductivity inclusions, and a FitzHugh–Nagumo parameter-estimation problem with a highly nonconvex optimization landscape. Numerical experiments assess the effects of ROM approximation error, measurement noise, regularization, initialization, spatial discretization, and increasing param-eter dimension. The results show that TROM can reproduce the behavior of full-order inversion at a substantially reduced online cost. The experiments also demonstrate that reduced-coordinate inversion, tensor-based optimization, and appropriate regularization improve robustness in higher-dimensional, noisy, and strongly nonconvex regimes. 
+
+Key words. inverse problems, reduced-order modeling, tensor-train decomposition, low-rank tensor approximation, Gauss–Newton method, regularized nonlinear least squares, parameter esti-mation 
+
+MSC codes. 65M32, 65F55, 15A69, 65K10 
+
+1. Introduction. Inverse problems for parameter-dependent forward models, including systems governed by partial differential equations (PDEs) and ordinary dif-ferential equations (ODEs), arise in many applications where internal material prop-erties, geometric features, source terms, or model parameters must be inferred from indirect and noisy measurements [26, 52, 23, 35]. In computational practice, solv-ing such problems usually requires repeated evaluations of a high-fidelity forward model, often together with derivative or sensitivity information. This cost can be-come prohibitive when the forward model is large-scale, the parameter dimension is moderate or high, or the inverse problem must be solved repeatedly for different data realizations. These challenges have motivated extensive research on surrogate and reduced-order models (ROMs) for inverse problems, uncertainty quantification, and data assimilation; see, e.g., [11, 13, 5, 1, 48, 14]. Such approaches replace the ex-pensive parameter-to-observation map by a computationally efficient approximation while retaining sufficient accuracy for the inverse solve. The need for fast and reliable inverse solvers is particularly pronounced in digital-
+
+> ∗
+
+Submitted to the editors DATE. 
+
+Funding: The work of the authors was partially supported by the National Science Foundation (NSF) under awards DMS-2145845 (AM) and DMS-2309197 (MO and SI). This material is based upon work supported by the NSF under Grant DMS-1929284 while AM was in residence at the Institute for Computational and Experimental Research in Mathematics in Providence, RI, during the “Stochastic and Randomized Algorithms in Scientific Computing: Foundations and Applications” semester program. We are grateful for the support of the Research Computing Data Core at the University of Houston. 
+
+> †
+
+Department of Mathematics, University of Houston, Houston, TX 77204, USA (maolshan-skiy@uh.edu). 1arXiv:2607.12613v1 [math.NA] 14 Jul 2026 2 S. ISLAM, A. MANG, AND M. OLSHANSKII 
+
+twin settings, where a computational model is updated as new data become available to monitor, predict, or control the behavior of a physical system [18, 53, 27, 41]. Surrogate models are of particular importance if inference needs to happen in (close to) real-time. In this context, inverse problems are not isolated offline computations: they are a recurring component of the model-update loop. Hence, the online stage must be inexpensive, stable with respect to noise and model error, and capable of handling repeated optimization tasks under limited computational budgets. Classical ROMs typically exploit low-dimensional structure in the state, solution manifold, or input–output map, for example through projection-based model reduc-tion or reduced basis methods [1, 48, 21]. These techniques have been successfully used in large-scale inverse problems [13, 31, 5]. However, inverse problems with several unknown parameters introduce an additional difficulty: the parameter-to-observation map may need to be approximated over a multidimensional parameter domain. Direct sampling over a tensor-product grid quickly becomes infeasible, while local surrogates may not provide the robustness needed for globalized or multi-start optimization. Tensorial ROMs (TROMs) provide a natural way to address this difficulty by exploiting low-rank structure in the joint dependence of the observable on the model parameters. In particular, low-rank tensor representations, such as tensor-train (TT) decomposition [45], offer compact approximations of high-dimensional arrays and sup-port efficient tensor arithmetic, interpolation, and optimization. Low-rank tensor methods are now well developed in numerical analysis and high-dimensional approxi-mation [28, 19, 16], and tensor-train cross (TT-Cross) techniques can construct com-pressed representations by sampling only a subset of tensor entries [44, 50, 7]. TROMs have been developed for parametric dynamical systems [33, 34, 24]. Nevertheless, the systematic use of TROMs in inverse modeling remains comparatively unexplored, especially beyond the basic goal of accelerating forward evaluations. In this paper, we investigate TROMs for deterministic numerical inversion. Our focus is not only on replacing the full-order model (FOM) with a fast surrogate for forward solves, but also on exploiting the tensor structure in inverse-problem-specific components: Gauss–Newton (GN) sensitivity assembly, reduced-coordinate inversion, and data-informed initialization (see C1–C4 below). These uses are important because the performance of nonlinear inverse solvers depends not only on the cost of residual evaluation, but also on the quality of sensitivity information, the choice of regulariza-tion, and the basin of attraction of the initial iterate. We study the proposed approach on two deterministic inverse problems. The first is a parabolic heat-transfer problem in a heterogeneous medium with low-conductivity inclusions. The unknown parameter vector encodes the locations and radii of one, two, or three inclusions, leading to parameter dimensions D = 3 , 6, 9. The available data consist of time-dependent temperature observations at several sensors placed on the domain boundary. The second example is a FitzHugh–Nagumo parameter-estimation problem, where the unknown parameters enter a nonlinear excitable-dynamics model. Although this forward model is low-dimensional, the associated least-squares objective has a strongly nonconvex landscape and is sensitive to initialization [55]. Rather than constructing a reduced model for the full state, we approximate directly the parameter-to-observation map. The corresponding observation tensor is compressed in TT format using either TT-SVD [45] or interpolation techniques based on TT-Cross and AMEn-type ideas [44, 7]. The resulting surrogate is then used inside a regularized nonlinear least-squares formulation of the inverse problem. 
+
+Contributions. Existing TROMs are used mainly to accelerate forward solves; we instead exploit the tensor structure throughout the inverse solve: TROM FOR INVERSE PROBLEMS 3
+
+C1. An inverse-problem-tailored TROM. The reduced model approximates the para-meter-to-observation map directly, rather than the full PDE state. 
+
+C2. Reduced-coordinate Gauss–Newton. Beyond fast forward evaluation, the TT rep-resentation enables a reduced-coordinate formulation of the inverse problem and allows the GN quantities to be assembled directly from the low-rank structure of the parameter-to-observation map. 
+
+C3. TT-based objective minimization. We minimize the objective directly over the discrete parameter grid in TT format, yielding either a stand-alone approximate minimizer or a data-informed initial guess for a subsequent GN solve. 
+
+C4. Comprehensive numerical study. On two inverse problems, we assess robust-ness to TROM error, measurement noise, regularization, initialization, spatial discretization, increasing parameter dimension, and nonconvex objective land-scapes; compare TT-SVD with TT-Cross and ROM with full-order inversion; quantify the benefit of TT-based optimization and initialization; and show that online TROM inversion is cheap relative to the offline surrogate construction. 
+
+Notation. Throughout, let g : A ⊂ RD → U denote the forward solution operator and let q : U → Y be the observation operator. Here A is a parameter domain, U and 
+
+Y are Banach spaces. In the examples below, g denotes the solution operator of either a parametric PDE or a parametric ODE system. The parameter-to-observation map is 
+
+f := q ◦ g, f : A → Y . Given noisy data yobs ∈ Y , we assume yobs = f (αtrue ) + εmeas 
+
+where εmeas denotes measurement noise. In the inversion procedure, the full-order map f is replaced by a tensor reduced-order approximation bf , which introduces a TROM error εrom , bf (α) = f (α) + εrom (α). Thus, the effective data misfit contains both measurement and ROM contributions. This distinction is used later in the choice of discrepancy targets and regularization parameters. 
+
+Other Related Work. Low-rank tensor techniques have also been used in deter-ministic and statistical inverse problems. For the latter, TT approximations have been used to represent high-dimensional probability densities and accelerate poste-rior sampling [6]. Related low-rank tensor reconstructions combined with transport maps have been developed for concentrated posterior densities arising in Bayesian inversion [8]. This line of work has been extended to deep, composed TT trans-port maps for high-dimensional and conditional Bayesian inference [3, 4]. Tensor methods have also been incorporated into ROM construction for parametric PDEs and dynamical systems, including interpolatory, projection-based, and non-intrusive TROMs [33, 34, 37, 54, 24] and TT reduced-basis methods [39]. Another active direction is nonlinear manifold reduction, where encoder–decoder architectures can be advantageous for handling solution manifolds with slowly decaying Kolmogorov width [17]; examples include convolutional-autoencoder ROMs [29], deep-learning ROMs for parametrized PDEs [12], and neural-network ROMs for inverse problems and parameter identification [25]. Closely related to our use of the surrogate for Ja-cobian information, derivative-informed neural network surrogates of parameter-to-observation maps have been developed for outer-loop applications such as Bayesian inversion [43]. Finally, several works show that inverse solvers can benefit from ROM constructions designed specifically for inference, not only from faster forward evalu-ations: examples include posterior-adaptive reduced bases for Bayesian inversion [5] and goal-oriented inference methods that build reduced spaces around the prediction or identification task [30]. 
+
+Outline. The remainder of the paper is organized as follows. Section 2 describes the construction of the TROM, including TT-SVD and TT-Cross compression and fast online surrogate evaluation. Section 3 presents the ROM-based inversion procedure. 4 S. ISLAM, A. MANG, AND M. OLSHANSKII 
+
+It also describes a deeper integration of the TROM into the inverse solve through reduced-coordinate TROM minimization, efficient assembly of the GN quantities, and the TROM-based construction of an initial guess. Section 4 formulates two examples of the parametric forward and inverse problems. Section 5 reports the numerical study, and Section 6 summarizes the main findings and discusses limitations and future directions. 
+
+2. Reduced Order Model. We construct a ROM directly for the parameter-to-observation map f = q ◦ g, rather than for the full state associated with the underlying forward problem. This choice is natural for inverse problems in which the optimization procedure requires only repeated evaluations of f (α) and its parameter sensitivities. After a suitable discretization, we assume that the observation space Y is finite-dimensional with dimension Nobs , and write f : A → RNobs . We further assume that the admissible parameter set is a box, A = NDi=1 [αmin  
+
+> i
+
+, α max  
+
+> i
+
+] ⊂ RD .
+
+2.1. Offline Part. The set of all possible observations, i.e., the image of A under 
+
+f , is a parametric manifold in RNobs . We start with a discrete full-order representation of this manifold. To this end, we first discretize the parameter domain A using a Cartesian grid bA: we distribute Ni nodes {bαji }j=1 ,...,N i within each of the intervals [αmin  
+
+> i
+
+, α max  
+
+> i
+
+] for i = 1 , . . . , D , and let (2.1) bA =
+
+nbα = ( bα1, . . . , bαD )T : bαi ∈ { bαni }Ni
+
+> n=1
+
+, i = 1 , . . . , D 
+
+o
+
+.
+
+All observations for the parameters in bA are organized in the multi-dimensional array (2.2) T ( : , n 1, . . . , n D ) = f (bαn1 
+
+> 1
+
+, . . . , bαnD 
+
+> D
+
+),
+
+which is a tensor of order D + 1 and size Nobs × N1 × · · · × ND . The first mode corresponds to the discretized observation vector, while the remaining modes cor-respond to the parameter grid. Thus, we may consider the ( D + 1)-way tensor 
+
+T ∈ RNobs ×N1×···× ND , as a discrete representation of the parametric observation manifold. The tensor T is a full-order object, and for ROM purposes we seek a compressed (reduced-order) approximation of T . In this paper, such an approximation is con-structed in the tensor-train (TT) format: T ≈ bT , where (2.3) bT (n0, n 1, . . . , n D ) = G1(1 , n 0, : ) G2( : , n 1, : ) · · · GD+1 ( : , n D , 1) ,ni = 1 , . . . , N i, i = 0 , . . . , D , with N0 = Nobs and third-order (3-way) core tensors 
+
+G1, G 2, . . . , G D+1 such that Gk ∈ Rrk ×Nk−1×rk+1 . The product of the G-terms in (2.3) is understood as a product of rk × rk+1 matrices. The TT-ranks r1 = 1 , r 2, . . . , r D+1 ,rD+2 = 1 define the compression. We shall also write a TT representation (2.3) using the compact notation bT = G1 ◦ G2 ◦ · · · ◦ GD+1 .
+
+To find a suitable TT-tensor bT , we adopt two approaches. The first requires assembling the complete tensor T , followed by truncated SVD applied to a sequence of matricizations of the tensor (TT-SVD approach). In the second approach, a com-pressed representation of T is computed using the TT-Cross interpolation procedure, which in general requires access only to a (small) subset of the entries of T . The latter avoids expensive offline computations. TROM FOR INVERSE PROBLEMS 5
+
+2.1.1. TT-SVD for Order Reduction. In this approach, the TT tensor bT is constructed by computing truncated SVDs of a sequence of matricizations of T , i.e., matrices of size ( N0 · · · Nk) × (Nk+1 · · · ND ) obtained by unfolding T ; see [45]. If the truncation criterion in each SVD is defined by the threshold εTT /√D, εTT > 0, on the relative magnitude of the singular values, then the resulting TT tensor satisfies (2.4) ∥T − bT ∥ F ≤ εTT ∥T ∥ F .
+
+Note that TT-SVD generally requires access to all entries of T . For high parameter dimensions, computing the full tensor T may be prohibitively expensive. 
+
+2.1.2. TT-Cross. The TT-Cross method constructs a TT approximation bT of 
+
+T by adaptively sampling only a small subset of its entries, thereby avoiding full tensor assembly. It combines ideas from TT-Cross interpolation [44] with alternating minimal energy (AMEn) enrichment [7], iteratively updating TT cores while select-ing informative multi-index sets via max-volume principles [15, 50]. We employ the 
+
+amen cross routine of [46]: at each iteration, local low-rank approximations are en-riched by residual-based directions, and a prescribed tolerance ϵTTC > 0 controls the stopping criterion and adaptive rank growth, so the ranks are determined automati-cally to meet the requested tolerance. To reduce the offline computational cost, one may precede TT-Cross by a prepro-cessing step that reduces the first dimension, Nobs , of the tensor to be approximated. One way of doing this is to find a matrix P ∈ RN0×Nobs , with reduced dimension 
+
+N0 < N obs , such that (2.5) sup  
+
+> bα∈bA
+
+∥(I − P TP )f (bα)∥∥f (bα)∥ ≤ εred ,
+
+for a sufficiently small tolerance εred > 0. Here, we assume that the rows of P are orthonormal. In practice, P is constructed by a truncated SVD of a training subset of observations; see Subsection 2.1.3. Alternatively, one may learn a reduced latent representation with a nonlinear encoder–decoder architecture. The dimension reduction is performed by mapping the observations into RN0 , i.e., 
+
+f (bα) 7 → P f (bα). This enables TT-Cross interpolation to be applied to a tensor of size 
+
+N0 × N1 × · · · × ND , instead of the original tensor of size Nobs × N1 × · · · × ND .
+
+The resulting TT-Cross surrogate thus combines two levels of compression: (i) alow-rank reduction in the observation space and (ii) a tensor-train approximation of the reduced coefficient map over the parameter space. The TT tensor of the original size Nobs × N1 × · · · × ND can be reconstructed by applying a tensor–matrix product with P T along the first mode. To simplify notation, we assume 
+
+N0 = Nobs 
+
+and let bT denote the TT tensor of size Nobs × N1 × · · · × ND .
+
+2.1.3. Preprocessing step. This is done with the help of SVD on a represen-tative collection of observations. To this end, we randomly select training and test subsets of points from the discrete parameter domain: 
+
+Itrain ⊂ bA, Ptrain := |I train |, Itest ⊂ bA, Ptest := |I test |.
+
+By solving the forward problem for each parameter in Itrain , we assemble a matrix of observations S ∈ RNobs ×Ptrain , and compute a truncated SVD of S with prescribed 6 S. ISLAM, A. MANG, AND M. OLSHANSKII 
+
+tolerance εred , S = US ΣV T 
+
+> S
+
+,US ∈ RNobs ×N0 . We let P = U T 
+
+> S
+
+. To ensure that P
+
+satisfies (2.5), we validate the inequality on the held-out set Itest and enrich the training set if necessary. 
+
+2.2. Online Part. Next, we describe the online evaluation of the TT-ROM model outlined above. 
+
+2.2.1. ROM Evaluation. To define the fast (reduced-dimension) evaluation of the parameter-to-observation mapping f = q ◦ g, we follow [33] and assume an interpolation procedure (2.6) χi : [ αmin  
+
+> i
+
+, α max  
+
+> i
+
+] → RNi , i = 1 , . . . , D, 
+
+such that for any continuous function g : A → R,(2.7) I(g)( α) = 
+
+> N1
+
+X
+
+> n1=1
+
+· · · 
+
+> ND
+
+X 
+
+> nD=1
+
+ χ1(α1) 
+
+> n1
+
+· · ·  χD (αD )
+
+> nD
+
+g bαn1 
+
+> 1
+
+, . . . , bαnD
+
+> D
+
+
+
+defines an interpolant of g.One straightforward choice is Lagrange interpolation of order p. For any αi ∈
+
+[αmin  
+
+> i
+
+, α max  
+
+> i
+
+], let bαi1 
+
+> i
+
+, . . . , bαip 
+
+> i
+
+be the p closest grid nodes to αi on [ αmin  
+
+> i
+
+, α max  
+
+> i
+
+], for 
+
+i = 1 , . . . , D . Then (2.8)  χi(αi) 
+
+> j
+
+=
+
+
+
+> p
+
+Y
+
+> m=1
+> m̸=k
+
+bαim 
+
+> i
+
+− αi
+
+bαim 
+
+> i
+
+− bαji
+
+, if j = ik ∈ { i1, . . . , i p},
+
+0, otherwise ,
+
+for j = 1 , . . . , N i.With the help of (2.6), we define the ROM approximation to the observations as (2.9) bf (α) = bT × 2 χ1(α1) ×3 χ2(α2) · · · × D+1 χD (αD ) ∈ RNobs .
+
+If α ∈ bA belongs to the sampling set, then χi(αi) encodes the position of αi among the grid nodes on [ αmin  
+
+> i
+
+, α max  
+
+> i
+
+]. In this case, bf (α) coincides with the observation vector for the given α, up to the tensor reconstruction accuracy defined in (2.4). For a general 
+
+α ∈ A , the vector bf (α) is obtained by interpolation of precomputed observations. An important point is that the computations in (2.9) can be carried out directly in a low-rank format in a fast and efficient manner, as explained below. Given the TT cores Gi and the interpolation procedures χi, let us define the 
+
+α-specific core vector cχ(α) ∈ Rr2 as (2.10) cχ(α) = 
+
+> D
+
+Y
+
+> i=1
+
+Gi+1 ×2 χi(αi).
+
+Using the definition of the k-mode product, one finds that bf from (2.9) can be com-puted as: (2.11) bf (α) = G1 cχ(α),
+
+where G1 is interpreted as an Nobs × r2 matrix rather than a 1 × Nobs × r2 tensor. All computations in (2.10) and (2.11) involve only low-dimensional objects. More-over, the vectors χi(αi) have only a few (in our case, p) nonzero entries, which makes the online evaluation fast and efficient. In summary, the surrogate is evaluated by lo-cal interpolation in each parameter direction followed by contraction of the TT cores, without reconstructing the full tensor. TROM FOR INVERSE PROBLEMS 7
+
+3. Numerical Inversion and TROM integration. We consider a classical variational approach: Given a vector of observations yobs , find geometric parameters 
+
+α ∈ RD by minimizing the regularized least-squares functional over the parameter domain A ⊂ RD :(3.1) minimize 
+
+> α∈A
+
+ 12 ∥f (α) − yobs ∥22 + λ 
+
+> 2
+
+∥α − αref ∥22 .
+
+The first term measures the discrepancy between the model prediction f (α) for a candidate α and the observations yobs , while the second term is a Tikhonov-type regularization; αref ∈ RD is a reference parameter (prior mean), and λ > 0 is the regularization parameter. Notice that we eliminate the constraint (4.1) from the formulation and insert the parameter-to-observation map f into the data mismatch term (reduced formulation). The map f is evaluated either by the FOM or by the TROM surrogate ( f = bf in this case), depending on the setting. Problem (3.1) is solved by a projected GN method. At iteration k, given the current iterate αk, we define the residual ηk = yobs − f (αk) and linearize the forward map: 
+
+f (αk + s) ≈ f (αk) + Jks, Jk = ∂f ∂α (αk),
+
+for arbitrary s ∈ RD . Substituting this approximation into (3.1) gives the GN system (3.2)  JT 
+
+> k
+
+Jk + λI sk = JT 
+
+> k
+
+ηk − λ(αk − αref ).
+
+We solve (3.2) for the search direction sk ∈ RD ; the trial update is then projected onto the admissible box: αk+1 ← ΠA(αk + tksk), where the stepsize tk > 0 is chosen by Armijo backtracking to ensure sufficient decrease of the regularized objective [42, p. 33]. The iterations are terminated if we do not make sufficient progress between iter-ations: We stop the iteration if 
+
+∥αk+1 − αk∥2
+
+max(1 , ∥αk∥2) ≤ ϵ, 
+
+or the relative decrease in the objective satisfies 
+
+|Φk − Φk+1 |
+
+max(1 , Φk) ≤ ϵ, with Φ k = 12 ∥f (αk) − yobs ∥22 + λ 
+
+> 2
+
+∥αk − αref ∥22.
+
+We select ϵ = 10 −8 for all our experiments. In the TROM setting, the matrices 
+
+JT 
+
+> k
+
+Jk and vectors JT 
+
+> k
+
+ηk in (3.2) are assembled using the TT contraction formulas for surrogate evaluation and implicit Jacobian construction described above, without forming a full Jacobian in the observation space (see Subsection 3.3). The regular-ization parameter λ is chosen based on the discrepancy principle [9, 20, 26] (see also Subsection 3.2). 
+
+3.1. Reduced TROM objective. In the TROM inversion, the forward map in the minimization problem (3.1) is given by the surrogate bf in (2.11). Consistently with (2.11), we consider G1 ∈ RNobs ×r2 as the matrix rather than 1 × Nobs × r2 tensor. Without loss of generality, we assume that the columns of G1 are orthonormal. For TT-SVD this is obtained when the TT tensor is left-orthogonalized; for a general 8 S. ISLAM, A. MANG, AND M. OLSHANSKII 
+
+TT representation, including TT-Cross, it can be enforced by a QR factorization of 
+
+G1 and absorption of the triangular factor into the second TT core. Let Π = G1(G1)T, Π ⊥ = I − Π, be the orthogonal projectors onto the range of 
+
+G1 and its orthogonal complement, respectively. Since bf (α) ∈ range( G1) for all α, we have the orthogonal decomposition 
+
+∥ bf (α) − yobs ∥22 = ∥ bf (α) − Πyobs ∥22 + ∥Π⊥yobs ∥22.
+
+The second term is independent of α and therefore does not affect the minimizer. Moreover, using the orthonormality of the columns of G1,
+
+∥ bf (α) − Πyobs ∥22 = ∥G1cχ(α) − G1(G1)Tyobs ∥22 = ∥cχ(α) − yred ∥22,
+
+where cχ(α) is defined in (2.10), and (3.3) yred = ( G1)Tyobs ∈ Rr2 .
+
+Hence, for the TROM forward solve, the minimization problem (3.1) is equivalent to the reduced problem (3.4) minimize 
+
+> α∈A
+
+ 12 ∥cχ(α) − yred ∥22 + λ 
+
+> 2
+
+∥α − αref ∥22 .
+
+This has an important computational implication: once yred is computed, the GN iteration runs in the reduced coordinate space of dimension r2 rather than the full observation space of dimension Nobs . In particular, the reduced residual is 
+
+yred − cχ(αk) ∈ Rr2 , and the corresponding reduced Jacobian has size r2 × D. Thus, after projecting the full-order observation vector in (3.3), the online linear-algebra operations depend on the second TT rank r2, which can be much smaller than Nobs .
+
+3.2. Regularization parameter selection. For the regularization parameter selection we consider the discrepancy principle. We construct the observations yobs 
+
+using forward simulations. We differentiate between noise contributions due to mea-surement noise and due to ROM approximation errors. We refer to Section B for additional details. 
+
+3.3. TROM Jacobian and Gauss–Newton quantities. We now describe the Jacobian of the reduced map cχ appearing in (3.4). Since bf (α) = G1cχ(α) and the columns of G1 are orthonormal, cχ(α) = GT 
+
+> 1
+
+bf (α). The TROM allows for its efficient computation by exploiting the contraction structure in (2.10). This provides the sensitivity information required for numerical optimization, while ensuring that the computational cost depends on the TT ranks and the reduced dimensions, rather than on the full observation dimension. Indeed, (2.10) and (2.11) yield (3.5) ∂ bf∂α d
+
+(α) = G1
+
+> d−1
+
+Y
+
+> i=1
+
+Gi+1 ×2 χi(αi)
+
+!
+
+Gd+1 ×2 χ′
+
+> d
+
+(αd)
+
+> D
+
+Y
+
+> i=d+1
+
+Gi+1 ×2 χi(αi)
+
+!
+
+,
+
+for d = 1 , . . . , D . Like χd(αd), the vector χ′
+
+> d
+
+(αd) has only a few nonzero entries, computed explicitly from (2.8). To evaluate (3.5) more efficiently, we introduce prefix and suffix products. Let 
+
+Bd(αd) = Gd+1 ×2 χd(αd), ˙Bd(αd) = Gd+1 ×2 χ′
+
+> d
+
+(αd), and define L1 = Ir2 , Ld+1 =
+
+LdBd(αd), d = 1 , . . . , D , and RD+1 = 1, Rd = Bd(αd)Rd+1 , d = D, . . . , 1. With this notation, we obtain 
+
+∂c χ
+
+∂α d
+
+(α) = Ld ˙Bd(αd)Rd+1 ∈ Rr2 , d = 1 , . . . , D. TROM FOR INVERSE PROBLEMS 9We estimate the cost as follows. Once the matrices Bd(αd) are formed, the pre-fix and suffix products are computed once and reused across parameter directions. If the TT ranks are bounded by rmax ∈ N, then forming all prefixes and suffixes costs O(Dr 3max ). For each parameter direction, assembling one Jacobian column costs 
+
+O(r2max ). Therefore, the total cost of assembling the “reduced” Jacobian 
+
+J = J(α) = 
+
+ ∂c χ
+
+∂α 1
+
+(α), . . . , ∂c χ
+
+∂α D
+
+(α)
+
+
+
+∈ Rr2×D .
+
+is simply O  Dr 3max 
+
+.If explicit assembling of the Jacobian of the surrogate model is the goal, then one may proceed with ∂ bf∂α d (α) = G1 ∂c χ 
+
+> ∂α d
+
+(α), d = 1 , . . . , D . In this case assembling one Jacobian column costs O(Nobs r2 +r2max ), so that the total cost increases to O(Dr 3max +
+
+DN obs r2). In the GN method the Jacobian enters through the quantities JTJ and JTη,which adds O  r2D2 and O (r2D), respectively. This brings us to the total cost per iteration 1
+
+(3.6) O  Dr 3max + r2D2 .
+
+This can be contrasted with the standard finite-difference (FD) approximation of the Jacobian in the full observation space. For example, in the interior of the parameter domain, the d-th Jacobian column can be approximated by 
+
+∂ bf (α)
+
+∂α d
+
+≈ bf (α + hded) − bf (α − hded)2hd
+
+, d = 1 , . . . , D. 
+
+Thus, finite differences require additional model evaluations for each parameter direc-tion. By the same reasoning as above, one evaluation of bf has cost O(Dr 2max +Nobs r2). Therefore, the standard FD approach to Jacobian computation incurs a higher com-putational cost O(D2r2max + DN obs r2).
+
+Computing the Gauss–Newton quantities JTJ and JTη would cost additional 
+
+O(D2Nobs ) and O(DN obs ) operations. Adding it to the cost of forming the Jacobian we find that the total cost of forming the GN system would be (3.7) O(D2(r2max + Nobs ) + DN obs r2).
+
+Depending on the TT ranks, parametric and objective spaces dimensions this may become significantly higher than (3.6). 
+
+3.4. TROM optimization and initialization. The TROM representation can be used either to minimize the objective functional directly over the discrete param-eter domain or to construct a data-informed initial guess for a subsequent iterative inversion method. The preferable use is problem-dependent: the tensor-based mini-mizer may already provide an accurate reconstruction, or it may serve only to initialize a local method such as GN. At this stage, we do not search over the full admissible parameter space A. In-stead, we minimize the TROM objective over the discrete parameter domain bA defined            
+
+> 1For the original minimization problem (3.1) the TROM alone still allows one to reduce the cost per iteration to O Dr 3max +Nobs r2+D2r2
+> through assembling of JTJand JTηdirectly using representation (3.5) avoiding the explicit formation of the Jacobian matrix.
+
+10 S. ISLAM, A. MANG, AND M. OLSHANSKII 
+
+in (2.1). Specifically, for a given observation yobs ∈ RNobs , we define (3.8) α∗ = arg min  
+
+> bα∈bA
+> 12
+
+n
+
+∥ bf (bα) − yobs ∥22 + λ 
+
+> 2
+
+∥bα − αref ∥22
+
+o
+
+.
+
+The parameter α∗ can then be used either as the TROM-based reconstruction itself or as the initial guess α(0) = α∗ for a subsequent GN iteration. Naively, one could evaluate the objective in (3.8) at every parameter value in 
+
+bA. Instead, we exploit that the TROM provides a low-rank representation of all 
+
+f (α), α ∈ bA, and that the Tikhonov term is a sum of univariate (quadratic) func-tions. To describe the minimization procedure, consider the set of multi-indices 
+
+I = {1, . . . , N 1} × · · · × { 1, . . . , N D }. For each n = ( n1, . . . , n D ) ∈ I , we denote the corresponding parameter vector by 
+
+αn =  bαn1 , . . . , bαnD
+
+T ∈ bA.
+
+Next, define the residual and regularization tensors, 
+
+R(n) = 12 ∥ bf (αn) − yobs ∥22, L(n) = λ 
+
+> 2
+
+∥αn − αref ∥22, R, L ∈ RN1×···× ND .
+
+Solving (3.8) is therefore equivalent to finding the minimum entry of J = R + L. To efficiently solve this minimization problem, we first represent J in TT format using elementary multilinear algebra; see Section A for details. Once J is in TT format, we use the optimization algorithm of [2] to locate its minimum entry; see also the related maximum-volume TT optimizer of [51]. Since the algorithm is formulated as a maximum-entry search, we apply it to an equivalent shifted tensor as described below. The algorithm searches for a maximum entry by right-orthogonalizing the TT cores and performing a left-to-right sweep. At each step, only several candidate index paths with the largest partial-contraction norms are retained. The minimal entry of J is obtained by executing the algorithm twice. First, one computes 
+
+nmax = arg max 
+
+> n∈I
+
+J (n),
+
+and then solves 
+
+n∗ = arg max 
+
+> n∈I
+
+{J (nmax ) − J (n)} .
+
+The corresponding parameter value αn∗ is the TROM-based discrete minimizer. De-pending on the inverse problem, it can be used either as a stand-alone approximate minimizer of the objective functional or as an informed initial guess α(0) = αn∗ for a subsequent GN solve. 
+
+4. Forward and inverse problems. We consider two parameter estimation problems used to assess the proposed TROM framework: an inverse heat-transfer problem with a PDE forward model and a parameter-estimation problem governed by the FitzHugh–Nagumo ODE system. 
+
+4.1. Inverse heat transfer in a heterogeneous medium. As the first ex-ample, we consider heat transfer in a heterogeneous medium governed by (4.1) ut − ∇ ·  A(x, y ; α)∇u = 0 , (x, y ) ∈ Ω, t ∈ (0 , t max ],TROM FOR INVERSE PROBLEMS 11 
+
+u = 1 (l1, m 1)
+
+r1
+
+Ω1
+
+Ω2
+
+Ω3
+
+A = 1 in the bulk 
+
+A3 = 1e −3(inclusion) 
+
+u(x, y, 0) = 0 
+
+p5 p6 p7 p8
+
+p1 p2 p3 p4
+
+p9
+
+∂nu = 0 
+
+∂nu = 0 
+
+∂nu = 0                       
+
+> Fig. 1 .Forward-problem setup with three inclusions Ωk,k= 1 ,2,3, and sensor locations pi,
+> i= 1 , . . . , 9for a computational domain Ω = [0 ,2] ×[0 ,1] .Dirichlet data are imposed on the left boundary Γ1, homogeneous Neumann data on ∂Ω\Γ1, and the inclusions have conductivity
+> Ak= 1e −3, while the bulk conductivity is 1.
+
+where Ω = [0 , 2] × [0 , 1] and tmax = 0 .5. The conductivity field is piecewise constant, (4.2) A(x, y ; α) = 
+
+(Ak, (x, y ) ∈ Ωk, k = 1 , . . . , K, 
+
+1, otherwise ,
+
+with Ak = 1e −3 in all experiments. The inclusions Ω k are circular and are parame-terized by their centers and radii, Ωk = {(x, y ) ∈ R2 : ( x − lk)2 + ( y − mk)2 ≤ r2
+
+> k
+
+}, α = [ l1, m 1, r 1, . . . , l K , m K , r K ]T.
+
+We consider K ∈ { 1, 2, 3} inclusions, so that D = 3 K. The admissible set A is a box determined by bounds on the inclusion centers and radii; we denote the range of the ith parameter component by [ αmin  
+
+> i
+
+, α max  
+
+> i
+
+]. Let Ω incl = Ω 1 ∪· · ·∪ ΩK and Ω bulk = Ω \Ωincl . We assume that the inclusions are immersed in Ω, i.e., ∂Ωincl ⊂ Ω. The temperature is prescribed on the left boundary Γ1 = {(x, y ) ∈ ∂Ω : x = 0 }, while homogeneous Neumann conditions are imposed on the remaining boundary: (4.3) u = 1 on Γ 1, ∂u ∂n = 0 on ∂Ω \ Γ1, t ∈ [0 , t max ],
+
+with initial condition u|t=0 = 0. Across the inclusion interfaces, we impose continuity of temperature and normal heat flux. The observation data consist of temperature measurements at Ns = 9 sensor locations on the Neumann boundary over the time interval [0 , t max ]: 
+
+{pi}i=1 ,..., 9 = ( 14 , 1) , ( 34 , 1) , ( 54 , 1) , ( 74 , 1) , ( 18 , 0) , ( 916 , 0) , ( 17 16 , 0) , ( 25 16 , 0) , (2 , 12 )
+
+Thus, the inverse problem is to recover the inclusion locations and radii from boundary temperature measurements. We also state the continuous mapping framework. Since the interface ∂Ωincl is piecewise smooth 2 and Ω is a convex polygon, maximum regularity theory for interface   
+
+> 2We assume here for simplicity that ∂Ωincl is Lipschitz, i.e., inclusions can overlap but cannot “touch” each other.
+
+12 S. ISLAM, A. MANG, AND M. OLSHANSKII t = 0 .05 t = 0 .15 t = 0 .50 
+
+> 00.5 1
+> temperature
+
+Fig. 2 . Temperature field u(x, y, t ) at selected times t ∈ { 0.05 , 0.15 , 0.50 }. Heat propagates from the left boundary Γ1, while the low-conductivity inclusion locally impedes diffusion and distorts the temperature distribution. t             
+
+> 00.1 0.2 0.3 0.4 0.5
+> temperature
+> 00.2 0.4 0.6 0.8
+> (a) One inclusion ( D= 3)
+> t
+> 00.1 0.2 0.3 0.4 0.5
+> 00.2 0.4 0.6 0.8
+> (b) Two inclusions ( D= 6) p1
+> p2
+> p3
+> p4
+> p5
+> p6
+> p7
+> p8
+> p9
+
+Fig. 3 . Sensor measurements as functions of time at the locations pi, i = 1 , . . . , 9, for one inclusion (left; panel (a)) and two non-overlapping inclusions (right; panel (b)). 
+
+parabolic problems [36, 47] implies 
+
+u ∈ L2 
+
+> ω
+
+(0 , t max ; H2(Ω incl ∪ Ωbulk )) ,
+
+where H2(Ω incl ∪Ωbulk ) is a broken Sobolev space and L2 
+
+> ω
+
+is the weighted L2 space with weight ω = t2(1 −μ), μ ∈ ( 12 , 34 ). The restriction μ < 34 is due to the incompatibility between the zero initial condition and the nonhomogeneous Dirichlet data; see, e.g., [32, Example 3.7(i)]. By Sobolev embedding, the trace of u at each sensor point belongs to L2 
+
+> ω
+
+(0 , t max ), so the problem fits the abstract setting with 
+
+U = L2 
+
+> ω
+
+(0 , t max ; H2(Ω incl ∪ Ωbulk )) , Y = L2 
+
+> ω
+
+(0 , t max )Ns ,
+
+where g(α) is the solution operator for (4.1)–(4.3) and q(u) is the trace operator. For numerical experiments, (4.1)–(4.3) is discretized by a second-order FD scheme on a uniform Cartesian grid. The conductivity is smoothed across a thin layer ( η = h)near the inclusion interface. Time integration uses BDF2 with a Crank–Nicolson first step. After discretization, the parameter-to-observation map is f : A → RNobs ,
+
+Nobs = NsNt, and the observation vector satisfies yobs ∈ RNobs . This discretized map is the full-order model used in the inverse problem. The resulting temperature evolution is shown in Figure 2, and representative sensor data are shown in Figure 3. For the numerical experiments we consider the following parameter domains: 
+
+A = [ 35 , 1] × [ 310 , 710 ] × [ 110 , 14 ],
+
+A = [ 310 , 12 ] × [ 310 , 12 ] × [ 110 , 14 ] × [ 710 , 910 ] × [ 12 , 710 ] × [ 110 , 14 ],
+
+A = [ 14 , 25 ] × [ 14 , 25 ] × [ 110 , 14 ] × [ 11 20 , 710 ] × [ 920 , 35 ] × [ 110 , 14 ] × [ 45 , 19 20 ] × [ 25 , 35 ] × [ 110 , 14 ],
+
+for D = 3 , 6, 9, respectively. 
+
+4.2. Parameter estimation for the FitzHugh–Nagumo model. As a sec-ond example, we consider an inverse problem governed by the FitzHugh–Nagumo model, a nonlinear two-variable ODE system commonly used as a simplified model of TROM FOR INVERSE PROBLEMS 13 t                      
+
+> 020 40 60 80 100
+> State value
+> -2
+> -1
+> 0
+> 1
+> 2
+> u(t)
+> v(t)
+> Fig. 4 .FitzHugh–Nagumo inverse problem. Left: Representative solution trajectory. Right: Normalized least-squares objective landscape, Φnor (α) = ∥f(α)−yobs ∥22/∥yobs ∥22,evaluated over the displayed parameter plane and plotted in log-scale. Here, yobs =f(αtrue )+ εmeas ,αtrue = (0 .7,0.8) T.
+
+excitable neural dynamics [10, 40]. The state consists of the membrane potential u(t)and a recovery variable v(t), and the model is written in the form (4.4) ˙u(t) = α2
+
+ u(t) − u(t)3
+
+3 − v(t) + I, ˙v(t) = 1
+
+α2
+
+ u(t) + α0 − α1v(t),t ∈ (0 , t max ], with prescribed initial conditions. Here I is a fixed stimulus, while the unknown parameter vector α = ( α0, α 1, α 2)T controls the excitability threshold, recovery response, and time-scale separation, respectively. We take tmax = 100, I =
+
+−0.4, and fix the scale-separation parameter at α2 = 3; hence, in this problem, A is a box in R2. Following [49, 55] we let A = [ −0.2, 1] × [−0.4, 1.2]. The observation data are time-series measurements of the membrane potential, 
+
+yobs =  u(t1; α), . . . , u (tNt ; α)T + εmeas ,
+
+so that the discretized parameter-to-observation map is 
+
+f : A → RNt , f (α) =  u(t1; α), . . . , u (tNt ; α)T.
+
+The inverse problem is to recover α from the observed voltage trace. The FOM is given by a 4th order Runge–Kutta numerical integrator with ∆ t = tmax /N t.Although the forward model is low-dimensional, this inverse problem is challeng-ing for classical optimization-based inversion. The parameter-to-observation map is strongly nonlinear, the parameters enter the dynamics in a coupled way, and small parameter changes can produce sharp changes in the spiking response. As a result, the least-squares objective can be highly nonconvex, with narrow valleys, steep gra-dients, and multiple local minima; see Figure 4. These features motivate alternative approaches based on global, surrogate-assisted, or learning-based parameter identifi-cation [49, 55]. Thus, this problem provides a useful test case for assessing whether a deeper integration of TROM into the inversion procedure can mitigate some of the difficulties encountered by classical least-squares minimization. 
+
+5. Numerical results. We present numerical experiments assessing TROM ac-curacy, inversion robustness, online speedup, and scalability. The tests compare TT-SVD and TT-Cross surrogates, study the effect of TROM error, measurement noise, initialization, and regularization, and demonstrate the additional speedup obtained through the deeper TROM integration into the minimization process. 14 S. ISLAM, A. MANG, AND M. OLSHANSKII 
+
+Table 1 
+
+Heat-transfer problem: Offline-stage results for the single-inclusion case ( D = 3 ) using TT-SVD and TT-Cross, with εTT = 10 −3. The table reports TT ranks, the mean relative TROM error, and the offline time in seconds as a function of N and the mesh size h.
+
+TT-SVD TT-Cross 
+
+N h ranks error time ranks error time 
+
+4 1/16 [1 10 5 3 1] 7.96e −4 0.16 [1 14 8 3 1] 7.65e −4 11/32 [1 11 6 3 1] 8.91e −4 0.71 [1 14 7 4 1] 1.02e −3 21/64 [1 11 6 3 1] 1.04e −3 6 [1 16 9 3 1] 9.47e −4 17 1/128 [1 11 6 3 1] 1.09e −3 76 [1 15 9 3 1] 1.09e −3 225 8 1/16 [1 9 5 2 1] 6.21e −4 1 [1 15 9 3 1] 4.64e −4 21/32 [1 10 6 3 1] 5.60e −4 3 [1 13 8 3 1] 6.31e −4 12 1/64 [1 10 6 3 1] 5.58e −4 31 [1 13 9 3 1] 6.19e −4 121 1/128 [1 11 6 3 1] 4.86e −4 418 [1 15 9 3 1] 5.02e −4 2136 12 1/16 [1 9 5 2 1] 5.83e −4 2 [1 15 9 3 1] 4.08e −4 51/32 [1 10 6 2 1] 6.41e −4 6 [1 14 9 4 1] 5.02e −4 34 1/64 [1 10 6 2 1] 6.18e −4 61 [1 15 9 3 1] 5.64e −4 363 1/128 [1 10 6 2 1] 6.25e −4 816 [1 15 9 4 1] 5.03e −4 4637 
+
+Table 2 
+
+Heat-transfer problem: Offline-stage results for the two-inclusion case ( D = 6 ) using TT-SVD and TT-Cross, with εTT = 10 −3. The table reports TT ranks, the mean relative TROM error, and the offline time in seconds as a function of N and the mesh size h.
+
+TT-SVD TT-Cross 
+
+N h ranks error time ranks error time 
+
+4 1/16 [1 14 17 16 10 6 3 1] 6.62e −4 3 [1 21 29 30 19 11 4 1] 8.17e −4 11 1/32 [1 15 21 21 13 7 3 1] 7.49e −4 11 [1 16 16 16 16 14 4 1] 3.36e −3 54 1/64 [1 15 23 26 18 9 3 1] 9.24e −4 116 [1 12 12 12 12 12 4 1] 4.76e −3 484 1/128 [1 16 25 31 21 10 3 1] 1.08e −3 1592 [1 18 22 22 22 16 4 1] 3.30e −3 9121 8 1/16 [1 13 15 14 9 5 3 1] 6.24e −4 166 [1 17 18 18 17 10 3 1] 1.42e −3 52 1/32 [1 13 18 18 12 6 3 1] 6.20e −4 597 [1 16 16 16 16 15 5 1] 3.41e −3 330 1/64 [1 14 22 23 15 8 3 1] 6.04e −4 6633 [1 20 22 22 22 22 6 1] 2.57e −3 6413 1/128 – – – [1 17 18 18 18 18 8 1] 4.49e −3 60637 12 1/16 [1 13 14 13 8 5 3 1] 6.54e −4 995 [1 19 29 30 20 10 3 1] 7.92e −4 223 1/32 [1 13 18 17 11 6 3 1] 6.27e −4 7288 [1 18 18 18 18 16 5 1] 2.42e −3 902 1/64 [1 14 22 22 15 8 3 1] 5.88e −4 76737 [1 15 16 16 16 16 6 1] 3.64e −3 7764 
+
+5.1. Hardware, Software, and Setup. All timings are reported in seconds. The computations were performed in MATLAB R2025b using 12 parallel workers on a MacBook Pro with an Apple M4 Pro processor and 24 GB of RAM. For each fixed parameter value, the forward solver computes one LU factorization at the first time step and reuses it at subsequent time steps. 
+
+5.2. Performance of TROM surrogates. We first assess the offline construc-tion of the TROM surrogates. For the heat-transfer problem, Tables 1 to 3 report results for D = 3 , 6, 9, respectively, using εTT = 10 −3. The tables show the TT ranks, the mean relative TROM error over 100 off-grid test parameters, and the offline con-struction time. For D = 3, both TT-SVD and TT-Cross are inexpensive and achieve comparable accuracy. TT-SVD is usually faster because the full tensor grid is still affordable, whereas TT-Cross carries adaptive-sampling overhead. For D = 6, the ranks and offline times increase substantially. TT-SVD often gives smaller TROM errors, but requires the full tensor grid of size N D ; TT-Cross avoids this cost by using adap-tively selected FOM evaluations. For example, when N = 12 and D = 6, TT-SVD TROM FOR INVERSE PROBLEMS 15 
+
+Table 3 
+
+Heat-transfer problem: Offline-stage results for the three-inclusion case ( D = 9 ) using the TT-Cross surrogate, with εTT = 10 −3. The table reports TT ranks, the number of FOM calls required to build the TT-Cross surrogate, the mean relative TROM error, and the offline time in seconds as a function of N and the mesh size h.                             
+
+> Nhranks FOM calls TROM error offline time
+> 41/16 [1 18 18 18 18 18 18 18 12 4 1] 19 ,217 3.41e −354 1/32 [1 20 20 20 20 20 20 20 16 4 1] 22 ,749 6.09e −3438 1/64 [1 19 20 20 20 20 20 20 16 4 1] 22 ,525 8.23e −34450 61/16 [1 18 18 18 18 18 18 18 11 4 1] 41 ,851 3.46e −3112 1/32 [1 22 26 26 26 26 26 26 20 5 1] 87 ,900 4.04e −31656 1/64 [1 14 14 14 14 14 14 14 14 6 1] 28 ,405 1.11e −25503
+
+Table 4 
+
+FitzHugh–Nagumo model: Offline-stage results using TT-SVD. Relative errors and times are computed by averaging over 100 runs with randomly chosen off-grid parameter samples. The left block reports results for varying N with fixed εTT = 10 −3; the right block reports results for varying 
+
+εTT with fixed N = 800 .                                                                
+
+> varying N,εTT = 10 −3varying εTT ,N= 800
+> Nranks error time εTT ranks error time
+> 12 [1 123 12 1] 4.43e −10.58 1e–2 [1 265 499 1] 6.69e −3133.23 25 [1 382 25 1] 2.11e −11.65 1e–3 [1 489 679 1] 1.31e −3147.69 50 [1 474 50 1] 9.26e −21.60 1e–4 [1 721 718 1] 7.99e −4197.69 100 [1 486 100 1] 4.16e −22.94 1e–5 [1 933 751 1] 7.73e −4239.71 200 [1 488 195 1] 1.32e −27.30 ————400 [1 489 365 1] 4.17e −331.67 ————800 [1 489 679 1] 1.31e −3147.69 ————
+
+requires 2 ,985 ,984 FOM solves, whereas TT-Cross uses 82 ,956, 46 ,994, and 39 ,950 FOM evaluations for h = 1 /16, 1 /32, and 1 /64, respectively. For D = 9, full tensor construction is no longer practical, so only TT-Cross is reported. With N = 6, the full tensor grid would contain 6 9 ≈ 1e7 parameter samples, whereas TT-Cross uses between 2 .80e4 and 8 .79e4 FOM calls in the reported tests. Thus, although the offline cost remains substantial, TT-Cross extends the approach to parameter dimensions where TT-SVD is infeasible. For the FitzHugh–Nagumo model, Table 4 shows that the dominant accuracy improvement comes from refining the parameter grid. Decreasing εTT below 10 −3
+
+gives only a minor additional gain while increasing the TT ranks and construction time. Therefore, we use εTT = 10 −3 in the remaining FitzHugh–Nagumo experiments. 
+
+5.3. TROM-based inversion with an informed prior. We first consider the idealized informed-prior case αref = αtrue . This setting isolates the effects of TROM error, spatial discretization, parameter dimension, and initialization. The initial guess is sampled uniformly from A, with candidates too close to αtrue rejected according to 
+
+α(0) − αtrue 
+
+αmax − αmin 2
+
+≥ 0.25 ,
+
+where the division is componentwise. For a recovered parameter αλ, we define the relative parameter error by (5.1) erel (αλ) = 
+
+  P Dj=1 |αλ,j − αtrue ,j |21/2
+
+  P Dj=1 |αtrue ,j |21/2 .16 S. ISLAM, A. MANG, AND M. OLSHANSKII 
+
+Table 5 
+
+Summary of TROM-based inversion with FOM-generated observations for the single- and two-inclusion cases with noise-free (noise=0) and noisy data (noise=1). Reported quantities are averaged over 10 random initializations and, for noisy tests, also over five noise realizations. We report the mean final residual, mean relative parameter error, standard deviation of the parameter error, mean number of iterations, and mean inference time in seconds.                                                                                                               
+
+> noise surrogate hρresidual error error (std) iter time
+> D= 3 0TT-SVD 1/64 3.92e −33.80e −35.93e −43.19e −94.00 3.60e −416.84e −26.81e −24.37e −31.19e −34.00 1.60e −40TT-Cross 6.19e −36.03e −37.69e −46.09e −94.00 6.70e −416.86e −26.81e −24.33e −31.53e −34.00 2.80e −4
+> D= 6 0TT-SVD 1/64 5.15e −33.51e −31.20e −38.99e −84.20 8.00e −416.72e −26.64e −23.26e −31.26e −34.22 3.90e −40TT-Cross 1/64 2.72e −21.63e −24.53e −35.88e −75.50 1.05e −317.23e −26.81e −26.49e −39.98e −45.56 4.50e −41TT-Cross 1/16 6.68e −26.56e −23.96e −39.28e −44.04 3.80e −411/32 6.95e −26.74e −25.32e −38.62e −44.66 4.10e −411/64 7.23e −26.81e −26.49e −39.98e −45.56 4.50e −4
+> D= 9 1TT-Cross 1/16 6.85e −26.69e −25.27e −39.91e −44.44 1.56e −311/32 6.85e −26.55e −25.36e −35.76e −44.84 7.60e −411/64 1.48e −17.51e −22.46e −28.60e −47.38 8.20e −4
+
+Multiple random initializations are used to assess robustness with respect to the start-ing point. 
+
+5.3.1. Consistency test. As a solver validation, we first generate the obser-vations with the same TROM surrogate used in the inversion, yobs = bf (αtrue ). For the single-inclusion case with D = 3, h = 1 /64, N = 8, and the TT-Cross surro-gate, all random initializations converge to αtrue up to machine precision, with mean componentwise relative errors of order 10 −12 and four GN iterations. This confirms the consistency of the surrogate evaluation, Jacobian construction, and optimization algorithm. 
+
+5.3.2. ROM inversion using FOM-generated observations. Now, we con-sider a setting in which possibly noisy observations are generated by the FOM, 
+
+yobs = f (αtrue ) + εmeas , whereas inversion is performed using the TROM surrogate. This introduces a model mismatch, characterized by the ROM error level δrom > 0. We consider the single- ( D = 3) and two-inclusion ( D = 6) cases. The true parameters, chosen outside the training grid, are αtrue = [0 .80 , 0.50 , 0.22] T for D = 3 and αtrue = [0 .43 , 0.41 , 0.21 , 0.81 , 0.60 , 0.21] T for D = 6. For D = 3, we use h = 1 /64 and N = 8; for D = 6, we use N = 8 and h = 1 /16 , 1/32 , 1/64. Both noise-free observations and noisy observations with δmeas = 10 −2 are considered. Since 
+
+αref = αtrue , we set λ = 1. The results are reported in Table 5. For D = 3, both TT-SVD and TT-Cross give stable reconstructions in the noise-free and noisy cases. In the noise-free case, the recovered parameters are close to αtrue ;TT-SVD gives a slightly smaller error, consistent with its smaller TROM approxima-tion error at the truth. The final residuals are close to the prescribed discrepancy levels ρ from (B.3) (see Section B). The same qualitative behavior is observed for D = 6, although the effect of surrogate error becomes more visible. In the noise-free case, TT-SVD gives smaller TROM FOR INVERSE PROBLEMS 17 
+
+Table 6 
+
+FHN model inversion with εTT = 10 −3, αref = αtrue = (0 .7, 0.8) T, λ = 0 .1, and δmeas = 10 −2.The first block reports statistics over 100 random initial guesses for N = 800 . The second block reports results obtained from the single run of the optimization solver with the TROM initial guess 
+
+α∗ for different values of N . We denote the estimated parameter vector by αT
+
+> est
+
+.                                                                    
+
+> NαT
+> ∗αT
+> est residual error (std) iter initial final random initialization
+> 800 ——5.73e1 1.98e1 1.29e −1 (2 .28e −1) 24 .79
+> TROM initialization
+> 12 (0 .7818 ,0.4727) (0 .7818 ,0.4601) 1.16e1 1.08e1 3.29e −1 (—) 724 (0 .6870 ,0.8522) (0 .6870 ,0.8454) 9.26 7.46 4.45e −2 (—) 10 50 (0 .7061 ,0.7755) (0 .7061 ,0.7803) 3.52 2.25 1.94e −2 (—) 4100 (0 .6970 ,0.8121) (0 .6969 ,0.8104) 2.01 1.06 1.02e −2 (—) 6200 (0 .6985 ,0.8060) (0 .6985 ,0.8050) 1.05 5.09e −14.94e −3 (—) 8400 (0 .6992 ,0.8030) (0 .6993 ,0.8024) 6.32e −14.32e −12.37e −3 (—) 4800 (0 .6996 ,0.8015) (0 .6998 ,0.8006) 4.79e −14.18e −15.82e −4 (—) 6
+
+Fig. 5 . Two representative optimization trajectories of the standard GN optimization method for the random choice of initial guess. We overlay these trajectories on the optimization landscape (in particular, on log 10 Φλ(α)). 
+
+parameter error and residual than TT-Cross, while both methods remain stable and require only a few iterations. For noisy data, the residuals again track the prescribed discrepancy levels. The TT-Cross tests with varying h show only mild changes in runtime and iteration count, while the parameter error reflects the combined influence of surrogate error, noise, and spatial discretization. We omit the corresponding TT-SVD and noise-free results for varying h, since they exhibit the same trends, with somewhat smaller errors and error standard deviations. The three-inclusion case ( D = 9) is more challenging. For h = 1 /16 and h =1/32, TT-Cross gives errors comparable to the D = 6 case and residuals close to the prescribed discrepancy levels. For h = 1 /64, the discrepancy level and parameter error increase noticeably, indicating greater sensitivity to surrogate accuracy, spatial discretization, and regularization. Even then, the online TROM inversion remains inexpensive, with runtimes on the order of 10 −3 seconds. 
+
+5.3.3. FitzHugh–Nagumo model: the effect of TROM optimization. We now consider FitzHugh–Nagumo model and test the sensitivity of the inverse solver to initialization. For N = 800, we sample 100 random initial guesses uniformly from the parameter domain, rejecting values too close to αtrue as in the heat-transfer problem above, and 18 S. ISLAM, A. MANG, AND M. OLSHANSKII 
+
+solve the regularized inverse problem from each starting point. We compare these runs with the TROM-based initial guess α∗ obtained for different values of N . The corresponding results are reported in Table 6. As expected, the GN minimization is highly sensitive to the initial guess. About 40% of the random initial guesses converge to local minima away from αtrue , leading to a relatively large mean error and standard deviation. Representative optimization trajectories on the regularized objective landscape are shown in Figure 5. The tra-jectories illustrate that different initial guesses can lead the GN iteration to different local minima. In contrast, the purely low-rank tensor-based optimization procedure described in Subsection 3.4 finds a minimizer of the objective functional on the parameter grid. This point α∗ is close to the global minimizer, and the subsequent optional GN iteration initialized at α∗ improves the minimizer only slightly. The final error in the recovered parameter is consistent with the modeling error of the TROM surrogate; see Table 4. 
+
+5.4. Randomized true parameters with a reference prior. Next, we study the case in which the true parameter αtrue differs from the reference αref in the Tikhonov term. We fix αref and sample several true parameters in its neighborhood. For each αtrue , synthetic observations yobs = f (αtrue ) + εmeas are generated by the FOM, while inversion is performed using a TROM surrogate. We use either α(0) = αref 
+
+or α(0) = α∗, where α∗ is the TROM initial guess defined in (3.8). The true parameters are sampled from a Gaussian distribution centered at αref .More precisely, we let (5.2) (αtrue )j ∼ N  (αref )j , σ 2
+
+> j
+
+ , σj = 0 .60( αmax  
+
+> j
+
+− αmin  
+
+> j
+
+),
+
+with samples outside A rejected and redrawn. We generate 10 realizations of αtrue . For each realization i, the noiseless observation is y(i)true = f (α(i)true ). Since the TROM error 
+
+ε(i)rom = bf (α(i)true ) − f (α(i)true ) and the total perturbation level δ(i) = ( δ2meas + ( δ(i)rom )2)1/2
+
+vary across realizations, we use the prescribed discrepancy level 
+
+ρ∗ = max  
+
+> 1≤i≤10
+
+ρ(i), ρ(i) = δ(i) y(i)true 2.
+
+For each realization, we solve the inverse problem over a logarithmic grid of candidate values of λ and choose the value for which the final residual best matches ρ∗.We then rerun the inversion with this selected regularization parameter and report the quantities from the final solve: the relative parameter error (5.1), selected λ, initial and final residuals, residual reduction 
+
+∥f (αref ) − yobs ∥2
+
+∥f (αλ) − yobs ∥2
+
+,
+
+number of iterations, and runtime. For the single-inclusion case, we use D = 3, h = 1 /64, N = 8, and 
+
+αref = [0 .80 , 0.50 , 0.22] T.
+
+For the two-inclusion case, we use D = 6, h = 1 /64, N = 8, and 
+
+αref = [0 .43 , 0.41 , 0.21 , 0.81 , 0.60 , 0.21] T.TROM FOR INVERSE PROBLEMS 19                                                                  
+
+> Table 7
+> Summary of randomized-true-parameter inversion results for the single- and two-inclusion cases, all averaged over ten realizations of αtrue . Results are shown for noise-free ( noise = 0 ) and noisy ( noise = 1 ) data using TT-SVD and TT-Cross surrogates. Reported quantities include the mean relative parameter error, selected regularization parameter, initial and final residuals, residual reduction, iteration count, and runtime.
+> noise surrogate ρ∗error λresidual iter time initial final drop
+> D= 3 0TT-SVD 4.61e −39.45e −31.99e −21.56e −14.60e −333 .81 4.20 0.04 16.89e −23.83e −21.14e −11.70e −16.89e −22.47 4.50 0.04 0TT-Cross 6.55e −31.48e −23.34e −21.55e −16.54e −323 .77 4.60 0.05 16.91e −24.06e −21.35e −11.70e −16.91e −22.46 4.20 0.04
+> D= 6 1TT-SVD 6.79e −22.94e −21.66e −12.77e −16.79e −24.08 5.00 0.12 1TT-Cross 7.04e −23.87e −22.57e −12.79e −17.04e −23.96 8.10 0.18
+
+For D = 6, we report only the noisy setting, which is the more practical case. Table 7 collects results for D = 3 and D = 6. For D = 3 both surrogates achieve final residuals very close to ρ∗. In the noise-free setting, the residual reduction is large, especially for TT-SVD, while in the noisy setting the reduction is naturally smaller because ρ∗ is dominated by the measurement-noise level. The TT-SVD surrogate gives smaller parameter errors in the noise-free case, whereas the two surrogates produce comparable errors in the noisy case. For D = 6, the problem is more challenging. The selected regularization pa-rameters are larger on average, and the residual reduction is smaller than in the single-inclusion noise-free experiments. Both surrogates still reach their prescribed discrepancy levels, but TT-Cross requires substantially more iterations and gives larger parameter errors than TT-SVD. This indicates that the increased dimension and stronger parameter coupling make the optimization more sensitive to the TROM approximation error. 
+
+5.4.1. Three-inclusion case ( D = 9 ). For the three-inclusion case, we use 
+
+D = 9, h = 1 /64, N = 6, and 
+
+αref = [0 .31 , 0.30 , 0.21 , 0.61 , 0.51 , 0.18 , 0.85 , 0.49 , 0.18] T.
+
+Because of the high parameter dimension, TT-SVD construction is not feasible in this setting, and we restrict attention to the TT-Cross surrogate. We consider the noisy case with fixed prescribed discrepancy level ρ∗ = 1 .47e −1. The regularization parameter is selected from the same logarithmic grid using the discrepancy principle, as above. In Table 8 we show both average statistics and the results for each realization of αtrue .The D = 9 case confirms the increasing difficulty of the inverse problem in higher dimension. The selected values of λ are larger and more variable, and the iteration count increases compared with D = 6. The final residuals remain close to ρ∗ on average, although with more variability across realizations, see Table 8. The total online runtime increases with the parameter dimension primarily be-cause higher-dimensional cases require more optimization iterations. In contrast, the runtime per iteration grows only moderately with D, since the dominant online com-putations use the TROM surrogate rather than the full-order model. We also repeated the noisy D = 6 and D = 9 TT-Cross tests using the TROM-20 S. ISLAM, A. MANG, AND M. OLSHANSKII 
+
+Table 8 
+
+TT-Cross inversion results for the three-inclusion case ( D = 9 ) with relative noise level 1.00e −2
+
+and fixed discrepancy level ρ∗ = 1 .47e −1. We report results for ten individual realizations and their average, including the relative parameter error, selected regularization parameter, initial and final residuals, residual reduction, iteration count, and runtime.                                                                                     
+
+> draw error λresidual iter time initial final drop
+> 17.80e −27.43 3.27e −11.46e −12.24 80.48 28.55e −24.62 4.24e −11.47e −12.89 12 0.40 31.09e −15.33 5.07e −11.47e −13.46 90.49 45.48e −23.26 7.48e −11.47e −15.09 15 0.49 57.98e −21.01e1 4.80e −11.47e −13.27 70.44 67.76e −21.51e1 1.81e −11.47e −11.23 50.76 77.78e −22.75e1 4.33e −11.47e −12.95 60.43 86.83e −27.39e1 1.82e −11.47e −11.24 40.41 97.89e −23.89 6.43e −11.47e −14.38 12 0.49 10 6.33e −21.00e4 1.41e −11.41e −11.00 30.41 mean 7.73e −21.02e3 4.07e −11.46e −12.77 8.10 0.48
+
+Table 9 
+
+Effect of TROM initialization in the noisy two- and three-inclusion tests. We compare initial-ization from αref with initialization from the TROM-based guess α∗. For each choice, we report averages over ten realizations of the relative parameter error, final residual, and iteration count.                        
+
+> α(0) =αref α(0) =α∗
+> Derror residual iter error residual iter
+> 63.87e −27.04e −28.10 3.87e −27.04e −25.60 97.73e −21.46e −18.10 7.87e −21.47e −17.00
+
+provided initial guess from Subsection 3.4. All other settings were left unchanged. For 
+
+D = 6, the mean iteration count drops from 8 .10 to 5 .60, while the mean parameter error and final residual remain almost the same. For D = 9, the improvement is more modest, with the mean iteration count decreasing from 8 .10 to 7 .00; see Table 9. 
+
+5.4.2. FitzHugh–Nagumo model: the effect of TROM optimization. 
+
+Here, we consider FitzHugh–Nagumo inversion in the case αtrue ̸ = αref . The reference parameter is fixed at αref = (0 .4, 0.4) T, and ten αtrue parameters are sampled in its neighborhood according to (5.2). The prescribed discrepancy level ρ∗ is fixed as the maximum target residual over the 10 random realizations. Table 10 shows that initializing the GN iteration at αref leads, on average, to poor parameter recovery. In fact, in 4 out of 10 runs with randomly sampled αtrue ,the solver converges to a false local minimum. The accuracy of the TROM-based inversion improves as N increases. For the same surrogate complexity, N = 800, the tensor-based optimization procedure provides significantly more accurate param-eter estimates with much smaller variation. The subsequent optional GN iteration initialized at α∗ further improves the minimizer slightly. 
+
+5.5. TROM vs FOM inversion. We next compare FOM inversion with TT-SVD and TT-Cross ROM inversions in the one-inclusion setting. The goal is to assess how TROM approximation error affects the inverse solution and how much online speedup is obtained relative to the full-order inversion. We consider two noise-free experiments. In the first experiment, the reference parameter coincides with the truth, 
+
+αtrue = αref = [0 .80 , 0.50 , 0.22] T; λ = 1 ,
+
+the same ten random initial guesses are used for all inversion models. In the second, TROM FOR INVERSE PROBLEMS 21 
+
+Table 10 
+
+FHN model inversion with εTT = 10 −3, αref = (0 .4, 0.4) T , and δmeas = 10 −2. The first block reports statistics obtained when αref is used as the initial guess in the GN minimization procedure. The second block reports statistics obtained using the TROM optimization step for surrogates with different values of N . The residuals, errors, and iteration counts are averaged over 10 runs with randomly sampled αtrue .                                                      
+
+> Nρ∗residual error error std iter initial final reference initialization
+> 800 5.20e −14.90e1 2.00e1 2.06e −12.62e −124 .20
+> TROM initialization
+> 12 4.45e1 1.16e1 1.03e1 3.49e −11.97e −17.70 24 3.05e1 3.24 2.33 2.77e −14.02e −15.10 50 9.27 2.30 1.57 2.93e −15.15e −15.70 100 3.78 1.82 1.44 2.09e −13.04e −17.00 200 2.32 1.25 1.30 1.90e −12.75e −14.40 400 8.48e −17.99e −17.14e −18.62e −21.44e −16.30 800 5.20e −15.75e −15.07e −13.26e −24.49e −23.80
+
+Table 11 
+
+Comparison of FOM and TROM inversions for the noise-free single-inclusion case. Results are averaged over ten runs for two choices of reference parameter, αref = αtrue and αref ̸ = αtrue .The FOM is solved using either FD GN derivatives (FOM-FD-GN) or forward-sensitivity deriva-tives (FOM-Sens-GN), while the ROM inversions use TT-SVD and TT-Cross surrogates. Reported quantities include the relative parameter error, final residual, iteration count, number of function evaluations, time-to-solution, and speedup.                                                           
+
+> αref model error residual iter evals time speedup
+> αtrue FOM-FD-GN 1.81e −12 4.12e −13 4.00 29.00 5.54794 –FOM-Sens-GN 1.80e −12 4.11e −13 4.00 9.00 2.85906 1.94 ×
+> TT-SVD 5.93e −04 5.56e −04 4.00 5.00 0.00299 1856 ×
+> TT-Cross 7.69e −04 8.83e −04 4.00 5.00 0.00087 6377 ×̸
+> =αtrue FOM-FD-GN 9.86e −02 8.24e −03 4.40 31.80 6.09507 –FOM-Sens-GN 9.86e −02 8.24e −03 4.40 9.80 3.17046 1.92 ×
+> TT-SVD 9.85e −02 8.25e −03 4.40 5.40 0.00415 1469 ×
+> TT-Cross 9.86e −02 8.24e −03 4.40 5.40 0.00144 4233 ×
+
+αref is fixed but αtrue is sampled from the Gaussian distribution as described above; all runs are initialized with α(0) = αref . In both experiments, observations are generated by the FOM, yobs = f (αtrue ). The results are reported in Table 11. For the FOM inversion, we compare two ways of forming the GN Jacobian. The first, denoted FOM-FD-GN, uses FDs to assemble the Jacobian. The second, denoted FOM-Sens-GN, assembles the Jacobian from forward sensitivity equations [22] and therefore requires fewer additional FOM evaluations per iteration. This avoids FD perturbations and reuses the factorizations from the forward solve. We also include the average number of “evaluations”, which denotes the number of FOM or TROM evaluations used in the final inversion solve with the preselected λ.When αref = αtrue , the FOM inversion recovers the parameter to nearly machine precision. This is expected because the data are noise-free and the true parameter is also used as the reference parameter in the Tikhonov term. Both TROM inversions recover parameters close to the truth at dramatically lower online cost, with errors limited by the surrogate approximation. The forward-sensitivity FOM implementation gives essentially the same recon-struction as the FD FOM implementation, while reducing the FOM runtime by about 22 S. ISLAM, A. MANG, AND M. OLSHANSKII 
+
+Table 12 
+
+Runtime comparison of a plain and integrated TROM inversion. Here “Full/FD” uses the observation-space objective with a FD Jacobian, whereas “Reduced/TROM” uses (3.4) and the re-duced TROM GN quantities. The TT-Cross surrogate is used in all TROM runs, and the FOM inversion time is included for reference. Reported quantities include D, N , the ranks r2 and rmax ,the mean runtime over 50 executions, and the speedup; Nobs = 279 .                                               
+
+> ROM objective/jacobian DNr2rmax time speedup
+> Full / FD 3813 13 4.62e −4Reduced / TROM 3813 13 1.03e −44.49 ×
+> Full / FD 6820 22 1.76e −3Reduced / TROM 6820 22 2.87e −46.13 ×
+> Full / FD 9614 14 7.31e −3Reduced / TROM 9614 14 1.78e −34.11 ×
+> FOM Full / FD 3–––7.74 –
+
+Table 13 
+
+Runtime comparison of a plain and integrated TROM inversion for different TT truncation tolerances. The TROM surrogate is constructed using TT-SVD. We report the ranks r2 and rmax ,the mean runtime over 50 executions, and the speedup. Here, D = 6 , N = 8 , and Nobs = 279 .                                         
+
+> εTT objective / jacobian r2rmax time speedup
+> 1e–2 Full / FD 661.50e −3–Reduced / TROM 661.89e −47.94 ×
+> 1e–3 Full / FD 14 23 1.52e −3–Reduced / TROM 14 23 2.74e −45.55 ×
+> 1e–4 Full / FD 25 78 3.42e −3–Reduced / TROM 25 78 6.09e −45.62 ×
+> 1e–5 Full / FD 38 205 1.03e −2–Reduced / TROM 38 205 1.91e −35.39 ×
+
+a factor of two. Nevertheless, the TROM inversions remain orders of magnitude faster than both FOM variants. When αref ̸ = αtrue , the reconstruction error is dominated by the regularization bias toward αref . In this setting, both TROM solvers closely reproduce the FOM inversion behavior while reducing the runtime by several orders of magnitude. 
+
+5.6. Speedup from deeper TROM integration. In the previous section, we observed that using the TROM surrogate for forward solves gives a dramatic speedup compared with using the FOM, as expected. Here, we study to what extent this efficiency is due to the deeper integration of TROM into the inversion process, beyond its use as an approximate forward map. Tables 12 and 13 compare plain TROM inversion, where the surrogate is used only for forward evaluations and the Jacobian is computed by finite differences, with the integrated TROM formulation based on (3.4) and the reduced GN quantities. Each solve is repeated 50 times to reduce timing noise. The integrated formulation consistently reduces the online runtime by a factor of about 4 to 8 across the tested cases. The speedup is due mainly to the TROM-based GN quantities, which avoid FD Jacobian evaluations and replace observation-space linear algebra by reduced-coordinate computations. 
+
+5.7. Effect of measurement noise on TROM inversion. Next, we study the effect of measurement noise on the TROM inversion in the one-inclusion case with αref = [0 .80 , 0.50 , 0.22] T. The true parameter is sampled around αref , all runs TROM FOR INVERSE PROBLEMS 23 
+
+Table 14 
+
+TROM inversion with increasing noise level. All quantities are averaged over 10 runs. Reported quantities include the mean relative parameter error, final residual, iteration count, runtime, and selected regularization parameter λ.                                                                    
+
+> surrogate δmeas error residual iter time λ
+> TT-SVD 0.00 5.55e −35.36e −44.30 0.017 4.85e −30.05 7.00e −25.00e −24.90 0.019 1.57 0.10 8.27e −21.00e −15.50 0.025 1.32 0.20 8.95e −22.00e −15.50 0.033 1.01e3 0.25 1.10e −12.50e −15.70 0.037 2.00e3 0.50 1.19e −15.00e −16.90 0.037 2.00e3 TT-Cross 0.00 7.08e −36.70e −44.40 0.017 5.61e −30.05 7.31e −25.00e −24.80 0.020 1.69 0.10 8.25e −21.0e −15.70 0.029 1.25 0.20 8.75e −22.00e −15.40 0.034 1.01e3 0.25 1.10e −12.50e −16.40 0.041 1.04e3 0.50 1.18e −15.00e −17.90 0.041 2.01e3
+
+Table 15 
+
+TT-Cross scalability results for noisy TROM inversion with fixed measurement-noise level 
+
+δmeas = 0 .10 . All quantities are averaged over 10 runs. Reported quantities include the mean relative parameter error, final residual, iteration count, online runtime, selected regularization pa-rameter λ, and offline construction time.                             
+
+> Derror residual iter evals online time λoffline time
+> 39.59e −21.0e −14.70 5.70 0.026 1.00e3 121 66.30e −21.00e −18.70 10 .80 0.198 1.98 6,413 97.56e −21.00e −110 .90 29 .10 0.297 4.84 13,379
+
+are initialized with α(0) = αref , and the noiseless observations are generated by the FOM, ytrue = f (αtrue ). Noisy observations are defined by (B.1) (see Section B) with various δmeas . The regularization parameter is chosen using the discrepancy principle with δ = pδ2meas + δ2rom , τ = 1. Here δrom is the fixed relative TROM error estimate obtained from the preceding noise-free random-truth experiment, which was found to be δrom = 5 .02e −4 for TT-SVD, δrom = 6 .23e −4 for TT-Cross. Table 14 shows consistent behavior for both TT-SVD and TT-Cross as the noise level increases. The final residual closely matches the prescribed discrepancy level in all tested regimes. For small and moderate noise, the parameter recovery remains sta-ble. For larger noise, the selected regularization parameter increases, which stabilizes the solve but also leads to larger reconstruction errors. The online runtimes remain small and vary only mildly with the noise level. 
+
+5.8. Scalability of TROM inversion. Finally, we assess how the online TROM inversion scales with the parameter dimension. We consider one-, two-, and three-inclusion cases and use the TT-Cross ROM in all cases. The true parameter is sampled around αref , all runs are initialized with α(0) = αref , and the measurement-noise level is fixed at δmeas = 0 .10. The regularization parameter is chosen by the same prac-tical discrepancy principle with δrom = 6 .23e −4, 2.46e −3, 7.95e −3 for D = 3 , 6, 9, respectively. Table 15 shows that TT-Cross inversion remains stable as the parameter dimen-sion increases from D = 3 to D = 9. The final residual stays close to the prescribed discrepancy level in all cases. The main effect of increasing D is computational: the average iteration count, number of surrogate evaluations, and online runtime all in-crease. Nevertheless, the online cost remains small compared with the offline TT-Cross 24 S. ISLAM, A. MANG, AND M. OLSHANSKII 
+
+construction, which is the dominant computational expense. 
+
+6. Conclusions. We demonstrated that TROM surrogates provide reliable and fast approximations of the parameter-to-observation map, with an approximation er-ror that can be estimated and incorporated into the inversion procedure. In the Tikhonov framework considered here, both TT-SVD and TT-Cross surrogates repro-duce the behavior of full-order inversion at a substantially lower online cost. The experiments also show that the TROM error should be treated as part of the effective data perturbation when selecting the regularization parameter, which leads to stable reconstructions for both noise-free and noisy observations. A central conclusion is that the low-rank multilinear structure is useful beyond fast forward evaluation. After orthogonalization of the first TT core, the TROM least-squares term can be minimized equivalently in reduced coordinates; the Gauss– Newton residuals and Jacobian products can be assembled from TT contractions without forming the full observation-space Jacobian; and the tensor representation can be used to solve discrete objective minimization problems in TT format. De-pending on the inverse problem, this tensor optimization step can serve either as a stand-alone approximate minimization procedure or as a data-informed initialization for a subsequent Gauss–Newton solve. The numerical results illustrate these roles in complementary settings. In the heat-transfer problem, the method remains ef-fective as the parameter dimension increases, and TT-Cross extends the approach to regimes where full tensor construction by TT-SVD is no longer practical. In the FitzHugh–Nagumo example, the objective landscape is strongly nonconvex and the Gauss–Newton method is sensitive to initialization; in this case, the TROM optimiza-tion step substantially improves robustness by identifying a better basin of attrac-tion. Overall, the experiments show that reduced-coordinate inversion, tensor-based objective minimization, and appropriate regularization improve robustness in higher-dimensional, noisy, and nonconvex inverse problems. The main tradeoff is the offline cost of constructing the TROM surrogate, espe-cially in higher parameter dimension. Once this surrogate is available, however, the online inverse solves are inexpensive. 
+
+Disclosure of AI-assisted tools. During the preparation of this manuscript, the authors used the generative AI tools ChatGPT (OpenAI) and Claude (Anthropic) to assist with language and style editing, correction of typographical and grammatical errors, and the drafting of scripts. All mathematical developments, derivations, modeling, and analyses were carried out by the authors. The authors are responsible for the correctness of all code used in this work; they reviewed and tested this code and verified its functionality. The authors reviewed and edited all AI-assisted content and take full responsibility for the content of this publication.         
+
+> REFERENCES [1] P. Benner, S. Gugercin, and K. Willcox ,A survey of projection-based model reduction methods for parametric dynamical systems , SIAM Review, 57 (2015), pp. 483–531. [2] A. Chertkov, G. Ryzhakov, G. Novikov, and I. Oseledets ,Optimization of functions given in the tensor train format , arXiv preprint arXiv:2209.14808, (2022). [3] T. Cui and S. Dolgov ,Deep composition of tensor-trains using squared inverse Rosenblatt transports , Foundations of Computational Mathematics, 22 (2022), pp. 1863–1922. [4] T. Cui, S. Dolgov, and O. Zahm ,Scalable conditional deep inverse Rosenblatt transports using tensor trains and gradient-based dimension reduction , Journal of Computational Physics, 485 (2023), p. 112103.
+
+TROM FOR INVERSE PROBLEMS 25 
+
+[5] T. Cui, Y. M. Marzouk, and K. E. Willcox , Data-driven model reduction for the Bayesian solution of inverse problems , International Journal for Numerical Methods in Engineering, 102 (2015), pp. 966–990. [6] S. Dolgov, K. Anaya-Izquierdo, C. Fox, and R. Scheichl , Approximation and sampling of multivariate probability distributions in the tensor train decomposition , Statistics and Computing, 30 (2020), pp. 603–625. [7] S. V. Dolgov and D. V. Savostyanov , Alternating minimal energy methods for linear systems in higher dimensions , SIAM Journal on Scientific Computing, 36 (2014), pp. A2248–A2271. [8] M. Eigel, R. Gruhlke, and M. Marschall , Low-rank tensor reconstruction of concentrated densities with application to Bayesian inversion , Statistics and Computing, 32 (2022). [9] H. W. Engl, M. Hanke, and A. Neubauer , Regularization of Inverse Problems , vol. 375 of Mathematics and its Applications, Kluwer Academic Publishers, Dordrecht, 1996. [10] R. FitzHugh , Impulses and physiological states in theoretical models of nerve membrane ,Biophysical Journal, 1 (1961), pp. 445–466. [11] M. Frangos, Y. Marzouk, K. Willcox, and B. van Bloemen Waanders , Surrogate and reduced-order modeling: A comparison of approaches for large-scale statistical inverse problems , in Large-Scale Inverse Problems and Quantification of Uncertainty, John Wi-ley & Sons, 2010, pp. 123–149. [12] S. Fresca, L. Dede’, and A. Manzoni , A comprehensive deep learning-based approach to re-duced order modeling of nonlinear time-dependent parametrized PDEs , Journal of Scientific Computing, 87 (2021), p. 61. [13] D. Galbally, K. Fidkowski, K. Willcox, and O. Ghattas , Nonlinear model reduction for uncertainty quantification in large-scale inverse problems , International Journal for Numerical Methods in Engineering, 81 (2010), pp. 1581–1608. [14] O. Ghattas and K. Willcox , Learning physics-based models from data: perspectives from inverse problems and model reduction , Acta Numerica, 30 (2021), pp. 445–554. [15] S. A. Goreinov, I. V. Oseledets, D. V. Savostyanov, E. E. Tyrtyshnikov, and N. L. Zamarashkin , How to find a good submatrix , in Matrix Methods: Theory, Algorithms and Applications, World Scientific, 2010, pp. 247–256. [16] L. Grasedyck, D. Kressner, and C. Tobler , A literature survey of low-rank tensor approx-imation techniques , GAMM-Mitteilungen, 36 (2013), pp. 53–78. [17] C. Greif and K. Urban , Decay of the Kolmogorov N-width for wave problems , Applied Math-ematics Letters, 96 (2019), pp. 216–222. [18] M. Grieves and J. Vickers , Digital twin: Mitigating unpredictable, undesirable emergent behavior in complex systems , in Transdisciplinary Perspectives on Complex Systems, Springer, 2017, pp. 85–113. [19] W. Hackbusch , Tensor Spaces and Numerical Tensor Calculus , vol. 42 of Springer Series in Computational Mathematics, Springer, Berlin, Heidelberg, 2012. [20] P. C. Hansen , Discrete Inverse Problems: Insight and Algorithms , SIAM, Philadelphia, 2010. [21] J. S. Hesthaven, G. Rozza, and B. Stamm , Certified Reduced Basis Methods for Parametrized Partial Differential Equations , SpringerBriefs in Mathematics, Springer, 2016. [22] M. Hinze, R. Pinnau, M. Ulbrich, and S. Ulbrich , Optimization with PDE Constraints ,vol. 23 of Mathematical Modelling: Theory and Applications, Springer, Dordrecht, 2009. [23] V. Isakov , Inverse Problems for Partial Differential Equations , vol. 127 of Applied Mathe-matical Sciences, Springer, 3rd ed., 2017. [24] A. Islam, M. R. B. Mizan, M. Olshanskii, and A. Mang , Tensorial reduced-order mod-els for parametric coupled reaction-diffusion systems: Application to brain tumor growth modeling , arXiv preprint arXiv:2603.14101, (2026). [25] A. Ivagnes, N. Demo, and G. Rozza , Towards a machine learning pipeline in reduced order modelling for inverse problems: neural networks for boundary parametrization, dimen-sionality reduction and solution manifold approximation , Journal of Scientific Computing, 95 (2023), p. 23. [26] J. Kaipio and E. Somersalo , Statistical and Computational Inverse Problems , vol. 160 of Applied Mathematical Sciences, Springer, New York, 2005. [27] M. G. Kapteyn, J. V. R. Pretorius, and K. E. Willcox , A probabilistic graphical model foundation for enabling predictive digital twins at scale , Nature Computational Science, 1 (2021), pp. 337–347. [28] T. G. Kolda and B. W. Bader , Tensor decompositions and applications , SIAM Review, 51 (2009), pp. 455–500. [29] K. Lee and K. T. Carlberg , Model reduction of dynamical systems on nonlinear mani-folds using deep convolutional autoencoders , Journal of Computational Physics, 404 (2020), p. 108973. 26 S. ISLAM, A. MANG, AND M. OLSHANSKII [30] C. Lieberman and K. Willcox , Goal-oriented inference: Approach, linear theory, and appli-cation to advection diffusion , SIAM Review, 55 (2013), pp. 493–519. [31] C. Lieberman, K. Willcox, and O. Ghattas , Parameter and state model reduction for large-scale statistical inverse problems , SIAM Journal on Scientific Computing, 32 (2010), pp. 2523–2542. [32] N. Lindemulder , Maximal regularity with weights for parabolic problems with inhomogeneous boundary conditions , Journal of Evolution Equations, 20 (2019), pp. 59–108. [33] A. V. Mamonov and M. A. Olshanskii , Interpolatory tensorial reduced order models for parametric dynamical systems , Computer Methods in Applied Mechanics and Engineering, 397 (2022), p. 115122. [34] A. V. Mamonov and M. A. Olshanskii , Tensorial parametric model order reduction of non-linear dynamical systems , SIAM Journal on Scientific Computing, 46 (2024), pp. A1850– A1878. [35] A. Mang, A. Gholami, C. Davatzikos, and G. Biros , PDE-constrained optimization in medical image analysis , Optimization and Engineering, 19 (2018), pp. 765–812. [36] M. Meyries and R. Schnaubelt , Maximal regularity with temporal weights for parabolic prob-lems with inhomogeneous boundary conditions , Mathematische Nachrichten, 285 (2012), pp. 1032–1051. [37] M. R. B. Mizan, M. Olshanskii, and I. Timofeyev , A parametric tensor ROM for the shallow water dam break problem , Computers & Fluids, (2026), p. 107005. [38] V. A. Morozov , Methods for solving incorrectly posed problems , Springer Science & Business Media, 2012. [39] N. Mueller, Y. Zhao, S. Badia, and T. Cui , A tensor-train reduced basis solver for param-eterized partial differential equations on Cartesian grids , Journal of Computational and Applied Mathematics, 472 (2026), p. 116790. [40] J. Nagumo, S. Arimoto, and S. Yoshizawa , An active pulse transmission line simulating nerve axon , Proceedings of the IRE, 50 (1962), pp. 2061–2070. [41] National Academies of Sciences, Engineering, and Medicine , Foundational Research Gaps and Future Directions for Digital Twins , The National Academies Press, Wash-ington, DC, 2024. [42] J. Nocedal and S. J. Wright , Numerical Optimization , Springer, New York, NY, 2 ed., 2006. [43] T. O’Leary-Roseberry, U. Villa, P. Chen, and O. Ghattas , Derivative-informed pro-jected neural networks for high-dimensional parametric maps governed by PDEs , Com-puter Methods in Applied Mechanics and Engineering, 388 (2022), p. 114199. [44] I. Oseledets and E. Tyrtyshnikov , TT-cross approximation for multidimensional arrays ,Linear Algebra and its Applications, 432 (2010), pp. 70–88. [45] I. V. Oseledets , Tensor-train decomposition , SIAM Journal on Scientific Computing, 33 (2011), pp. 2295–2317. [46] I. V. Oseledets et al. , TT-Toolbox . GitHub repository, 2012, https://github.com/oseledets/tt-toolbox. MATLAB toolbox for tensor-train compu-tations. [47] J. Pr¨ uss and G. Simonett , Moving interfaces and quasilinear parabolic evolution equations ,vol. 105, Springer, 2016. [48] A. Quarteroni, A. Manzoni, and F. Negri , Reduced Basis Methods for Partial Differential Equations: An Introduction , vol. 92 of UNITEXT, Springer, Cham, 2016. [49] J. Rudi, J. Bessac, and A. Lenzi , Parameter estimation with dense and convolutional neural networks applied to the FitzHugh–Nagumo ODE , in Mathematical and Scientific Machine Learning, vol. 145 of Proceedings of Machine Learning Research, PMLR, 2022, pp. 781–808. [50] D. V. Savostyanov , Quasioptimality of maximum-volume cross interpolation of tensors , Lin-ear Algebra and its Applications, 458 (2014), pp. 217–244. [51] K. Sozykin, A. Chertkov, R. Schutski, A.-H. Phan, A. Cichocki, and I. Oseledets ,
+
+TTOpt: A maximum volume quantized tensor train-based optimization and its application to reinforcement learning , in Advances in Neural Information Processing Systems, vol. 35, 2022, pp. 26052–26065. [52] A. M. Stuart , Inverse problems: A Bayesian perspective , Acta Numerica, 19 (2010), pp. 451– 559. [53] F. Tao, M. Zhang, Y. Liu, and A. Y. C. Nee , Digital twin driven prognostics and health management for complex equipment , CIRP Annals, 67 (2018), pp. 169–172. [54] A. Vijaywargiya, E. C. Cyr, and A. Gruber , Structure-aware tensorial model reduction ,arXiv preprint arXiv:2604.26280, (2026). [55] G. Villalobos, J. Rudi, and A. Mang , Neural networks for Bayesian inverse problems gov-erned by a nonlinear ODE , SIAM Journal on Scientific Computing, 48 (2026), pp. C415– TROM FOR INVERSE PROBLEMS 27 
+
+> C452.
+
+Appendix A. TT decomposition of R + L.
+
+We start with R. Consider the rank-one tensor 
+
+S = yobs ⊗ 1N1 ⊗ · · · ⊗ 1ND ,
+
+where 1N = (1 , . . . , 1) T ∈ RN , and define 
+
+E := bT − S .
+
+The residual tensor can be written as (A.1) R = 12 (E ⊙ E ) ×1 1Nobs ,
+
+where ⊙ is the Hadamard product. Since we are interested in a TT representation of R, we first obtain the TT decomposition of E using the standard TT addition construction based on block-diagonal augmentation of the TT cores; see, e.g., [45]. Let 
+
+E = H1 ◦ H2 ◦ · · · ◦ HD+1 ,
+
+where Hk ∈ Rρk ×Nk−1×ρk+1 are the TT cores, with ranks ρk ≤ rk + 1. The TT cores of the Hadamard product in (A.1) are obtained by taking, for each physical index, the Kronecker product of the corresponding TT-core slice with itself. To make this more precise, let us use the following indexing convention: for Hk ∈
+
+Rρk ×Nk−1×ρk+1 , write α ∈ { 1, . . . , ρ k} for its left rank index and β ∈ { 1, . . . , ρ k+1 }
+
+for its right rank index. Squaring duplicates each rank index into a pair: α becomes (α, α ′) with both α, α ′ ∈ { 1, . . . , ρ k}, and similarly β becomes ( β, β ′). We treat the pair ( α, α ′) as a single composite index taking ρ2 
+
+> k
+
+values, and likewise ( β, β ′) for the right rank. Then, for k = 2 , . . . , D + 1, define 
+
+eHk
+
+ (α, α ′), n k−1, (β, β ′) = Hk(α, n k−1, β )Hk(α′, n k−1, β ′),
+
+so eHk ∈ Rρ2  
+
+> k×Nk−1×ρ2
+> k+1
+
+.In (A.1), one contracts the Hadamard product along mode-1 with 1N0 . To this end, treating H1 as the Nobs × ρ2 matrix, define 
+
+W = HT 
+
+> 1
+
+H1, W ∈ Rρ2×ρ2 .
+
+Stacking W over the composite pair index and including the factor 12 from (A.1) gives a vector of length ρ22:
+
+w = 12 vec  HT 
+
+> 1
+
+H1
+
+ ∈ Rρ22 .
+
+The purpose of vec is to flatten the matrix indices ( α, α ′) into the same composite rank index that eH2 carries on its left. Next, we absorb w into eH2 by contracting along that composite index: 
+
+bH2 = eH2 ×1 w.
+
+The result is a TT representation of the order-D tensor R:(A.2) R = bH2 ◦ eH3 ◦ · · · ◦ eHD+1 ,28 S. ISLAM, A. MANG, AND M. OLSHANSKII 
+
+with unrounded TT ranks {1, ρ 23, ρ 24, . . . , ρ 2
+
+> D+1
+
+, 1}. Since the squared ranks may be a loose upper bound, we perform a TT-rounding sweep on the decomposition (A.2) (see [45]) to compress the ranks before executing a minimal entry search. Since L is given by a sum of univariate grid functions, it admits an exact tensor-train representation with TT-ranks (1 , 2, . . . , 2, 1) . To see this, define the grid function 
+
+gi(ni) = ( bαni 
+
+> i
+
+− (αref )i)2 , ni = 1 , . . . , N i,
+
+for each mode i = 1 , . . . , D . The first and last cores are given by 
+
+L1(n1) = λ
+
+2
+
+g1(n1) 1 ∈ R1×2, LD (nD ) = 
+
+ 1
+
+gD (nD )
+
+
+
+∈ R2×1,
+
+and the intermediate cores are 
+
+Li(ni) = 
+
+ 1 0
+
+gi(ni) 1
+
+
+
+∈ R2×2, 2 ≤ i ≤ D − 1.
+
+Straightforward calculations show 
+
+L(n) = L(n1, . . . , n D ) = L1(n1) · · · LD (nD ) = λ
+
+2
+
+> D
+
+X
+
+> i=1
+
+gi(ni),
+
+and thus we have TT representation of the regularization tensor L = L1 ◦L2 ◦· · ·◦ LD .The TT decomposition of R + L is obtained using the standard TT addition procedure one more time. 
+
+Appendix B. Regularization parameter selection: discrepancy princi-ple. 
+
+For the numerical assessment of the method, we generate the observations yobs 
+
+using the full-order forward map: (B.1) yobs = f (αtrue ) + εmeas = ytrue + εmeas 
+
+with ytrue = f (αtrue ) denoting the noiseless observations and measurement noise εmeas .The noise contribution is controlled by the noise-to-signal ratio parameter δmeas > 0. For our numerical experiments, we compute 
+
+εmeas = δmeas 
+
+∥ytrue ∥2
+
+∥εnoise ∥2
+
+εnoise , εnoise ∼ N (0 , I ).
+
+The discrepancy between model predictions bf (α) and observations yobs can be attributed to two sources of error: the measurement noise and the ROM/numerical approximation error. We define the relative noise levels as 
+
+δmeas = ∥εmeas ∥2
+
+∥ytrue ∥2
+
+, δrom = ∥εrom ∥2
+
+∥ytrue ∥2
+
+,
+
+and the total noise level as δ = pδ2meas + δ2rom . The discrepancy principle [38] for the choice of λ states that one should not fit the data beyond the noise level to avoid overfitting. Therefore a candidate λ is accepted when (B.2) ∥ bf (αλ) − yobs ∥2
+
+∥ytrue ∥2
+
+≤ τ δ TROM FOR INVERSE PROBLEMS 29 with a safety factor τ ≥ 1. Here, 
+
+αλ = arg min 
+
+> α∈A
+
+n 12 ∥ bf (α) − yobs ∥22 + λ 
+
+> 2
+
+∥α − αref ∥22
+
+o
+
+is a family of solutions of the optimization problem in (3.1) parameterized by λ. That is, we solve (3.1) for multiple λ in some range [ λmin , λ max ] ⊂ R+ and select as the optimal regularization parameter the largest λ for which (B.2) holds. If there is no measurement noise εmeas (i.e., δmeas = 0), the noise level δ solely depends on the ROM error δrom .The criterion (B.2) requires access to ∥ytrue ∥2, which is generally unknown. In our synthetic experiments, ytrue is available since we generate the data. In practice, one often replaces ∥ytrue ∥2 by ∥yobs ∥2.Note that (B.2) can be rewritten as (B.3) ∥ bf (αλ) − yobs ∥2 ≤ ρ, ρ := τ δ ∥ytrue ∥2.
+
+In the numerical section, we refer to (B.3) and call ρ the prescribed discrepancy level .

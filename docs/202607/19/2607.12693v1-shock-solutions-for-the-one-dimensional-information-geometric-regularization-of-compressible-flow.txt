@@ -1,0 +1,2745 @@
+Title: Shock solutions for the one-dimensional information geometric regularization of compressible flow
+
+URL Source: https://arxiv.org/pdf/2607.12693v1
+
+Published Time: Wed, 15 Jul 2026 12:01:57 GMT
+
+Number of Pages: 35
+
+Markdown Content:
+SHOCK SOLUTIONS FOR THE ONE-DIMENSIONAL INFORMATION GEOMETRIC REGULARIZATION OF COMPRESSIBLE FLOW ∗
+
+WILLIAM BARHAM † , BRIAN K. TRAN ‡ , BEN S. SOUTHWORTH † , AND FLORIAN SCH ¨AFER §
+
+Abstract. The information geometric regularization (IGR) is an inviscid regularization of the compressible Euler equations that alters the geometry of Lagrangian characteristics to prevent tra-jectories from crossing in finite time. Previous work on IGR established global strong solutions in one dimension, explored thermodynamic effects of the model, and enabled large-scale simulations of compressible flow. However, a fundamental question that remains is how this regularization alters the structure and regularity of a shock-like solution. We prove existence, uniqueness modulo translation, and regularity of transonic compressive IGR shock profiles in one spatial dimension. The analysis applies to the full thermodynamic compressible Euler–IGR model with a general equation of state, subject to mild convexity hypotheses. A traveling-wave ansatz reduces the Euler–IGR equations to a degenerate second-order scalar equation for the density profile. At the sonic crossing, the elliptic coefficient degenerates: the density profile remains continuous, but its derivative diverges. The profile is a classical solution away from this single point, while at the degeneracy it retains quantified H¨ older and Sobolev regularity. We also analyze the vanishing-regularization limit, showing that the shock width scales like √α and that the IGR profiles converge to the entropy-admissible Euler shock. 
+
+Key words. compressible flow · shocks · traveling-waves · information geometric regularization 
+
+MSC codes. 35Q31 · 76L05 · 76N10 
+
+1. Introduction. 1.1. Shock waves in the Euler equations. Nonlinear steepening is a generic feature of the one-dimensional compressible Euler equations causing smooth initial data to lose regularity in finite time. In particular, compressive waves can sharpen into shock discontinuities while the conserved quantities themselves remain bounded, and classical solutions then cease to exist. Across a moving discontinuity, conservation of mass, momentum, and energy yields the Rankine–Hugoniot jump conditions [5,9,16]. These relations are necessary for a discontinuity to define a weak solution, but they do not by themselves select the physically relevant shock. One therefore imposes an admissibility criterion, typically expressed through entropy production; for the compressive shocks considered here, this is reflected in the Lax compressivity condition 
+
+> ∗
+
+Funding: WB was supported by the Director’s Fellowship at Los Alamos National Laboratory, project number 20251151PRD1. BKT was supported by Subcontract C6818 issued under NNSA Contract No. 89233218CNA000001. BSS was supported by the DOE Office of Advanced Scientific Computing Research Applied Mathematics program through Contract No. 89233218CNA000001. FS was supported by the Air Force Office of Scientific Research under award number FA9550-23-1-0668 (Information Geometric Regularization for Simulation and Optimization of Supersonic Flow), the Predictive Science Academic Alliance Program (PSAAP Award DE-NA0004261 - “The Center for Information Geometric Mechanics and Optimization (CIGMO)”) managed by the NNSA (National Nuclear Security Administration) Office of Advanced Simulation, and the Alfred P. Sloan Foundation via a Sloan Research Fellowship in Mathematics. 
+
+> †
+
+Los Alamos National Laboratory, Theoretical Division, Los Alamos, NM 87545 
+
+> ‡
+
+University of Colorado Boulder, Department of Applied Mathematics, Boulder, CO 80309. California State University, Long Beach, Department of Mathematics and Statistics, Long Beach, CA 90840. 
+
+> §
+
+New York University, Courant Institute of Mathematical Sciences, New York, NY 10012     
+
+> E-mail: wbarham@lanl.gov ,brian.tran@csulb.edu ,southworth@lanl.gov ,florian.schaefer@nyu.edu
+
+1arXiv:2607.12693v1 [math.AP] 14 Jul 2026 2 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+[10, 17]. In a shock-attached frame, this is the familiar transonic picture in which the flow passes from a supersonic upstream state to a subsonic downstream state. A complementary point of view replaces the discontinuity by a continuous internal layer connecting the end states and then studies the limit as the regularization van-ishes. When this vanishing-regularization limit produces a weak solution satisfying the entropy inequality, one recovers the admissible Euler shock [6, 10, 12, 20]. Classi-cal parabolic regularizations provide a standard route to such entropy solutions [11], while nondispersive conservative regularizations can yield continuous, weakly singular shock profiles [4, 7, 8, 14]. In this paper, we consider the analogous program for the information geometric regularization (IGR) of the compressible Euler equations [2], which smooths shock fronts without introducing viscous dissipation. 
+
+1.2. Information geometric regularization (IGR) IGR mitigates shock for-mation by modifying the geometry of Lagrangian particle motion so that trajectories are prevented from crossing and instead asymptotically approach one another. In effect, this results in the introduction of an additional nonlocal pressure force, the entropic pressure, which counteracts the concentration mechanism that drives shock formation [2, 3]. IGR foregoes viscous diffusion that smooths the solution over time. Thus, it preserves the fine-scale structures damped by traditional parabolic regulariza-tions [2,15,21]. Instead, it prevents the onset of the most singular transport pathology while still allowing a weaker singularity to persist in the shock profile. Our analysis shows that transonic compressive IGR shocks exhibit exactly this intermediate be-havior: the density profile remains continuous but is generally not C1 at the sonic crossing, and its derivative diverges there; nevertheless, the singularity is mild enough that the shock does not transport a singular measure. 
+
+1.3. Traveling-wave reduction. To analyze IGR shock layers, we seek solu-tions depending only on the shock-frame coordinate ξ = x − ct . The traveling-wave ansatz [6] reduces the PDE to an autonomous system of ODEs for the profile. The conserved fluxes allow us to eliminate the remaining variables, yielding a single second-order equation for the density profile. This equation has degenerate elliptic character, with a quadratic dependence on the profile slope. Its highest-order coefficient degener-ates at the sonic state, where the profile passes from supersonic to subsonic flow. This degeneracy is the main analytic difficulty in the paper. See Figure 1 for a numerically computed IGR shock profile; details of the computation are given in Appendix C. On either side of the sonic crossing, the first-order formulation of the density equation has a Riccati-type structure. This observation motivates the change of vari-ables used in the analysis: once monotonicity of the density has been established on each branch, density can be used as the independent variable, which linearizes the quadratic slope dependence and yields an explicit one-sided solution formula. 
+
+1.4. Paper overview. The goal of this work is to rigorously establish com-pressive shock solutions for the one-dimensional IGR model. In particular, we prove existence, uniqueness modulo translation, and regularity of compressive traveling-wave shock profiles connecting states that satisfy the Rankine–Hugoniot relations [5] and the Lax entropy conditions [10]. We proceed in several steps. We first formulate a weak version of the IGR shock equation and introduce monotone admissibility. We then prove that admissible mono-tone profiles are strictly monotone, which permits a change of variables using density as the independent coordinate. This reduces the profile equation to a linear equation for the squared slope. The resulting one-sided formulas are used to analyze the sonic IGR SHOCKS FOR COMPRESSIBLE EULER 3                              
+
+> −1−0.500.51
+> 1
+> 2
+> 3
+> 4
+> R
+> Density
+> −1−0.500.51
+> 1
+> 2
+> 3
+> U
+> Velocity
+> −1−0.500.51
+> 0
+> 1
+> 2
+> S
+> Entropic pressure
+> −1−0.500.51
+> 0
+> 10
+> 20
+> 30
+> ξ−ξs
+> .
+> R
+> Density derivative
+> −1−0.500.51
+> −20
+> −10
+> 0
+> ξ−ξs
+> .
+> U
+> Velocity derivative
+> −1−0.500.51
+> −10
+> 0
+> 10
+> ξ−ξs
+> .
+> S
+> Entropic-pressure derivative
+
+Fig. 1: Numerically computed IGR shock wave profile for α = 0 .01. degeneracy, prove regularity, and glue the two branches into a global weak profile. In Section 2, we derive the traveling-wave equations for the one-dimensional IGR model, identify the sonic degeneracy, and state the shock admissibility criteria. The analysis applies to the full thermodynamic compressible Euler equations with a general equation of state, subject to mild assumptions discussed in Appendices A and B. In Section 3, we study the reduced phase portrait, prove strict monotonicity and nonsonic regularity of admissible profiles, and derive the one-sided formulas for the squared slope. In Section 4, we establish global existence, regularity, and uniqueness of the IGR traveling-wave solution. Although the density derivative diverges at the sonic state, the profile crosses continuously, and the two one-sided branches glue into a global weak solution with H¨ older regularity at the sonic crossing and global Sobolev regularity. In Section 5, we analyze the small-α regime and show that the width of the internal layer scales like √α. Consequently, the IGR shock profile collapses to a discontinuity as α → 0, and the traveling-wave solutions converge to the entropy-admissible Euler shock determined by the Rankine–Hugoniot relations and the Lax compressive conditions [5, 10]. Finally, in Appendix C, we describe the numerical method used to compute the IGR shock profiles shown in the numerical results. 
+
+2. A traveling-wave equation for IGR shocks. Consider the one-dimensional information geometric regularization (IGR) of the compressible Euler equations [2, 3] 
+
+∂tρ + ( ρu )x = 0 ,(2.1a) 
+
+∂t(ρu ) +  ρu 2 + ˜ p(ρ, e ) + Σ  
+
+> x
+
+= 0 ,(2.1b) 
+
+∂tE +  (E + ˜ p(ρ, e ) + Σ) u 
+
+> x
+
+= 0 ,(2.1c) 
+
+ρ−1Σ − α(ρ−1Σx)x = 2 αu 2 
+
+> x
+
+,(2.1d) 4 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+where ρ, u, E, e are the fluid density, velocity, total energy density, and specific in-ternal energy, respectively. Furthermore, α > 0 is the IGR regularization parameter and Σ denotes the entropic pressure introduced by the IGR closure. Note that we consider the IGR regularization with the entropic pressure additively combined with the physical pressure, as done in [21], although other couplings are possible [1, 19,22]. The physical pressure ˜ p = ˜ p(ρ, e ) is prescribed by an equation of state, with total energy E = ρe + 12 ρu 2, so that e = Eρ − 12 u2. For generality, we leave the precise form of ˜ p(ρ, e ) unspecified, although below we will impose mild assumptions ensuring that the resulting IGR shock profile equation is well-behaved. We seek traveling-wave solutions of the form ρ(x, t ) = R(ξ), u(x, t ) = U (ξ), 
+
+E(x, t ) = E(ξ), Σ( x, t ) = S(ξ) where ξ := x − ct , satisfying the far-field conditions 
+
+R(ξ) → R±, U (ξ) → U±, E(ξ) → E ±, S(ξ) → 0 as ξ → ±∞ .
+
+Remark 2.1. We require R(ξ) > 0, since R represents the mass density. There-fore, we also require that R± > 0.
+
+Substituting ∂t = −c∂ ξ and ∂x = ∂ξ into (2.1) yields 
+
+−c ddξ R + ddξ (RU ) = 0 ,(TW a)
+
+−c ddξ (RU ) + ddξ 
+
+ RU 2 + ˜ p(R, e ) + S = 0 ,(TW b)
+
+−c ddξ E + ddξ 
+
+ (E + ˜ p(R, e ) + S)U  = 0 ,(TW c)
+
+R−1S − α ddξ 
+
+
+
+R−1 ddξ S
+
+
+
+− 2α
+
+ ddξ U
+
+2
+
+= 0 .(TW d)Throughout, we use prime notation for derivatives with respect to R and dot notation for derivatives with respect to ξ: ddR f (R) = f ′(R), ddξ g(ξ) = .g(ξ). Then the chain rule reads ddξ (f ◦ g) = f ′(g).g.
+
+First integrals and the TW energy curve. Integrating (TW a)–(TW c) gives con-stant mass, momentum, and energy fluxes, respectively: (2.3) R(U − c) =: m, mU + ˜ p(R, e ) + S =: q, (E + ˜ p(R, e ) + S)U − cE =: k. 
+
+In particular, (2.4) U = c + mR , S = q − mc − m2
+
+R − ˜p(R, e ).
+
+Using ˜ p(R, e ) + S = q − mU in the energy flux in (2.3) gives ( E + q − mU )U − cE = k.In the genuine shock regime considered here, we assume the corresponding mass flux is nonzero, m̸ = 0. Since E = Re + 12 RU 2 and U = c + m/R , this determines an explicit internal-energy curve e = e(R): (2.5) e(R) = e0 + AR + m2
+
+2R2 , e0 := k − qc + m 
+
+> 2
+
+c2
+
+m , A := mc − q. 
+
+We then define the reduced pressure along the traveling-wave curve by (2.6) p(R) := ˜ p R, e (R).
+
+With this definition, the TW relations (2.3) reduce to the same algebraic structure as in the barotropic setting. Ensuring convexity of p on the density interval traversed IGR SHOCKS FOR COMPRESSIBLE EULER 5by the profile yields restrictions on admissible equations of state; see Appendices A and B. In the remainder of the paper we assume these criteria hold. Hence, along any profile, U (ξ) = c + mR(ξ) and S(ξ) = q − mc − m2 
+
+> R(ξ)
+
+− p(R(ξ)) . These identities motivate the scalar profile equation derived next; the associated Rankine–Hugoniot relations are recorded in Section 2.1.2. 
+
+2.1. The IGR shock equation. Fix fluxes ( c, m, q ) and the reduced pressure 
+
+p(R) induced by the traveling-wave energy curve (2.5) via (2.6). It is convenient to record the entropic pressure along a profile as a function of density: (2.7) S(R) := q − mc − m2
+
+R − p(R),
+
+so that (2.8) S(ξ) = S(R(ξ)) .
+
+Using U (ξ) = c + m/R (ξ) from (2.4) and differentiating (2.8) gives .
+
+U (ξ) =
+
+− mR(ξ)2
+
+## .
+
+R(ξ), .
+
+S(ξ) = S′(R(ξ)) .
+
+R(ξ), and .
+
+U (ξ)2 = m2
+
+> R(ξ)4
+
+## .
+
+R(ξ)2. Substituting these identities into the IGR closure (TW d) yields a scalar second-order ODE for the den-sity profile: (2.9) S(R)
+
+R − α ddξ 
+
+S′(R)
+
+R
+
+## .
+
+R
+
+!
+
+− 2α m2
+
+R4
+
+## .
+
+R2 = 0 .
+
+The traveling-wave problem is to find a heteroclinic solution R(ξ) of (2.9) such that 
+
+R(ξ) → R±, .
+
+R(ξ) → 0 as ξ → ±∞ , and then reconstruct U and S from (2.4) and (2.8). In the full thermodynamic compressible Euler–IGR setting, one may additionally recover e(ξ) = e(R(ξ)) from (2.5) and E(ξ) = R(ξ)e(ξ) + 12 R(ξ)U (ξ)2.
+
+2.1.1. Degeneracy at a sonic density. Note that the coefficient of the second-order term in (2.9) is proportional to S′(R)/R , where S′(R) = m2 
+
+> R2
+
+− p′(R). Then, the profile in (2.9) is degenerate at densities Rs such that S′(Rs) = 0, equivalently, (2.10) S′(Rs) = 0 ⇐⇒ m2
+
+R2
+
+> s
+
+= p′(Rs) ⇐⇒ (U |R=Rs − c)2 = p′(Rs).
+
+We refer to such Rs as sonic densities . We now establish the uniqueness of this sonic density under suitable assumptions on the pressure. 
+
+Lax/transonic sign change. The analysis below is formulated directly in terms of the sign conditions (2.11) m2
+
+R2
+
+> −
+
+− p′(R−) > 0, m2
+
+R2+
+
+− p′(R+) < 0.
+
+For the compressive 1-shock branch considered here, the reduced barotropic Euler characteristic speed is λ1(R, U ) = U − pp′(R), and the 1-shock Lax inequalities [10] read λ1(R−, U −) > c > λ 1(R+, U +). Since U± − c = m/R ± and the left inequality implies m > 0, these inequalities are equivalent to (2.11). In particular, by continuity of p′ there exists at least one sonic density Rs ∈ (R−, R +) satisfying (2.10). In Appendices A and B, we provide 6 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+mild assumptions on the physical pressure ˜ p(ρ, e ) to ensure that the reduced pressure is convex, p′′ (R) ≥ 0 for all R > 0. Assuming this is the case, one has (2.12) S′′ (R) = ddR 
+
+ m2
+
+R2 − p′(R)
+
+
+
+= − 2m2
+
+R3 − p′′ (R) < 0,
+
+so S′ is strictly decreasing on (0 , ∞) and the sonic density in (2.10) is unique. Thus, 
+
+S is strictly concave, and Rs is the unique global maximizer of S.The sonic density plays a central role in the structure of IGR shock profiles. As proved later in Section 4, the density derivative .
+
+R diverges at the sonic state, but this singularity is sufficiently mild that the profile remains H¨ older continuous there. This will allow us to quantify the regularity of the profile across the IGR shock despite the loss of classical smoothness at the sonic crossing. Thus, the inclusion of the entropic pressure in the IGR model yields enhanced regularity relative to a purely discontinuous shock description, even though the profile must still be interpreted in the weak sense because classical differentiability fails at a single point. 
+
+2.1.2. IGR shock admissibility criteria. Taking ξ → ±∞ in the integrated relations (2.3) and using S(±∞ ) = 0 yields the Rankine–Hugoniot conditions [5] (2.13) R±(U± − c) = m, mU ± + p(R±) = q, 
+
+together with the energy-flux relation fixing k (equivalently, fixing the TW energy curve (2.5)). In particular, if ( R±, U ±) satisfy (2.13), then the wave speed and the mass and momentum fluxes are uniquely determined by 
+
+c = R+U+ − R−U−
+
+R+ − R−
+
+, m = R−(U− − c) = R+(U+ − c),(2.14a) 
+
+q = mU − + p(R−) = mU + + p(R+),(2.14b) and the far-field conditions S(±∞ ) = 0 are equivalently S(R±) = 0. We focus on compressive (shock-like) connections and label the end states so that R− < R +. Equivalently, with m = R±(U± − c) > 0, this ordering is the same as U− > U +. For the compressive branch studied here, we impose monotone increasing density profiles as the admissible class (see [12] for a detailed discussion of monotonicity for shocks). This is formalized in Section 3.2, where strict monotonicity is then proved for nonconstant admissible profiles. 
+
+2.2. Standing assumptions and main theorem. 
+
+Assumption 2.2. Unless stated otherwise, we assume throughout: 
+
+• R± > 0 with R−̸ = R+, and (R±, U ±) satisfy the Rankine–Hugoniot relations (2.13) with S(±∞ ) = 0 (so that c, m, q are given by (2.14), and k is fixed by the energy-flux condition); 
+
+• compressive ordering: R− < R +;
+
+• the end states satisfy the 1-shock Lax inequalities for the reduced barotropic Euler subsystem, U− − pp′(R−) > c > U + − pp′(R+), which is equivalent to the transonic sign change (2.11) under the orientation m > 0 implied by the left Lax inequality; 
+
+• the reduced pressure p ∈ C2((0 , ∞)) satisfies one of the convexity admissibility criteria in Appendix A or Appendix B (in particular p′′ (R) ≥ 0 for R > 0), and p′′ is locally Lipschitz in a neighborhood of the unique sonic density Rs;equivalently, p ∈ C2,1 near Rs.IGR SHOCKS FOR COMPRESSIBLE EULER 7Note that these assumptions imply m̸ = 0, so that we explicitly disqualify constant profiles. Admissible profiles are selected by a monotonicity principle introduced in Section 3.2; in the present setting this selection implies strict monotonicity. We now state a summary version of the main result. 
+
+Theorem 2.3 (Existence/uniqueness/regularity of IGR shock profiles). Under the standing assumptions above, there exists a unique (modulo translation) admis-sible global transonic traveling-wave profile R connecting R− to R+. This profile is strictly increasing, continuous across the sonic crossing, and twice continuously differ-entiable away from the crossing. It uniquely determines U , e, S, and E, and together 
+
+(R, U, E, S ) solve the traveling-wave system (TW a)–(TW d) globally in the weak sense, with e recovered from the TW energy curve (2.5). 
+
+The proof, including the H¨ older, Sobolev, tail-decay, and away-from-degeneracy higher-regularity statements, is given in Section 4, especially Theorem 4.5, Theo-rem 4.9, and Theorem 4.10. 
+
+3. Structure of the IGR shock profile. Before establishing global exis-tence and regularity in Section 4, we record the basic phase-portrait structure of the traveling-wave equation. We identify the nonsonic equilibria associated with the end states, prove strict monotonicity and nonsonic regularity for admissible weak profiles, and then reduce the profile equation to a linear first-order equation for the squared slope Z = .
+
+R 2. This yields canonical one-sided solution formulas and the reconstruction of one-sided profile branches. 
+
+3.1. Equilibria and asymptotic states. We first build intuition about the solution profile of the IGR shock equation by looking at its phase-portrait character. We find that the asymptotic values of the density profile are hyperbolic fixed points, and that we can formally interpret the traveling-wave profile as a heteroclinic orbit connecting these hyperbolic saddle points. 
+
+Planar form away from sonic states. Expanding the derivative in (2.9) gives (3.1) S(R)
+
+R − α S′(R)
+
+R
+
+## .. 
+
+R − α
+
+ S′′ (R)
+
+R − S′(R)
+
+R2 + 2m2
+
+R4
+
+ .
+
+R2 = 0 .
+
+On intervals where S′(R)̸ = 0, i.e., R̸ = Rs, this is equivalent to (3.2) 
+
+
+
+## .
+
+R = V, 
+
+## .
+
+V = S(R)
+
+α S′(R) −
+
+ S′′ (R)
+
+S′(R) − 1
+
+R + 2m2
+
+R3S′(R)
+
+
+
+V 2.
+
+Lemma 3.1 (Nonsonic equilibria and linearization). Assume R∗ > 0 satisfies 
+
+S(R∗) = 0 and S′(R∗)̸ = 0 . Then (R∗, 0) is an equilibrium of (3.2), and the Jacobian at this point is 
+
+J(R∗, 0) = 
+
+ 0 1 
+
+> 1
+> α
+
+0
+
+
+
+,
+
+with eigenvalues λ± = ±α−1/2. In particular, (R∗, 0) is a hyperbolic saddle point (see, e.g., [13, 17]). Proof. At V = 0, the second equation in (3.2) reduces to .
+
+V = S(R)/(αS′(R)), so equilibria satisfy V = 0 and S(R) = 0. Linearizing at ( R∗, 0) gives 
+
+∂R( .
+
+R) = 0 , ∂V ( .
+
+R) = 1 , ∂V ( .
+
+V )|V =0 = 0 , ∂R( .
+
+V )|V =0 = 1
+
+αddR 
+
+ SS′
+
+
+
+> R=R∗
+
+.8 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+Since S(R∗) = 0 and S′(R∗)̸ = 0, ddR 
+
+  SS′
+
+ 
+
+> R=R∗
+
+= (S′)2−SS ′′ 
+
+> (S′)2
+> R=R∗
+
+= 1. Hence the stated Jacobian and eigenvalues follow. 
+
+Remark 3.2 (Asymptotic states). Because S(±∞ ) = 0 and S(ξ) = S(R(ξ)) , one has S(R±) = 0 , implying (R±, 0) are equilibria of (3.2). Under (2.10) and (2.11), 
+
+S′(R±)̸ = 0 , so (R±, 0) are nonsonic hyperbolic saddle points of (3.2). Thus, at the level of the nonsonic phase portrait, a sufficiently regular traveling-wave shock should be viewed as a heteroclinic connection between the saddle equilibria (R−, 0) 
+
+and (R+, 0) .
+
+3.2. Monotonicity of the IGR shock profile. We now formulate weak so-lutions of the IGR shock profile equation and impose admissibility by restricting to the monotone branch connecting the two end states. This choice is motivated by the heteroclinic structure of the shock profiles, is consistent with the sharp-shock limit 
+
+α → 0, and excludes oscillatory boundary-layer behavior. We then show that every nonconstant admissible weak profile is strictly monotone and restricts to a classical solution away from the sonic density. 
+
+Definition 3.3 (Weak IGR shock profile). A weak IGR shock profile is a func-tion R : R → [R−, R +] such that: (i) R ∈ W 1,2loc (R);(ii) R connects the prescribed end states, i.e., lim ξ→−∞ R(ξ) = R− and 
+
+lim ξ→+∞ R(ξ) = R+.(iii) R satisfies the IGR profile equation (2.9) in the sense of distributions: for every φ ∈ C∞ 
+
+> c
+
+(R),
+
+(3.3) 
+
+Z
+
+> R
+
+α S′(R)
+
+R
+
+## .
+
+R .φ dξ +
+
+Z
+
+> R
+
+ S(R)
+
+R − 2α m2
+
+R4
+
+## .
+
+R2
+
+
+
+φ dξ = 0 .
+
+Definition 3.4 (Admissible monotone profile class). The admissible monotone profile class M consists of all weak IGR shock profiles R : R → [R−, R +] that are nondecreasing on R.
+
+Before proving further results about the IGR shock profile, we first record the root and concavity structure of S.
+
+Lemma 3.5 (Root structure of S). Under the standing assumptions (Assump-tion 2.2 ), one has: 
+
+(i) S′′ (R) < 0 for all R > 0. In particular, there is a unique Rs ∈ (R−, R +)
+
+such that S′(Rs) = 0 , S′(R) > 0 for R ∈ [R−, R s), and S′(R) < 0 for 
+
+R ∈ (Rs, R +].
+
+(ii) S(R) > 0 for all R ∈ (R−, R +).
+
+(iii) The only zeros of S in (0 , ∞) are R− and R+.Proof. Recall that 
+
+S(R) = q −mc − m2
+
+R −p(R), S′(R) = m2
+
+R2 −p′(R) , and S′′ (R) = − 2m2
+
+R3 −p′′ (R) .
+
+By (2.13) and since S(±∞ ) = 0, we have S(R±) = 0. Using m̸ = 0 and p′′ (R) ≥ 0from Assumption 2.2, we obtain S′′ (R) < 0 for all R > 0. Hence, S′ is strictly decreasing on (0 , ∞). Since Section 2.1.1 already established the transonic sign change (2.11), there is a unique Rs ∈ (R−, R +) such that S′(Rs) = 0, with 
+
+S′(R) > 0 for R ∈ (R−, R s), S′(R) < 0 for R ∈ (Rs, R +).IGR SHOCKS FOR COMPRESSIBLE EULER 9Since S′ is continuous and positive on ( R−, R s), we also have S′(R−) ≥ 0. If S′(R−) = 0, then strict decrease of S′ implies S′(R) < 0 for every R > R −, contradicting positivity on ( R−, R s). Hence, S′(R−) > 0. An analogous argument gives S′(R+) < 0. This proves (i). Since S is strictly concave and S(R±) = 0, it follows that S(R) > 0 for all 
+
+R ∈ (R−, R +), proving (ii). Finally, a strictly concave function has at most two zeros, so R− and R+ are the only zeros of S in (0 , ∞), proving (iii). The weak formulation in Definition 3.3 naturally singles out the following flux-like slope variable, W := S′(R)
+
+> R
+
+## .
+
+R. This is precisely the quantity appearing under the derivative in (2.9). On any open interval where S′(R)̸ = 0, the weak profile equation can be written as the first-order system (3.4) 
+
+
+
+## .
+
+R = R
+
+S′(R) W, 
+
+## .
+
+W = S(R)
+
+αR − 2m2
+
+R2S′(R)2 W 2.
+
+Initially, this system is understood in the sense of distributions; after the local reg-ularity argument below, the system holds classically on nonsonic intervals. Under Assumption 2.2, the vector field in (3.4) is C1 on compact subsets of the nonsonic region, where S′ is bounded away from zero. Hence the corresponding classical initial-value problem enjoys local uniqueness on nonsonic intervals. 
+
+Theorem 3.6 (Strict monotonicity and nonsonic regularity). Let R ∈ M be a nonconstant admissible weak solution of the IGR shock profile equation. Then the following holds: (i) R is strictly increasing on R; in particular, R(ξ) ∈ (R−, R +) for all ξ ∈ R.(ii) Let Ω := {ξ ∈ R : R(ξ)̸ = Rs}. Then R restricts to a C2 function on Ω, and 
+
+## .
+
+R(ξ) > 0 for all ξ ∈ Ω.Proof. Step 1: local regularity on nonsonic neighborhoods. A bootstrapping ar-gument allows us to establish regularity on open intervals away from the sonic point. Throughout the proof we work with the continuous or absolutely continuous represen-tatives supplied by the one-dimensional Sobolev embedding theorem. In particular, on bounded intervals, functions in W 1,2 have continuous representatives, and functions in W 1,1 have absolutely continuous representatives. Set a(ξ) := S′(R(ξ))  
+
+> R(ξ)
+
+, and let B ⊂ R be a bounded open interval on which 
+
+|S ′(R(ξ)) | ≥ c0 > 0. Since R ∈ W 1,2(B) and B is bounded, R has a continuous representative on B. Also, because R is nondecreasing with lim ξ→−∞ R(ξ) = R− and lim ξ→+∞ R(ξ) = R+, we have R(ξ) ∈ [R−, R +] ⊂ (0 , ∞) for all ξ ∈ R. Hence, R(B) is contained in a compact subset of (0 , ∞). Since |S ′(R)| ≥ c0 on B, both a = S′(R)/R 
+
+and a−1 are bounded on B.Because a ∈ L∞(B) and .
+
+R ∈ L2(B), we have W = a .
+
+R ∈ L2(B) ⊂ L1(B). Restricting (3.3) to test functions φ ∈ C∞ 
+
+> c
+
+(B) gives 
+
+Z
+
+> B
+
+αW .φ dξ +
+
+Z
+
+> B
+
+G φ dξ = 0 , where G := S(R)
+
+R − 2α m2
+
+R4
+
+## .
+
+R 2.
+
+Since R stays in a compact subset of (0 , ∞) on B and .
+
+R ∈ L2(B), we have G ∈ L1(B). Therefore, the weak derivative of W is given by .
+
+W = G/α , so that W ∈ W 1,1(B). Thus W has an absolutely continuous representative on B, and in particular W ∈10 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+C0(B). Since a−1 is continuous on B, it follows that .
+
+R = a−1W ∈ C0(B), and hence 
+
+R ∈ C1(B). Now that R ∈ C1(B), the function G is continuous on B. Since W is absolutely continuous and its weak derivative is .
+
+W = G/α ∈ C0(B), we have W ∈ C1(B). Moreover, because R ∈ C1(B) and |S ′(R)| ≥ c0 on B, the coefficient a−1 = R/ S′(R)belongs to C1(B). Thus .
+
+R = a−1W ∈ C1(B), so that R ∈ C2(B). Consequently, the identities in (3.4) hold pointwise on B.
+
+Step 2: end states are not reached at finite ξ. Suppose R(ξ0) = R− for some finite 
+
+ξ0. Since R is nondecreasing and lim ξ→−∞ R(ξ) = R−, we have R ≡ R− on ( −∞ , ξ 0], hence .
+
+R = 0 a.e. there. Defining ξ∗ := sup {ξ : R(ξ) = R−}, we have ξ∗ < ∞ since 
+
+R is nonconstant and lim ξ→+∞ R(ξ) = R+ > R −. Also, R(ξ∗) = R− by continuity. Choosing a small nonsonic neighborhood Bξ∗ ∋ ξ∗ and applying Step 1 again, we obtain R ∈ C2(Bξ∗ ) and W ∈ C1(Bξ∗ ), so ( R, W ) solves (3.4) classically on Bξ∗ .Since W ∈ C0(Bξ∗ ) and W = 0 a.e. on Bξ∗ ∩ (−∞ , ξ ∗], it follows that W = 0 on Bξ∗ ∩ (−∞ , ξ ∗]. In particular, W (ξ∗) = 0. Therefore, ( R(ξ∗), W (ξ∗)) = ( R−, 0). Since S(R−) = 0, the right-hand side of (3.4) vanishes at ( R−, 0), so ( R−, 0) defines a constant solution of the first-order system. On the nonsonic neighborhood Bξ∗ , the right-hand side of (3.4) is C1, so local uniqueness implies R ≡ R− in a neighborhood of 
+
+ξ∗, contradicting the definition of ξ∗ as the rightmost contact point. Hence R(ξ) > R −
+
+for all ξ ∈ R. The argument for R+ is symmetric. Therefore R(ξ) ∈ (R−, R +) for all 
+
+ξ ∈ R.
+
+Step 3: strict monotonicity. If R(ξ1) = R(ξ2) for some ξ1 < ξ 2, monotonicity implies R ≡ R0 on [ ξ1, ξ 2]. Testing (3.3) with φ ∈ C∞ 
+
+> c
+
+(( ξ1, ξ 2)) gives S(R0) = 0. By Lemma 3.5(iii), R0 ∈ { R−, R +}, contradicting Step 2. Hence R is strictly increasing, proving (i). 
+
+Step 4: nonsonic regularity. Let Ω := {ξ ∈ R : R(ξ)̸ = Rs}. Fix ξ0 ∈ Ω. Then on some neighborhood Bξ0 ∋ ξ0 one has |S ′(R(ξ)) | ≥ c0 > 0. By Step 1, it follows that 
+
+R ∈ C2(Bξ0 ). Since ξ0 was arbitrary, R is C2 on Ω. 
+
+Step 5: positivity of .
+
+R on Ω. Fix ξ0 ∈ Ω and choose Bξ0 as in Step 4. Since R is nondecreasing and R ∈ C2(Bξ0 ), we have .
+
+R ≥ 0 on Bξ0 . Suppose .
+
+R(ξ∗) = 0 for some 
+
+ξ∗ ∈ Bξ0 . Then ξ∗ is a local minimum of .
+
+R, and hence .. 
+
+R(ξ∗) = 0. Thus W (ξ∗) = 0 and .
+
+W (ξ∗) = 0. But evaluating (3.4) at ξ∗ gives 
+
+## .
+
+W (ξ∗) = S(R(ξ∗)) 
+
+αR (ξ∗) > 0,
+
+because R(ξ∗) ∈ (R−, R +) and Lemma 3.5(ii) applies. This contradiction proves 
+
+## .
+
+R > 0 on Bξ0 . Since ξ0 was arbitrary, .
+
+R > 0 on Ω. This proves (ii). 
+
+Remark 3.7 (Higher regularity away from the sonic point). Under Assump-tion 2.2 , the nonsonic regularity obtained above is C2. If, on a given nonsonic density interval, the reduced pressure p has additional regularity, then one obtains a corresponding higher regularity for R on the associated ξ-interval. 
+
+Remark 3.8 (Unique sonic crossing). By continuity and strict monotonicity, every nonconstant R ∈ M crosses the unique sonic density Rs at exactly one point 
+
+ξs ∈ R, characterized by R(ξs) = Rs.
+
+Lemma 3.9 (Flattening of the density tails). Let R ∈ M be a nonconstant admissible weak solution of the IGR shock profile equation. Then 
+
+lim 
+
+> ξ→−∞
+
+## .
+
+R(ξ) = 0 = lim 
+
+> ξ→+∞
+
+## .
+
+R(ξ).IGR SHOCKS FOR COMPRESSIBLE EULER 11 
+
+Proof. By Theorem 3.6 and Remark 3.8, the profile is C2 on each tail ( −∞ , ξ s)and ( ξs, ∞), with .
+
+R > 0 there. Hence the first-order system (3.4) holds classically on both tails. We write it as 
+
+## .
+
+R = R
+
+S′(R) W, .
+
+W = A(R) − B(R)W 2,
+
+where A(R) := S(R) 
+
+> αR
+
+and B(R) := 2m2 
+
+> R2S′(R)2
+
+. By Lemma 3.5, S(R±) = 0 and S′(R±)̸ =0. Therefore 
+
+A(R(ξ)) → 0 as ξ → ±∞ ,
+
+while B(R(ξ)) remains bounded below by a positive constant near each endpoint. We first prove the claim as ξ → −∞ . On the left tail, R(ξ) ∈ (R−, R s), so 
+
+S′(R) > 0. Since .
+
+R > 0, it follows that W > 0 on ( −∞ , ξ s). Fix ε > 0. Choosing 
+
+ξε < ξ s sufficiently negative, there exists bε > 0 such that, for all ξ ≤ ξε,0 ≤ A(R(ξ)) ≤ bε
+
+2 ε2, B(R(ξ)) ≥ bε.
+
+Suppose, for contradiction, that W (ξ0) > ε for some ξ0 ≤ ξε. Define Y (τ ) := W (ξ0−τ )where τ ≥ 0. Since ξ0 − τ ≤ ξε < ξ s for every τ ≥ 0, the trajectory remains on the left nonsonic tail, and the bounds on A and B hold for all τ ≥ 0. Let c := bε/2. As long as Y (τ ) ≥ ε, we have 
+
+Y ′(τ ) = − .
+
+W (ξ0 − τ ) = −A(R(ξ0 − τ )) + B(R(ξ0 − τ )) Y (τ )2 ≥ c Y (τ )2.
+
+Since Y (0) > ε , this inequality prevents Y from crossing below ε: indeed, while Y ≥ ε,one has Y ′ > 0. Hence the inequality holds for all τ ≥ 0 for which the solution exists. Therefore 
+
+ddτ 
+
+1
+
+Y (τ ) = − Y ′(τ )
+
+Y (τ )2 ≤ − c. 
+
+Integrating gives 1
+
+Y (τ ) ≤ 1
+
+Y (0) − cτ. 
+
+For τ > 1/(cY (0)), the right-hand side is negative, which is impossible because Y (τ ) >
+
+0. This contradicts the fact that Y (τ ) = W (ξ0 −τ ) is defined and finite for every finite 
+
+τ ≥ 0 on the left nonsonic tail. Therefore 0 < W (ξ) ≤ ε for all sufficiently negative ξ.Since ε > 0 was arbitrary, W (ξ) → 0 as ξ → −∞ . The coefficient R/ S′(R) remains bounded near R−, and therefore 
+
+## .
+
+R(ξ) = R(ξ)
+
+S′(R(ξ)) W (ξ) → 0 as ξ → −∞ .
+
+The proof as ξ → +∞ is analogous. On the right tail, S′(R) < 0, so W < 0; applying the same argument to −W forward in ξ shows that W (ξ) → 0 as ξ → +∞.Since R/ S′(R) remains bounded near R+, it follows that .
+
+R(ξ) → 0 as ξ → +∞.
+
+3.3. First-order IGR shock equation and one-sided reconstruction. 
+
+Having established strict monotonicity, the density itself can be used as the inde-pendent variable on each nonsonic branch. 12 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+Proposition 3.10 (Reduction to a linear first-order equation). Let R ∈ M be nonconstant, and let ξs be the unique sonic crossing from Remark 3.8 . By Theo-rem 3.6 , the restrictions of R to (−∞ , ξ s) and (ξs, ∞) are C2 and strictly increasing, with images (R−, R s) and (Rs, R +), respectively. Define 
+
+Z(R) := .
+
+R(ξ)2, R = R(ξ).
+
+This is well-defined on each of the density intervals (R−, R s) and (Rs, R +). Then, on each interval, 
+
+(3.5) Z′ + P (R) Z = Q(R),
+
+where 
+
+(3.6) 
+
+P (R) := 2 
+
+ S′′ (R)
+
+S′(R) − 1
+
+R + 2m2
+
+R3S′(R)
+
+
+
+= − 2
+
+R − 2p′′ (R)
+
+S′(R) , Q(R) := 2
+
+α
+
+S(R)
+
+S′(R) .
+
+Moreover, Z extends continuously to the outer endpoints and satisfies 
+
+(3.7) Z(R−) = 0 , Z(R+) = 0 .
+
+Finally, Z(R) > 0 for R ∈ (R−, R +) \ { Rs}.Proof. On each of the intervals ( −∞ , ξ s) and ( ξs, ∞), Theorem 3.6 gives R ∈ C2
+
+and .
+
+R > 0. Hence R may be used as the independent variable there. Differentiating the definition of Z and the chain rule yields 
+
+## .. 
+
+R = d .
+
+RdR 
+
+## .
+
+R = 12 Z′(R).
+
+Substituting this identity into (3.1) and dividing by α S′(R)/R gives (3.5) and (3.6). The endpoint conditions follow from Lemma 3.9. Indeed, as ξ → ±∞ we have R(ξ) → R± by the definition of a weak IGR shock profile, while Lemma 3.9 gives .
+
+R(ξ) → 0. Therefore the corresponding one-sided squared-slope functions ex-tend continuously to the outer endpoints with Z(R−) = 0 and Z(R+) = 0. Fi-nally, Theorem 3.6 gives .
+
+R > 0 on ( −∞ , ξ s) ∪ (ξs, ∞), and hence, Z(R) > 0 for 
+
+R ∈ (R−, R +) \ { Rs}.
+
+Lemma 3.11 (Canonical one-sided solution formulas). Let P and Q be the co-efficients in (3.6). Fix reference points R∗− ∈ (R−, R s) and R∗ 
+
+> +
+
+∈ (Rs, R +), and define 
+
+μ−(R) := exp 
+
+Z RR∗−
+
+P (s) ds 
+
+!
+
+, R ∈ (R−, R s),
+
+and 
+
+μ+(R) := exp 
+
+Z RR∗
+
+> +
+
+P (s) ds 
+
+!
+
+, R ∈ (Rs, R +).
+
+Then there is a unique solution 
+
+Z− ∈ C1(( R−, R s)) ∩ C0([ R−, R s)) 
+
+of (3.5) on (R−, R s) with Z−(R−) = 0 , where the endpoint value is understood by continuous extension. It is given by 
+
+(3.8) Z−(R) = μ−(R)−1
+
+Z RR−
+
+μ−(s)Q(s) ds, R ∈ (R−, R s).IGR SHOCKS FOR COMPRESSIBLE EULER 13 
+
+Similarly, there is a unique solution 
+
+Z+ ∈ C1(( Rs, R +)) ∩ C0(( Rs, R +]) 
+
+of (3.5) on (Rs, R +) with Z+(R+) = 0 , given by 
+
+(3.9) Z+(R) = μ+(R)−1
+
+Z RR+
+
+μ+(s)Q(s) ds, R ∈ (Rs, R +).
+
+Both formulas are independent of the choice of reference points R∗− and R∗
+
+> +
+
+. Moreover, 
+
+Z−(R) > 0 for R ∈ (R−, R s), Z+(R) > 0 for R ∈ (Rs, R +).
+
+Proof. Since S′(R−)̸ = 0 and S′(R+)̸ = 0, the coefficients P and Q extend con-tinuously to the corresponding outer endpoints. Thus μ− and μ+ also admit positive continuous extensions to those endpoints, and the integrals in (3.8) and (3.9) are well defined. Multiplying the equation (3.5) by the integrating factor μ± gives ( μ±Z)′ = μ±Q.Integrating from R− to R on the left branch, and from R+ to R on the right branch, yields (3.8) and (3.9). Differentiating these formulas shows that they solve the equa-tion on their respective open intervals, and the continuity of P , Q, and μ± at the outer endpoints shows that the prescribed endpoint values are attained by continuous extension. For uniqueness, let eZ be another solution on the left branch with eZ(R−) = 0 by continuous extension. Then the difference Y := Z− − eZ satisfies ( μ−Y )′ = 0. on (R−, R s). Hence μ−Y is constant there. Taking the limit R ↓ R− gives this constant equal to zero, so Y ≡ 0. The right branch is identical. It remains to prove positivity. By Lemma 3.5, S(R) > 0 on ( R−, R +), while 
+
+S′(R) > 0 on ( R−, R s), S′(R) < 0 on ( Rs, R +).
+
+Therefore Q(R) is positive on ( R−, R s) and negative on ( Rs, R +). Since μ± > 0, the formula (3.8) immediately gives Z−(R) > 0 for R ∈ (R−, R s). On the right branch, for R ∈ (Rs, R +), 
+
+Z RR+
+
+μ+(s)Q(s) ds = −
+
+Z R+
+
+> R
+
+μ+(s)Q(s) ds > 0,
+
+because μ+Q < 0 on ( Rs, R +). Hence (3.9) gives Z+(R) > 0 for R ∈ (Rs, R +). Finally, changing the reference point in the definition of μ± only multiplies μ±
+
+by a positive constant, which cancels from the formulas for Z±.
+
+Corollary 3.12 (Identification of admissible branches with Z±). Let R ∈ M 
+
+be nonconstant, and let Z(R) = .
+
+R(ξ)2 be the function from Proposition 3.10 . Then 
+
+Z(R) = Z−(R) on (R−, R s), Z(R) = Z+(R) on (Rs, R +),
+
+where Z± are the canonical one-sided solutions from Lemma 3.11 . In particular, the squared slope of every admissible nonconstant profile is uniquely determined on each nonsonic branch. The corresponding profile branches are then recovered by quadrature, up to translation. Proof. By Proposition 3.10, the function Z solves (3.5) on ( R−, R s) and ( Rs, R +)with Z(R−) = 0 and Z(R+) = 0. Lemma 3.11 gives uniqueness of the corresponding one-sided solutions. Therefore Z = Z− on ( R−, R s) and Z = Z+ on ( Rs, R +). 14 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+Lemma 3.13 (Outer-endpoint expansion of the one-sided solutions). The one-sided solutions Z− and Z+ from Lemma 3.11 satisfy 
+
+Z−(R) = 1
+
+α (R − R−)2 + O |R − R−|3 (R ↓ R−),
+
+and 
+
+Z+(R) = 1
+
+α (R − R+)2 + O |R − R+|3 (R ↑ R+).
+
+Moreover, for any fixed R− 
+
+> 0
+
+∈ (R−, R s) and R+0 ∈ (Rs, R +),
+
+Z R−
+
+> 0
+> R
+
+dρ 
+
+pZ−(ρ) = √α log 1
+
+R − R−
+
++ O(1) (R ↓ R−),
+
+and Z RR+0
+
+dρ 
+
+pZ+(ρ) = √α log 1
+
+R+ − R + O(1) (R ↑ R+).
+
+Proof. We prove the statement for Z−; the proof for Z+ is analogous, with the orientation of the endpoint integral reversed. Recall from Lemma 3.11 that 
+
+Z−(R) = μ−(R)−1
+
+Z RR−
+
+μ−(s)Q(s) ds, 
+
+where 
+
+μ−(R) := exp 
+
+Z RR∗−
+
+P (s) ds 
+
+!
+
+for an arbitrary R∗− ∈ (R−, R s). Since S′(R−)̸ = 0 (see Lemma 3.5), the coefficient P is continuous near R−.Hence μ− extends as a C1 function to R−, and 
+
+μ−(R) = μ−(R−) + O(R − R−) (R ↓ R−).
+
+Moreover, 
+
+μ−(R−) = exp lim 
+
+> R↓R−
+
+Z RR∗−
+
+P (s) ds 
+
+!
+
+> 0,
+
+because the integral has a finite limit. Since S(R−) = 0, S′(R−)̸ = 0, and S is C2 near R−, Taylor’s theorem gives 
+
+S(R) = S′(R−)( R−R−)+ O (R − R−)2 and S′(R) = S′(R−)+ O(R−R−). Therefore 
+
+S(R)
+
+S′(R) = ( R − R−) + O (R − R−)2 ,
+
+and hence 
+
+Q(R) = 2
+
+α (R − R−) + O (R − R−)2 (R ↓ R−).
+
+Combining this with the expansion of μ− yields 
+
+μ−(R)Q(R) = 2μ−(R−)
+
+α (R − R−) + O (R − R−)2 .IGR SHOCKS FOR COMPRESSIBLE EULER 15 Thus Z RR−
+
+μ−(s)Q(s) ds = μ−(R−)
+
+α (R − R−)2 + O (R − R−)3 .
+
+Dividing by 
+
+μ−(R) = μ−(R−) + O(R − R−)gives 
+
+Z−(R) = 1
+
+α (R − R−)2 + O (R − R−)3 .
+
+Since Z− > 0 on ( R−, R s), this implies 
+
+pZ−(R) = R − R−
+
+√α
+
+ 1 + O(R − R−),
+
+and therefore 1
+
+pZ−(R) =
+
+√αR − R−
+
++ O(1) (R ↓ R−).
+
+Splitting the integral at a fixed point sufficiently close to R− and absorbing the re-maining bounded contribution into O(1) gives 
+
+Z R−
+
+> 0
+> R
+
+dρ 
+
+pZ−(ρ) = √α log 1
+
+R − R−
+
++ O(1) .
+
+The proof at R+ is the same, using the formula for Z+ and the variable R+ − R near the endpoint. 
+
+Proposition 3.14 (One-sided reconstruction of the canonical branches). Fix 
+
+bR− ∈ (R−, R s) and bR+ ∈ (Rs, R +). Define 
+
+Ξ−(R) := 
+
+Z R
+
+> bR−
+
+d eR
+
+q
+
+Z−( eR)
+
+, R ∈ (R−, R s),
+
+and 
+
+Ξ+(R) := 
+
+Z R
+
+> bR+
+
+d eR
+
+q
+
+Z+( eR)
+
+, R ∈ (Rs, R +).
+
+Then Ξ± ∈ C1, with 
+
+Ξ′±(R) = 1
+
+pZ±(R) > 0.
+
+Thus each Ξ± is strictly increasing and invertible onto an open interval. Their in-verses define strictly increasing one-sided profile branches 
+
+Rℓ(ξ) := Ξ −1 
+
+> −
+
+(ξ), ξ ∈ Ξ−(( R−, R s)) ,
+
+and 
+
+Rr (ξ) := Ξ −1+ (ξ), ξ ∈ Ξ+(( Rs, R +)) ,
+
+satisfying .
+
+Rℓ(ξ) = 
+
+q
+
+Z−(Rℓ(ξ)) , .
+
+Rr (ξ) = pZ+(Rr (ξ)) .
+
+Moreover, 
+
+lim 
+
+> R→R+
+> −
+
+Ξ−(R) = −∞ , lim 
+
+> R→R−
+> +
+
+Ξ+(R) = + ∞.16 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+Proof. We give the argument for a generic branch. Let I = ( R−, R s) with Z =
+
+Z−, or I = ( Rs, R +) with Z = Z+. By Lemma 3.11, Z ∈ C1(I) and Z > 0 on I.Hence the corresponding map Ξ is C1 and satisfies Ξ′(R) = 1
+
+pZ(R) > 0.
+
+Therefore Ξ is strictly increasing and maps I bijectively onto the open interval Ξ( I). By the inverse function theorem, Ξ −1 is C1 on Ξ( I). If R(ξ) := Ξ −1(ξ), then differ-entiating Ξ( R(ξ)) = ξ gives .
+
+R(ξ) = pZ(R(ξ)). The endpoint limits follow from the logarithmic estimates in Lemma 3.13. On the left branch, Ξ−(R) = −
+
+Z bR−
+
+> R
+
+dρ 
+
+pZ−(ρ) → −∞ (R ↓ R−),
+
+while on the right branch, Ξ+(R) = 
+
+Z R
+
+> bR+
+
+dρ 
+
+pZ+(ρ) → +∞ (R ↑ R+).
+
+Applied to the canonical one-sided solutions Z− and Z+ from Lemma 3.11, Propo-sition 3.14 produces the left and right profile branches away from the sonic density. The remaining task is to analyze the behavior of Z± as R → R± 
+
+> s
+
+, reconstruct the branches up to the sonic point, and glue them into a global weak profile; this is carried out in Section 4. 
+
+4. Global existence, uniqueness, and regularity. Section 3 constructed the canonical one-sided solutions Z− and Z+, representing the squared slope of the density profile, together with the corresponding one-sided reconstruction maps away from the sonic density. The remainder of the argument is organized in three steps. First, we quantify the singular behavior of Z± as R → R± 
+
+> s
+
+. Second, we reconstruct the profile on each side up to the sonic point and glue the two branches into a global weak density profile. Third, we show that the one-sided representation also yields uniqueness up to translation. Finally, we compile these results to extract the resulting regularity and decay properties and reconstruct the full traveling-wave fields. The sonic asymptotics are governed by the exponent (4.1) as := − 2p′′ (Rs)
+
+S′′ (Rs) ≥ 0.
+
+Recall, Rs ∈ (R−, R +) is the unique sonic density, characterized by S′(Rs) = 0. Recalling the definition of the coefficient P (3.6), this exponent arises from the leading-order singular part of P near Rs. By the standing convexity hypothesis p′′ ≥ 0, the nonzero mass flux condition m̸ = 0, and (2.12), one has S′′ (Rs) = − 2m2
+
+> R3
+> s
+
+−p′′ (Rs) < 0, and hence 0 ≤ as < 2. 
+
+4.1. Asymptotics near the sonic density. 
+
+Lemma 4.1 (Sonic asymptotics of Z). Let Z± be the canonical one-sided so-lutions from Lemma 3.11 , and let I− := (R−, R s) and I+ := (Rs, R +). Then 
+
+Z±(R) → +∞ as R → R± 
+
+> s
+
+. More precisely: IGR SHOCKS FOR COMPRESSIBLE EULER 17 (i) If as > 0, equivalently p′′ (Rs) > 0, then there exist c±, C ± > 0 and η > 0
+
+such that, for R ∈ I± with 0 < |R − Rs| < η ,
+
+(4.2) c±|R − Rs|−as ≤ Z±(R) ≤ C±|R − Rs|−as .
+
+(ii) If as = 0 , equivalently p′′ (Rs) = 0 , then there exist c±, C ± > 0 and η > 0
+
+such that, for R ∈ I± with 0 < |R − Rs| < η ,
+
+(4.3) c±| log |R − Rs|| ≤ Z±(R) ≤ C±| log |R − Rs|| .
+
+Proof. Define 
+
+bs := 2
+
+α
+
+S(Rs)
+
+S′′ (Rs) < 0.
+
+Indeed, S(Rs) > 0 by Lemma 3.5, while S′′ (Rs) < 0 by (2.12). We first record the coefficient expansions near Rs. Since S′(Rs) = 0 and p′′ is locally Lipschitz near Rs, Taylor expansion gives, one-sidedly as R → R± 
+
+> s
+
+,
+
+S(R) = S(Rs) + O(|R − Rs|2),
+
+and 
+
+S′(R) = S′′ (Rs)( R − Rs) + O(|R − Rs|2).
+
+Hence 
+
+Q(R) = 2
+
+α
+
+S(R)
+
+S′(R) = bs
+
+R − Rs
+
++ O(1) (R → R± 
+
+> s
+
+).
+
+Here and below, all O(·) estimates are understood one-sidedly on the branch under consideration. 
+
+Case as > 0. In this case p′′ (Rs) > 0. Since p′′ is locally Lipschitz, we have 
+
+p′′ (R) = p′′ (Rs) + O(|R − Rs|). Using this and the definition of P (3.6), we obtain 
+
+P (R) = as
+
+R − Rs
+
++ O(1) (R → R± 
+
+> s
+
+),
+
+where as = −2p′′ (Rs)/S′′ (Rs) > 0. The singular term as/(R − Rs) in P suggests factoring out the corresponding power-law behavior from the integrating factor. This is simply the variation-of-constants formula with the leading sonic singularity removed. Define 
+
+μ0,±(R) := exp 
+
+Z RRs
+
+
+
+P (s) − as
+
+s − Rs
+
+
+
+ds 
+
+!
+
+, R ∈ I±,
+
+where the integral is interpreted one-sidedly. Since P (R) − as 
+
+> R−Rs
+
+= O(1), each μ0,±
+
+extends continuously to Rs and is bounded above and below by positive constants near Rs.Define 
+
+M±(R) := |R − Rs|as μ0,±(R), R ∈ I±.
+
+This is the integrating factor for the equation after the singular part as/(R − Rs) of 
+
+P has been separated off. Indeed, 
+
+M ′±(R)
+
+M±(R) = as
+
+R − Rs
+
++ μ′
+
+> 0,±
+
+(R)
+
+μ0,±(R) = as
+
+R − Rs
+
++ P (R) − as
+
+R − Rs
+
+= P (R).18 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+Thus, if we set 
+
+Y±(R) := M±(R)Z±(R) = |R − Rs|as μ0,±(R)Z±(R),
+
+then multiplying Z′± + P Z ± = Q by M± gives 
+
+Y ′±(R) = M±(R)Q(R) = |R − Rs|as μ0,±(R)Q(R).
+
+Since μ0,± is bounded near Rs and Q(R) = bs 
+
+> R−Rs
+
++ O(1), we have 
+
+Y ′±(R) = O(|R − Rs|as−1).
+
+Because as > 0, this bound is integrable on each one-sided neighborhood of Rs. Hence 
+
+Y± has a finite one-sided limit L± := lim R→R± 
+
+> s
+
+Y±(R). Equivalently, 
+
+Z±(R) = |R − Rs|−as μ0,±(R)−1Y±(R),
+
+so the behavior of Z± is determined by whether the renormalized amplitude Y± has a nonzero limit at the sonic point. We claim that L± > 0. Since Z± > 0 by Lemma 3.11 and the prefactor defining 
+
+Y± is positive, one has Y± > 0 on the corresponding branch. Therefore its finite one-sided limit satisfies L± ≥ 0. Suppose L± = 0. Then 
+
+Y±(R) = 
+
+Z RRs
+
+|s − Rs|as μ0,±(s)Q(s) ds. 
+
+Using 
+
+Q(s) = bs
+
+s − Rs
+
++ O(1) , μ0,±(s) = μ0,±(Rs) + o(1) ,
+
+and the one-sided identity 
+
+Z RRs
+
+|s − Rs|as
+
+s − Rs
+
+ds = 1
+
+as
+
+|R − Rs|as ,
+
+we obtain, on either branch, 
+
+Y±(R) = bs μ0,±(Rs)
+
+as
+
+|R − Rs|as + o(|R − Rs|as ) (R → R± 
+
+> s
+
+).
+
+Since bs < 0, this is negative for R sufficiently close to Rs, contradicting Y± > 0. Hence L± > 0. Therefore, after possibly shrinking η > 0, both Y± and μ0,± are bounded above and below by positive constants for R ∈ I± with 0 < |R − Rs| < η . It follows from 
+
+Z±(R) = |R − Rs|−as μ0,±(R)−1Y±(R)that there exist c±, C ± > 0 such that 
+
+c±|R − Rs|−as ≤ Z±(R) ≤ C±|R − Rs|−as , 0 < |R − Rs| < η. 
+
+This proves (4.2), and in particular Z±(R) → +∞ as R → R± 
+
+> s
+
+.
+
+Case as = 0 . Here p′′ (Rs) = 0. Since p′′ is locally Lipschitz, p′′ (R) = O(|R−Rs|). Together with 
+
+S′(R) = S′′ (Rs)( R − Rs) + O(|R − Rs|2),IGR SHOCKS FOR COMPRESSIBLE EULER 19 this gives p′′ (R) 
+
+> S′(R)
+
+= O(1), and hence, P (R) = O(1) as R → R± 
+
+> s
+
+.In contrast with the case as > 0, there is no power-law singularity to factor out of the integrating factor. We therefore use the ordinary one-sided integrating factor 
+
+μ±(R) := exp 
+
+Z RRs
+
+P (s) ds 
+
+!
+
+, R ∈ I±.
+
+Since P is bounded near Rs, each μ± extends continuously to Rs and is bounded above and below by positive constants. Moreover, 
+
+μ±(R) = μ±(Rs) + O(|R − Rs|).
+
+Define Y±(R) := μ±(R)Z±(R). Since 
+
+μ′±(R)
+
+μ±(R) = P (R),
+
+multiplying Z′± + P Z ± = Q by μ± gives 
+
+Y ′±(R) = μ±(R)Q(R).
+
+Using 
+
+Q(R) = bs
+
+R − Rs
+
++ O(1) and μ±(R) = μ±(Rs) + O(|R − Rs|),
+
+we obtain 
+
+Y ′±(R) = bsμ±(Rs)
+
+R − Rs
+
++ O(1) (R → R± 
+
+> s
+
+).
+
+Therefore, 
+
+Y±(R) = bsμ±(Rs) log |R − Rs| + O(1) (R → R± 
+
+> s
+
+).
+
+Recalling that Y± = μ±Z±, this becomes 
+
+μ±(R)Z±(R) = bsμ±(Rs) log |R − Rs| + O(1) (R → R± 
+
+> s
+
+).
+
+Since bs < 0 and log |R − Rs| → −∞ , the leading term is positive and diverges like 
+
+| log |R − Rs|| . Thus, after possibly shrinking η > 0, there exist constants ec±, eC± > 0such that 
+
+ec±| log |R − Rs|| ≤ μ±(R)Z±(R) ≤ eC±| log |R − Rs|| , 0 < |R − Rs| < η. 
+
+Since μ± is bounded above and below by positive constants near Rs, there exist 
+
+c±, C ± > 0 such that 
+
+c±| log |R − Rs|| ≤ Z±(R) ≤ C±| log |R − Rs|| , 0 < |R − Rs| < η. 
+
+This proves (4.3), and in particular Z±(R) → +∞ as R → R± 
+
+> s
+
+.
+
+Remark 4.2 (Polytropic special case). For p(R) = κR γ with κ > 0, γ ≥ 1, from (4.1), one computes 
+
+as = 2( γ − 1) 
+
+γ + 1 .
+
+Hence as > 0 exactly when γ > 1, while as = 0 for γ = 1 .20 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+The same formula holds for the ideal-gas-type equation of state obtained from the reduced pressure: 
+
+˜p(R, e ) = ( γ − 1) Re, where e(R) = e0 + AR + m2
+
+2R2 .
+
+Indeed, 
+
+p(R) = ˜ p(R, e (R)) = ( γ − 1) 
+
+
+
+e0R + A + m2
+
+2R
+
+
+
+,
+
+so p′′ (R) = ( γ − 1) m2/R 3. Evaluating at Rs and using S′′ (Rs) = − 2m2
+
+> R3
+> s
+
+− p′′ (Rs)(2.12) yields 
+
+S′′ (Rs) = −(γ + 1) m2
+
+R3
+
+> s
+
+, as = − 2p′′ (Rs)
+
+S′′ (Rs) = 2( γ − 1) 
+
+γ + 1 .
+
+Thus, for a calorically perfect gas, the sonic exponent again satisfies 
+
+as = 2( γ − 1) 
+
+γ + 1 .
+
+Remark 4.3 (Reconstruction integrability at Rs). Lemma 4.1 implies that 
+
+1/pZ±(R) ∈ L1loc near Rs on each one-sided branch. Indeed, if as > 0, then 
+
+1/pZ±(R) ≤ C±|R − Rs|as/2, which is locally integrable. If as = 0 , then 
+
+1
+
+pZ±(R) ≤ C±
+
+p| log |R − Rs|| ,
+
+which is also locally integrable near Rs.
+
+4.2. Reconstruction and gluing of the density profile. Applying Proposi-tion 3.14 to the canonical one-sided solutions Z− and Z+ produces strictly increasing left and right profile branches, each determined up to translation in ξ. By Lemma 3.13, these branches extend to ξ = ±∞ at the outer end states, while Remark 4.3 shows that they reach the sonic density Rs in finite ξ.Now, one must check that the glued profile satisfies the profile equation distri-butionally, rather than acquiring a point-mass defect at the crossing. Although each branch solves the profile equation classically away from Rs, the density slope may blow up at the sonic crossing. The following lemma rules out the formation of such a defect. 
+
+Lemma 4.4 (No defect at the sonic crossing). Let R : R → [R−, R +] be contin-uous, with R(ξs) = Rs, and suppose R ∈ C2(( −∞ , ξ s) ∪ (ξs, ∞)) . Assume that 
+
+R(( −∞ , ξ s)) ⊂ (R−, R s), R(( ξs, ∞)) ⊂ (Rs, R +),
+
+and that 
+
+## .
+
+R = pZ−(R) on (−∞ , ξ s), .
+
+R = pZ+(R) on (ξs, ∞),
+
+where Z± are the canonical one-sided solutions from Lemma 3.11 . Then 
+
+R ∈ W 1,2loc (R),
+
+and R satisfies (2.9) on R in the sense of distributions, i.e., (3.3). IGR SHOCKS FOR COMPRESSIBLE EULER 21 
+
+Proof. Step 1: local Sobolev regularity near the sonic point. Away from ξs, the profile is C2.It remains only to check the behavior near ξs. On each side of ξs,
+
+## .
+
+R2 = Z±(R), dξ = dR 
+
+pZ±(R) .
+
+Hence, for ϵ > 0 sufficiently small, 
+
+Z ξs+ϵξs−ϵ
+
+| .
+
+R(ξ)|2 dξ =
+
+Z ξs
+
+> ξs−ϵ
+
+| .
+
+R(ξ)|2 dξ +
+
+Z ξs+ϵξs
+
+| .
+
+R(ξ)|2 dξ 
+
+=
+
+Z Rs
+
+> R(ξs−ϵ)
+
+pZ−(R) dR +
+
+Z R(ξs+ϵ)
+
+> Rs
+
+pZ+(R) dR. 
+
+Both integrals are finite by Lemma 4.1: in the power-law case this uses as < 2, and in the logarithmic case p| log |R − Rs|| is locally integrable. Since R is bounded, this proves R ∈ W 1,2loc (R). 
+
+Step 2: classical validity away from the sonic point. On each side of ξs, the identity .
+
+R2 = Z±(R) holds and Z± solves (3.5). Reversing the reduction in Proposition 3.10, the profile satisfies (2.9) pointwise on ( −∞ , ξ s) ∪ (ξs, ∞). Indeed, differentiating .
+
+R2 =
+
+Z±(R) gives .. 
+
+R = 12 Z′±(R), and substituting this into (3.5) recovers (3.1). 
+
+Step 3: vanishing of the possible defect. Write (2.9) in divergence form as G −
+
+αF ′ = 0, where, away from ξs,
+
+F (ξ) := S′(R(ξ)) 
+
+R(ξ)
+
+## .
+
+R(ξ), G(ξ) := S(R(ξ)) 
+
+R(ξ) − 2α m2
+
+R(ξ)4
+
+## .
+
+R(ξ)2.
+
+Since the equation holds classically on each side, the only possible distributional defect at ξs is a point mass coming from a jump in F .Near Rs, S′(R) = S′′ (Rs)( R − Rs) + O(|R − Rs|2) and .
+
+R = pZ±(R). Hence, Lemma 4.1 gives 
+
+|F (ξ)| ≤ C
+
+(|R(ξ) − Rs|1−as/2, as > 0,
+
+|R(ξ) − Rs|p| log |R(ξ) − Rs|| , as = 0 .
+
+Since 0 ≤ as < 2, both right-hand sides tend to zero as ξ → ξ± 
+
+> s
+
+. Therefore lim 
+
+> ξ→ξ−
+> s
+
+F (ξ) = lim 
+
+> ξ→ξ+
+> s
+
+F (ξ) = 0 .
+
+Thus the divergence term produces no point-mass defect at the sonic crossing. We also have F, G ∈ L1loc (R). The estimate above gives local integrability of F ,while G is locally integrable because S(R)/R is bounded near ξs and .
+
+R2 ∈ L1loc by Step 1. 
+
+Step 4: passage to the weak formulation. Let φ ∈ C∞ 
+
+> c
+
+(R) and ε > 0. Since 
+
+G − αF ′ = 0 holds classically on each side of ξs, integration by parts on ( −∞ , ξ s − ε)and ( ξs + ε, ∞) gives 
+
+Z
+
+> R\[ξs−ε,ξ s+ε]
+
+αF .φ dξ +
+
+Z
+
+> R\[ξs−ε,ξ s+ε]
+
+Gφ dξ 
+
++ αF (ξs + ε)φ(ξs + ε) − αF (ξs − ε)φ(ξs − ε) = 0 .22 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+Letting ε → 0, the bulk integrals converge by local integrability, and the boundary terms vanish because F (ξ) → 0 from both sides. Hence 
+
+Z
+
+> R
+
+αF .φ dξ +
+
+Z
+
+> R
+
+Gφ dξ = 0 .
+
+This is exactly (3.3). 
+
+Theorem 4.5 (Global weak density profile by gluing). Under the standing assumptions Assumption 2.2 , there exists a continuous strictly increasing profile 
+
+R : R → (R−, R +) and a crossing point ξs ∈ R such that: 
+
+(i) R(ξs) = Rs and R restricts to a C2 function on (−∞ , ξ s) ∪ (ξs, ∞);
+
+(ii) .
+
+R2 = Z−(R) on (−∞ , ξ s), .
+
+R2 = Z+(R) on (ξs, ∞);
+
+(iii) R(ξ) → R± and .
+
+R(ξ) → 0 as ξ → ±∞ ;
+
+(iv) R satisfies the weak formulation (3.3); hence, together with monotonicity and the endpoint limits, R ∈ M .Proof. Step 1: reconstruct the one-sided branches. Apply Proposition 3.14 to the canonical one-sided solutions Z− and Z+. This gives strictly increasing branches Rℓ
+
+and Rr satisfying .
+
+Rℓ =
+
+q
+
+Z−(Rℓ), .
+
+Rr = pZ+(Rr ).
+
+Since Z± ∈ C1 and Z± > 0 on their domains, the reconstructed branches are C2 away from the sonic density. 
+
+Step 2: identify the domains and glue. By Lemma 3.13, the left branch extends to 
+
+ξ = −∞ with limit R−, while the right branch extends to ξ = + ∞ with limit R+. By Remark 4.3, both branches reach Rs in finite ξ. After translating the two branches, we may assume that both reach Rs at ξs = 0. Define 
+
+R(ξ) := 
+
+
+
+Rℓ(ξ), ξ < 0,Rs, ξ = 0 ,Rr (ξ), ξ > 0.
+
+Then R is continuous and strictly increasing, with R(0) = Rs. The identities in (ii) hold by construction, and the endpoint limits R(ξ) → R± follow from the preceding paragraph. 
+
+Step 3: verify the weak equation. The hypotheses of Lemma 4.4 are satisfied by the glued profile. Therefore, R ∈ W 1,2loc (R) and R satisfies (2.9) on R in the sense of distributions. Since R is nondecreasing and connects R− to R+, it follows that 
+
+R ∈ M . This proves (iv). 
+
+Step 4: endpoint flattening. Now that R ∈ M , Lemma 3.9 applies and gives 
+
+## .
+
+R(ξ) → 0 as ξ → ±∞ .
+
+This completes (iii) and the proof. 
+
+4.3. Regularity and decay of the glued density profile. 
+
+Proposition 4.6 (Sonic regularity of the glued profile). Let R be the global profile furnished by Theorem 4.5 . Then: (a) if 0 < a s < 2, then R ∈ C0,β near ξs with 
+
+β = 11 + as/2 ∈
+
+ 12 , 1
+
+
+
+,IGR SHOCKS FOR COMPRESSIBLE EULER 23 
+
+R ∈ W 1,r  
+
+> loc
+
+for every 1 ≤ r < 1 + 2 
+
+> as
+
+, and | .
+
+R(ξ)| → ∞ as ξ → ξ± 
+
+> s
+
+;(b) if as = 0 , then R ∈ C0,β near ξs for every β < 1, R ∈ W 1,r  
+
+> loc
+
+for every finite 
+
+r ≥ 1, and | .
+
+R(ξ)| → ∞ as ξ → ξ± 
+
+> s
+
+.In particular, in both cases the density profile is not locally Lipschitz near ξs.Proof. Away from ξs, the profile is C2 by Theorem 4.5; hence all regularity as-sertions are local questions near the sonic crossing. On each branch, 
+
+dξ dR = 1
+
+pZ±(R) .
+
+If as > 0, then (4.2) implies there exist c1, C 1 > 0 such that 
+
+c1|R − Rs|as/2 ≤ dξ dR ≤ C1|R − Rs|as/2
+
+near Rs. Integrating yields constants c2, C 2 > 0 with 
+
+c2|ξ − ξs|β ≤ | R − Rs| ≤ C2|ξ − ξs|β , β = (1 + as/2) −1.
+
+Therefore, for suitable c3, C 3 > 0, 
+
+c3|ξ − ξs|β−1 ≤ | .
+
+R(ξ)| ≤ C3|ξ − ξs|β−1, 0 < |ξ − ξs| < δ, 
+
+where .
+
+R denotes the classical derivative on the two C2 branches. These local estimates give the stated H¨ older behavior near ξs. Moreover, | .
+
+R(ξ)|r ≲ |ξ − ξs|r(β−1) , which is locally integrable precisely when r(1 − β) < 1. Since 11 − β = 1 + 2
+
+as
+
+,
+
+we obtain R ∈ W 1,r  
+
+> loc
+
+for every 1 ≤ r < 1 + 2 
+
+> as
+
+. Since β < 1, one also has | .
+
+R(ξ)| → ∞ 
+
+as ξ → ξ± 
+
+> s
+
+, so R cannot be locally Lipschitz at ξs.If as = 0, then (4.3) gives 
+
+c1
+
+p| log |R − Rs|| ≤ dξ dR ≤ C1
+
+p| log |R − Rs|| 
+
+near Rs. Integrating gives 
+
+|ξ − ξs| ≳
+
+Z |R−Rs|
+
+> 0
+
+ds 
+
+p| log s| ≳ |R − Rs|
+
+p| log |R − Rs|| ,
+
+because, for x > 0 sufficiently small, 
+
+Z x
+
+> 0
+
+ds 
+
+p| log s| ≥
+
+Z xx/ 2
+
+ds 
+
+p| log s| ≥ 1
+
+p2| log x|
+
+Z xx/ 2
+
+ds = x
+
+2p2| log x| .
+
+Equivalently, for every β < 1 and |R − Rs| sufficiently small, 
+
+|R − Rs| ≤ Cβ |ξ − ξs|β ,
+
+because 
+
+|R − Rs|1−β | log |R − Rs|| β/ 2 → 0 (R → Rs).24 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+These local estimates give the stated H¨ older behavior near ξs. Moreover, 
+
+Z
+
+| .
+
+R|r dξ =
+
+Z
+
+Z±(R)(r−1) /2 dR ≲
+
+Z
+
+| log |R − Rs|| (r−1) /2 dR, 
+
+which is finite for every finite r ≥ 1. Finally, on the two C2 branches, 
+
+| .
+
+R(ξ)| = pZ±(R(ξ)) → ∞ as ξ → ξ± 
+
+> s
+
+,
+
+so R is not locally Lipschitz at ξs.
+
+Lemma 4.7 (Exponential tails from endpoint expansions). Let R be the global profile from Theorem 4.5 . For every λ ∈ (0 , 1/√α), there exist constants C, ξ 0 > 0
+
+such that 
+
+|R(ξ) − R+| + | .
+
+R(ξ)| ≤ Ce −λξ (ξ ≥ ξ0),
+
+and 
+
+|R(ξ) − R−| + | .
+
+R(ξ)| ≤ Ce λξ (ξ ≤ − ξ0).
+
+In particular, α−1/2 is the linearized exponential tail rate on both tails. Proof. Choose ξ0 large enough so that ξ ≥ ξ0 lies on the right branch and ξ ≤ − ξ0
+
+lies on the left branch. Set 
+
+y−(ξ) := R(ξ) − R− (ξ < ξ s), y+(ξ) := R+ − R(ξ) (ξ > ξ s).
+
+Then y± > 0 and 
+
+## .y−(ξ) = pZ−(R(ξ)) , − .y+(ξ) = pZ+(R(ξ)) .
+
+By Lemma 3.13, pZ±(R)
+
+|R − R±| → 1
+
+√α (R → R±).
+
+Fix λ ∈ (0 , α −1/2). Then, after increasing ξ0 if necessary, there exists μ > α −1/2 such that 
+
+λy ±(ξ) ≤ | .y±(ξ)| ≤ μy ±(ξ)on the corresponding tails. On the right tail, .y+ ≤ − λy +, hence 
+
+y+(ξ) ≤ y+(ξ0)e−λ(ξ−ξ0) (ξ ≥ ξ0).
+
+On the left tail, .y− ≥ λy −, and integrating from ξ to −ξ0 gives 
+
+y−(ξ) ≤ y−(−ξ0)eλ(ξ+ξ0) (ξ ≤ − ξ0).
+
+Finally, | .
+
+R| = | .y±| ≤ μy ± on the same tails, so the stated bounds follow after absorb-ing fixed prefactors into C.
+
+Corollary 4.8 (Global decay and Sobolev consequences). Let R be the global profile from Theorem 4.5 .
+
+(a) If 0 < a s < 2, then .
+
+R ∈ Lr (R) for every 1 ≤ r < 1 + 2 
+
+> as
+
+. If as = 0 , then 
+
+## .
+
+R ∈ Lr (R) for every finite r ≥ 1.IGR SHOCKS FOR COMPRESSIBLE EULER 25 (b) If Rint ∈ C∞(R) satisfies 
+
+Rint (ξ) = R− for ξ ≤ ξs − 1, Rint (ξ) = R+ for ξ ≥ ξs + 1 ,
+
+then 
+
+R − Rint ∈ Lμ(R) for all μ ∈ [1 , ∞],
+
+and, for every r in the range specified in (a) ,
+
+R − Rint ∈ W 1,r (R).
+
+Proof. Local integrability near ξs is the content of Proposition 4.6. Away from a fixed neighborhood of ξs, Lemma 4.7 gives exponential decay of | .
+
+R|, hence .
+
+R ∈ Lr
+
+there for every r ≥ 1. Combining the near-sonic and tail regions proves (a). For (b), on the tails Rint is constant, so R − Rint = R − R±, which decays exponentially by Lemma 4.7. On the remaining compact region, R−Rint is continuous and hence belongs to Lμ for every μ ∈ [1 , ∞]. Therefore R − Rint ∈ Lμ(R) for all such 
+
+μ.Moreover, .
+
+R − .
+
+Rint ∈ Lr (R) because .
+
+R ∈ Lr (R) by (a) and .
+
+Rint ∈ C∞ 
+
+> c
+
+(R). Since also R − Rint ∈ Lr (R), it follows that R − Rint ∈ W 1,r (R). 
+
+4.4. Uniqueness and reconstructed traveling-wave fields. 
+
+Theorem 4.9 (Uniqueness modulo translation). Assume the hypotheses of The-orem 4.5 hold for the fixed parameters (c, m, q, α, p ). Let R, eR : R → (R−, R +) be two global profiles connecting R− to R+ in the sense of Theorem 4.5 . Then there exists 
+
+ξ0 ∈ R such that eR(ξ) = R(ξ − ξ0) (ξ ∈ R).
+
+If both profiles are normalized by the phase condition R(0) = eR(0) = Rs, then eR ≡ R.Proof. Let ξs and eξs be the sonic crossing points of R and eR, respectively, and set I− := ( R−, R s), I+ := ( Rs, R +). Since both profiles are strictly increasing, their inverse maps Ψ ±, eΨ± : I± → R are well defined on the two density intervals. By Theorem 4.5, on each branch one has 
+
+## .
+
+R2 = Z±(R),
+
+## .
+
+eR 2 = Z±( eR).
+
+Since the profiles are increasing, this gives Ψ′±(ρ) = 1
+
+pZ±(ρ) = eΨ′±(ρ), ρ ∈ I±.
+
+Hence, there exist constants c± such that eΨ±(ρ) = Ψ ±(ρ) + c±.Taking the limit ρ → R± 
+
+> s
+
+gives c± = eξs − ξs. Thus c− = c+ =: ξ0, so the inverse maps differ by the same additive constant on both branches. Therefore, eR(ξ) = 
+
+R(ξ − ξ0) on both sides of the sonic point, and the identity holds at the sonic point by continuity. If R(0) = eR(0) = Rs, then ξs = eξs = 0, so ξ0 = 0 and eR ≡ R.We next transfer these properties from the density profile to the reconstructed traveling-wave fields. 
+
+Theorem 4.10 (Full solution and its regularity). Let R denote the global profile furnished by Theorem 4.5 , unique up to translation by Theorem 4.9 . Define 
+
+U (ξ) = c + mR(ξ) , e(ξ) = e(R(ξ)) , S(ξ) = S(R(ξ)) ,26 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+and 
+
+E(ξ) = R(ξ)e(ξ) + 12 R(ξ)U (ξ)2.
+
+Then: 
+
+(i) ( R, U, E, S ) is a weak solution of (TW a)–(TW d) on R.
+
+(ii) R, U , E, e, and S restrict to C2 functions on (−∞ , ξ s) ∪ (ξs, ∞).
+
+(iii) R, U , E, e, and S have the same local H¨ older regularity near ξs as R in Proposition 4.6 ; namely, if 0 < a s < 2 they are C0,β with β = (1 + as/2) −1,while if as = 0 they are C0,β for every β < 1.
+
+(iv) R, U , E, e, and S belong to L∞(R). Moreover, if Rint is as in Corollary 4.8 
+
+and takes values in [R−, R +], and if Uint , Eint , eint , and Sint are obtained from Rint by the same reconstruction formulas, then 
+
+R − Rint , U − Uint , E − E int , e − eint , S − Sint 
+
+belong to Lμ(R) for all μ ∈ [1 , ∞].
+
+(v) For every r in the range specified in Corollary 4.8 , .
+
+R, .
+
+U, .
+
+E, .e, .
+
+S ∈ Lr (R).
+
+(vi) For the same range of r,
+
+R − Rint , U − Uint , E − E int , e − eint , S − Sint 
+
+belong to W 1,r (R).Proof. For the density component R, the asserted regularity, decay, and Sobolev properties follow from Theorem 4.5, Proposition 4.6, , and Corollary 4.8. For the reconstructed fields, write 
+
+U = FU (R), e = Fe(R), E = FE (R), S = FS (R),
+
+where 
+
+FU (ρ) = c + mρ , Fe(ρ) = e(ρ), FS (ρ) = S(ρ),
+
+and 
+
+FE (ρ) = ρF e(ρ) + 12 ρF U (ρ)2.
+
+Under the standing assumptions, these reconstruction maps are C2 on a neighborhood of [ R−, R +]. Since R(ξ) ∈ [R−, R +], the maps and their first derivatives are bounded on the range of R.Since the reconstruction maps are C2 on a neighborhood of [ R−, R +], composition with R gives (ii) on the nonsonic intervals. Moreover, these maps are Lipschitz on [R−, R +]. Hence, for any reconstructed field f = F (R), 
+
+|f (ξ1) − f (ξ2)| ≤ ∥ F ′∥L∞([ R−,R +]) |R(ξ1) − R(ξ2)|,
+
+which transfers the H¨ older regularity of R to f and proves (iii). Boundedness of the same reconstruction maps on [ R−, R +] also gives the L∞ part of (iv). Finally, defining fint := F (Rint ), the same Lipschitz bound gives 
+
+|f − fint | ≤ ∥ F ′∥L∞([ R−,R +]) |R − Rint |.
+
+Therefore Corollary 4.8 implies f − fint ∈ Lμ(R) for all μ ∈ [1 , ∞], completing (iv). For (v), the chain rule gives .
+
+f (ξ) = F ′(R(ξ)) .
+
+R(ξ). Hence, 
+
+| .
+
+f (ξ)| ≤ sup 
+
+> ρ∈[R−,R +]
+
+|F ′(ρ)| | .
+
+R(ξ)|,IGR SHOCKS FOR COMPRESSIBLE EULER 27 and the claimed Lr integrability follows from Corollary 4.8. For (vi), we already know f − fint ∈ Lr (R). Moreover, 
+
+## .
+
+f − .
+
+fint = F ′(R) .
+
+R − F ′(Rint ) .
+
+Rint .
+
+The first term is in Lr by (v), while the second is in Lr because F ′(Rint ) is bounded and .
+
+Rint is smooth with compact support. Thus f − fint ∈ W 1,r (R). It remains to verify the weak traveling-wave equations. The flux identities 
+
+R(U − c) = m, mU + p(R) + S = q, (E + p(R) + S)U − cE = k
+
+hold pointwise by construction, so the weak forms of (TW a)–(TW c) follow immedi-ately. Finally, the closure equation (TW d) is exactly the weak profile equation for R
+
+after substituting 
+
+S(ξ) = S(R(ξ)) , .
+
+U (ξ) = − mR(ξ)2
+
+## .
+
+R(ξ),
+
+which is valid a.e. Since R ∈ M by Theorem 4.5, this weak profile equation holds. Hence ( R, U, E, S ) is a weak solution of (TW a)–(TW d). 
+
+5. Small-α asymptotics and the α → 0+ limit. In this section, we study the small-α asymptotics of the IGR compressive shock solution and in particular, discuss in what sense the solution converges to the entropy-admissible Euler shock as α → 0+.The main tool for the analysis will be to show that the shock profile can be expressed as a scaling of an α-independent profile, from which several results follow immediately. In particular, the spatiotemporal rescaling ( x, t ) 7 → (x/ √α, t/ √α) renders the IGR Euler system, given in (2.1), parameter independent, effectively setting α = 1. This observation is the basis for the analysis in this section. 
+
+5.1. Scaling structure of the Z equation. Unlike the previous discussion where the α dependence was implicit, here, for any α > 0, we will explicitly denote 
+
+α-dependent quantities with a subscript α. Throughout this subsection, Zα is under-stood branchwise on either nonsonic density interval, with the corresponding outer endpoint condition. Recall from Proposition 3.10 that Zα(R) satisfies the linear ODE (5.1) 
+
+Z′ 
+
+> α
+
++ P (R)Zα = Qα(R), P (R) = 2 
+
+ S′′ (R)
+
+S′(R) − 1
+
+R + 2m2
+
+R3S′(R)
+
+
+
+, Q α(R) = 2
+
+α
+
+S(R)
+
+S′(R) .
+
+The dependence on α enters only through the prefactor in Qα. We can therefore obtain Zα as an appropriate rescaling of an α-independent solution. 
+
+Proposition 5.1 ( Zα from rescaling of an α-independent profile). For α > 0, let 
+
+Zα denote the canonical one-sided solution of (5.1). Then 
+
+Zα(R) = α−1 Z(R),
+
+where Z is the corresponding canonical one-sided solution of the α-independent prob-lem 
+
+(5.2) Z′ + P (R)Z = 2 S(R)
+
+S′(R) .
+
+Equivalently, Z = Z1. The outer endpoint condition is inherited branchwise: on the left branch Z(R−) = 0 , while on the right branch Z(R+) = 0 .28 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+Proof. Substituting the ansatz Zα = α−1Z into (5.1) gives (5.2), and the corre-sponding outer endpoint condition is preserved. Uniqueness of the canonical one-sided solutions follows from Lemma 3.11. 
+
+5.2. Shock width scaling. The above rescaling applies to both one-sided solu-tions and can be glued together to produce a global profile Rα, noting that the sonic density Rs is independent of α. Particularly, this profile satisfies .
+
+Rα = pZα(R), which combined with the previous result gives (5.3) .
+
+Rα(ξ) = 1
+
+√α
+
+pZ(Rα(ξ)) .
+
+Hence, (5.4) dξ dR α
+
+= √α 1
+
+pZ(R) .
+
+Proposition 5.2 (Shock width scaling). Let Rα : R → (R−, R +) denote the IGR shock profile with inverse R−1 
+
+> α
+
+: ( R−, R +) → R. For any δ ∈ (0 , (R+ − R−)/2) , define 
+
+ξ− 
+
+> α
+
+(δ) = R−1 
+
+> α
+
+(R− + δ), ξ+ 
+
+> α
+
+(δ) = R−1 
+
+> α
+
+(R+ − δ).
+
+Then 
+
+ξ+ 
+
+> α
+
+(δ) − ξ− 
+
+> α
+
+(δ) = √α C δ
+
+for a constant Cδ depending on δ but independent of α. Thus, the shock width scales like √α.Proof. Integrating the previous relation (5.4) gives 
+
+ξ+ 
+
+> α
+
+(δ) − ξ− 
+
+> α
+
+(δ) = √α
+
+Z R+−δR−+δ
+
+dR 
+
+pZ(R) .
+
+Since δ > 0, the integral is finite (c.f. Section 3.3) and depends only on δ.Another way to view that the shock width scales like √α is that the profile Rα can be expressed as a self-similar (1 /√α)-scaling of an α-independent profile R. To see this, let ξαs denote the sonic crossing point where Rα(ξαs ) = Rs. Define the rescaled coordinate η := ( ξ − ξαs )/√α. Then, we have the following self-similar rescaling. 
+
+Proposition 5.3 (Self–similar profile scaling). There exists a profile R indepen-dent of α such that 
+
+(5.5) Rα(ξ) = R
+
+ ξ − ξαs
+
+√α
+
+
+
+.
+
+Proof. Note that (5.5) defines R(η) to be Rα(ξ); thus, we just need to see that 
+
+R is independent of α. Combining (5.3) and (5.5), and the chain rule gives dR/dη =pZ(R), which determines R independently of α.
+
+5.3. Euler shock limit. We now show that the IGR traveling-waves converge to the classical Euler shock as α → 0+. First, we establish a locally uniform pointwise limit, away from the sonic crossing. For the remainder, to remove the translational degree of freedom, we will assume that the sonic crossing occurs at the origin. IGR SHOCKS FOR COMPRESSIBLE EULER 29 
+
+Theorem 5.4 (Pointwise Euler shock limit away from the sonic crossing). Let 
+
+(Rα, U α, e α, S α) denote the IGR traveling-wave. Then, 
+
+Rα(ξ) →
+
+(
+
+R− ξ < 0,R+ ξ > 0,
+
+as α → 0+. The convergence holds locally uniformly on (−∞ , 0) ∪ (0 , ∞) with expo-nential rate. Analogous statements hold for Uα, eα and Sα.Proof. Since the shock width scales like √α about the origin, for fixed ξ̸ = 0 the solution lies in the exponential tail region for sufficiently small α. Lemma 4.7 then gives the claimed locally uniform convergence of Rα to the asymptotic states at an exponential rate. Similarly, the locally uniform convergence of Uα, e α, S α follows from the relations in (2.4), (2.5), and (2.8). 
+
+Remark 5.5. Note that, since the asymptotic states satisfy the Rankine–Hugoniot relations and the Lax transonic inequalities, the limiting discontinuity coincides with the entropy Euler shock connecting the left and right states. 
+
+Now, we establish convergence of the IGR shock solution to the Euler shock limit in Lμ(R), μ ∈ [1 , ∞). Let R0 denote the above pointwise limit, i.e., R0 equals R− for 
+
+ξ < 0 and R+ for ξ > 0. 
+
+Theorem 5.6 (Convergence to the Euler shock in Lμ(R)). Let μ ∈ [1 , ∞). Then, the α-IGR shock solution converges to R0 in Lμ(R) at rate α1/(2 μ), i.e., 
+
+(5.6) ∥Rα − R0∥Lμ(R) ≤ Cα 1/(2 μ),
+
+where C is independent of α. An analogous statement holds for Uα, e α, S α.Proof. This follows from a direct calculation using the self-similar profile (5.5) and change of variables ξ → η.
+
+Remark 5.7. See Figure 2 for a numerical verification of the convergence rate of the IGR shock profile to the Euler shock in L1 and L2.
+
+10 −2 10 −1
+
+10 −0.5
+
+α
+
+> Error
+
+L1 error 
+
+α1/2 reference 
+
+L2 error 
+
+α1/4 reference 
+
+Fig. 2: Numerical convergence of IGR traveling-wave profiles to the Euler shock profile as α → 0+.30 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+As a corollary, Lμ(R) convergence of the solution implies convergence of the de-rivative in a suitable negative Sobolev norm: for μ ∈ [1 , ∞), denote by W −1,μ (R) the topological dual of the closure W 1,μ ′ 
+
+> 0
+
+(R) of C∞ 
+
+> c
+
+(R) in W 1,μ ′
+
+(R), where μ′ = μ/ (μ − 1) (where μ = 1 is understood to correspond to μ′ = ∞) equipped with the operator norm (5.7) ∥χ∥W −1,μ (R) := sup     
+
+> ϕ∈W1,μ ′
+> 0(R),
+> ∥ϕ∥W1,μ ′(R)=1
+
+|⟨ χ, ϕ ⟩| ,
+
+where ⟨· , ·⟩ : W −1,μ (R) × W 1,μ ′ 
+
+> 0
+
+(R) → R denotes the duality pairing. Let δ0 denote the delta distribution centered at the origin. Note that δ0 ∈
+
+W −1,μ (R) for μ ∈ [1 , ∞) since by Sobolev embedding, W 1,μ ′
+
+(R) ,→ C0(R) for any 
+
+μ′ ∈ (1 , ∞], which yields continuous pointwise evaluation. In particular, the distribu-tional derivative ( R+ − R−)δ0 of the Euler shock R0 is in W −1,μ (R). 
+
+Corollary 5.8 (Strong convergence of the derivative in W −1,μ (R)). Let μ ∈
+
+[1 , ∞). Then, { .
+
+Rαdξ }α> 0 converges to (R+ − R−)δ0 in W −1,μ (R) as α → 0+ with rate α1/(2 μ). In particular, 
+
+(5.8) ∥ .
+
+Rαdξ − (R+ − R−)δ0∥W −1,μ (R) ≤ Cα 1/(2 μ),
+
+where C is the same constant as in Theorem 5.6 . Analogous statements hold for .
+
+Uαdξ ,
+
+## .eαdξ , .
+
+Sαdξ .Proof. This immediately follows from a density argument using H¨ older’s inequal-ity and Theorem 5.6. Note that for the finite μ considered, W 1,μ ′ 
+
+> 0
+
+(R) is a strict subset of W 1,μ ′
+
+(R) only for the endpoint μ′ = ∞ (i.e., μ = 1), due to loss of control of mass at infinity. We can instead establish convergence of the derivative in a space smaller than W −1,1(R)at the cost of trading strong convergence for weak ∗ convergence, which is the next result. 
+
+Theorem 5.9 (Weak convergence of the derivative in the sense of measures). 
+
+The sequence of Radon measures { .
+
+Rαdξ }α> 0 converges to (R+ − R−)δ0 as α → 0+
+
+weakly in the sense of measures, i.e., weak ∗ convergence on the topological dual of 
+
+C0(R). Analogous statements hold for .
+
+Uαdξ , .eαdξ , and .
+
+Sαdξ .Proof. We will use a density argument. First, consider any ϕ ∈ C1 
+
+> c
+
+(R); then, 
+
+Z
+
+> R
+
+ϕ(ξ) .
+
+Rα(ξ)dξ −
+
+Z
+
+> R
+
+ϕ(ξ)( R+ − R−)δ0 = −
+
+Z
+
+> R
+
+## .
+
+ϕ(ξ)( Rα(ξ) − R0(ξ)) dξ 
+
+≤ ∥ .
+
+ϕ∥∞∥Rα − R0∥L1(R) ≤ C√α∥ .
+
+ϕ∥∞,
+
+where we used Theorem 5.6. For ψ ∈ C0(R), the remainder of the proof follows by a standard density argument, taking a sequence {ϕn ∈ C1 
+
+> c
+
+(R)}∞ 
+
+> n=1
+
+approximating ψ in supremum norm. 
+
+5.4. Continuous dependence on parameters. To conclude this section, we briefly note that the various quantities derived throughout depend continuously on the IGR shock parameters θ = ( α, R −, R +). To see this, view S as explicitly depending on these parameters, S = S(R; θ). Recall that the sonic density Rs defined by ∂S 
+
+> ∂R
+
+(R; θ) = 0 furthermore satisfies ∂2S 
+
+> ∂R 2
+
+(R; θ)̸ = 0. By the implicit function theorem, we have that IGR SHOCKS FOR COMPRESSIBLE EULER 31 
+
+Rs has local C1 dependence on θ. Since the standing assumptions define an open set of admissible parameters, we have that Rs has C1 dependence on θ (note that Rs
+
+is independent of α as discussed above, so this can be simplified to C1 dependence on R− and R+). This then yields continuous dependence on θ for various quantities derived in the paper, for example the α-independent profile R, as well as as defined in (4.1). Hence, the H¨ older and Sobolev exponents depend continuously on θ, as well as various constants appearing in bounds throughout, e.g., (5.6). 
+
+6. Conclusion. In this paper, we established existence, uniqueness modulo translation, and regularity of compressive transonic shock profiles in one dimension for the information geometric regularization of the compressible Euler equations with a general thermodynamic equation of state. The profiles are monotone heteroclinic connections between saddle equilibria and exhibit a degeneracy at the transition from a supersonic to a subsonic state. Despite the loss of classical regularity at the sonic point, we proved H¨ older and Sobolev regularity and showed, in particular, that the global weak solution contains no singular measure defect. We also analyzed the small-regularization asymptotics and proved convergence to the entropy-admissible Euler shock as the regularization parameter tends to zero. This work considers IGR shock profiles as traveling-wave solutions of the one-dimensional IGR equations, but does not address whether these profiles emerge dynamically from general initial data, whether they are stable under perturbations, or, if stable, the rate at which solutions approach the traveling profile. Prior work suggests that the divergence of the derivative at the sonic point may occur only asymptotically in time for smooth initial profiles [3]. More-over, one-dimensional IGR simulations exhibit profiles qualitatively similar to those obtained from the IGR shock equation in Figure 1. Future work will investigate the dynamical stability of IGR shock profiles both theoretically and numerically. 
+
+Acknowledgments. Los Alamos National Laboratory Report LA-UR-26-25301. 
+
+Data availability statement. Data generated in this study are available from the corresponding author upon reasonable request. 
+
+Declarations. The authors declare no competing interests. OpenAI’s ChatGPT was used for language editing and assistance with manuscript preparation. The authors assume responsibility for all content.                              
+
+> REFERENCES [1] W. Barham, B. K. Tran, B. S. Southworth, and F. Sch¨ afer ,Hamiltonian information geometric regularization of the compressible Euler equations , arXiv preprint: 2512.13948, (2025). [2] R. Cao and F. Sch¨ afer ,Information geometric regularization of the barotropic euler equation ,arXiv preprint arXiv:2308.14127, (2023). [3] R. Cao and F. Sch¨ afer ,Information geometric regularization of unidimensional pressureless euler equations yields global strong solutions , arXiv preprint arXiv:2411.15121, (2024). [4] D. Clamond and D. Dutykh ,Non-dispersive conservative regularisation of nonlinear shallow water (and isentropic euler equations) , Communications in Nonlinear Science and Numer-ical Simulation, 55 (2018), pp. 237–247. [5] R. Courant and K. O. Friedrichs ,Supersonic Flow and Shock Waves , Springer New York, NY, 1976. [6] C. M. Dafermos ,Hyperbolic Conservation Laws in Continuum Physics ,Grundlehren der mathematischen Wissenschaften, Springer, 5ed., 2026, https://doi.org/10.1007/ 978-3-662-72445-3. [7] B. Guelmame ,On a hamiltonian regularization of scalar conservation laws , arXiv preprint arXiv:2403.02218, (2024).
+
+32 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER [8] B. Guelmame, D. Clamond, and S. Junca , Hamiltonian regularisation of the unidimen-sional barotropic euler equations , Nonlinear Analysis: Real World Applications, 64 (2022), p. 103455. [9] H. Hugoniot , M´ emoire sur la propagation du mouvement dans les corps et sp´ ecialement dans les gaz parfaits , Journal de l’ ´Ecole Polytechnique, 57 (1887), pp. 3–97. [10] P. D. Lax , Hyperbolic systems of conservation laws II , Communications on pure and applied mathematics, 10 (1957), pp. 537–566. [11] R. J. LeVeque , Finite Volume Methods for Hyperbolic Problems , Cambridge Texts in Applied Mathematics, Cambridge University Press, 2002. [12] R. Menikoff and B. J. Plohr , The Riemann problem for fluid flow of real materials , Rev. Mod. Phys., 61 (1989), pp. 75–130, https://doi.org/10.1103/RevModPhys.61.75. [13] G. R. Peters and S. ˇCani´ c, On the oscillatory solutions in hyperbolic conservation laws ,Nonlinear Analysis: Real World Applications, 1 (2000), pp. 287–314, https://doi.org/10. 1016/S0362-546X(99)00207-2. [14] Y. Pu, R. Pego, D. Dutykh, and D. Clamond , Weakly singular shock profiles for anon-dispersive regularization of shallow-water equations , arXiv preprint arXiv:1805.06842, (2018). [15] A. Radhakrishnan, B. Wilfong, S. H. Bryngelson, and F. Sch¨ afer , Shocks without shock capturing: Information geometric regularization of finite volume methods for Navier– Stokes-like problems , arXiv preprint arXiv:2604.06546, (2026). [16] W. J. M. Rankine , On the thermodynamic theory of waves of finite longitudinal disturbance ,Philosophical Transactions of the Royal Society of London, 160 (1870), pp. 277–288. [17] J. Smoller , Shock Waves and Reaction–Diffusion Equations , Springer New York, NY, 2 ed., 1994, https://doi.org/10.1007/978-1-4612-0873-0. [18] S. M. Soares, L. Squillante, H. S. Lima, C. Tsallis, and M. de Souza , Universally non-diverging Gr¨ uneisen parameter at critical points , Phys. Rev. B, 111 (2025), p. L060409, https://doi.org/10.1103/PhysRevB.111.L060409. [19] S. Taylor, R. J. Spiteri, and S. Gaudreault , Thermodynamically constrained information geometric regularization for compressible flows , arXiv preprint: 2604.27286, (2026). [20] E. F. Toro , Riemann Solvers and Numerical Methods for Fluid Dynamics: A Practical In-troduction , Springer Berlin, Heidelberg, 3rd ed., 2009, https://doi.org/10.1007/b79761. [21] B. Wilfong, A. Radhakrishnan, H. L. Berre, D. J. Vickers, T. Prathi, N. Tselepidis, B. Dorschner, R. Budiardja, B. Cornille, S. Abbott, F. Sch¨ afer, and S. H. Bryn-gelson , Simulating many-engine spacecraft: Exceeding 1 quadrillion degrees of freedom via information geometric regularization , arXiv preprint: 2505.07392, (2025). [22] B. Xu, C. Wen, and P. Guo , A compression-directional entropic stress method for shock-regularized compressible flow , arXiv preprint: 2605.21444, (2026). 
+
+Appendix A. Convexity of the reduced pressure from the physical EOS. 
+
+This appendix records convenient criteria ensuring convexity of the reduced pres-sure 
+
+p(R) := ˜ p R, e (R)
+
+along the traveling-wave (TW) internal-energy curve. Under the standing assumption 
+
+m̸ = 0, the explicit formula (2.5) shows that e = e(R) is smooth for R > 0, so the reduced pressure p inherits the regularity of the physical EOS pressure ˜ p. Convexity of p is the structural hypothesis used in Sections 2–4. The examples below show how this criterion applies to ideal and stiffened gases and to cold + thermal EOS. In this appendix, ˜ p(ρ, e ) denotes the physical EOS pressure, while p(R) denotes the reduced pressure along the TW curve. 
+
+A.1. Traveling-wave energy curve and reduced pressure. From Section 2, the traveling-wave reduction determines the internal-energy curve e = e(R) by (2.5) and defines the reduced pressure by (2.6). In this appendix we use these formulas to compute p′′ and derive convenient convexity criteria. For later use we record the derivatives of e(R): (A.1) e′(R) = − AR2 − m2
+
+R3 , e′′ (R) = 2AR3 + 3m2
+
+R4 .IGR SHOCKS FOR COMPRESSIBLE EULER 33 Combining these gives the TW identity (A.2) e′′ (R) + 2
+
+R e′(R) = m2
+
+R4 > 0.
+
+A.2. Second-derivative formula for the reduced pressure. Differentiating (2.6) and using the chain rule yields p′(R) = ˜ pρ + ˜ pe e′(R), and (A.3) p′′ (R) = ˜ pρρ + 2˜ pρe e′(R) + ˜ pee 
+
+ e′(R)2 + ˜ pe e′′ (R),
+
+where all partial derivatives of ˜ p are evaluated at ( ρ, e ) = ( R, e (R)). Using (A.2) to eliminate e′′ from (A.3) gives the equivalent representation (A.4) 
+
+p′′ (R) = 
+
+
+
+˜pρρ + m2
+
+R4 ˜pe
+
+
+
++ 2 
+
+
+
+˜pρe − 1
+
+R ˜pe
+
+
+
+e′(R) + ˜ pee 
+
+ e′(R)2, (ρ, e ) = ( R, e (R)) .
+
+Thus p′′ (R) is a quadratic polynomial in e′(R) with coefficients determined by the EOS and the flux m.It is convenient to introduce the abbreviations (A.5) B(R) := ˜ pρρ + m2
+
+R4 ˜pe, δ(R) := ˜ pρe − 1
+
+R ˜pe, (ρ, e ) = ( R, e (R)) ,
+
+so that (A.4) becomes (A.6) p′′ (R) = B(R) + 2 δ(R)e′(R) + ˜ pee 
+
+ e′(R)2.
+
+Equivalently, defining the TW-modified Hessian (A.7) H(R, e ) := 
+
+
+
+˜pρρ + m2
+
+R4 ˜pe ˜pρe − 1
+
+R ˜pe
+
+˜pρe − 1
+
+R ˜pe ˜pee 
+
+ ,
+
+we may write (A.8) p′′ (R) = 
+
+ 1
+
+e′(R)
+
+T
+
+H R, e (R)  1
+
+e′(R)
+
+
+
+.
+
+A.3. A sufficient convexity criterion. A simple sufficient condition for con-vexity of the reduced pressure on an interval of densities is positivity of the quadratic form in (A.8). 
+
+Proposition A.1 (Sufficient condition for convexity). Assume that along the TW curve (R, e (R)) one has 
+
+(A.9) H R, e (R) ⪰ 0
+
+for all R in the density range traversed by the profile. Then p′′ (R) ≥ 0 on that interval, i.e. p is convex there. 
+
+Since H is a 2 × 2 symmetric matrix, (A.9) is equivalent to the scalar inequalities (A.10) ˜pee ≥ 0, B(R) ≥ 0, δ(R)2 ≤ ˜pee B(R), (ρ, e ) = ( R, e (R)) ,
+
+with B and δ as in (A.5). If ˜ pee ≡ 0 along the curve, then (A.10) reduces to δ ≡ 0and B(R) ≥ 0. 34 W. BARHAM, B. K. TRAN, B. S. SOUTHWORTH AND F. SCH ¨AFER 
+
+Remark A.2 (Interpretation of δ). Introducing the Gr¨ uneisen parameter Γ := ˜pe/ρ [12, 18], one checks that 
+
+(A.11) δ(R) = ˜ pρe − 1
+
+R ˜pe = R ∂ ρΓ( ρ, e ) e ρ=R
+
+.
+
+Thus δ measures the density dependence of the thermal coupling at fixed internal energy. In particular, δ ≡ 0 corresponds to Γ independent of ρ (at fixed e). 
+
+A.4. Examples. 
+
+Ideal gas and stiffened gas. For ˜ p(ρ, e ) = ( γ − 1) ρe (and similarly ˜ p = ( γ − 1) ρe −
+
+γp ∞), one has ˜ pee = 0, ˜ pρe = γ − 1, ˜ pe = ( γ − 1) ρ. Hence, δ ≡ 0 and 
+
+B(R) = m2
+
+R4 ˜pe(R, e (R)) = ( γ − 1) m2
+
+R3 > 0.
+
+Therefore (A.6) yields p′′ (R) = ( γ − 1) m2 
+
+> R3
+
+> 0, R > 0, so the reduced pressure is strictly convex along the TW curve despite Hess(˜ p) being indefinite. 
+
+Cold + thermal EOS. Let ˜ p(ρ, e ) = p0(ρ)+ ρ ϕ (e). Then ˜ pρρ = p′′  
+
+> 0
+
+(ρ), ˜ pρe = ϕ′(e), ˜pe = ρ ϕ ′(e), ˜ pee = ρ ϕ ′′ (e), and in particular δ ≡ 0. Substituting into (A.4) gives (A.12) p′′ (R) = p′′  
+
+> 0
+
+(R) + ϕ′(e(R)) m2
+
+R3 + R ϕ ′′ (e(R))  e′(R)2.
+
+Consequently, on any density interval traversed by the TW profile, p is convex pro-vided p′′  
+
+> 0
+
+(R) ≥ 0, ϕ′(e) ≥ 0, and ϕ′′ (e) ≥ 0, with strict convexity whenever m̸ = 0 and 
+
+ϕ′(e) > 0. 
+
+Appendix B. Alternative EOS admissibility criterion. This appendix records a second, more direct admissibility criterion for reduced-pressure convexity. Compared with Appendix A, it is typically easier to check but more restrictive. In particular, it imposes the additional sign condition e′(R) ≥ 0 along the TW curve, which is not part of the standing assumptions in the body of the paper. As in Appendix A, ˜ p(ρ, e ) denotes the physical EOS pressure. Starting from (A.4), 
+
+p′′ (R) = 
+
+
+
+˜pρρ + m2
+
+R4 ˜pe
+
+
+
++ 2 
+
+
+
+˜pρe − 1
+
+R ˜pe
+
+
+
+e′(R) + ˜ pee 
+
+ e′(R)2, (ρ, e ) = ( R, e (R)) .
+
+Proposition B.1 (Alternative sufficient criterion). Assume along the TW curve 
+
+(R, e (R)) on the profile density interval that 
+
+(B.1) ˜pρρ ≥ 0, ˜pee ≥ 0, ˜pe ≥ 0, ˜pρe ≥ 1
+
+R ˜pe, e′(R) ≥ 0.
+
+Then p′′ (R) ≥ 0 on that interval. In particular, if m̸ = 0 and ˜pe > 0, then p′′ (R) > 0.Proof. Under (B.1), each term in (A.4) is nonnegative: ˜pρρ + m2
+
+R4 ˜pe ≥ 0, 2
+
+
+
+˜pρe − 1
+
+R ˜pe
+
+
+
+e′(R) ≥ 0, ˜pee 
+
+ e′(R)2 ≥ 0.
+
+Hence p′′ (R) ≥ 0. If additionally m̸ = 0 and ˜ pe > 0, then m2 
+
+> R4
+
+˜pe > 0, so p′′ (R) > 0. IGR SHOCKS FOR COMPRESSIBLE EULER 35 
+
+Remark B.2 (Growth interpretation). Let f (ρ, e ) := ˜ pe(ρ, e ). The coupling con-dition ˜pρe ≥ 1 
+
+> R
+
+˜pe is equivalent to 
+
+∂ρf (ρ, e ) (ρ,e )=( R,e (R)) ≥ f (R, e (R)) 
+
+R .
+
+Thus, at the states sampled by the TW curve, the thermal response ˜pe must grow at least linearly in density when differentiated at fixed internal energy. 
+
+Remark B.3 (Separable EOS). For ˜p(ρ, e ) = g(e) h(ρ) with g ≥ 0, g′ ≥ 0, g′′ ≥
+
+0, h ≥ 0, h′′ ≥ 0, and ρh ′(ρ) ≥ h(ρ), condition (B.1) reduces to e′(R) ≥ 0 plus the stated sign/growth assumptions. In this case Proposition B.1 applies directly. 
+
+Appendix C. Numerical computation of the IGR shock profile. 
+
+We compute IGR shock profiles by solving the scalar density equation on a trun-cated interval [ −L, L ] using a finite-difference damped-Newton method. For the nu-merical examples we take a polytropic reduced pressure p(R) = κR γ , with κ > 0and γ ≥ 1, and compute ( c, m, q ) from RH-compatible end states using (2.14). The residual is formed from the expanded density equation 
+
+S(R)
+
+R − α S′(R)
+
+R
+
+## .. 
+
+R − α
+
+ S′′ (R)
+
+R − S′(R)
+
+R2 + 2m2
+
+R4
+
+ .
+
+R 2 = 0 .
+
+On a uniform grid ξj = −L + jh , h = 2 L/N , we impose R0 = R− and RN = R+
+
+and solve for the interior values R = ( R1, . . . , R N −1). At interior nodes we use the centered approximations 
+
+D1Rj = Rj+1 − Rj−1
+
+2h , D2Rj = Rj+1 − 2Rj + Rj−1
+
+h2 ,
+
+giving the nonlinear residual 
+
+Fj (R) = S(Rj )
+
+Rj
+
+− α S′(Rj )
+
+Rj
+
+D2Rj − α S′′ (Rj )
+
+Rj
+
+− S′(Rj )
+
+R2
+
+> j
+
++ 2m2
+
+R4
+
+> j
+
+!
+
+(D1Rj )2.
+
+The nonlinear system F (R) = 0 is solved by damped Newton iteration with a finite-difference Jacobian and residual-decreasing backtracking. Trial states are con-strained to remain positive. To select the physical branch, we use a projected iteration: before residual comparison, trial profiles are projected onto the monotone class, us-ing cumulative maxima for increasing shocks and cumulative minima for decreasing shocks, followed by clipping to the interval [ R−, R +]. For stronger shocks, we use continuation in the compression ratio r = R+/R −. A sequence of increasing values of 
+
+r is solved, using each converged profile as initial data for the next solve. Since the traveling wave is translation-invariant, profiles are recentered between continuation steps so that the midpoint level 12 (R− + R+) remains near the center of [ −L, L ].

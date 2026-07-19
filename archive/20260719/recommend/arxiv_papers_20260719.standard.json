@@ -1,52 +1,55 @@
 {
   "mode": "standard",
-  "generated_at": "2026-07-19T12:55:38.977640+00:00",
+  "generated_at": "2026-07-19T21:20:18.611031+00:00",
   "stats": {
     "mode": "standard",
     "tag_count": 3,
-    "deep_divecandidates": 3,
+    "deep_divecandidates": 5,
     "deep_cap": 8,
-    "deep_selected": 3,
-    "quick_candidates": 13,
+    "deep_selected": 5,
+    "quick_candidates": 15,
     "quick_skim_target": 13,
     "quick_selected": 13
   },
   "deep_dive": [
     {
-      "id": "2607.13193v1",
+      "id": "2607.15087v1",
       "source": "arxiv",
-      "title": "Generating synthetic evolution of turbulent flames with an experimental data-based spatiotemporal diffusion model",
-      "abstract": "In this study, a conditional diffusion model -- a class of generative machine learning models -- is developed to generate synthetic, experimental data-based trajectories of turbulent flames. Generated experimental data corresponds to simultaneous field measurements, namely OH planar laser-induced fluorescence (OH-PLIF) fields and multi-component particle image velocimetry (PIV) fields, for attached and detached flame states in a swirl combustor configuration. This is done using an x-prediction flow matching framework combined with a pixel-based spatiotemporal transformer, which is capable of generating entire spatiotemporal slabs containing synthetic flame evolution at inference time, conditioned on the flame regime. Using this framework, synthetic flames were found to preserve key flame features and statistical consistency across space and time, particularly at the large scales -- deviations at high temporal frequencies and small spatial length scales were found to depend on the time-span of the generated space-time slabs. An extrapolation task of transition synthesis is also conducted, in which the conditional diffusion model is used to synthesize spatiotemporally coherent flame transitions (flame liftoff and reattachment) unseen by the model during training. This was accomplished using a model for the denoising transition velocity that relies on time-varying linear combinations of attached and detached denoising velocities, leading to an approach that (a) allows for control of the generated transition directions and timescales, and (b) retains sample-to-sample variability in the generated transitions in the process. Overall, this study provides a promising pathway for the utilization of experimental data-based generative models as a new means of data exploration in data-sparse environments, complementing both experiments and computational fluid dynamics-based approaches.",
+      "title": "Split Complex-Valued Physics-Informed Neural Networks for Forward and Inverse Nonlinear PDEs",
+      "abstract": "Physics-informed neural networks (PINNs) have emerged as a powerful framework for solving forward and inverse partial differential equations (PDEs), but conventional real-valued PINNs (RV-PINNs) often suffer from spectral bias, limited expressivity, and reduced accuracy for high-frequency, oscillatory, and phase-dependent dynamics. In this work, we propose a generalized split complex-valued physics-informed neural network (SCV-PINN), in which network parameters and latent representations are defined in the complex domain. The framework employs split complex-valued activation functions by independently applying standard real-valued activations to the real and imaginary components, providing numerical stability, computational efficiency, and improved approximation capability. This formulation enables simultaneous learning of amplitude and phase information, enhancing the representation of nonlinear and oscillatory systems. Extensive ablation studies evaluate different split activation functions and collocation sampling strategies. The proposed framework is validated on forward and inverse PDE benchmarks including Burgers, Allen-Cahn, Korteweg-de Vries, nonlinear Schrodinger, Helmholtz, Poisson, Kovasznay flow (Re = 20), lid-driven cavity flow (Re = 100), the Lorenz system, inverse Burgers, inverse Navier-Stokes (Re = 100), and a three-dimensional Navier-Stokes Beltrami flow. For the Beltrami benchmark, SCV-PINN achieves a relative L2 error of 4.07 x 10^-5. Numerical results consistently demonstrate lower relative L2 errors and more accurate parameter identification than RV-PINNs and several existing PINN variants. The proposed SCV-PINN provides a robust and generalized extension of standard PINNs for complex-valued, multiscale, oscillatory, high-dimensional, and real-valued nonlinear PDEs.",
       "authors": [
-        "Amrit Tarur",
-        "Shivam Barwey"
+        "Biswanath Barman",
+        "Rajendra K. Ray",
+        "Debdeep Chatterjee"
       ],
       "primary_category": "physics.flu-dyn",
       "categories": [
         "physics.flu-dyn"
       ],
-      "published": "2026-07-14T18:45:04+00:00",
-      "link": "https://arxiv.org/pdf/2607.13193v1",
+      "published": "2026-07-16T14:58:54+00:00",
+      "link": "https://arxiv.org/pdf/2607.15087v1",
       "tags": [
         "keyword:flow-pred",
+        "keyword:pc-latent",
         "keyword:sfc",
         "query:flow-pred",
+        "query:pc-latent",
         "query:sfc"
       ],
-      "llm_score": 9.0,
-      "llm_evidence_en": "spatiotemporal diffusion model for generating turbulent flame flow fields",
-      "llm_evidence_cn": "时空扩散模型生成湍流火焰流场",
-      "llm_evidence": "时空扩散模型生成湍流火焰流场",
-      "canonical_evidence": "时空扩散模型生成湍流火焰流场",
-      "llm_tldr_en": "Develops a conditional diffusion model with flow matching and spatiotemporal transformer to generate synthetic simultaneous OH-PLIF and PIV fields of turbulent flames, conditioned on flame state.",
-      "llm_tldr_cn": "该论文针对湍流火焰实验数据难以获取的问题，提出了一种基于扩散模型和流匹配的生成方法，能够生成同步的OH-PLIF和PIV时空场。模型采用x-prediction流匹配和像素级时空transformer，可产生与真实实验数据统计一致的合成火焰演化序列。实验表明，生成数据能准确复现湍流火焰的相干结构和动态特性，为燃烧诊断和数值模拟提供了数据增强工具。",
-      "llm_tldr": "该论文针对湍流火焰实验数据难以获取的问题，提出了一种基于扩散模型和流匹配的生成方法，能够生成同步的OH-PLIF和PIV时空场。模型采用x-prediction流匹配和像素级时空transformer，可产生与真实实验数据统计一致的合成火焰演化序列。实验表明，生成数据能准确复现湍流火焰的相干结构和动态特性，为燃烧诊断和数值模拟提供了数据增强工具。",
+      "llm_score": 8.0,
+      "llm_evidence_en": "physics-informed neural network for solving PDEs, directly applicable to flow field prediction",
+      "llm_evidence_cn": "物理信息神经网络用于求解PDE，直接适用于流场预测",
+      "llm_evidence": "物理信息神经网络用于求解PDE，直接适用于流场预测",
+      "canonical_evidence": "物理信息神经网络用于求解PDE，直接适用于流场预测",
+      "llm_tldr_en": "Proposes split complex-valued PINN (SCV-PINN) with complex parameters and activation functions to overcome spectral bias and enhance expressivity for high-frequency/oscillatory PDEs, showing improved accuracy on forward and inverse problems.",
+      "llm_tldr_cn": "该论文针对传统实值物理信息神经网络在高频振荡问题中的谱偏差和表达能力不足，提出了分裂复值PINN，将网络参数和潜在表示定义在复数域，采用分裂复值激活函数。在多个正反演非线性PDE问题（包括波动方程、对流扩散方程等）上，SCV-PINN相比实值PINN显著提高了精度，为复杂流体问题的精确模拟提供了新方法。",
+      "llm_tldr": "该论文针对传统实值物理信息神经网络在高频振荡问题中的谱偏差和表达能力不足，提出了分裂复值PINN，将网络参数和潜在表示定义在复数域，采用分裂复值激活函数。在多个正反演非线性PDE问题（包括波动方程、对流扩散方程等）上，SCV-PINN相比实值PINN显著提高了精度，为复杂流体问题的精确模拟提供了新方法。",
       "llm_tags": [
-        "query:flow-pred:composite"
+        "query:flow-pred"
       ],
-      "matched_query_tag": "query:flow-pred:composite",
-      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
-      "matched_requirement_id": "req-composite-flow-pred",
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "flow field prediction methods",
+      "matched_requirement_id": "req-9",
       "selection_source": "fresh_fetch"
     },
     {
@@ -73,53 +76,13 @@
         "query:sfc"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "evaluates deep learning architectures for aerodynamic predictions",
-      "llm_evidence_cn": "评估用于气动预测的深度学习架构",
-      "llm_evidence": "评估用于气动预测的深度学习架构",
-      "canonical_evidence": "评估用于气动预测的深度学习架构",
-      "llm_tldr_en": "Benchmarks operator learning and other deep learning surrogates for aerodynamic predictions, showing performance across various test cases.",
-      "llm_tldr_cn": "针对计算流体动力学仿真计算成本高的问题，评估了一系列基于深度学习的代理模型，特别是算子学习方法。在气动预测任务上系统比较了多种架构的性能和效率，为工程应用中选择合适模型提供了指导。",
-      "llm_tldr": "针对计算流体动力学仿真计算成本高的问题，评估了一系列基于深度学习的代理模型，特别是算子学习方法。在气动预测任务上系统比较了多种架构的性能和效率，为工程应用中选择合适模型提供了指导。",
-      "llm_tags": [
-        "query:flow-pred"
-      ],
-      "matched_query_tag": "query:flow-pred",
-      "matched_query_text": "What are the state of the art methods for flow field prediction and reconstruction?",
-      "matched_requirement_id": "req-12",
-      "selection_source": "fresh_fetch"
-    },
-    {
-      "id": "2607.11974v1",
-      "source": "arxiv",
-      "title": "Learning to Discretize: Diffusion-Based Adaptive Mesh with Spectral Guidance",
-      "abstract": "Most neural partial differential equation (PDE) surrogates learn how fields evolve after a grid has already been chosen. However, before any operator is applied, the grid has already determined how modeling capacity is allocated across space, resolution, and spectral bandwidth. We argue that this hidden design choice should itself be learnable, leading to a question different from standard operator learning: can a surrogate learn where resolution should exist before predicting field evolution? We formulate adaptive discretization as a physics-constrained conditional generation problem over valid mesh displacements. The success of diffusion models in PDE field prediction suggests their potential for learning adaptive discretizations under similar structured constraints. This leads to a two-stage diffusion framework: Stage 1 learns an r-adaptive displacement mesh conditioned on the observed dynamics, while Stage 2 predicts the solution evolution from the mesh-informed representation. The mesh generator is regularized by physics-aware proxy channels, geometric validity constraints, and local spectral concentration so that adaptation remains physically interpretable and numerically legal. Across five PDE regimes, the results show that diffusion-based learned discretization is competitive with adaptive-mesh and reduced-order baselines, with particularly strong gains in regimes where fixed or handcrafted allocation is insufficient. The main conclusion is not that there exists a universal optimal mesh rule, but that discretization should be learned in a regime-dependent manner: different spatial and spectral structures favor different allocation behaviors. This reframes adaptive meshing for neural PDE solvers from a solver-specific heuristic into a generative representation-learning problem.",
-      "authors": [
-        "Zixuan Shen",
-        "Bingchuan Wang",
-        "Zhi Wang",
-        "Yong Wang"
-      ],
-      "primary_category": "cs.LG",
-      "categories": [
-        "cs.LG",
-        "cs.AI"
-      ],
-      "published": "2026-07-13T03:09:05+00:00",
-      "link": "https://arxiv.org/pdf/2607.11974v1",
-      "tags": [
-        "keyword:flow-pred",
-        "keyword:pc-latent",
-        "query:flow-pred",
-        "query:pc-latent"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "diffusion-based adaptive mesh for neural PDE surrogates, directly supports flow field prediction",
-      "llm_evidence_cn": "基于扩散的自适应网格用于神经PDE代理，直接支持流场预测",
-      "llm_evidence": "基于扩散的自适应网格用于神经PDE代理，直接支持流场预测",
-      "canonical_evidence": "基于扩散的自适应网格用于神经PDE代理，直接支持流场预测",
-      "llm_tldr_en": "Proposes a diffusion-based adaptive discretization method that learns where resolution should be allocated before predicting field evolution, constrained by physics.",
-      "llm_tldr_cn": "该文指出网格选择对神经PDE代理的重要性，并将自适应离散化视为物理约束下的条件生成问题。作者利用扩散模型学习有效的网格位移，从而在预测场演化前自适应分配计算资源。该方法突破了传统固定网格的限制，有望提升流场预测的精度和效率，是流场预测与重构领域的创新性工作。",
-      "llm_tldr": "该文指出网格选择对神经PDE代理的重要性，并将自适应离散化视为物理约束下的条件生成问题。作者利用扩散模型学习有效的网格位移，从而在预测场演化前自适应分配计算资源。该方法突破了传统固定网格的限制，有望提升流场预测的精度和效率，是流场预测与重构领域的创新性工作。",
+      "llm_evidence_en": "comprehensive evaluation of deep learning architectures for aerodynamic predictions",
+      "llm_evidence_cn": "对用于气动预测的深度学习架构进行全面评估",
+      "llm_evidence": "对用于气动预测的深度学习架构进行全面评估",
+      "canonical_evidence": "对用于气动预测的深度学习架构进行全面评估",
+      "llm_tldr_en": "Surveys and benchmarks deep learning surrogate models for aerodynamic predictions, focusing on operator learning methods that approximate PDE solution operators.",
+      "llm_tldr_cn": "本文系统评估了用于气动预测的深度学习替代模型，重点关注算子学习方法，这些方法直接逼近偏微分方程的解算子。在气动形状优化和载荷分析等任务中，基于深度学习的替代模型相比传统CFD大幅降低计算成本。文章比较了多种架构的性能，为流场预测领域提供了重要参考。",
+      "llm_tldr": "本文系统评估了用于气动预测的深度学习替代模型，重点关注算子学习方法，这些方法直接逼近偏微分方程的解算子。在气动形状优化和载荷分析等任务中，基于深度学习的替代模型相比传统CFD大幅降低计算成本。文章比较了多种架构的性能，为流场预测领域提供了重要参考。",
       "llm_tags": [
         "query:flow-pred:composite"
       ],
@@ -127,9 +90,206 @@
       "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
       "matched_requirement_id": "req-composite-flow-pred",
       "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.14273v1",
+      "source": "arxiv",
+      "title": "Learning reduced-order latent linear models for Kalman filtering of nonlinear systems",
+      "abstract": "We propose a filtering-oriented end-to-end learning framework to identify reduced-order models explicitly tailored for state estimation in high-dimensional nonlinear systems. An autoencoder (AE) neural network learns a low-dimensional latent representation of the state together with a lifting map to the original space, while a reduced-order linear time-invariant (RO-LTI) model describes the latent dynamics. The AE and RO-LTI model are trained jointly by minimizing a multi-objective loss that combines reconstruction error with a filtering objective based on a differentiable Kalman filter, ensuring that the reduced-order model is tailored for the downstream state estimation task. At inference, filtering is performed entirely in the latent space using the RO-LTI model, and the estimated state is mapped back to the original space via the decoder. Unlike conventional two-stage approaches, in which a reduced-order model is first identified for system approximation and a filter is subsequently designed on top of it, the proposed framework learns a task-oriented reduced-order model whose parameters are shaped entirely by filtering performance rather than system approximation accuracy alone. We further quantify probabilistic bounds on the performance gap between full-order and reduced-order filters using conformal predictions, which do not require assumption on data distribution. The approach is validated on a heat diffusion benchmark, where the full temperature field is reconstructed from sparse measurements.",
+      "authors": [
+        "Manas Mejari",
+        "Milad Banitalebi Dehkordi",
+        "Dario Piga"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-07-15T18:28:59+00:00",
+      "link": "https://arxiv.org/pdf/2607.14273v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "learning reduced-order latent linear models for Kalman filtering",
+      "llm_evidence_cn": "学习用于卡尔曼滤波的降阶潜在线性模型",
+      "llm_evidence": "学习用于卡尔曼滤波的降阶潜在线性模型",
+      "canonical_evidence": "学习用于卡尔曼滤波的降阶潜在线性模型",
+      "llm_tldr_en": "Proposes an end-to-end framework that jointly trains an autoencoder and a reduced-order linear model for latent dynamics, tailored for state estimation via differentiable Kalman filtering.",
+      "llm_tldr_cn": "该论文提出了一种面向滤波的端到端学习框架，通过联合训练自编码器和降阶线性时不变模型，学习高维非线性系统的低维潜在动力学。损失函数结合重构误差和基于可微卡尔曼滤波的滤波目标，使得降阶模型专门用于状态估计任务。推理时在潜在空间完成滤波，显著降低了计算复杂度。",
+      "llm_tldr": "该论文提出了一种面向滤波的端到端学习框架，通过联合训练自编码器和降阶线性时不变模型，学习高维非线性系统的低维潜在动力学。损失函数结合重构误差和基于可微卡尔曼滤波的滤波目标，使得降阶模型专门用于状态估计任务。推理时在潜在空间完成滤波，显著降低了计算复杂度。",
+      "llm_tags": [
+        "query:pc-latent"
+      ],
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "latent dynamics",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.10896v1",
+      "source": "arxiv",
+      "title": "Incremental Transformer for Surrogate-Based Inverse Design of Geopolymer Mixtures",
+      "abstract": "Small-data inverse design is challenging in engineering informatics when observations are heterogeneous, mixed-type, and constrained by physical relations among design variables. This work proposes a topology-aware surrogate framework guided by an Incremental Transformer (INCRT) for physics-constrained inverse design, applied to geopolymer mixture design. The method integrates intrinsic-dimensionality analysis, mixed-variable design-space representation, tabular surrogate prediction, INCRT-based manifold rationalisation, and constrained inverse optimisation. Using a public benchmark of fly-ash and slag-based geopolymer concrete mixtures with compressive-strength and carbon-emission targets, the high-dimensional design space proves strongly redundant, organising around fewer effective mixture regimes. Compressive strength requires nonlinear tabular surrogates, while carbon emission is largely determined by composition and well recovered by regularised linear models. INCRT thus acts not as a replacement for tabular predictors but as a rationalisation layer providing prototype regimes and a manifold-support score for inverse design. Three strategies are compared: unconstrained surrogate optimisation, physics-constrained optimisation, and topology-aware physics-constrained optimisation. Unconstrained optimisation can match target strength but may yield physically invalid or off-manifold candidates; physics-only constraints do not always ensure data support. The topology-aware strategy yields candidates balancing target compliance, carbon reduction, physical admissibility, and proximity to the learned feasible manifold. The framework aims not to replace experimental validation but to support screening of credible candidate mixtures from small, mixed, physically constrained engineering datasets.",
+      "authors": [
+        "Giansalvo Cirrincione",
+        "Filippo Grassia"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "stat.ML"
+      ],
+      "published": "2026-07-12T19:52:22+00:00",
+      "link": "https://arxiv.org/pdf/2607.10896v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "physics-constrained inverse design, latent space optimization",
+      "llm_evidence_cn": "物理约束逆设计，潜在空间优化",
+      "llm_evidence": "物理约束逆设计，潜在空间优化",
+      "canonical_evidence": "物理约束逆设计，潜在空间优化",
+      "llm_tldr_en": "Proposes an Incremental Transformer (INCRT) for surrogate-based inverse design under physical constraints, integrating intrinsic dimensionality analysis and constrained optimization. Demonstrates effectiveness on geopolymer mixture benchmarks.",
+      "llm_tldr_cn": "该论文针对小数据下受物理约束的逆设计问题，提出了一种拓扑感知的增量Transformer代理框架（INCRT）。方法融合内在维度分析、混合变量表示和约束逆优化，在可压缩强度与碳排放目标下实现了高维设计空间的有效探索，为物理约束潜空间优化提供了新途径。",
+      "llm_tldr": "该论文针对小数据下受物理约束的逆设计问题，提出了一种拓扑感知的增量Transformer代理框架（INCRT）。方法融合内在维度分析、混合变量表示和约束逆优化，在可压缩强度与碳排放目标下实现了高维设计空间的有效探索，为物理约束潜空间优化提供了新途径。",
+      "llm_tags": [
+        "query:pc-latent:composite"
+      ],
+      "matched_query_tag": "query:pc-latent:composite",
+      "matched_query_text": "Papers central to 物理约束潜在空间学习与优化, especially work that connects or combines: latent dynamics; physics constrained learning for latent space models; latent space optimization under physical constraints; latent space methods with physical constraints; latent variable models with constraints from physics; learning latent space that satisfies physical laws; optimizing latent variables with physics constraints; physics constrained autoencoder training.",
+      "matched_requirement_id": "req-composite-pc-latent",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.12693v1",
+      "source": "arxiv",
+      "title": "Shock solutions for the one-dimensional information geometric regularization of compressible flow",
+      "abstract": "The information geometric regularization (IGR) is an inviscid regularization of the compressible Euler equations that alters the geometry of Lagrangian characteristics to prevent trajectories from crossing in finite time. Previous work on IGR established global strong solutions in one dimension, explored thermodynamic effects of the model, and enabled large-scale simulations of compressible flow. However, a fundamental question that remains is how this regularization alters the structure and regularity of a shock-like solution.   We prove existence, uniqueness modulo translation, and regularity of transonic compressive IGR shock profiles in one spatial dimension. The analysis applies to the full thermodynamic compressible Euler--IGR model with a general equation of state, subject to mild convexity hypotheses. A traveling-wave ansatz reduces the Euler--IGR equations to a degenerate second-order scalar equation for the density profile. At the sonic crossing, the elliptic coefficient degenerates: the density profile remains continuous, but its derivative diverges. The profile is a classical solution away from this single point, while at the degeneracy it retains quantified Hölder and Sobolev regularity. We also analyze the vanishing-regularization limit, showing that the shock width scales like $\\sqrt{α}$ and that the IGR profiles converge to the entropy-admissible Euler shock.",
+      "authors": [
+        "William Barham",
+        "Brian K. Tran",
+        "Ben S. Southworth",
+        "Florian Schäfer"
+      ],
+      "primary_category": "math.AP",
+      "categories": [
+        "math.AP"
+      ],
+      "published": "2026-07-14T12:21:10+00:00",
+      "link": "https://arxiv.org/pdf/2607.12693v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "shock solutions in compressible flow using information geometric regularization",
+      "llm_evidence_cn": "使用信息几何正则化的可压缩流中的激波解",
+      "llm_evidence": "使用信息几何正则化的可压缩流中的激波解",
+      "canonical_evidence": "使用信息几何正则化的可压缩流中的激波解",
+      "llm_tldr_en": "Proves existence, uniqueness and regularity of transonic compressive shock profiles in one-dimensional compressible Euler equations regularized by information geometry.",
+      "llm_tldr_cn": "该论文研究了信息几何正则化（IGR）对可压缩欧拉方程激波特性的影响。通过数学分析证明了在一维空间中等熵和完全热力学情形下跨声速压缩IGR激波剖面的存在性、平移唯一性和正则性。揭示了正则化如何改变激波结构，为理解无粘正则化机制提供了理论基础，对高超声速流动模拟有潜在意义。",
+      "llm_tldr": "该论文研究了信息几何正则化（IGR）对可压缩欧拉方程激波特性的影响。通过数学分析证明了在一维空间中等熵和完全热力学情形下跨声速压缩IGR激波剖面的存在性、平移唯一性和正则性。揭示了正则化如何改变激波结构，为理解无粘正则化机制提供了理论基础，对高超声速流动模拟有潜在意义。",
+      "llm_tags": [
+        "query:sfc:composite"
+      ],
+      "matched_query_tag": "query:sfc:composite",
+      "matched_query_text": "Papers central to 超声速气膜冷却, especially work that connects or combines: hypersonic thermal protection; supersonic film cooling heat transfer; film cooling effectiveness measurement; shock wave interaction with film cooling; recent advances in supersonic and hypersonic film cooling for aerospace thermal protection; How does shock wave interaction affect supersonic film cooling performance?.",
+      "matched_requirement_id": "req-composite-sfc",
+      "selection_source": "fresh_fetch"
     }
   ],
   "quick_skim": [
+    {
+      "id": "2607.11190v1",
+      "source": "arxiv",
+      "title": "Compact and Stable Representation of Real-Frequency Spectral Functions for Machine Learning",
+      "abstract": "We introduce a compact and stable moment representation for real-frequency Green's functions, hybridization functions, and self-energies for machine-learning applications, avoiding the inefficiency of dense frequency grids as well as the ill-posed analytic continuation of Matsubara approaches. The representation is constructed from Cayley-mapped trigonometric moments with the Jacobian included, which preserve spectral-weight normalization, tie the moment sequence to a positive matrix-valued spectral measure, and admit a systematic route to a pole representation via ESPRIT. This provides a fixed-dimensional learning target in which physical constraints such as normalization and positivity can be imposed directly. Using a graph-attention neural network with FiLM conditioning, we benchmark the representation on single-orbital DMFT, antiferromagnetic DMFT, and a two-orbital impurity model. The results demonstrate accuracy matching or exceeding that of direct frequency-domain learning, reliable reproduction of the density and staggered magnetization, stable self-energy reconstruction through Dyson equation inversion, and accurate recovery of matrix-valued spectra with orbital mixing.",
+      "authors": [
+        "Xinyang Dong",
+        "Ido Zemach",
+        "Lei Zhang",
+        "Guy Cohen",
+        "Emanuel Gull"
+      ],
+      "primary_category": "physics.comp-ph",
+      "categories": [
+        "physics.comp-ph"
+      ],
+      "published": "2026-07-13T07:41:08+00:00",
+      "link": "https://arxiv.org/pdf/2607.11190v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "introduces compact representation with physical constraints (normalization, positivity) for spectral functions",
+      "llm_evidence_cn": "引入包含物理约束（归一化、正定性）的紧凑表示用于谱函数",
+      "llm_evidence": "引入包含物理约束（归一化、正定性）的紧凑表示用于谱函数",
+      "canonical_evidence": "引入包含物理约束（归一化、正定性）的紧凑表示用于谱函数",
+      "llm_tldr_en": "Proposes a moment representation for real-frequency Green's functions that enforces normalization and positivity, enabling machine learning with physical constraints.",
+      "llm_tldr_cn": "本文为机器学习中的实频格林函数、混合函数和自能引入了一种紧凑且稳定的矩表示。该表示基于Cayley映射的三角矩并包含雅可比项，能保持谱权重归一化和正定性，并通过ESPRIT系统性地获得极点表示。这为物理约束（如归一化、正定性）直接施加在学习目标上提供了固定维度的方案，在图注意力网络等模型上展示了有效性。",
+      "llm_tldr": "本文为机器学习中的实频格林函数、混合函数和自能引入了一种紧凑且稳定的矩表示。该表示基于Cayley映射的三角矩并包含雅可比项，能保持谱权重归一化和正定性，并通过ESPRIT系统性地获得极点表示。这为物理约束（如归一化、正定性）直接施加在学习目标上提供了固定维度的方案，在图注意力网络等模型上展示了有效性。",
+      "llm_tags": [
+        "query:pc-latent:composite"
+      ],
+      "matched_query_tag": "query:pc-latent:composite",
+      "matched_query_text": "Papers central to 物理约束潜在空间学习与优化, especially work that connects or combines: latent dynamics; physics constrained learning for latent space models; latent space optimization under physical constraints; latent space methods with physical constraints; latent variable models with constraints from physics; learning latent space that satisfies physical laws; optimizing latent variables with physics constraints; physics constrained autoencoder training.",
+      "matched_requirement_id": "req-composite-pc-latent",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.10546v1",
+      "source": "arxiv",
+      "title": "LLM-PDESR: Robust PDE Discovery via Subdomain Weighted Residuals and LLM-Guided Symbolic Hypothesis Generation",
+      "abstract": "Discovering governing partial differential equations (PDEs) from noisy observational data is a fundamental challenge in scientific machine learning. Traditional symbolic regression (SR) methods often struggle to identify accurate equations within vast combinatorial search spaces, largely due to their inability to incorporate essential domain-specific prior knowledge. Furthermore, reliance on pointwise evaluations and discrete finite differences inherently amplifies high-frequency noise, creating deceptive fitness landscapes that derail the optimization process. To resolve these bottlenecks, we propose LLM-PDESR, a framework that integrates the structural hypothesis generation of Large Language Models (LLMs) with a mathematically rigorous evaluation environment. By employing C^4-continuous quintic splines for robust differentiation and subdomain weighted residuals as natural low-pass filters, our approach effectively mitigates the fitness landscape distortion that plagues existing methods. A Pareto-driven feedback loop then enables the LLM to iteratively refine candidate equations, balancing predictive accuracy with structural parsimony. We evaluate LLM-PDESR on 23 canonical PDEs and five structurally novel equations (including a multivariate system) specifically designed to preclude dataset memorization and test true discovery capabilities. Demonstrating real-world applicability, the framework successfully extracts a consistent structural skeleton for an interpretable 1D dynamical surrogate (1D-CACE) directly from noisy ERA5 reanalysis data. Extensive experiments and out-of-distribution testing confirm that LLM-PDESR significantly outperforms state-of-the-art methodologies in structural recovery, noise resilience, and the avoidance of spurious complexity and equation bloat.",
+      "authors": [
+        "Jinyang Du",
+        "Hao Ma",
+        "Xiaohu Shi",
+        "Bo Yang",
+        "Yanchun Liang",
+        "Heow Pueh Lee",
+        "Chunguo Wu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-12T03:16:49+00:00",
+      "link": "https://arxiv.org/pdf/2607.10546v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "data-driven PDE discovery using LLM, relevant to flow field prediction",
+      "llm_evidence_cn": "使用LLM的数据驱动PDE发现，与流场预测相关",
+      "llm_evidence": "使用LLM的数据驱动PDE发现，与流场预测相关",
+      "canonical_evidence": "使用LLM的数据驱动PDE发现，与流场预测相关",
+      "llm_tldr_en": "Proposes LLM-PDESR for robust PDE discovery from noisy data, combining LLM-generated symbolic hypotheses with subdomain weighted residuals. Outperforms traditional symbolic regression.",
+      "llm_tldr_cn": "该论文提出了LLM-PDESR框架，利用大语言模型生成候选偏微分方程假设，并通过子域加权残差方法评估，避免了传统点评估对高频噪声的放大，在含噪观测下更鲁棒地发现控制方程，为数据驱动流场预测提供了新工具。",
+      "llm_tldr": "该论文提出了LLM-PDESR框架，利用大语言模型生成候选偏微分方程假设，并通过子域加权残差方法评估，避免了传统点评估对高频噪声的放大，在含噪观测下更鲁棒地发现控制方程，为数据驱动流场预测提供了新工具。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
     {
       "id": "2607.11310v1",
       "source": "arxiv",
@@ -157,13 +317,93 @@
         "query:sfc"
       ],
       "llm_score": 7.0,
-      "llm_evidence_en": "physics-informed architecture for stiff/shock-dominated PDEs, directly applicable to flow field prediction and reconstruction",
-      "llm_evidence_cn": "用于刚性和激波主导PDE的物理信息架构，直接适用于流场预测与重构",
-      "llm_evidence": "用于刚性和激波主导PDE的物理信息架构，直接适用于流场预测与重构",
-      "canonical_evidence": "用于刚性和激波主导PDE的物理信息架构，直接适用于流场预测与重构",
-      "llm_tldr_en": "Proposes SPARC-Net addressing multiple failures in PINNs for stiff/shock-dominated PDEs, using spectral adaptivity, causality, and hard constraints.",
-      "llm_tldr_cn": "物理信息神经网络在刚性和激波主导问题中表现不佳。本文识别了四个关键失败因素，并提出SPARC-Net统一框架，通过自适应多尺度谱方法、因果感知训练和硬约束解决这些问题。实验表明在激波问题中显著提高精度。该方法可推广到流场预测。",
-      "llm_tldr": "物理信息神经网络在刚性和激波主导问题中表现不佳。本文识别了四个关键失败因素，并提出SPARC-Net统一框架，通过自适应多尺度谱方法、因果感知训练和硬约束解决这些问题。实验表明在激波问题中显著提高精度。该方法可推广到流场预测。",
+      "llm_evidence_en": "addresses shock-dominated PDEs, relevant to shock wave interaction",
+      "llm_evidence_cn": "解决激波主导的PDE，与激波相互作用相关",
+      "llm_evidence": "解决激波主导的PDE，与激波相互作用相关",
+      "canonical_evidence": "解决激波主导的PDE，与激波相互作用相关",
+      "llm_tldr_en": "SPARC-Net introduces a unified PINN architecture addressing spectral bias, loss imbalance, causality, and collocation under-resolution for stiff and shock-dominated PDEs, enabling accurate solutions.",
+      "llm_tldr_cn": "物理信息神经网络在刚性和激波主导问题中常因光谱偏差、损失失衡、时间因果破坏和配置点欠采样而失败。SPARC-Net通过自适应多尺度频谱扩展、因果加权损失和硬约束结构，系统性地解决这些问题。实验表明，该方法在激波管和湍流等基准上显著优于现有PINN变体，为航空热防护中的激波-薄膜冷却相互作用模拟提供了可靠工具。",
+      "llm_tldr": "物理信息神经网络在刚性和激波主导问题中常因光谱偏差、损失失衡、时间因果破坏和配置点欠采样而失败。SPARC-Net通过自适应多尺度频谱扩展、因果加权损失和硬约束结构，系统性地解决这些问题。实验表明，该方法在激波管和湍流等基准上显著优于现有PINN变体，为航空热防护中的激波-薄膜冷却相互作用模拟提供了可靠工具。",
+      "llm_tags": [
+        "query:sfc"
+      ],
+      "matched_query_tag": "query:sfc",
+      "matched_query_text": "shock wave interaction with film cooling",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.11551v1",
+      "source": "arxiv",
+      "title": "Machines that Predict Trajectories from Templates",
+      "abstract": "We study trajectory prediction from libraries of stored output templates. Given the past of an unknown trajectory, the goal is to predict its future without identifying the state-space model that generated it. We show that libraries of trajectories generated by one or more dynamical systems define behavioral spaces that can be used as prediction mechanisms. For linear systems, we characterize exact prediction in terms of continuation maps, behavioral containment, and spectral conditions on output-visible eigenvalues. We also analyze robustness to noisy observations and noisy libraries, derive error bounds for out-of-library trajectories, and show how interconnection constraints can compose template libraries into new behavioral spaces with emergent modes. Finally, we extend the framework to nonlinear systems whose output trajectories are contained in, or immersed into, finite-dimensional linear behaviors. These results provide a theory of template-based prediction machines capable of generalizing beyond the stored trajectories and, in some cases, beyond the systems that generated them.",
+      "authors": [
+        "Claudio De Persis",
+        "Pietro Tesi"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-07-13T13:34:26+00:00",
+      "link": "https://arxiv.org/pdf/2607.11551v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "trajectory prediction from template libraries, applicable to flow field prediction",
+      "llm_evidence_cn": "从模板库预测轨迹，可应用于流场预测",
+      "llm_evidence": "从模板库预测轨迹，可应用于流场预测",
+      "canonical_evidence": "从模板库预测轨迹，可应用于流场预测",
+      "llm_tldr_en": "The paper provides a framework for trajectory prediction using libraries of output templates, characterizing exact prediction for linear systems and analyzing robustness to noise.",
+      "llm_tldr_cn": "传统轨迹预测需要辨识状态空间模型。本文提出从输出模板库预测轨迹的框架，无需辨识模型。对线性系统刻画了精确预测的条件，并分析了噪声鲁棒性和库外轨迹误差界。该方法为流场预测提供了一种新的数据驱动视角。",
+      "llm_tldr": "传统轨迹预测需要辨识状态空间模型。本文提出从输出模板库预测轨迹的框架，无需辨识模型。对线性系统刻画了精确预测的条件，并分析了噪声鲁棒性和库外轨迹误差界。该方法为流场预测提供了一种新的数据驱动视角。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.12243v1",
+      "source": "arxiv",
+      "title": "Cluster-Weighted EDMD",
+      "abstract": "Extended Dynamic Mode Decomposition (EDMD) approximates Koopman operators from data, but a single global operator is inefficient when different state-space regions exhibit distinct local dynamics. We introduce Cluster-Weighted EDMD (CW-EDMD), which jointly learns a soft phase-space partition and a per-cluster EDMD operator. Its Expectation-Maximization (EM) objective assigns each transition based on both geometric proximity and prediction residuals, so clusters specialize where local Koopman models are accurate rather than where the data are dense. On Lorenz, damped pendulum, and Duffing systems, across 36 configurations and 10 seeds, CW-EDMD improves matched-degree EDMD in one-step and 5s-rollout prediction. Across 288 paired comparisons, there are significant error reductions in 258 cases, increases in 4, and no differences in 26. Median one-step error reductions are 57x, 2.7x, and 12x on pendulum, Duffing, and Lorenz, respectively.",
+      "authors": [
+        "Lorenzo Tomaz",
+        "Judd Rosenblatt",
+        "Flavio Kicis",
+        "Thomas B. Jones",
+        "Diogo Schwerz de Lucena"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "stat.ML"
+      ],
+      "published": "2026-07-14T01:03:21+00:00",
+      "link": "https://arxiv.org/pdf/2607.12243v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "cluster-weighted EDMD for Koopman operator learning, applicable to fluid dynamics prediction",
+      "llm_evidence_cn": "聚类加权EDMD学习Koopman算子，可应用于流体动力学预测",
+      "llm_evidence": "聚类加权EDMD学习Koopman算子，可应用于流体动力学预测",
+      "canonical_evidence": "聚类加权EDMD学习Koopman算子，可应用于流体动力学预测",
+      "llm_tldr_en": "CW-EDMD jointly learns a soft phase-space partition and per-cluster Koopman operators, improving prediction accuracy by specializing local dynamics where the model is accurate.",
+      "llm_tldr_cn": "全局Koopman算子难以刻画不同区域的局部动力学。本文提出聚类加权EDMD（CW-EDMD），联合学习软相空间划分和每簇Koopman算子，使模型在局部动力学校准好的区域专业化。在Lorenz、阻尼摆和Duffing系统上的实验表明，CW-EDMD在一步和滚动预测中显著优于同阶EDMD，为流场预测提供了新方法。",
+      "llm_tldr": "全局Koopman算子难以刻画不同区域的局部动力学。本文提出聚类加权EDMD（CW-EDMD），联合学习软相空间划分和每簇Koopman算子，使模型在局部动力学校准好的区域专业化。在Lorenz、阻尼摆和Duffing系统上的实验表明，CW-EDMD在一步和滚动预测中显著优于同阶EDMD，为流场预测提供了新方法。",
       "llm_tags": [
         "query:flow-pred:composite"
       ],
@@ -174,196 +414,120 @@
       "quick_tier": "7"
     },
     {
-      "id": "2607.10140v1",
+      "id": "2607.12095v1",
       "source": "arxiv",
-      "title": "FlowPainter: Inpainting Optical Flow via Confidence-Guided Completion",
-      "abstract": "Existing optical flow methods broadly follow two paradigms: iterative optimization and diffusion-based estimation. Iterative methods, exemplified by RAFT, achieve high accuracy through recurrent refinement, but remain challenged by large displacements and complex motion. Diffusion-based methods introduce generative modeling and show promise in such ambiguous regions. However, existing diffusion models usually denoise the entire dense flow field from Gaussian noise, including simple regions where reliable motion can already be estimated by a lightweight network. This increases the denoising burden and may cause slow convergence and unstable training. To address this issue, we introduce FlowPainter, a diffusion-based optical flow framework that reformulates dense-flow generation as confidence-guided soft inpainting. FlowPainter employs a lightweight confidence-aware network to predict a rough flow and a pixel-wise confidence mask, distinguishing reliable simple regions from uncertain hard regions. The resulting simple-flow prior is used for confidence-based initialization and further injected into iterative denoising through confidence-gated residual guidance. With dynamically decaying guidance strength, FlowPainter stabilizes early denoising while preserving the flexibility of the diffusion model for late-stage detail refinement. Extensive experiments on public benchmarks, including Sintel, KITTI, and Spring, show that FlowPainter achieves strong accuracy under comparable training settings and converges more efficiently than existing diffusion-based optical flow methods, with notable gains on challenging benchmark splits. Our approach offers a practical way to integrate reliable discriminative priors with diffusion-based refinement for optical flow estimation. Our code is publicly available at https://github.com/mya012/FlowPainter.",
+      "title": "Dynamic Online Processor-Native Inference for State Estimation",
+      "abstract": "Sensor-rich data-driven applications increasingly use Bayesian approaches to infer latent states of dynamic systems from noisy sensor measurements and physical models. Yet the computation of the likelihood remains an essential bottleneck for accurate posteriors and performant inference. This paper presents a Bayesian filtering technique that uses processor-native uncertainty tracking for both uncertainty propagation and inference. The technique implements deterministic hierarchical importance restructuring through a native operation, giving deterministic latency and bounded memory use for arbitrary models written as program code. Benchmarks across three nonlinear state-space systems compare the approach against particle filters and Monte-Carlo-based likelihood estimators. The technique enables deterministic approximate filtering with as high as 805$\\times$ average speedup against direct Monte Carlo work at matched result quality for model evaluation, and Pareto-dominant accuracy-latency trade-offs for posterior inference while remaining competitive in RMSE with baseline particle filters.",
       "authors": [
-        "Yuang Meng",
-        "Chenyang Wu",
-        "Xianshun Liu",
-        "Chun-Le Guo",
-        "Zichen Liang",
-        "Lina Lei",
-        "Jie Liang",
-        "Hui Zeng",
-        "Chongyi Li",
-        "Lei Zhang"
+        "Orestis Kaparounakis"
       ],
-      "primary_category": "cs.CV",
+      "primary_category": "stat.ML",
       "categories": [
-        "cs.CV",
-        "cs.AI"
+        "stat.ML",
+        "cs.LG",
+        "eess.SP"
       ],
-      "published": "2026-07-11T05:59:22+00:00",
-      "link": "https://arxiv.org/pdf/2607.10140v1",
+      "published": "2026-07-13T19:13:45+00:00",
+      "link": "https://arxiv.org/pdf/2607.12095v1",
       "tags": [
         "keyword:flow-pred",
+        "keyword:pc-latent",
         "keyword:sfc",
-        "query:flow-pred"
+        "query:flow-pred",
+        "query:pc-latent"
       ],
       "llm_score": 6.0,
-      "llm_evidence_en": "deep learning flow field reconstruction from partial data",
-      "llm_evidence_cn": "深度学习从部分数据重构流场",
-      "llm_evidence": "深度学习从部分数据重构流场",
-      "canonical_evidence": "深度学习从部分数据重构流场",
-      "llm_tldr_en": "Proposes a diffusion-based optical flow inpainting method guided by confidence, reconstructing full flow from partial estimates.",
-      "llm_tldr_cn": "现有光流方法在大位移和复杂运动区域精度有限。本文提出FlowPainter，一种基于扩散的光流补全框架，利用置信度引导仅对不确定区域进行生成，保留简单区域的可靠估计。该方法在Sintel和KITTI等基准上以较少计算量实现了比现有扩散模型更优的精度。",
-      "llm_tldr": "现有光流方法在大位移和复杂运动区域精度有限。本文提出FlowPainter，一种基于扩散的光流补全框架，利用置信度引导仅对不确定区域进行生成，保留简单区域的可靠估计。该方法在Sintel和KITTI等基准上以较少计算量实现了比现有扩散模型更优的精度。",
+      "llm_evidence_en": "Bayesian filtering for state estimation from sensor data, relevant to flow reconstruction",
+      "llm_evidence_cn": "基于贝叶斯滤波的状态估计方法，可用于流场重建",
+      "llm_evidence": "基于贝叶斯滤波的状态估计方法，可用于流场重建",
+      "canonical_evidence": "基于贝叶斯滤波的状态估计方法，可用于流场重建",
+      "llm_tldr_en": "Presents a Bayesian filtering technique using processor-native uncertainty tracking for state estimation from noisy sensor measurements, with deterministic latency and bounded memory.",
+      "llm_tldr_cn": "本文提出一种基于处理器原生不确定性跟踪的贝叶斯滤波技术，用于从噪声传感器测量中推断动态系统状态。该方法具有确定性延迟和有限内存使用，在多个非线性状态空间系统上优于粒子滤波和蒙特卡洛方法。该工作为稀疏传感器数据下的流场重建提供了高效的状态估计框架。",
+      "llm_tldr": "本文提出一种基于处理器原生不确定性跟踪的贝叶斯滤波技术，用于从噪声传感器测量中推断动态系统状态。该方法具有确定性延迟和有限内存使用，在多个非线性状态空间系统上优于粒子滤波和蒙特卡洛方法。该工作为稀疏传感器数据下的流场重建提供了高效的状态估计框架。",
       "llm_tags": [
-        "query:flow-pred"
+        "query:flow-pred:composite"
       ],
-      "matched_query_tag": "query:flow-pred",
-      "matched_query_text": "How to reconstruct flow fields from limited sensor data using deep learning?",
-      "matched_requirement_id": "req-13",
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
       "selection_source": "fresh_fetch",
       "quick_tier": "6"
     },
     {
-      "id": "2607.11718v1",
+      "id": "2607.14424v1",
       "source": "arxiv",
-      "title": "Inf-Sup Neural Networks for High Dimensional PDEs",
-      "abstract": "Solving partial differential equations (PDEs) in high dimensions remains challenging due to the curse of dimensionality. We propose a neural-network-based framework that reformulates PDEs as inf--sup optimization problems through the introduction of a Lagrange multiplier. The primal solution and the associated Lagrange multiplier are parameterized by two networks and are computed via an iterative saddle-point optimization procedure. We prove the theoretical equivalence between the proposed optimization formulation and the original PDE problem, and we derive rigorous error estimates that quantify the total approximation error in terms of the network approximation error, statistical (sampling) error, and optimization error. Numerical experiments demonstrate the accuracy, stability, and efficiency of the proposed method for solving high-dimensional PDEs.",
+      "title": "ConFlow: Constraints-Guided Learning with Flow Matching for Motion Generation",
+      "abstract": "In recent years Flow Matching has become a prominent method for generative modeling robot motion generation. In its generic form Flow Matching is an ODE-based neural sampler that is trained by regressing empirical flow fields associated with motion samples as data. However, in robot motion generation we often have additional constraints that might not be present in the collected data. The majority of current approaches train the flow on the available data and use inference-time guidance to enforce task-specific constraints. To address this mismatch, we propose \\textbf{ConFlow}, a constraint-guided flow matching framework that incorporates constraint information directly into the training objective via differentiable barrier or cost functions. To address design specifications such as smoothness and boundary conditions, we propose replacing the standard Gaussian source distribution used in flow matching training with a conditional Gaussian Process. Our approach also uses infeasible demonstrations as negative supervision, improving constraint satisfaction without requiring additional expert data. Experiments on a two-robot navigation task demonstrate that ConFlow achieves lower collision rates and higher trajectory quality than standard flow matching baselines, with or without inference-time guidance. These results validate training-time constraint integration as an effective approach to closing the training--inference gap in generative motion models.",
       "authors": [
-        "Ziren Chen",
-        "Hailiang Liu"
+        "Nutan Chen",
+        "Jianxiang Feng",
+        "Marvin Alles",
+        "Botond Cseke"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-07-15T23:27:04+00:00",
+      "link": "https://arxiv.org/pdf/2607.14424v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "constraints-guided flow matching for motion generation with physics-like constraints",
+      "llm_evidence_cn": "约束引导的流匹配运动生成，含类似物理的约束",
+      "llm_evidence": "约束引导的流匹配运动生成，含类似物理的约束",
+      "canonical_evidence": "约束引导的流匹配运动生成，含类似物理的约束",
+      "llm_tldr_en": "ConFlow integrates constraint information directly into flow matching training via differentiable barrier or cost functions, outperforming inference-time guidance for robot motion generation.",
+      "llm_tldr_cn": "流匹配生成模型通常在推理时施加约束，但数据中可能缺失约束。本文提出ConFlow，通过可微障碍或代价函数将约束信息直接融入训练目标，解决了训练-测试不一致问题。在机器人运动生成任务上，ConFlow优于推理时引导方法。该框架可推广至其他含约束的生成问题，如物理约束的潜在空间学习。",
+      "llm_tldr": "流匹配生成模型通常在推理时施加约束，但数据中可能缺失约束。本文提出ConFlow，通过可微障碍或代价函数将约束信息直接融入训练目标，解决了训练-测试不一致问题。在机器人运动生成任务上，ConFlow优于推理时引导方法。该框架可推广至其他含约束的生成问题，如物理约束的潜在空间学习。",
+      "llm_tags": [
+        "query:pc-latent:composite"
+      ],
+      "matched_query_tag": "query:pc-latent:composite",
+      "matched_query_text": "Papers central to 物理约束潜在空间学习与优化, especially work that connects or combines: latent dynamics; physics constrained learning for latent space models; latent space optimization under physical constraints; latent space methods with physical constraints; latent variable models with constraints from physics; learning latent space that satisfies physical laws; optimizing latent variables with physics constraints; physics constrained autoencoder training.",
+      "matched_requirement_id": "req-composite-pc-latent",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.12613v1",
+      "source": "arxiv",
+      "title": "Tensor-Based Reduced-Order Modeling for Optimization-Based Inverse Problems",
+      "abstract": "We develop a tensor reduced-order modeling (TROM) framework for optimization-based inverse problems governed by parameter-dependent dynamical systems. The approach approximates the parameter-to-observation map directly in tensor-train format, using either TT-SVD or TT-Cross compression, and integrates the resulting representation into a regularized nonlinear least-squares formulation. Beyond accelerating forward evaluations, the low-rank tensor structure is used to reformulate the inverse problem in reduced coordinates, assemble the Gauss--Newton quantities without forming the full observation-space Jacobian, and perform TROM-based objective minimization over the discrete parameter grid. This tensor optimization step can be used either as a stand-alone approximate minimization procedure or as a data-informed initialization for a subsequent Gauss--Newton solve. The method is studied for two inverse problems: an inverse heat-transfer problem in a heterogeneous medium, where the unknown parameters describe the locations of multiple low-conductivity inclusions, and a FitzHugh--Nagumo parameter-estimation problem with a highly nonconvex optimization landscape. Numerical experiments assess the effects of ROM approximation error, measurement noise, regularization, initialization, spatial discretization, and increasing parameter dimension. The results show that TROM can reproduce the behavior of full-order inversion at a substantially reduced online cost. The experiments also demonstrate that reduced-coordinate inversion, tensor-based optimization, and appropriate regularization improve robustness in higher-dimensional, noisy, and strongly nonconvex regimes.",
+      "authors": [
+        "Sahidul Islam",
+        "Andreas Mang",
+        "Maxim Olshanskii"
       ],
       "primary_category": "math.NA",
       "categories": [
         "math.NA",
-        "math.AP"
+        "math.OC"
       ],
-      "published": "2026-07-13T15:44:08+00:00",
-      "link": "https://arxiv.org/pdf/2607.11718v1",
+      "published": "2026-07-14T10:46:07+00:00",
+      "link": "https://arxiv.org/pdf/2607.12613v1",
       "tags": [
         "keyword:flow-pred",
         "keyword:pc-latent",
         "keyword:sfc",
         "query:flow-pred",
-        "query:pc-latent"
-      ],
-      "llm_score": 7.0,
-      "llm_evidence_en": "neural network framework for high-dimensional PDEs, related to neural operators for fluid dynamics",
-      "llm_evidence_cn": "用于高维PDE的神经网络框架，与神经算子相关",
-      "llm_evidence": "用于高维PDE的神经网络框架，与神经算子相关",
-      "canonical_evidence": "用于高维PDE的神经网络框架，与神经算子相关",
-      "llm_tldr_en": "Proposes Inf-Sup Neural Networks that reformulate PDEs as inf-sup optimization with Lagrange multipliers, providing theoretical equivalence and error estimates for high-dimensional problems.",
-      "llm_tldr_cn": "现有方法在高维PDE求解中面临维度灾难问题。本文提出Inf-Sup神经网络框架，通过拉格朗日乘子将PDE重构成inf-sup优化问题，使用双网络参数化和鞍点优化。理论证明了等价性和误差界。数值实验展示了高维问题的准确性。该方法为神经算子类方法提供了新的思路。",
-      "llm_tldr": "现有方法在高维PDE求解中面临维度灾难问题。本文提出Inf-Sup神经网络框架，通过拉格朗日乘子将PDE重构成inf-sup优化问题，使用双网络参数化和鞍点优化。理论证明了等价性和误差界。数值实验展示了高维问题的准确性。该方法为神经算子类方法提供了新的思路。",
-      "llm_tags": [
-        "query:flow-pred"
-      ],
-      "matched_query_tag": "query:flow-pred",
-      "matched_query_text": "neural operators for fluid dynamics",
-      "matched_requirement_id": "req-7",
-      "selection_source": "fresh_fetch",
-      "quick_tier": "7"
-    },
-    {
-      "id": "2607.11442v1",
-      "source": "arxiv",
-      "title": "Velocity Scheduled Flow Matching",
-      "abstract": "Flow matching trains a neural network to regress the conditional velocity along a linear interpolant between noise and data, and the number of network evaluations~(NFE) sets the cost of sampling. The straight-line interpolant carries an implicit choice: the sample moves at constant speed throughout the trajectory. We relax this choice and introduce Velocity Scheduled Flow Matching~(VSFM), which replaces the conditional target $x_1 - x_0$ with $v(t)(x_1 - x_0)$ for any nonnegative profile $v:[0,1]\\to\\mathbb{R}_{\\geq 0}$ satisfying $\\int_0^1 v\\,dt = 1$. We study six polynomial profiles drawn from motion planning. The first use of VSFM is at inference time: a pretrained linear flow-matching model can be sampled under any admissible profile by integrating its ODE on a non-uniform $τ$-schedule, with no retraining and no additional computation; on CIFAR-10 this lowers FID by up to $19.8\\%$. Training from scratch under a braking profile gives a further reduction of $17.4\\%$ at $4$~NFE. Both gains follow from the local truncation error of the Euler integrator on the induced grid.",
-      "authors": [
-        "Vitalii Bondar"
-      ],
-      "primary_category": "cs.LG",
-      "categories": [
-        "cs.LG"
-      ],
-      "published": "2026-07-13T11:50:06+00:00",
-      "link": "https://arxiv.org/pdf/2607.11442v1",
-      "tags": [
-        "keyword:flow-pred",
-        "query:flow-pred"
+        "query:pc-latent",
+        "query:sfc"
       ],
       "llm_score": 6.0,
-      "llm_evidence_en": "velocity scheduled flow matching for generative modeling",
-      "llm_evidence_cn": "速度调度流匹配生成模型",
-      "llm_evidence": "速度调度流匹配生成模型",
-      "canonical_evidence": "速度调度流匹配生成模型",
-      "llm_tldr_en": "Introduces Velocity Scheduled Flow Matching (VSFM), a generalization of flow matching that allows non-constant speed along the trajectory. This enables flexible inference-time scheduling and improved sample quality.",
-      "llm_tldr_cn": "该论文拓展了标准流匹配方法，通过引入速度调度（VSFM）允许生成轨迹中的非匀速运动。理论上证明了速度轮廓的可调性，并在图像生成任务上展示了改进的采样质量和效率。虽然该工作主要面向图像，但其方法可迁移至其他领域（如流体数据生成），为加速和改善生成模型提供了通用工具。",
-      "llm_tldr": "该论文拓展了标准流匹配方法，通过引入速度调度（VSFM）允许生成轨迹中的非匀速运动。理论上证明了速度轮廓的可调性，并在图像生成任务上展示了改进的采样质量和效率。虽然该工作主要面向图像，但其方法可迁移至其他领域（如流体数据生成），为加速和改善生成模型提供了通用工具。",
-      "llm_tags": [
-        "query:flow-pred"
-      ],
-      "matched_query_tag": "query:flow-pred",
-      "matched_query_text": "Recent advances in data driven fluid flow modeling and prediction",
-      "matched_requirement_id": "req-14",
-      "selection_source": "fresh_fetch",
-      "quick_tier": "6"
-    },
-    {
-      "id": "2607.13202v1",
-      "source": "arxiv",
-      "title": "A Generative Model-Free Form Deformation Approach for the Generation of Mesh Motions with Applications to PDE",
-      "abstract": "We introduce a topology-agnostic framework for matching deformations of three-dimensional shapes with non-isomorphic mesh graphs by modelling the deformation as the flow of an Ordinary Differential Equation (ODE). The velocity field is parameterised by a time-dependent Free Form Deformation (FFD), expressed through displacements of a coarse control lattice, yielding a smooth and low-dimensional representation that decouples the deformation model from the discretisation of the source and target surfaces. Under mild regularity assumptions, we prove that the induced ODE map is a universal approximator (in the sup norm) for mappings between genus-0 surfaces, providing a theoretical expressivity guarantee. To further compress the representation and enable probabilistic inference, we couple the ODE--FFD model with a flow-based generative approach in the TarFlow framework, learning a compact latent parametrisation over time series of FFD maps. The resulting method supports efficient sampling and optimisation of plausible deformation trajectories while preserving mesh quality, and it enables scalable reduced-order modelling. Experiments on deforming-body flow benchmarks demonstrate improved accuracy and computational efficiency of reduced-order models constructed from the learned latent dynamics.",
-      "authors": [
-        "Gugliemo Padula",
-        "Artem Sinitsa",
-        "Gianluigi Rozza"
-      ],
-      "primary_category": "math.NA",
-      "categories": [
-        "math.NA"
-      ],
-      "published": "2026-07-14T18:51:56+00:00",
-      "link": "https://arxiv.org/pdf/2607.13202v1",
-      "tags": [
-        "keyword:flow-pred",
-        "keyword:pc-latent",
-        "keyword:sfc",
-        "query:flow-pred"
-      ],
-      "llm_score": 7.0,
-      "llm_evidence_en": "generative mesh motion framework for PDE applications, relevant to flow field simulation",
-      "llm_evidence_cn": "面向PDE应用的生成式网格运动框架，与流场模拟相关",
-      "llm_evidence": "面向PDE应用的生成式网格运动框架，与流场模拟相关",
-      "canonical_evidence": "面向PDE应用的生成式网格运动框架，与流场模拟相关",
-      "llm_tldr_en": "Proposes a topology-agnostic framework for generating mesh motions using free-form deformation parameterized by ODE flow, applicable to PDE-based simulations.",
-      "llm_tldr_cn": "该文提出了一种拓扑无关的网格运动生成框架，将变形建模为常微分方程流，并使用自由变形参量化速度场。该方法将网格运动与表面离散解耦，理论上可通用逼近。该框架可应用于PDE求解中的动网格问题，对流体流动模拟和预测具有重要支撑作用。",
-      "llm_tldr": "该文提出了一种拓扑无关的网格运动生成框架，将变形建模为常微分方程流，并使用自由变形参量化速度场。该方法将网格运动与表面离散解耦，理论上可通用逼近。该框架可应用于PDE求解中的动网格问题，对流体流动模拟和预测具有重要支撑作用。",
-      "llm_tags": [
-        "query:flow-pred:composite"
-      ],
-      "matched_query_tag": "query:flow-pred:composite",
-      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
-      "matched_requirement_id": "req-composite-flow-pred",
-      "selection_source": "fresh_fetch",
-      "quick_tier": "7"
-    },
-    {
-      "id": "2607.12387v1",
-      "source": "arxiv",
-      "title": "Hierarchical Bayesian inversion using the Karhunen-Loève expansion with analytical eigenpairs of the squared exponential kernel",
-      "abstract": "Hierarchical Bayesian inversion with Gaussian random field priors addresses uncertainty in covariance hyperparameters, such as the standard deviation and correlation length. When a Gaussian random field is represented by the Karhunen-Loève (KL) expansion, the basis functions depend on these hyperparameters through an integral eigenvalue problem (IEVP) associated with the covariance kernel. Consequently, the IEVP must be solved repeatedly whenever the hyperparameters are updated, leading to significant computational cost in hierarchical inference. In this paper, we focus on the squared exponential kernel and construct the KL expansion using the analytical solution to a Gaussian-weighted IEVP. This analytical KL expansion offers a computationally efficient alternative to the conventional KL expansion by eliminating the repeated numerical solutions of the IEVP during hyperparameter updates. While the analytical KL expansion is applicable to arbitrary domains and dimensions, it does not have the same mean-square optimality as the conventional KL expansion. To address this limitation, we employ an optimization-based approach that selects the standard deviation of the Gaussian weight function in the IEVP to effectively reduce the truncation error of the KL expansion. Numerical experiments in one- and two-dimensional settings show that this selection strategy provides sufficient accuracy for practical applications. Furthermore, the analytical KL expansion admits closed-form differentiation, enabling efficient posterior sampling via HMC. The proposed framework is applied to Bayesian inversion for a steady Darcy flow model, where the hydraulic conductivity field is successfully estimated using weakly informative hyperpriors.",
-      "authors": [
-        "Tatsuya Shibata",
-        "Michael Conrad Koch",
-        "Kazunori Fujisawa"
-      ],
-      "primary_category": "stat.ME",
-      "categories": [
-        "stat.ME",
-        "math.NA"
-      ],
-      "published": "2026-07-14T06:00:27+00:00",
-      "link": "https://arxiv.org/pdf/2607.12387v1",
-      "tags": [
-        "keyword:flow-pred",
-        "keyword:pc-latent",
-        "query:flow-pred",
-        "query:pc-latent"
-      ],
-      "llm_score": 6.0,
-      "llm_evidence_en": "Bayesian inversion method using KL expansion for field reconstruction from sparse data",
-      "llm_evidence_cn": "使用KL展开的贝叶斯反演方法，可用于稀疏数据场重建",
-      "llm_evidence": "使用KL展开的贝叶斯反演方法，可用于稀疏数据场重建",
-      "canonical_evidence": "使用KL展开的贝叶斯反演方法，可用于稀疏数据场重建",
-      "llm_tldr_en": "Presents a hierarchical Bayesian inversion method using analytical eigenpairs of the squared exponential kernel for efficient KL expansion, reducing computational cost.",
-      "llm_tldr_cn": "该文针对层次贝叶斯反演中高斯随机场先验的计算瓶颈，利用平方指数核的解析特征对推导出高效的KL展开，避免了重复求解积分特征值问题。该方法可用于基于稀疏观测数据的场重建（如流量场），计算效率高，为流体流动重构提供了一种实用工具。",
-      "llm_tldr": "该文针对层次贝叶斯反演中高斯随机场先验的计算瓶颈，利用平方指数核的解析特征对推导出高效的KL展开，避免了重复求解积分特征值问题。该方法可用于基于稀疏观测数据的场重建（如流量场），计算效率高，为流体流动重构提供了一种实用工具。",
+      "llm_evidence_en": "tensor reduced-order modeling for inverse problems in dynamical systems",
+      "llm_evidence_cn": "用于动力系统反问题的张量降阶建模",
+      "llm_evidence": "用于动力系统反问题的张量降阶建模",
+      "canonical_evidence": "用于动力系统反问题的张量降阶建模",
+      "llm_tldr_en": "TROM approximates parameter-to-observation maps in tensor-train format and integrates into inverse problem optimization.",
+      "llm_tldr_cn": "该论文开发了张量降阶建模框架，用张量列格式近似参数到观测的映射，并将其集成到优化反问题中。通过低秩结构，该方法加速正向评估、在约化坐标中重构问题，并高效组装Gauss-Newton量。在参数依赖的动力系统上验证了效率。",
+      "llm_tldr": "该论文开发了张量降阶建模框架，用张量列格式近似参数到观测的映射，并将其集成到优化反问题中。通过低秩结构，该方法加速正向评估、在约化坐标中重构问题，并高效组装Gauss-Newton量。在参数依赖的动力系统上验证了效率。",
       "llm_tags": [
         "query:flow-pred:composite"
       ],
@@ -399,19 +563,19 @@
         "query:pc-latent"
       ],
       "llm_score": 7.0,
-      "llm_evidence_en": "dynamical system reconstruction applicable to flow prediction",
-      "llm_evidence_cn": "动力系统重构方法可应用于流场预测",
-      "llm_evidence": "动力系统重构方法可应用于流场预测",
-      "canonical_evidence": "动力系统重构方法可应用于流场预测",
-      "llm_tldr_en": "Reduces a SOTA dynamical system reconstruction model to a minimal two-parameter form (DynaBase) that forecasts via linear blend of latent state and in-context neighbor, achieving strong generalization.",
-      "llm_tldr_cn": "针对当前动力学系统重构基础模型结构臃肿、可解释性差的问题，通过迭代压缩DynaMix模型，得到仅含两个参数的最小可解释架构DynaBase。其预测机制为当前潜在状态与最近上下文邻居的线性组合。实验表明，该极简架构在零样本重构任务上仍保持强大泛化能力，揭示了上下文学习所需的最简机制。",
-      "llm_tldr": "针对当前动力学系统重构基础模型结构臃肿、可解释性差的问题，通过迭代压缩DynaMix模型，得到仅含两个参数的最小可解释架构DynaBase。其预测机制为当前潜在状态与最近上下文邻居的线性组合。实验表明，该极简架构在零样本重构任务上仍保持强大泛化能力，揭示了上下文学习所需的最简机制。",
+      "llm_evidence_en": "Zero-shot reconstruction of dynamical systems using latent state",
+      "llm_evidence_cn": "使用潜在状态零样本重构动力系统",
+      "llm_evidence": "使用潜在状态零样本重构动力系统",
+      "canonical_evidence": "使用潜在状态零样本重构动力系统",
+      "llm_tldr_en": "Reduces a SOTA dynamical system reconstruction model to a minimal two-parameter form (DynaBase) that uses latent state blending with nearest neighbors, revealing core mechanisms.",
+      "llm_tldr_cn": "当前动力系统零样本重构基础模型结构臃肿且可解释性差。本文将SOTA模型DynaMix逐步精简为仅含两个参数的最小可解释架构DynaBase，其通过当前潜在状态与最近上下文邻居的线性混合进行预测。实验表明该简化模型在保留强大泛化能力的同时揭示了上下文学习的最小必要条件。",
+      "llm_tldr": "当前动力系统零样本重构基础模型结构臃肿且可解释性差。本文将SOTA模型DynaMix逐步精简为仅含两个参数的最小可解释架构DynaBase，其通过当前潜在状态与最近上下文邻居的线性混合进行预测。实验表明该简化模型在保留强大泛化能力的同时揭示了上下文学习的最小必要条件。",
       "llm_tags": [
-        "query:flow-pred:composite"
+        "query:pc-latent"
       ],
-      "matched_query_tag": "query:flow-pred:composite",
-      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
-      "matched_requirement_id": "req-composite-flow-pred",
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "latent dynamics",
+      "matched_requirement_id": "req-15",
       "selection_source": "fresh_fetch",
       "quick_tier": "7"
     },
@@ -440,180 +604,19 @@
         "query:pc-latent"
       ],
       "llm_score": 6.0,
-      "llm_evidence_en": "latent-space inference for conditioning stochastic processes",
-      "llm_evidence_cn": "用于条件随机过程的潜在空间推断",
-      "llm_evidence": "用于条件随机过程的潜在空间推断",
-      "canonical_evidence": "用于条件随机过程的潜在空间推断",
-      "llm_tldr_en": "LatentFlow provides a general framework for conditioning stochastic processes by reducing it to latent-space inference. It avoids learned neural approximations, using only the model's generative path and a latent innovation representation.",
-      "llm_tldr_cn": "该论文提出LatentFlow框架，通过将随机过程表示为确定性潜在创新映射，将条件推断转化为潜在空间采样问题。该方法无需学习神经网络近似，保持了精确性。实验展示了在多种随机过程（如布朗桥、扩散过程）上的有效性。该工作为条件随机过程提供了一种无需训练的通用工具，可应用于物理模型的潜在概率推断。",
-      "llm_tldr": "该论文提出LatentFlow框架，通过将随机过程表示为确定性潜在创新映射，将条件推断转化为潜在空间采样问题。该方法无需学习神经网络近似，保持了精确性。实验展示了在多种随机过程（如布朗桥、扩散过程）上的有效性。该工作为条件随机过程提供了一种无需训练的通用工具，可应用于物理模型的潜在概率推断。",
+      "llm_evidence_en": "latent space inference for stochastic processes",
+      "llm_evidence_cn": "随机过程的潜在空间推断",
+      "llm_evidence": "随机过程的潜在空间推断",
+      "canonical_evidence": "随机过程的潜在空间推断",
+      "llm_tldr_en": "LatentFlow introduces a general framework for conditioning stochastic processes by transforming them into a latent space, enabling tractable inference without neural approximations.",
+      "llm_tldr_cn": "该论文提出了LatentFlow，一个通用框架，通过将随机过程表示为可处理潜在创新的确定性映射，将过程级条件化简化为潜在空间推断。无需学习或训练，该方法适用于非线性观测和非高斯似然。实验表明，LatentFlow能够有效处理各种条件化任务，避免了传统方法的定制化构造。",
+      "llm_tldr": "该论文提出了LatentFlow，一个通用框架，通过将随机过程表示为可处理潜在创新的确定性映射，将过程级条件化简化为潜在空间推断。无需学习或训练，该方法适用于非线性观测和非高斯似然。实验表明，LatentFlow能够有效处理各种条件化任务，避免了传统方法的定制化构造。",
       "llm_tags": [
         "query:pc-latent"
       ],
       "matched_query_tag": "query:pc-latent",
       "matched_query_text": "latent dynamics",
       "matched_requirement_id": "req-15",
-      "selection_source": "fresh_fetch",
-      "quick_tier": "6"
-    },
-    {
-      "id": "2607.15180v1",
-      "source": "arxiv",
-      "title": "RTS Smoother-Guided Learning of Physics-Based Neural Differential Models",
-      "abstract": "Ordinary differential equations (ODEs) are widely used to model dynamical systems in physics, biology, neuroscience, and physiology, but in many applications some equations of the dynamics are unknown and only a subset of the state variables are measured. We propose a hybrid neural--physics framework in which the known components of the ODE are kept explicit and the missing components are represented by a neural network. The proposed method consists of two stages where we alternate between state and parameter estimation and iterate until a predetermined criterion is met. Specifically, in the first step, we treat the model parameters as being known and we infer the latent states from the available measurements using a Rauch--Tung--Striebel (RTS) smoother. In the second stage, we treat the smoothed trajectories as being known and use them to estimate the neural networks' parameters through backpropagation. We evaluate the method on benchmark systems spanning linear, nonlinear, and stiff dynamics under partial state observation. Across these settings, the proposed method learns missing ODE components from incomplete measurements while exploiting and retaining interpretable mechanistic structure and improving latent-state reconstruction and long-horizon prediction.",
-      "authors": [
-        "Ahmet Demirkaya",
-        "Georgios Stratis",
-        "Tales Imbiriba",
-        "Zachary D. Danziger",
-        "Deniz Erdogmus"
-      ],
-      "primary_category": "cs.LG",
-      "categories": [
-        "cs.LG",
-        "eess.SY"
-      ],
-      "published": "2026-07-16T16:34:48+00:00",
-      "link": "https://arxiv.org/pdf/2607.15180v1",
-      "tags": [
-        "keyword:flow-pred",
-        "keyword:pc-latent",
-        "query:flow-pred",
-        "query:pc-latent"
-      ],
-      "llm_score": 7.0,
-      "llm_evidence_en": "hybrid neural-physics model for latent state estimation in ODEs",
-      "llm_evidence_cn": "用于ODE潜在状态估计的混合神经物理模型",
-      "llm_evidence": "用于ODE潜在状态估计的混合神经物理模型",
-      "canonical_evidence": "用于ODE潜在状态估计的混合神经物理模型",
-      "llm_tldr_en": "Proposes a hybrid neural-physics framework for ODEs with unknown components, using RTS smoother to estimate latent states from partial measurements, achieving better accuracy in dynamical system modeling.",
-      "llm_tldr_cn": "针对部分已知动力学的ODE系统，提出一种混合神经物理框架，利用RTS平滑器从稀疏测量中估计潜在状态，交替更新网络参数和状态，在多个动力系统基准上提升预测精度，具有广泛适用性。",
-      "llm_tldr": "针对部分已知动力学的ODE系统，提出一种混合神经物理框架，利用RTS平滑器从稀疏测量中估计潜在状态，交替更新网络参数和状态，在多个动力系统基准上提升预测精度，具有广泛适用性。",
-      "llm_tags": [
-        "query:pc-latent"
-      ],
-      "matched_query_tag": "query:pc-latent",
-      "matched_query_text": "latent dynamics",
-      "matched_requirement_id": "req-15",
-      "selection_source": "fresh_fetch",
-      "quick_tier": "7"
-    },
-    {
-      "id": "2607.14273v1",
-      "source": "arxiv",
-      "title": "Learning reduced-order latent linear models for Kalman filtering of nonlinear systems",
-      "abstract": "We propose a filtering-oriented end-to-end learning framework to identify reduced-order models explicitly tailored for state estimation in high-dimensional nonlinear systems. An autoencoder (AE) neural network learns a low-dimensional latent representation of the state together with a lifting map to the original space, while a reduced-order linear time-invariant (RO-LTI) model describes the latent dynamics. The AE and RO-LTI model are trained jointly by minimizing a multi-objective loss that combines reconstruction error with a filtering objective based on a differentiable Kalman filter, ensuring that the reduced-order model is tailored for the downstream state estimation task. At inference, filtering is performed entirely in the latent space using the RO-LTI model, and the estimated state is mapped back to the original space via the decoder. Unlike conventional two-stage approaches, in which a reduced-order model is first identified for system approximation and a filter is subsequently designed on top of it, the proposed framework learns a task-oriented reduced-order model whose parameters are shaped entirely by filtering performance rather than system approximation accuracy alone. We further quantify probabilistic bounds on the performance gap between full-order and reduced-order filters using conformal predictions, which do not require assumption on data distribution. The approach is validated on a heat diffusion benchmark, where the full temperature field is reconstructed from sparse measurements.",
-      "authors": [
-        "Manas Mejari",
-        "Milad Banitalebi Dehkordi",
-        "Dario Piga"
-      ],
-      "primary_category": "eess.SY",
-      "categories": [
-        "eess.SY"
-      ],
-      "published": "2026-07-15T18:28:59+00:00",
-      "link": "https://arxiv.org/pdf/2607.14273v1",
-      "tags": [
-        "keyword:flow-pred",
-        "keyword:pc-latent",
-        "query:flow-pred",
-        "query:pc-latent"
-      ],
-      "llm_score": 6.0,
-      "llm_evidence_en": "autoencoder learns latent dynamics for state estimation",
-      "llm_evidence_cn": "自编码器学习潜在动力学用于状态估计",
-      "llm_evidence": "自编码器学习潜在动力学用于状态估计",
-      "canonical_evidence": "自编码器学习潜在动力学用于状态估计",
-      "llm_tldr_en": "Proposes an autoencoder framework that jointly learns a low-dimensional latent representation and a reduced-order linear model for latent dynamics, optimized with a differentiable Kalman filter for filtering-oriented state estimation.",
-      "llm_tldr_cn": "针对非线性系统状态估计问题，提出了一种端到端的学习框架，利用自编码器将高维状态映射到低维潜在空间，并学习一个线性时不变模型描述潜在动力学。通过联合优化重构误差和基于可微卡尔曼滤波的滤波目标，使得降阶模型专门为下游滤波任务定制。实验表明，该方法能有效进行状态估计，且推理完全在潜在空间进行。",
-      "llm_tldr": "针对非线性系统状态估计问题，提出了一种端到端的学习框架，利用自编码器将高维状态映射到低维潜在空间，并学习一个线性时不变模型描述潜在动力学。通过联合优化重构误差和基于可微卡尔曼滤波的滤波目标，使得降阶模型专门为下游滤波任务定制。实验表明，该方法能有效进行状态估计，且推理完全在潜在空间进行。",
-      "llm_tags": [
-        "query:pc-latent"
-      ],
-      "matched_query_tag": "query:pc-latent",
-      "matched_query_text": "latent dynamics",
-      "matched_requirement_id": "req-15",
-      "selection_source": "fresh_fetch",
-      "quick_tier": "6"
-    },
-    {
-      "id": "2607.14665v1",
-      "source": "arxiv",
-      "title": "A new strategy for physics-informed neural networks based on hierarchical collocation point refinement",
-      "abstract": "Physics-informed neural networks (PINNs) offer a flexible framework for solving partial differential equations (PDEs), but training can become computationally expensive when a large number of collocation points are required to accurately enforce the governing equations. To alleviate this cost, we introduce multigrid-based parameter-updated PINNs (MPU-PINNs), a coarse-to-fine training strategy that progressively increases the number of training points throughout the learning process. The proposed approach begins by training a neural network on a coarse set of collocation points and then transfers the learned parameters to successively finer levels. This initialization strategy enables the network to capture the global features of the solution at a relatively low computational cost before refining local details with additional training points. To further improve performance for high-frequency problems, we incorporate a scaling technique that mitigates the effects of spectral bias during training. We evaluate MPU-PINNs on several benchmark PDEs, including two- and three-dimensional Poisson equations, a convection-diffusion-reaction equation, and the Helmholtz equation. Numerical experiments indicate that MPU-PINNs greatly reduce training time while achieving accuracy comparable to that of conventional PINNs and other representative variants such as SA-PINNs and XPINNs. The results further suggest that the proposed coarse-to-fine learning strategy substantially decreases the optimization effort required at finer levels. Overall, MPU-PINNs provide an efficient single-network training framework that enhances the computational efficiency and scalability of PINNs for a broad range of PDE problems.",
-      "authors": [
-        "Minjae Choi",
-        "Dukhwan Shin",
-        "Youngsoo Yang",
-        "Eunjung Lee"
-      ],
-      "primary_category": "math.NA",
-      "categories": [
-        "math.NA"
-      ],
-      "published": "2026-07-16T07:31:42+00:00",
-      "link": "https://arxiv.org/pdf/2607.14665v1",
-      "tags": [
-        "keyword:flow-pred",
-        "keyword:pc-latent",
-        "keyword:sfc",
-        "query:flow-pred",
-        "query:pc-latent",
-        "query:sfc"
-      ],
-      "llm_score": 6.0,
-      "llm_evidence_en": "physics-informed neural networks with hierarchical collocation refinement",
-      "llm_evidence_cn": "具有层次配置点细化的物理信息神经网络",
-      "llm_evidence": "具有层次配置点细化的物理信息神经网络",
-      "canonical_evidence": "具有层次配置点细化的物理信息神经网络",
-      "llm_tldr_en": "This paper introduces MPU-PINNs, a multigrid-based training strategy for PINNs that progressively increases collocation points, reducing computational cost while maintaining accuracy.",
-      "llm_tldr_cn": "该论文针对物理信息神经网络（PINNs）训练中配置点数量大导致计算昂贵的问题，提出了一种基于多重网格的参数更新PINNs（MPU-PINNs）策略。该方法从粗配置点集开始训练，然后将学习到的参数迁移到更细的层面，逐步增加配置点。实验表明，MPU-PINNs在保证精度的同时显著降低了训练成本，为物理约束神经网络提供了一种高效训练方案。",
-      "llm_tldr": "该论文针对物理信息神经网络（PINNs）训练中配置点数量大导致计算昂贵的问题，提出了一种基于多重网格的参数更新PINNs（MPU-PINNs）策略。该方法从粗配置点集开始训练，然后将学习到的参数迁移到更细的层面，逐步增加配置点。实验表明，MPU-PINNs在保证精度的同时显著降低了训练成本，为物理约束神经网络提供了一种高效训练方案。",
-      "llm_tags": [
-        "query:pc-latent:composite"
-      ],
-      "matched_query_tag": "query:pc-latent:composite",
-      "matched_query_text": "Papers central to 物理约束潜在空间学习与优化, especially work that connects or combines: latent dynamics; physics constrained learning for latent space models; latent space optimization under physical constraints; latent space methods with physical constraints; latent variable models with constraints from physics; learning latent space that satisfies physical laws; optimizing latent variables with physics constraints; physics constrained autoencoder training.",
-      "matched_requirement_id": "req-composite-pc-latent",
-      "selection_source": "fresh_fetch",
-      "quick_tier": "6"
-    },
-    {
-      "id": "2607.14680v1",
-      "source": "arxiv",
-      "title": "Operator-Split Bayesian Learning for Elliptic PDEs with Unequal Interior and Boundary Data",
-      "abstract": "We propose an operator-split Bayesian learning framework for second-order uniformly elliptic Dirichlet problems with unequal numbers of interior and boundary observations. The data consist of noisy measurements of the source in the domain and noisy measurements of the boundary values. Independent Bayesian neural-network (BNN) priors are assigned to these two quantities, and the resulting product posterior is pushed forward through the elliptic solution operator. We prove that the posterior induced by this construction contracts around the true solution. The contraction radius separates a domain contribution, governed by the second-order elliptic operator, from a boundary contribution, governed by the intrinsic dimension of the boundary. Together with the minimax lower bound of \\cite{ZhaoLu2026}, this yields a near-minimax upper bound up to logarithmic factors. Our numerical experiments illustrate the propagation of source and boundary uncertainty and the effects of unequal sampling budgets on the posterior reconstruction.",
-      "authors": [
-        "Emmanuel E. Oguadimma"
-      ],
-      "primary_category": "math.NA",
-      "categories": [
-        "math.NA",
-        "math.ST"
-      ],
-      "published": "2026-07-16T07:43:15+00:00",
-      "link": "https://arxiv.org/pdf/2607.14680v1",
-      "tags": [
-        "keyword:flow-pred",
-        "keyword:pc-latent",
-        "query:flow-pred",
-        "query:pc-latent"
-      ],
-      "llm_score": 6.0,
-      "llm_evidence_en": "operator-split Bayesian learning for elliptic PDEs with BNN priors",
-      "llm_evidence_cn": "椭圆PDE的算子分裂贝叶斯学习，使用贝叶斯神经网络先验",
-      "llm_evidence": "椭圆PDE的算子分裂贝叶斯学习，使用贝叶斯神经网络先验",
-      "canonical_evidence": "椭圆PDE的算子分裂贝叶斯学习，使用贝叶斯神经网络先验",
-      "llm_tldr_en": "Proposes an operator-split Bayesian learning framework for elliptic PDEs, using BNN priors on source and boundary, proving posterior contraction to true solution.",
-      "llm_tldr_cn": "针对椭圆型PDE问题，提出算子分裂贝叶斯学习方法，分别对内部源项和边界条件赋予贝叶斯神经网络先验，通过推演后验得到解的后验分布，并证明后验以一定速度收缩到真实解，为PDE不确定量化提供新方法。",
-      "llm_tldr": "针对椭圆型PDE问题，提出算子分裂贝叶斯学习方法，分别对内部源项和边界条件赋予贝叶斯神经网络先验，通过推演后验得到解的后验分布，并证明后验以一定速度收缩到真实解，为PDE不确定量化提供新方法。",
-      "llm_tags": [
-        "query:pc-latent"
-      ],
-      "matched_query_tag": "query:pc-latent",
-      "matched_query_text": "physics constrained learning for latent space models",
-      "matched_requirement_id": "req-16",
       "selection_source": "fresh_fetch",
       "quick_tier": "6"
     },
@@ -638,18 +641,97 @@
       "tags": [
         "keyword:flow-pred",
         "keyword:pc-latent",
+        "keyword:sfc",
         "query:flow-pred",
         "query:pc-latent",
         "query:sfc"
       ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "data-driven hybrid modelling for viscoelastic fluid flows, applicable to CFD",
+      "llm_evidence_cn": "数据驱动混合建模用于粘弹性流体流动，可应用于CFD",
+      "llm_evidence": "数据驱动混合建模用于粘弹性流体流动，可应用于CFD",
+      "canonical_evidence": "数据驱动混合建模用于粘弹性流体流动，可应用于CFD",
+      "llm_tldr_en": "Proposes a hybrid TBNN-UDE model for discovering viscoelastic constitutive laws, with a reduced-dimensional tensor basis improving physical consistency and numerical stability for CFD simulations.",
+      "llm_tldr_cn": "该论文针对粘弹性流体本构模型发现中的物理一致性和数值稳定性问题，提出了一种结合张量基神经网络和通用微分方程的混合方法，通过降维张量基公式提高了物理一致性和数值稳定性，所提出的模型可直接迁移至计算流体动力学模拟，为创建复杂粘弹性流体的数字孪生提供了有效工具。",
+      "llm_tldr": "该论文针对粘弹性流体本构模型发现中的物理一致性和数值稳定性问题，提出了一种结合张量基神经网络和通用微分方程的混合方法，通过降维张量基公式提高了物理一致性和数值稳定性，所提出的模型可直接迁移至计算流体动力学模拟，为创建复杂粘弹性流体的数字孪生提供了有效工具。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "data-driven approaches for flow field prediction",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.13193v1",
+      "source": "arxiv",
+      "title": "Generating synthetic evolution of turbulent flames with an experimental data-based spatiotemporal diffusion model",
+      "abstract": "In this study, a conditional diffusion model -- a class of generative machine learning models -- is developed to generate synthetic, experimental data-based trajectories of turbulent flames. Generated experimental data corresponds to simultaneous field measurements, namely OH planar laser-induced fluorescence (OH-PLIF) fields and multi-component particle image velocimetry (PIV) fields, for attached and detached flame states in a swirl combustor configuration. This is done using an x-prediction flow matching framework combined with a pixel-based spatiotemporal transformer, which is capable of generating entire spatiotemporal slabs containing synthetic flame evolution at inference time, conditioned on the flame regime. Using this framework, synthetic flames were found to preserve key flame features and statistical consistency across space and time, particularly at the large scales -- deviations at high temporal frequencies and small spatial length scales were found to depend on the time-span of the generated space-time slabs. An extrapolation task of transition synthesis is also conducted, in which the conditional diffusion model is used to synthesize spatiotemporally coherent flame transitions (flame liftoff and reattachment) unseen by the model during training. This was accomplished using a model for the denoising transition velocity that relies on time-varying linear combinations of attached and detached denoising velocities, leading to an approach that (a) allows for control of the generated transition directions and timescales, and (b) retains sample-to-sample variability in the generated transitions in the process. Overall, this study provides a promising pathway for the utilization of experimental data-based generative models as a new means of data exploration in data-sparse environments, complementing both experiments and computational fluid dynamics-based approaches.",
+      "authors": [
+        "Amrit Tarur",
+        "Shivam Barwey"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-14T18:45:04+00:00",
+      "link": "https://arxiv.org/pdf/2607.13193v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
       "llm_score": 6.0,
-      "llm_evidence_en": "hybrid data-driven modeling for viscoelastic fluid flows, applicable to flow prediction and reconstruction",
-      "llm_evidence_cn": "粘弹性流体流动的混合数据驱动建模，可应用于流场预测与重构",
-      "llm_evidence": "粘弹性流体流动的混合数据驱动建模，可应用于流场预测与重构",
-      "canonical_evidence": "粘弹性流体流动的混合数据驱动建模，可应用于流场预测与重构",
-      "llm_tldr_en": "Proposes hybrid TBNN and UDE approach for viscoelastic constitutive modeling, enabling digital twins for CFD with improved physical consistency and numerical stability.",
-      "llm_tldr_cn": "数据驱动建模在复杂粘弹性流体中面临物理一致性和数值稳定性挑战。本文结合张量基神经网络和通用微分方程，提出降维张量基公式，增强了物理一致性。该混合模型可直接用于CFD模拟，支持数字孪生。为流场预测提供了新的数据驱动方法。",
-      "llm_tldr": "数据驱动建模在复杂粘弹性流体中面临物理一致性和数值稳定性挑战。本文结合张量基神经网络和通用微分方程，提出降维张量基公式，增强了物理一致性。该混合模型可直接用于CFD模拟，支持数字孪生。为流场预测提供了新的数据驱动方法。",
+      "llm_evidence_en": "spatiotemporal diffusion model for turbulent flame generation",
+      "llm_evidence_cn": "生成湍流火焰时空演化的扩散模型",
+      "llm_evidence": "生成湍流火焰时空演化的扩散模型",
+      "canonical_evidence": "生成湍流火焰时空演化的扩散模型",
+      "llm_tldr_en": "Proposes a conditional diffusion model with x-prediction flow matching and spatiotemporal transformer to generate synthetic OH-PLIF and PIV fields for turbulent flames, enabling data augmentation for flow field prediction.",
+      "llm_tldr_cn": "该论文针对湍流火焰实验数据稀缺问题，提出一种基于条件扩散模型的时空生成方法，利用x-prediction流匹配框架结合像素级时空transformer，能够生成OH-PLIF和PIV等多场同步的合成火焰演化数据，为流场预测和重构提供了有效的数据增强手段。实验在旋流燃烧器附着和分离火焰状态上验证了生成质量。",
+      "llm_tldr": "该论文针对湍流火焰实验数据稀缺问题，提出一种基于条件扩散模型的时空生成方法，利用x-prediction流匹配框架结合像素级时空transformer，能够生成OH-PLIF和PIV等多场同步的合成火焰演化数据，为流场预测和重构提供了有效的数据增强手段。实验在旋流燃烧器附着和分离火焰状态上验证了生成质量。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.13360v1",
+      "source": "arxiv",
+      "title": "Data driven non-equilibrium moist phase exchanges for atmospheric convection within a discontinuous Galerkin model of the compressible Euler equations",
+      "abstract": "A neural network is trained to learn the mass exchanges between vapour, liquid and ice phases in atmospheric convection. The network is trained on convection resolving output from a regional configuration of the LFRic model with a multi-moment microphysics parameterisation (CASIM). The loss function for learning these phase exchanges is formulated under the assumptions of thermal and mechanical equilibrium (same temperature and pressure for all phases), and mechanical dis-equilibrium (different Gibbs free energies for all phases). The network outputs determine the exchanges of vapour, liquid and ice so as to conserve mass, and the resulting change in entropy is determined from the network outputs so as to conserve energy. The neural network is implemented in a thermodynamically consistent manner within a 2D vertical slice discontinuous Galerkin model of a moist, non-hydrostatic atmosphere in order to simulate the formation of three-phase clouds for convection at sub-km resolution. The results are compared to those from a physics based representation of three-phase moist processes at thermodynamic equilibrium.",
+      "authors": [
+        "David Lee",
+        "Kieran Ricardo",
+        "Junwei Lyu"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA",
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-15T00:52:43+00:00",
+      "link": "https://arxiv.org/pdf/2607.13360v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "data-driven modeling of compressible Euler equations for atmospheric convection",
+      "llm_evidence_cn": "可压缩欧拉方程的数据驱动建模用于大气对流",
+      "llm_evidence": "可压缩欧拉方程的数据驱动建模用于大气对流",
+      "canonical_evidence": "可压缩欧拉方程的数据驱动建模用于大气对流",
+      "llm_tldr_en": "Trains a neural network to learn mass exchanges between phases in atmospheric convection, conserving mass and entropy, integrated with a discontinuous Galerkin solver.",
+      "llm_tldr_cn": "该论文训练神经网络学习大气对流中水汽、液态水和冰之间的质量交换，采用热力学和机械非平衡假设。网络输出在保证质量守恒和熵变约束下确定相交换率，并嵌入到不连续伽辽金求解器中。实验表明该方法能准确模拟非平衡湿对流过程，为数据驱动流体建模提供了新思路。",
+      "llm_tldr": "该论文训练神经网络学习大气对流中水汽、液态水和冰之间的质量交换，采用热力学和机械非平衡假设。网络输出在保证质量守恒和熵变约束下确定相交换率，并嵌入到不连续伽辽金求解器中。实验表明该方法能准确模拟非平衡湿对流过程，为数据驱动流体建模提供了新思路。",
       "llm_tags": [
         "query:flow-pred:composite"
       ],

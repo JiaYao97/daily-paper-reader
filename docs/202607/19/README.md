@@ -1,32 +1,34 @@
 # 日报 · 2026-07-19
 
-- 生成时间：2026-07-19 13:08:17 UTC
-- 当次推荐总数：16
-- 精读区：3
+- 生成时间：2026-07-19 21:25:38 UTC
+- 当次推荐总数：18
+- 精读区：5
 - 速读区：13
 
 ## 今日简报（AI）
-今日共处理16篇文献，精读3篇，聚焦于基于扩散模型的湍流火焰合成与自适应网格方法。最值得关注的方向是《Generating synthetic evolution of turbulent flames》提出的实验数据驱动时空扩散模型（9.0分），以及《Learning to Discretize》的扩散自适应网格技术（8.0分）。建议普通读者优先精读这两篇，深入理解扩散模型在复杂物理仿真与网格生成中的创新应用。
+今日共审阅18篇论文，精读5篇，重点聚焦逆设计与可压缩流领域。最值得关注的是增量Transformer用于地聚合物逆设计及可压缩流信息几何正则化冲击解（均8.0分）。建议后续重点跟踪物理信息网络与谱方法在刚性及激波主导问题中的进展。
 
 ## 精读区
-1. [Generating synthetic evolution of turbulent flames with an experimental data-based spatiotemporal diffusion model](/202607/19/2607.13193v1-generating-synthetic-evolution-of-turbulent-flames-with-an-experimental-data-based-spatiotemporal-diffusion-model) （9.0/10）
-2. [Learning to Discretize: Diffusion-Based Adaptive Mesh with Spectral Guidance](/202607/19/2607.11974v1-learning-to-discretize-diffusion-based-adaptive-mesh-with-spectral-guidance) （8.0/10）
+1. [Incremental Transformer for Surrogate-Based Inverse Design of Geopolymer Mixtures](/202607/19/2607.10896v1-incremental-transformer-for-surrogate-based-inverse-design-of-geopolymer-mixtures) （8.0/10）
+2. [Shock solutions for the one-dimensional information geometric regularization of compressible flow](/202607/19/2607.12693v1-shock-solutions-for-the-one-dimensional-information-geometric-regularization-of-compressible-flow) （8.0/10）
 3. [Evaluation of State-of-the-Art Deep Learning Architectures for Aerodynamical Predictions](/202607/19/2607.13866v1-evaluation-of-state-of-the-art-deep-learning-architectures-for-aerodynamical-predictions) （8.0/10）
+4. [Learning reduced-order latent linear models for Kalman filtering of nonlinear systems](/202607/19/2607.14273v1-learning-reduced-order-latent-linear-models-for-kalman-filtering-of-nonlinear-systems) （8.0/10）
+5. [Split Complex-Valued Physics-Informed Neural Networks for Forward and Inverse Nonlinear PDEs](/202607/19/2607.15087v1-split-complex-valued-physics-informed-neural-networks-for-forward-and-inverse-nonlinear-pdes) （8.0/10）
 
 ## 速读区
-1. [SPARC-Net: A Spectral, Causality-Aware, and Hard-Constrained Physics-Informed Architecture for Stiff and Shock-Dominated Partial Differential Equations](/202607/19/2607.11310v1-sparc-net-a-spectral-causality-aware-and-hard-constrained-physics-informed-architecture-for-stiff-and-shock-dominated-partial-differential-equations) （7.0/10）
-2. [Inf-Sup Neural Networks for High Dimensional PDEs](/202607/19/2607.11718v1-inf-sup-neural-networks-for-high-dimensional-pdes) （7.0/10）
-3. [A Generative Model-Free Form Deformation Approach for the Generation of Mesh Motions with Applications to PDE](/202607/19/2607.13202v1-a-generative-model-free-form-deformation-approach-for-the-generation-of-mesh-motions-with-applications-to-pde) （7.0/10）
-4. [A Minimal Interpretable Architecture for Zero-Shot Reconstruction of Dynamical Systems](/202607/19/2607.14937v1-a-minimal-interpretable-architecture-for-zero-shot-reconstruction-of-dynamical-systems) （7.0/10）
-5. [RTS Smoother-Guided Learning of Physics-Based Neural Differential Models](/202607/19/2607.15180v1-rts-smoother-guided-learning-of-physics-based-neural-differential-models) （7.0/10）
-6. [FlowPainter: Inpainting Optical Flow via Confidence-Guided Completion](/202607/19/2607.10140v1-flowpainter-inpainting-optical-flow-via-confidence-guided-completion) （6.0/10）
-7. [Velocity Scheduled Flow Matching](/202607/19/2607.11442v1-velocity-scheduled-flow-matching) （6.0/10）
-8. [Hierarchical Bayesian inversion using the Karhunen-Loève expansion with analytical eigenpairs of the squared exponential kernel](/202607/19/2607.12387v1-hierarchical-bayesian-inversion-using-the-karhunen-love-expansion-with-analytical-eigenpairs-of-the-squared-exponential-kernel) （6.0/10）
-9. [LatentFlow: A General Framework for Conditioning Stochastic Processes](/202607/19/2607.12922v1-latentflow-a-general-framework-for-conditioning-stochastic-processes) （6.0/10）
-10. [Learning reduced-order latent linear models for Kalman filtering of nonlinear systems](/202607/19/2607.14273v1-learning-reduced-order-latent-linear-models-for-kalman-filtering-of-nonlinear-systems) （6.0/10）
-11. [A new strategy for physics-informed neural networks based on hierarchical collocation point refinement](/202607/19/2607.14665v1-a-new-strategy-for-physics-informed-neural-networks-based-on-hierarchical-collocation-point-refinement) （6.0/10）
-12. [Operator-Split Bayesian Learning for Elliptic PDEs with Unequal Interior and Boundary Data](/202607/19/2607.14680v1-operator-split-bayesian-learning-for-elliptic-pdes-with-unequal-interior-and-boundary-data) （6.0/10）
-13. [Harnessing Machine Learning for Hybrid Constitutive Modelling of Viscoelastic Fluid Flows in Computational Rheology](/202607/19/2607.14944v1-harnessing-machine-learning-for-hybrid-constitutive-modelling-of-viscoelastic-fluid-flows-in-computational-rheology) （6.0/10）
+1. [Compact and Stable Representation of Real-Frequency Spectral Functions for Machine Learning](/202607/19/2607.11190v1-compact-and-stable-representation-of-real-frequency-spectral-functions-for-machine-learning) （7.0/10）
+2. [SPARC-Net: A Spectral, Causality-Aware, and Hard-Constrained Physics-Informed Architecture for Stiff and Shock-Dominated Partial Differential Equations](/202607/19/2607.11310v1-sparc-net-a-spectral-causality-aware-and-hard-constrained-physics-informed-architecture-for-stiff-and-shock-dominated-partial-differential-equations) （7.0/10）
+3. [Cluster-Weighted EDMD](/202607/19/2607.12243v1-cluster-weighted-edmd) （7.0/10）
+4. [ConFlow: Constraints-Guided Learning with Flow Matching for Motion Generation](/202607/19/2607.14424v1-conflow-constraints-guided-learning-with-flow-matching-for-motion-generation) （7.0/10）
+5. [A Minimal Interpretable Architecture for Zero-Shot Reconstruction of Dynamical Systems](/202607/19/2607.14937v1-a-minimal-interpretable-architecture-for-zero-shot-reconstruction-of-dynamical-systems) （7.0/10）
+6. [Harnessing Machine Learning for Hybrid Constitutive Modelling of Viscoelastic Fluid Flows in Computational Rheology](/202607/19/2607.14944v1-harnessing-machine-learning-for-hybrid-constitutive-modelling-of-viscoelastic-fluid-flows-in-computational-rheology) （7.0/10）
+7. [LLM-PDESR: Robust PDE Discovery via Subdomain Weighted Residuals and LLM-Guided Symbolic Hypothesis Generation](/202607/19/2607.10546v1-llm-pdesr-robust-pde-discovery-via-subdomain-weighted-residuals-and-llm-guided-symbolic-hypothesis-generation) （6.0/10）
+8. [Machines that Predict Trajectories from Templates](/202607/19/2607.11551v1-machines-that-predict-trajectories-from-templates) （6.0/10）
+9. [Dynamic Online Processor-Native Inference for State Estimation](/202607/19/2607.12095v1-dynamic-online-processor-native-inference-for-state-estimation) （6.0/10）
+10. [Tensor-Based Reduced-Order Modeling for Optimization-Based Inverse Problems](/202607/19/2607.12613v1-tensor-based-reduced-order-modeling-for-optimization-based-inverse-problems) （6.0/10）
+11. [LatentFlow: A General Framework for Conditioning Stochastic Processes](/202607/19/2607.12922v1-latentflow-a-general-framework-for-conditioning-stochastic-processes) （6.0/10）
+12. [Generating synthetic evolution of turbulent flames with an experimental data-based spatiotemporal diffusion model](/202607/19/2607.13193v1-generating-synthetic-evolution-of-turbulent-flames-with-an-experimental-data-based-spatiotemporal-diffusion-model) （6.0/10）
+13. [Data driven non-equilibrium moist phase exchanges for atmospheric convection within a discontinuous Galerkin model of the compressible Euler equations](/202607/19/2607.13360v1-data-driven-non-equilibrium-moist-phase-exchanges-for-atmospheric-convection-within-a-discontinuous-galerkin-model-of-the-compressible-euler-equations) （6.0/10）
 
 ---
 使用键盘方向键可在日报/论文之间快速切换。
