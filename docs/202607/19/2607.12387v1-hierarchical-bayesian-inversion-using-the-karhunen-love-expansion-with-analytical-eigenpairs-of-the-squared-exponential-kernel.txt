@@ -1,0 +1,1980 @@
+Title: Hierarchical Bayesian inversion using the Karhunen-Loève expansion with analytical eigenpairs of the squared exponential kernel
+
+URL Source: https://arxiv.org/pdf/2607.12387v1
+
+Published Time: Wed, 15 Jul 2026 12:00:54 GMT
+
+Number of Pages: 42
+
+Markdown Content:
+# Hierarchical Bayesian inversion using the Karhunen–Loève expansion with analytical eigenpairs of the squared exponential kernel 
+
+Tatsuya Shibata a, ∗, Michael C. Koch b, Kazunori Fujisawa a
+
+> aGraduate School of Agriculture, Kyoto University, Kitashirakawa Oiwake-cho, Sakyo-ku, 606-8502 Kyoto, Japan
+> bResearch School of Earth Sciences, Australian National University, 142 Mills Rd, Acton, ACT 0200 Canberra, Australia
+
+Abstract 
+
+Hierarchical Bayesian inversion with Gaussian random field priors addresses uncertainty in covariance hyperparameters, such as the standard deviation and correlation length. When a Gaussian random field is represented by the Karhunen–Loève (KL) expansion, the basis functions depend on these hyperparameters through an integral eigenvalue problem (IEVP) associated with the covariance kernel. Consequently, the IEVP must be solved repeatedly whenever the hyperparameters are updated, leading to significant computational cost in hierarchical inference. In this paper, we focus on the squared exponential kernel and con-struct the KL expansion using the analytical solution to a Gaussian-weighted IEVP. This analytical KL expansion offers a computationally efficient alternative to the conventional KL expansion by eliminating the repeated numerical solutions of the IEVP during hyperpa-rameter updates. While the analytical KL expansion is applicable to arbitrary domains and dimensions, it does not have the same mean-square optimality as the conventional KL ex-pansion. To address this limitation, we employ an optimization-based approach that selects the standard deviation of the Gaussian weight function in the IEVP to effectively reduce the truncation error of the KL expansion. Numerical experiments in one- and two-dimensional settings show that this selection strategy provides sufficient accuracy for practical applica-tions. Furthermore, the analytical KL expansion admits closed-form differentiation, enabling efficient posterior sampling via HMC. The proposed framework is applied to Bayesian in-version for a steady Darcy flow model, where the hydraulic conductivity field is successfully estimated using weakly informative hyperpriors. 
+
+Keywords: Invese problem, Gaussian random field, Squared exponential kernel, Karhunen–Loève expansion, Analytical solution, Hierarchical Bayesian inference, Hamiltonian Monte Carlo   
+
+> ∗Corresponding author
+> Email address: shibata.tatsuya.84z@st.kyoto-u.ac.jp (Tatsuya Shibata)
+
+This manuscript is under review for publication in a peer-reviewed journal. arXiv:2607.12387v1 [stat.ME] 14 Jul 2026 1. Introduction 
+
+In scientific and engineering fields such as geotechnical engineering, geophysics, and hydrogeology, inverse problems are widely studied. These problems involve inferring input information about a physical system from observational data. The unknown inputs are often represented as spatial fields (spatially varying functions), such as hydraulic conductivity, Young’s modulus, or resistivity. Inverse problems are classically ill-posed [1, 2], which means that the existence and uniqueness of a solution, as well as its stability with respect to observational data, are not guaranteed. As a result, these problems are highly sensitive to uncertainties such as observation noise, making it difficult to obtain reliable solutions. To address these challenges, the Bayesian approach has become popular in recent years. In this framework, input information is modeled as a random field (a spatially varying random function), and the prior random field is updated using observational data based on Bayes’ rule to obtain the posterior random field [2, 3]. Introducing randomness allows for the derivation of not only single point estimates but also interval estimates, thereby enabling uncertainty quantification. Furthermore, a large class of practically relevant Bayesian inverse problems is well-posed under suitable notions of well-posedness introduced in [4]. Thus, the Bayesian framework is a robust approach, providing both practical tools for uncertainty quantification and a theoretical guarantee of well-posedness. Since posterior random fields are generally not available in closed-form, they are typically evaluated numerically using sampling methods such as Markov chain Monte Carlo (MCMC) [5–7]. To achieve this, the random field, which is an infinite-dimensional object, must be discretized into a finite number of random variables. These random variables can then be treated as the unknown quantities in the inverse problem, and the posterior random field is reconstructed from their posterior distribution. Series expansion methods represent random fields as infinite series with random coeffi-cients, and discretization is achieved by truncating the series to a finite number of terms. Among these representations, the Karhunen–Loève (KL) expansion provides an optimal rep-resentation in the sense of minimizing the mean-square error for a given number of terms [8]. This property makes it widely used for dimensionality reduction in inverse problems [9–18]. In the KL expansion, the basis functions are constructed from the eigenvalues and eigenfunctions of the autocovariance operator that characterizes the random field. Con-sequently, solving a Fredholm integral eigenvalue problem (IEVP) is necessary, where the integral kernel is defined by the autocovariance function of the random field. Gaussian random fields provide a simple modeling framework for spatially varying func-tions, characterized by a mean and a covariance structure [3]. Along with the selection of the mean and covariance function, hyperparameters such as the standard deviation and cor-relation length enable flexible control over the properties of the random field. Consequently, they are widely used as prior random fields. In practice, hyperparameters are rarely known a priori, and the choice of the prior can significantly influence the posterior distribution [9]. Therefore, it is desirable to account for prior uncertainty through hierarchical Bayesian inference, where uncertain hyperparameters are treated as random variables. For stationary Gaussian random fields represented by the KL expansion, the treatment of the mean and 2variance is relatively straightforward. This is because changes in the mean and variance correspond to translation and scaling, respectively, and the KL expansion can be efficiently updated through affine transformations of the KL basis [10]. In contrast, the correlation length affects the KL basis and necessitates resolving the IEVP to obtain the eigenpairs at each step of MCMC [11]. To alleviate this computational burden, several surrogate modeling approaches have been proposed. In [12–14], polynomial chaos (PC) expansion is employed. Approaches based on precomputed KL bases for multiple hyperparameter sets have been developed, including linear interpolation [19] and reduced basis (RB) methods [9]. An alternative approach to avoid recomputing the IEVP is to utilize analytical solutions. These solutions are available only for specific types of autocovariance functions (e.g., expo-nential [8], modified exponential [20], and triangular [8] kernels) defined on hyperrectangular domains. However, Mercer’s theorem ensures that the domain on which the IEVP is solved does not need to coincide with the domain of the Gaussian random field (referred to as the physical domain). This property is referred to as the domain independence property of the KL expansion [21]. In other words, for an arbitrarily shaped physical domain, a Gaussian random field can be represented by a KL expansion constructed from analytical solutions defined on the smallest hyperrectangular domain enclosing it (referred to as the bounding domain). It is important to note that such a KL expansion no longer minimizes the mean-square error over the physical domain. As a result, a larger number of terms is generally required to achieve accuracy comparable to that of the conventional KL expan-sion. Nevertheless, this increase is reported to be moderate [15, 22], and the benefit of avoiding repeated IEVP solutions outweighs this drawback. The approximation error of the KL expansion based on the analytical solution of the exponential kernel was investigated in [23]. In this paper, we adopt a similar approach and utilize an analytical solution to the IEVP of the squared exponential kernel [24, 25]. The squared exponential kernel yields infinitely differentiable sample paths; i.e., it is very smooth. Although Stein [26] argues that such strong smoothness assumptions are unrealistic for modeling many physical processes, Ras-mussen and Williams [25] note that this kernel is probably the most widely used in the kernel machines field. The squared exponential kernel is also commonly employed in Bayesian in-version, as demonstrated in previous studies [10–19, 27]. One contributing factor is that it exhibits a rapid decay of eigenvalues [22, 28–30], making it effective for dimensionality reduction through the KL expansion. However, the analytical solution is not employed in these studies, and its use for the KL basis appears to have received limited attention (e.g., [31]). This suggests that the analytical solution may have been regarded as unavailable for practical applications in the context of the KL expansion. This view is also reflected in [30], where the lack of analytical solutions is noted. One possible reason is that the IEVP admitting an analytical solution is defined on R and involves a Gaussian-weighted integral, whereas the IEVP associated with the conventional KL expansion is typically defined on a bounded domain without such a weight. The KL basis derived from the weighted IEVP on R is orthogonal with respect to the weight over R and minimizes a weighted mean-square error over R, rather than the standard (unweighted) mean-square error over the physical domain. As a result, it does not 3have the classical optimality of the KL expansion. Despite the loss of optimality, the analytical solution offers a significant advantage by eliminating the need to recompute the IEVP numerically in hierarchical Bayesian inversion. Furthermore, the mean-square error can be made sufficiently small for practical purposes by appropriately choosing the standard deviation of the Gaussian weight function. In this study, we propose an optimization-based approach for determining the standard deviation that minimizes the unweighted mean-square error. For computational simplicity, the error is evaluated over the hyperrectangle bounding domain rather than the physical domain. It should also be noted that the validity of constructing the KL expansion via the weighted IEVP, together with its domain independence, is justified by Mercer’s theorem, as described in [32]. Additionally, higher-dimensional cases can be readily constructed using tensor products of the one-dimensional analytical solutions [23, 33]. These properties enable the application of the KL expansion based on the analytical eigenpairs to arbitrary domains and dimensions. Another important advantage is that the KL expansion based on the analytical eigenpairs can be differentiated in closed-form with respect to all parameters, including not only the random coefficients in the KL expansion but also the hyperparameters (i.e., the mean, standard deviation, and correlation length). This property enables efficient sampling using Hamiltonian Monte Carlo (HMC) [34–36], a gradient-based MCMC algorithm. Furthermore, both the hyperparameters and the random coefficients in the KL expansion can be updated jointly at each HMC step without separating them. This contrasts with Metropolis-within-Gibbs sampling [9, 37], in which these components are updated sequentially. The remainder of this paper is organized as follows. In Section 2, we explain Mercer’s theorem and then introduce the KL expansion. Section 3 presents the analytical solution to the Gaussian-weighted IEVP of the squared exponential kernel, including the selection of the standard deviation of the Gaussian weight function in the IEVP. In Section 4, we numerically verify the accuracy of the KL expansion based on the analytical eigenpairs for one- and two-dimensional cases. Section 5 explains the framework of hierarchical Bayesian inversion, including HMC. The gradient computation of the KL expansion for HMC is detailed in Section 6. Finally, Section 7 presents numerical experiments of the inverse problem on hydraulic conductivity in two-dimensional steady Darcy flow. 
+
+2. Karhunen–Loève expansion 
+
+2.1. Mercer’s theorem 
+
+Let X ⊆ Rd denote the domain, and let ν be a non-degenerate Borel measure, i.e., 
+
+ν(X′) > 0 for any nonempty open set X′ ⊆ X. Let K : X × X → R be a continuous, symmetric, and positive semi-definite kernel such that 
+
+Z
+
+> X
+
+Z
+
+> X
+
+|K(x, x′)|2 dν(x) d ν(x′) < ∞. (1) Then the associated integral operator TK on L2(X, ν ), defined by 
+
+(TK f )( x) = 
+
+Z
+
+> X
+
+K(x, x′)f (x′) d ν(x′), (2) 4is compact, self-adjoint, and positive. The operator TK has at most countably many positive eigenvalues {λi}∞
+
+> i=1
+
+, with corresponding eigenfunctions {ϕi}∞ 
+
+> i=1
+
+that are orthogo-nal in L2(X, ν ). For convenience, {λi}∞ 
+
+> i=1
+
+are arranged in non-increasing order such that 
+
+λi ≥ λi+1 (lim i→∞ λi = 0) . Also, the eigenfunctions are chosen to be normalized; that is, R 
+
+> X
+
+ϕi(x)ϕj (x) d ν(x) = δij . The eigenpairs are obtained by solving the following inte-gral eigenvalue problem (IEVP), which is a homogeneous Fredholm integral equation of the second kind: Z
+
+> X
+
+K(x, x′)ϕi(x′) d ν(x′) = λiϕi(x). (3) Mercer’s theorem on non-compact domains [32] asserts that: 
+
+K(x, x′) = 
+
+> ∞
+
+X
+
+> i=1
+
+λiϕi(x)ϕi(x′), (4) where the series converges absolutely and uniformly on D × D for any compact (i.e., closed and bounded) subsets D ⊂ X.
+
+2.2. KL expansion of Gaussian random fields 
+
+Let (Ω , F, P ) be a probability space, and let D ⊂ X be a bounded physical domain. Consider a real-valued Gaussian random field u : D × Ω → R with a continuous mean 
+
+μ : D → R and an autocovariance function C : D × D → R, that is, u ∼ GP (μ, C ). The autocovariance function can be written as 
+
+C (x, x′) = σ(x)σ(x′)ρ (x, x′) , (5) where σ : D → R is a standard deviation function, and ρ : D × D → R is an autocorrelation function. Suppose that the autocorrelation function ρ can be extended to a function on 
+
+X × X that satisfies the same assumptions as the kernel K in Section 2.1. For stationary kernels defined by a single lag function, such as the squared exponential kernel, this extension is immediate since the kernel is already given on all of Rd × Rd, where its positive semi-definiteness is guaranteed by Bochner’s theorem [25]. In the following, we identify this extended function with the kernel K. By Mercer’s theorem, the eigendecomposition of K
+
+in Eq. (4), when restricted to D × D, converges absolutely and uniformly to the original autocorrelation function ρ. In other words, ρ, defined on D × D, admits a series expansion with the eigenpairs {λi, ϕ i}∞ 
+
+> i=1
+
+of the IEVP on X (see Eq. (3)). Therefore, the autocovariance function C can be represented as 
+
+C (x, x′) = σ(x)σ(x′)
+
+> ∞
+
+X
+
+> i=1
+
+λiϕi(x)ϕi(x′), (6) and thus, the Gaussian random field u defined on D×Ω can be represented by the Karhunen– Loève expansion as 
+
+u(x, ω ) = μ(x) + σ(x)
+
+> ∞
+
+X
+
+> i=1
+
+pλiϕi(x)ξi(ω), (7) 5where ξi : Ω → R are independent standard normal random variables. In fact, for any 
+
+x, x′ ∈ D, the first- and second-order moments of u(x, ω ) are given by 
+
+E[ u(x, ω )] = E 
+
+"
+
+μ(x) + σ(x)
+
+> ∞
+
+X
+
+> i=1
+
+pλiϕi(x)ξi(ω)
+
+#
+
+= μ(x) + σ(x)
+
+> ∞
+
+X
+
+> i=1
+
+pλiϕi(x)E [ ξi(ω)] = μ(x) (since E [ ξi(ω)] = 0) ,
+
+(8) 
+
+Cov[ u(x, ω ), u (x′, ω )] = E 
+
+"
+
+σ(x)σ(x′)
+
+> ∞
+
+X
+
+> i=1
+> ∞
+
+X
+
+> j=1
+
+pλiϕi(x)ξi(ω)pλj ϕj (x′)ξj (ω)
+
+#
+
+= σ(x)σ(x′)
+
+> ∞
+
+X
+
+> i=1
+> ∞
+
+X
+
+> j=1
+
+pλi
+
+pλj ϕi(x)ϕj (x′)E [ ξi(ω)ξj (ω)] = σ(x)σ(x′)
+
+> ∞
+
+X
+
+> i=1
+
+λiϕi(x)ϕi(x′) (since E [ ξi(ω)ξj (ω)] = δij )= C(x, x′) (since Eq . (6) ).
+
+(9) This result indicates that the domain X on which the IEVP is posed need not coincide with the physical domain D on which the Gaussian random field is defined. We refer to this as the domain independence property of the KL expansion, following [21]. While [21] demonstrated this property for bounded domains under the Lebesgue measure, Eqs. (8) and (9) show that it still holds in the more general setting of IEVPs posed on unbounded domains under any non-degenerate Borel measure. Consequently, since Gaussian random fields are completely specified by their first- and second-order moments, samples of the Gaussian random field on D can be generated using the KL expansion constructed with any X ⊇ D and any such measure ν.In contrast, the accuracy of the approximation using the truncated KL expansion depends on the choice of X and ν. The truncated KL expansion is defined as 
+
+ˆu(x, ω ) = μ(x) + σ(x)
+
+> M
+
+X
+
+> i=1
+
+pλiϕi(x)ξi(ω). (10) Let εu(x, ω ) = u(x, ω ) − ˆu(x, ω ) denote the approximation error. For a constant σ, the truncated KL expansion provides an optimal representation with respect to the expected 
+
+L2(X, ν )-error, i.e., it minimizes 
+
+E
+
+h
+
+∥εu(·, ω )∥2
+
+> L2(X,ν )
+
+i
+
+=
+
+Z
+
+> X
+
+E εu(x, ω )2 dν(x). (11) This optimality essentially follows from the proof in [8] of the KL expansion’s optimality with respect to the Lebesgue measure; the main modification is the replacement of dx with 6dν(x). In practice, however, the relevant measure of truncation error is the mean-square error over the physical domain D, measured with respect to the Lebesgue measure. This is referred to as the global mean-square error [38]: 
+
+ε2 
+
+> u
+
+= E 
+
+h
+
+∥εu(·, ω )∥2
+
+> L2(D)
+
+i
+
+=
+
+Z
+
+> D
+
+E εu(x, ω )2 dx. (12) This error is minimized by the conventional KL expansion corresponding to the choice of 
+
+X = D and ν as the Lebesgue measure. Although alternative choices of X and ν do not minimize ε2
+
+> u
+
+, they can significantly facilitate the solution of the IEVP. In particular, by choosing X as a hyperrectangular domain that encloses D, the IEVP in Eq. (3) can be solved more easily. For certain kernels, such as the exponential [8], modified exponential [20], and triangular [8] kernels, analytical eigenpairs are available. Otherwise, the IEVP can be solved numerically using the Nyström method [38] with a simple arrangement of integration points. Furthermore, the appropriate choice of ν enables the use of the analytical solution of the squared exponential kernel, as described in the next section. In practical applications, since the domains and variance scales of random fields vary, it is useful to employ an appropriately normalized error metric for a unified treatment. The normalized variance of the truncation error, called the error variance [22, 29, 38], is given by 
+
+εσ(x; M ) = Var[ u(x, ω ) − ˆu(x, ω )] Var[ u(x, ω )] = 1 −
+
+> M
+
+X
+
+> i=1
+
+λiϕi(x)2. (13) A global error metric can then be obtained by averaging εσ(x; M ) over D, yielding the mean error variance [38], defined by: 
+
+εσ(M ) = 1
+
+|D|
+
+Z
+
+> D
+
+εσ(x; M ) d x = 1 − 1
+
+|D|
+
+> M
+
+X
+
+> i=1
+
+λi
+
+Z
+
+> D
+
+ϕi(x)2 dx, (14) where |D| = R 
+
+> D
+
+dx. Note that, when the mean error variance is employed as the truncation error metric, it is natural to retain the M KL terms with the largest values of λi
+
+R 
+
+> D
+
+ϕi(x)2 dx.For the conventional KL expansion, these M terms can be selected solely based on the magnitude of λi because R 
+
+> D
+
+ϕi(x)2 dx = 1 . When using the domain independence property, however, the integral must be evaluated explicitly. Hereafter, the dependence of εσ and εσ
+
+on M is omitted when it is clear from the context. 
+
+3. Squared exponential kernel 
+
+3.1. Analytical solution 
+
+Consider the one-dimensional squared exponential autocorrelation function defined by 
+
+ρSE (x, x ′; l) = exp −|x − x′|2
+
+l2
+
+!
+
+, (15) 7where l is a correlation length. Let X = R and dν(x) = w(x; s) d x, where w(x; s) = 
+
+N (x|0, s 2) is the Gaussian weight function with arbitrary s > 0. The analytical solution to Eq. (3) for the squared exponential kernel is given as follows [24, 25]: 
+
+λi =
+
+r2aA Bi−1, ϕi(x) = exp( −(c − a)x2)Hi−1(√2cx ), (16) where Hi is the i-th order Hermite polynomial, a−1 = 4 s2, b−1 = l2, and 
+
+c = √a2 + 2 ab, A = a + b + c, B = b/A. (17) For the application of the KL expansion, the eigenfunctions in Eq. (16) must be normalized and then redefined as 
+
+ϕi(x) = 
+
+ caπ
+
+14
+
+exp( ax 2)ψi−1
+
+√2cx 
+
+
+
+, (18) where ψi is the i-th Hermite function [39] defined as 
+
+ψi(x) =  2ii!√π− 12 exp 
+
+
+
+−x2
+
+2
+
+
+
+Hi(x). (19) To clarify the dependence of the eigenpairs on l and s, we rewrite λi and ϕi as 
+
+λi(l, s ) = λ (γ(l, s )) = 2( γ − 1) i−1
+
+(γ + 1) i , (20) 
+
+ϕi(x; l, s ) = ϕi(x; γ(l, s ), s ) = ( γπ )14 exp 
+
+ x2
+
+4s2
+
+
+
+ψi−1
+
+r γ
+
+2
+
+xs
+
+
+
+, (21) where γ(l, s ) = p1 + 8 s2/l 2 is introduced for notational simplicity. In the d-dimensional case, the squared exponential kernel is separable as 
+
+ρSE (x, x′; l) = 
+
+> d
+
+Y
+
+> n=1
+
+exp 
+
+
+
+−(xn − x′
+
+> n
+
+)2
+
+l2
+
+> n
+
+
+
+, (22) where ln is the correlation length for the n-th variable, l = ( l1, . . . , l d), and x = ( x1, . . . , x d).Therefore, for X = Rd with dν(x) = w(x; s) d x, where w(x; s) = N (x|0, diag( s21, . . . , s 2
+
+> d
+
+)) ,the eigenvalues and eigenfunctions can be readily obtained using the tensor product form [33]: 
+
+λα(l, s) = 
+
+> d
+
+Y
+
+> n=1
+
+λαn (ln, s n), ϕα(x; l, s) = 
+
+> d
+
+Y
+
+> n=1
+
+ϕαn (xn; ln, s n), (23) where s = ( s1, . . . , s d) ∈ Rd
+
+> +
+
+, with R+ = (0 , ∞), α = ( α1, . . . , α d) ∈ Nd is a multi-index, and 
+
+{λαn , ϕ αn } denotes the αn-th eigenpair for the n-th variable. Note that when the weight function is centered at m ∈ Rd, i.e., w(x; s) = N (x|m, diag( s21, . . . , s 2
+
+> d
+
+)) , the corresponding eigenfunctions are obtained by translating Eq. (23) by m.83.2. Selection of the standard deviation of the Gaussian weight function 
+
+Consider the interpretation of the measure dν(x) = w(x; s) d x. The Gaussian weight function w(x; s) = N (x|m, diag( s21, . . . , s 2
+
+> d
+
+)) decays rapidly away from x = m. Therefore, the measure ν is effectively localized around x = m. The standard deviation of the Gaussian weight function s determines the extent of this localization over the domain X = Rd [33], which can be understood in terms of the mean-square error. Throughout this subsection, the correlation length l is held fixed in order to focus on the effect of s on the truncation error of the KL expansion for a given covariance kernel. In this setting, the truncation error metrics inherit only the s-dependence of the analytical eigenpairs. Hereafter, when this dependence needs emphasis, we explicitly include s as an additional argument of the corresponding error metric; otherwise, we omit it when the context is clear. According to Eq. (11), the KL expansion based on the analytical eigenpairs (hereafter referred to as the analytical KL expansion) minimizes the weighted mean-square error: 
+
+Z
+
+> Rd
+
+E εu(x, ω ; s)2 w(x; s) d x. (24) Because w(x; s) decays rapidly away from x = m, the approximation error εu(x, ω ; s) in the tail regions contributes negligibly to this metric, allowing larger approximation errors in those regions. Consequently, the contribution of the tail regions to the unweighted mean-square error ε2
+
+> u
+
+(s) in Eq. (12) may become large. To maintain the accuracy of the KL expansion over D with respect to ε2
+
+> u
+
+(s), the parameter s should be chosen such that the significant mass of w(x; s) is concentrated within D, while limiting the influence of its tails. A more detailed mathematical interpretation of the choice of s can be found in [24, 33]. However, in practice, even without a detailed understanding of such mathematical inter-pretation, the desired value of s can be obtained by solving one of the following optimization problems. One is to determine the value of s that minimizes the mean error variance εσ(M, s)
+
+for a fixed number of KL terms M . The other is, given a prescribed error tolerance, to first find the minimum M that satisfies this tolerance, and then find the value of s that minimizes 
+
+εσ(M, s) for that M . These problems can be summarized as follows. 
+
+Problem 1. For a truncated KL expansion with a fixed number of terms M , find s that minimizes the mean error variance εσ(M, s); that is, 
+
+s∗ = arg min 
+
+> s∈Rd
+> +
+
+εσ(M, s). (25) 
+
+Problem 2. Given a prescribed tolerance εσtol for the mean error variance εσ, find the minimum number of KL terms M that satisfies this tolerance; that is, 
+
+M ∗ = min M ∈ N | ∃ s ∈ Rd
+
+> +
+
+, ε σ(M, s) ≤ εσtol . (26) Then determine the corresponding optimal parameter s∗ by solving Problem 1 with M = M ∗.9Algorithm 1 Solve Problem 2 using the binary search 
+
+Require: Tolerance εσtol , Initial value sinit 
+
+Mlow ← 0
+
+Mhigh ← min M ∈ N | εσ(M, sinit ) ≤ εσtol 
+
+s∗ 
+
+> Mhigh
+
+← Solve Problem 1 (Mhigh )
+
+while Mhigh − Mlow > 1 do 
+
+Mmid ← ⌊ (Mlow + Mhigh )/2⌋
+
+s∗ 
+
+> Mmid
+
+← Solve Problem 1 (Mmid )
+
+if εσ(Mmid , s∗ 
+
+> Mmid
+
+) ≤ εσtol then 
+
+Mhigh ← Mmid 
+
+s∗ 
+
+> Mhigh
+
+← s∗
+
+> Mmid
+
+else 
+
+Mlow ← Mmid 
+
+end if end while 
+
+M ∗ ← Mhigh 
+
+s∗ ← s∗
+
+> Mhigh
+
+return M ∗, s∗
+
+For Problem 2, in practice, the primary objective is to obtain M ∗ from the viewpoint of dimensionality reduction, while determining the corresponding s∗ is optional. Therefore, any element in s ∈ Rd 
+
+> +
+
+| εσ(M ∗, s) ≤ εσtol is also acceptable as a relaxed alternative. The following approaches, for example, can be considered to solve these problems. Prob-lem 1 for d = 1 can be solved using either gradient-free optimization methods (e.g., grid search, Brent’s method) or gradient-based optimization methods (e.g., Newton’s method). For d ≥ 2, the eigenvalues and eigenfunctions are constructed using tensor products of the one-dimensional analytical solutions, as shown in Eq. (23). In this case, when the KL terms are ordered by the magnitude of λα (or λα
+
+R 
+
+> D
+
+ϕα(x)2 dx, as mentioned in Section 2.2), their relative ordering may change between different multi-indices as s varies. This phe-nomenon is known as the crossing of eigenbranches [13, 14]. Consequently, the retained M
+
+KL terms may change near such crossings, making the objective function εσ(M, s) locally non-differentiable with respect to s. Therefore, it is recommended to either use gradient-free optimization methods (e.g., grid search, particle swarm optimization) directly or, if employing gradient-based methods, to adopt a hybrid strategy that combines them with gradient-free optimization. Problem 2 can be addressed by exploiting the monotonicity 
+
+min s εσ(M + 1 , s) ≤ min s εσ(M, s) and performing a binary search on M to determine M ∗.At each step of the binary search, the same optimization as in Problem 1 is conducted for the given M to simultaneously determine the corresponding s, as shown in Algorithm 1. Building on the above discussion, these optimization problems are quite complex (espe-cially when d ≥ 2), and the choice of optimization strategies, as well as improvements in computational efficiency, may also be explored. However, these aspects are beyond the scope of this study. This is because, when the KL expansion is employed for dimensionality reduc-10 tion of the inverse problem, these optimization problems need to be solved only once as a preprocessing step for inversion. In other words, whichever optimization scheme is adopted, the associated computational cost is relatively small compared to that of the inversion as a whole. In contrast, regardless of the optimization strategy, evaluating the mean error variance 
+
+εσ(M, s) can become a bottleneck in implementation when d ≥ 2 due to the domain integra-tion in Eq. (14). For physical domains with complex geometries, designing quadrature rules is often cumbersome. To alleviate this issue, one can introduce a bounding domain Dbound ,defined as the smallest hyperrectangular domain satisfying Dbound ⊇ D [21]. In Problems 1 and 2, the original objective function εσ(M, s) can then be replaced with the mean error variance over this simpler domain: 
+
+εσbound (M, s) = 1
+
+|Dbound |
+
+Z
+
+> Dbound
+
+εσ(x; M, s) d x. (27) This replacement facilitates the construction of quadrature rules and makes the implemen-tation straightforward. The practical validity of M ∗ and s∗ obtained from the substituted Problem 2 by replacing εσ(M, s) with εσbound (M, s) is examined in the next subsection. It should be noted that, to efficiently localize the measure ν around Dbound , it is natural to set 
+
+m to be the center of Dbound ; we thus adopt this choice in this study. 
+
+4. Verification of the analytical KL expansion via the mean error variance 
+
+The accuracy of the analytical KL expansion is numerically investigated by comparing its mean error variance with that of the conventional KL expansion. In the one-dimensional case, KL expansions are examined for multiple correlation lengths; in the two-dimensional case, for multiple physical domains with complex geometries. In constructing the analytical KL expansion, we consider only Problem 2 since it subsumes Problem 1, and thus verification of Problem 2 automatically entails verification of Problem 1. For all KL expansions, the mean is set to μ = const and the standard deviation to σ = 1 , yielding εσ = ε2
+
+> u
+
+/|D|. Therefore, in these investigations, the conventional KL expansion with the Lebesgue measure provides the optimal approximation in terms of the mean error variance εσ.
+
+4.1. One-dimensional case 
+
+Consider the physical domain D = [ −1, 1] . For each correlation length l = 0 .1, 0.2, 0.5, 1,Problem 2 is solved using the tolerances εσtol = 10 −2, 10 −3, 10 −4. The resulting optimal parameters M ∗ and s∗ are shown in Table 1. The conventional KL expansion is constructed using the Nyström method [38] with 80 Gauss–Legendre quadrature points. These points are also used to evaluate the integral in the mean error variance εσ for all KL expansions. Fig. 1 shows the decay of εσ for all KL expansions across four different correlation lengths. Each panel displays four curves for the analytical KL expansion: three corresponding to s∗
+
+obtained for three tolerance levels, and one corresponding to s = 0 .1. The position of M ∗
+
+for each curve corresponding to s∗ is indicated by a vertical line matching the curve’s color and style. The decay rate of εσ depends on the choice of s. In particular, in all cases, the 11 Table 1: Results of Problem 2 for D = [ −1, 1] with various combinations of (l, ε σ tol ).
+
+l εσtol M ∗ s∗
+
+0.110 −2 28 0.37626 10 −3 38 0.30723 10 −4 46 0.27256 0.210 −2 14 0.34769 10 −3 19 0.32493 10 −4 23 0.26172 0.510 −2 6 0.40712 10 −3 8 0.31757 10 −4 10 0.26001 110 −2 4 0.42819 10 −3 5 0.36348 10 −4 6 0.31596 
+
+analytical KL expansion with the optimal parameter s∗ reaches the corresponding tolerance 
+
+εσtol faster than the other three analytical KL expansions. In contrast, the analytical KL expansion with s = 0 .1 decays significantly more slowly than these three analytical KL expansions. This highlights the importance of carefully selecting s.Additionally, as the correlation length l or the tolerance εσtol increase, the difference in the mean error variance between the analytical and the conventional KL expansion decreases. For example, for (l, ε σtol ) = (0 .1, 10 −4), approximately 10 additional terms are required compared to the conventional KL expansion even when using the optimal parameter s∗.In contrast, the difference diminishes for larger l and εσtol ; for example, for (l, ε σtol ) = (0 .2, 10 −2) and (l, ε σtol ) = (0 .5, 10 −4).
+
+4.2. Two-dimensional case 
+
+Consider Domains A–D shown in Fig. 2. Domain A serves as the bounding domain 
+
+Dbound = [ −1, 1] × [−1, 1] , enclosing Domains B–D, which have complex geometries. As described in Section 3.2, Problem 2 is addressed on Dbound rather than on each physical domain to simplify implementation. For correlation lengths l1 = l2 = 0 .5, Problem 2 is solved on Dbound using the tolerances εσtol = 10 −2, 10 −3, 10 −4, where the integral in εσbound 
+
+(see Eq. (27)) is evaluated using 20 × 20 Gauss–Legendre quadrature points. The resulting optimal parameters M ∗ and s∗ are shown in Table 2 and are commonly used for the analytical KL expansion for Domains B–D. The conventional KL expansion is constructed using the Galerkin method [22, 29, 38] with the finite element (FE) meshes shown in Fig. 2. These meshes are also used to evaluate the integral in the mean error variance εσ for all KL expansions. Fig. 3 shows the decay of εσ for all KL expansions on Domains A–D. For Do-mains B and C, εσ of the analytical KL expansion does not satisfy the tolerance level εσtol .However, it is slightly larger than that for Domain A, and this difference can be considered negligible in practice. For Domain D, εσ of the analytical KL expansion is smaller than that 12 M                      
+
+> 0510 15 20 25 30 35 40 45
+> 𝜀  𝜎
+> 10 −610 −510 −410 −310 −210 −110 0
+
+M                   
+
+> 036912 15 18 21 24
+> 𝜀  𝜎
+> 10 −510 −410 −310 −210 −110 0
+
+M                
+
+> 0246810
+> 𝜀  𝜎
+> 10 −510 −410 −310 −210 −110 0
+
+M                  
+
+> 01234567
+> 𝜀  𝜎
+> 10 −510 −410 −310 −210 −110 0
+
+(a) (b) (c) (d)                          
+
+> s∗for 𝜀 𝜎
+> tol = 10 −2s∗for 𝜀 𝜎
+> tol = 10 −3s∗for 𝜀 𝜎
+> tol = 10 −4
+> s= 0.1 conventional
+
+Figure 1: Decay of the mean error variance for four analytical KL expansions and one conventional KL expansion for (a) l = 0 .1, (b) l = 0 .2, (c) l = 0 .5, and (d) l = 1 . In each panel, the three vertical lines indicate the positions of M ∗ for each curve corresponding to the analytical KL expansion with s∗. Each vertical line matches the color and style of its respective curve. 
+
+for Domain A and satisfies the tolerance level εσtol . This behavior of εσ can also be confirmed from Fig. 4, which shows the error variance εσ(x) on Dbound using the optimal parameters for each tolerance εσtol . In all cases, εσ(x) tends to increase with distance from the origin. Consequently, Domains B and C exclude the region near the origin where εσ(x) is small, leading to a higher εσ than that for Domain A. In contrast, Domain D excludes the outer regions where εσ(x) is large, resulting in a lower εσ than that for Domain A. These results indicate that, unless the physical domain D is an extreme shape consisting only of regions where εσ(x) is large, M ∗ and s∗ optimized for Dbound achieve accuracy on D comparable to that on Dbound . Therefore, they are practically sufficient in most cases. However, two points should be noted. First, M ∗ and s∗ optimized for Dbound are not in general optimal for D. This can be confirmed from Fig. 3(d), where s∗ for εσtol =10 −2 does not minimize the mean error variance εσ at the corresponding M ∗ (i.e., M =38 ). Instead, s∗ for εσtol = 10 −3 and 10 −4 yield lower εσ. Second, a lower εσ for the analytical KL expansion does not imply that the expansion is close to optimal. As mentioned 13 x 1                   
+
+> −1.0 −0.5 0.0 0.5 1.0
+> x 2
+> −1.0
+> −0.5 0.0 0.5 1.0
+> x1
+> −1.0 −0.5 0.0 0.5 1.0
+> x 2
+> −1.0
+> −0.5 0.0 0.5 1.0
+> x1
+> −1.0 −0.5 0.0 0.5 1.0
+> x 2
+> −1.0
+> −0.5 0.0 0.5 1.0
+> x1
+> −1.0 −0.5 0.0 0.5 1.0
+> x 2
+> −1.0
+> −0.5 0.0 0.5 1.0
+
+(a) (b) (c) (d) Figure 2: Domains A–D with their FE meshes: (a)–(d). Domain A serves as the bounding domain for Domains B–D. Table 2: Results of Problem 2 for Dbound = [ −1, 1] × [−1, 1] and l1 = l2 = 0 .5 with several tolerance levels. 
+
+εσtol M ∗ s∗
+
+10 −2 38 (0 .39914 , 0.39379) 10 −3 63 (0 .31953 , 0.31953) 10 −4 94 (0 .32567 , 0.32215) 
+
+earlier, εσ for the analytical KL expansion is smallest for Domain D among Domains A–D. However, its difference from the corresponding conventional KL expansion, i.e., the optimal representation, is not minimal. Specifically, the difference for Domain D is larger than those for Domains A and B, as shown in Fig. 3. 
+
+5. Inverse problem 
+
+5.1. Bayesian inference 
+
+Consider the Gaussian random field u ∼ GP (μ, C SE ), where 
+
+CSE (x, x′; σ, l) = σ2ρSE (x, x′; l) (28) is the squared exponential autocovariance function. Hereafter, the mean μ and the standard deviation σ are constant on the physical domain D, that is, μ = μ(x) and σ = σ(x). In this 14 M
+
+0 20 40 60 80 
+
+> 𝜀  𝜎
+
+10 − 610 − 510 − 410 − 310 − 210 − 110 0
+
+M
+
+0 20 40 60 80 
+
+> 𝜀  𝜎
+
+10 − 610 − 510 − 410 − 310 − 210 − 110 0
+
+M
+
+0 20 40 60 80 
+
+> 𝜀  𝜎
+
+10 − 610 − 510 − 410 − 310 − 210 − 110 0
+
+M
+
+0 20 40 60 80 
+
+> 𝜀  𝜎
+
+10 − 610 − 510 − 410 − 310 − 210 − 110 0
+
+(a) (b) (c) (d) 
+
+s ∗ for 𝜀 𝜎  
+
+> tol
+
+= 10 − 2 s ∗ for 𝜀 𝜎  
+
+> tol
+
+= 10 − 3
+
+s ∗ for 𝜀 𝜎  
+
+> tol
+
+= 10 − 4 conventional Figure 3: Decay of the mean error variance of the KL expansions for l1 = l2 = 0 .5. (a)–(d) correspond to Domains A–D, respectively. For each tolerance level εσ tol , the optimal parameter s∗ for the bounding domain Dbound is consistently used across all analytical KL expansions. The position of M ∗ is indicated by a vertical line with the same color and style as the corresponding curve. x 1
+
+−1.0 −0.5 0.0 0.5 1.0 
+
+> x 2
+
+−1.0 
+
+−0.5 0.0 0.5 1.0 
+
+(a) 
+
+10 − 310 − 210 − 1
+
+x 1
+
+−1.0 −0.5 0.0 0.5 1.0 
+
+> x 2
+
+−1.0 
+
+−0.5 0.0 0.5 1.0 
+
+(b) 
+
+10 − 4.5 10 − 3.5 10 − 2.5 10 − 1.5 
+
+x 1
+
+−1.0 −0.5 0.0 0.5 1.0 
+
+> x 2
+
+−1.0 
+
+−0.5 0.0 0.5 1.0 
+
+(c) 
+
+10 − 5.5 10 − 4.5 10 − 3.5 10 − 2.5 
+
+Figure 4: The error variance εσ (x) of the analytical KL expansion on Dbound with the optimal parameters 
+
+s∗ and M ∗ for (a) εσ tol = 10 −2, (b) εσ tol = 10 −3, and (c) εσ tol = 10 −4.
+
+15 setting, u can be parameterized by the random coefficients ξ = ( ξ1, . . . , ξ M ) ∈ RM in the truncated KL expansion (see Eq. (10)), along with hyperparameters τ = ( l, σ, μ ) ∈ Rd+2 .For simplicity, these parameters are combined into θ = ( ξ, τ) ∈ Θ ⊆ RM +d+2 , where Θ is the parameter space. Then u can be expressed in the following form, explicitly indicating its dependence on parameters: 
+
+u(x; θ) = μ + σ
+
+> M
+
+X
+
+> i=1
+
+pλi(l)ϕi(x; l)ξi. (29) Here, the eigenpairs λi and ϕi also depend on the standard deviation of the Gaussian weight function s. However, since s is fixed at its optimal value s∗ during inversion, this dependence is omitted for clarity, and the eigenpairs are denoted simply by λi(l) and ϕi(x; l), respectively. To ensure positivity, we adopt a log-normal random field k as a prior, given by 
+
+k(x; θ) = 10 u(x;θ). (30) Consider the forward problem of evaluating G(kθ), where G : V → W is a forward operator between Banach spaces V and W , and kθ = k(·; θ) ∈ V represents a realization of the random field. Let O : W → Y be an observation operator that maps G(kθ) ∈ W to noise-free observations, where Y ⊆ RN is the data space. Accordingly, the parameter-to-observation operator G : Θ → Y is defined by 
+
+G(θ) = ( O ◦ G)( k(·; θ)) . (31) In practice, the measured observations are contaminated by noise and can be modeled as 
+
+y = G(θ) + η, (32) where y ∈ Y denotes the observations, and η ∈ RN is observation noise. This noise is typically assumed to follow a zero-mean Gaussian distribution N (0, R), where R ∈ RN ×N
+
+is a covariance matrix. In inverse problems, the unknown input kθ is recovered from y by estimating θ = ( ξ, τ). Typically, from the perspective of computational cost, only ξ is esti-mated while τ is fixed, either based on apriori information or determined through maximum likelihood estimation [25, 40]. This is because the IEVP in Eq. (3) is generally solved nu-merically, and repeatedly evaluating the IEVP every time τ (essentially l) is updated during the inversion would incur prohibitive computational costs. In contrast, this study employs the analytical solution to the IEVP, which makes the computational cost negligible. Conse-quently, τ can also be treated as a random parameter to be estimated within the hierarchical Bayesian framework. In the Bayesian approach, a prior distribution of the estimated parameters θ is assumed as initial knowledge. This distribution is updated with observations y to obtain the posterior distribution, which is the solution of the inverse problem. Let the prior distribution be 
+
+p(θ) = p(ξ)p(τ), i.e., ξ and τ are independent. The posterior distribution p(θ|y) is then obtained using Bayes’ rule: 
+
+p(θ|y) ∝ p(y|θ)p(θ) = p(y|θ)p(ξ)p(τ), (33) 16 where p(y|θ) is the likelihood. Considering Eq. (32), the likelihood is given by 
+
+p(y|θ) = N (y|G (θ), R) ∝ exp 
+
+
+
+−12(y − G (θ)) ⊤R−1(y − G (θ)) 
+
+
+
+. (34) It should be noted that although k and τ have a hierarchical structure, the KL expansion allows k to be parameterized by ξ, which is independent of τ. This formulation is referred to as the non-centered parameterization [41]. As a result, the parameters explicitly used in the estimation are ξ and τ, and Eq. (33) does not include a probability density associated with the conditional random field k|τ.In many practical problems, the posterior distribution p(θ|y) cannot be expressed in closed-form. This is because the forward model G(θ) in the likelihood p(y|θ) is often given in an implicit form with respect to θ, as is typical in problems involving partial differential equations (PDEs). Therefore, p(θ|y) is numerically obtained by generating samples via Markov chain Monte Carlo (MCMC) methods. In MCMC algorithms, the constant term of the target distribution cancels out when calculating the acceptance probability. Therefore, up to a normalizing constant, p(θ|y) can be written as a canonical distribution: 
+
+p(θ|y) ∝ exp( −U (θ)) , (35) where U (θ) denotes the negative log-density. Expressing the prior as p(θ) ∝ exp( −E(θ)) ,Bayes’ rule in Eq. (33), along with the likelihood in Eq. (34), yields 
+
+U (θ) = 12(y − G (θ)) ⊤R−1(y − G (θ)) + E(θ). (36) 
+
+5.2. Hamiltonian Monte Carlo 
+
+Hamiltonian Monte Carlo (HMC) is a gradient-based MCMC algorithm that uses Hamil-tonian dynamics to efficiently explore the parameter space [34–36]. In HMC, an auxiliary momentum variable p, having the same dimension as θ, is introduced. In the standard implementation, p is drawn independently of θ from a multivariate normal distribution 
+
+p(p) = N (p|0, M), resulting in the canonical joint distribution: 
+
+p(θ, p|y) = p(p)p(θ|y) ∝ exp( −H(p, θ)) . (37) Here, H(p, θ) is referred as to the Hamiltonian and is defined by 
+
+H(p, θ) = U (θ) + 12p⊤M−1p. (38) In this context, U (θ) is the potential energy, (p⊤M−1p)/2 is the kinetic energy, and M
+
+is called the mass matrix. The introduction of the Hamiltonian enables the deterministic trajectories in the sampling process through Hamiltonian dynamics: 
+
+dθ
+
+dt = ∂H ∂p (p, θ) = M−1p, (39) 17 dp
+
+dt = −∂H ∂θ (p, θ) = −∂U ∂θ (θ). (40) These equations are usual solved numerically using the leapfrog method, which satisfies time reversibility and volume conservation properties. The time discretization of the leapfrog method consists of three steps: 
+
+p
+
+
+
+t + ϵ
+
+2
+
+
+
+= p (t) − ϵ
+
+2
+
+∂U ∂θ (θ(t)) , (41) 
+
+θ (t + ϵ) = θ (t) + ϵM−1p
+
+
+
+t + ϵ
+
+2
+
+
+
+, (42) 
+
+p (t + ϵ) = p
+
+
+
+t + ϵ
+
+2
+
+
+
+− ϵ
+
+2
+
+∂U ∂θ (θ(t + ϵ)) . (43) Starting from the j-th state (θj , pj ), the (j + 1) -th state (θj+1 , pj+1 ) is generated through two steps that leave the canonical joint distribution invariant. In the first step, pj is replaced by a new random draw from N (0, M). In the second step, the (j + 1) -th sample candidate 
+
+(θ′, p′) is proposed from the current state (θj , pj ) by applying the leapfrog steps L times with step-size ϵ. The proposed state is then accepted or rejected as (θj+1 , pj+1 ) according to the Metropolis-Hastings acceptance criterion [42]: 
+
+α(( θj , pj ), (θ′, p′)) = min 
+
+
+
+1, p(θ′, p′)
+
+p(θj , pj )
+
+∂(θ′, p′)
+
+∂(θj , pj )
+
+
+
+= min 1, exp( −H(θ′, p′) + H(θj , pj )) .
+
+(44) Here, ∂(θ′, p′)/∂ (θj , pj ) is the Jacobian for the conversion from (θj , pj ) to (θ′, p′), and 
+
+∂(θ′, p′)/∂ (θj , pj ) = 1 due to volume conservation. The choice of ϵ, L, and M in the leapfrog integrator affects the sampling efficiency of HMC. This study employs automatic tuning methods for these parameters, with an adaptation procedure similar to Stan [43]. In detail, the Dual Averaging scheme [44] is used for tuning ϵ, the No-U-Turn Sampler [36] is used for tuning L, and the adaptation of M is done according to section 4.2.1 in [35]. In HMC implementation, some libraries (e.g., AdvancedHMC.jl [45] in Julia or Hamil-tonianSampler in MATLAB) allow users to avoid implementing the entire HMC algorithm from scratch; it is sufficient to specify the target distribution and its gradient. Thus, one only needs to define U (θ) and ∂U (θ)/∂ θ.
+
+6. Gradient computation in HMC 
+
+6.1. Gradient of the potential energy 
+
+The gradient of the potential energy with respect to θ is obtained by differentiating Eq. (36): 
+
+∂U ∂θ (θ) = −(y − G (θ)) ⊤R−1 ∂G
+
+∂θ (θ) + ∂E ∂θ (θ), (45) 18 Considering Eq. (31), the j-th component of ∂G(θ)/∂ θ is given by 
+
+∂G
+
+∂θ j
+
+(θ) = D(O ◦ G)( kθ)
+
+∂k θ
+
+∂θ j
+
+
+
+, (46) where D(O ◦ G)( kθ) denotes the Fréchet derivative of O ◦ G at kθ, and 
+
+∂k θ
+
+∂θ j
+
+= kθ ln 10 ∂u ∂θ j
+
+(·; θ). (47) Here, ∂u/∂θ j is the partial derivative of the KL expansion, which can be derived analytically as detailed in Section 6.2. By applying the chain rule, Eq. (46) can be expressed as 
+
+∂G
+
+∂θ j
+
+(θ) = DO (G(kθ)) 
+
+
+
+DG (kθ)
+
+∂k θ
+
+∂θ j
+
+ 
+
+= DO (G(kθ)) 
+
+∂G (kθ)
+
+∂θ j
+
+
+
+, (48) where ∂G (kθ)/∂θ j is the sensitivity of the forward problem with respect to θj . Evaluating 
+
+∂G (kθ)/∂θ j can be computationally expensive when the forward problem is governed by a PDE, making it prohibitive to compute these sensitivities for all parameters. To address this issue, the adjoint method provides an effective strategy [16, 46, 47]. By introducing an ad-joint field, this method eliminates the need to explicitly compute the sensitivities ∂G (kθ)/∂θ j
+
+when evaluating ∂U (θ)/∂ θ. Consequently, ∂U (θ)/∂ θ can be computed with only a single adjoint solve following the forward solve, significantly reducing the computational cost. For details, see Appendix A. 
+
+6.2. Gradient computation of the KL expansion 
+
+One advantage of the analytical KL expansion is that its partial derivatives can be expressed in closed-form. Theses partial derivatives for each parameter (i.e., ξ, l, σ, and μ)are obtained by differentiating Eq. (29): 
+
+∂u ∂ξ i
+
+(x; θ) = σpλi(l)ϕi(x; l) (i = 1 , . . . , M ), (49) 
+
+∂u ∂l m
+
+(x; θ) = σ
+
+> M
+
+X
+
+> i=1
+
+12pλi(l)
+
+∂λ i
+
+∂l m
+
+(l) · ϕi(x; l) + pλi(l) ∂ϕ i
+
+∂l m
+
+(x; l)
+
+!
+
+ξi (m = 1 , . . . , d ), (50) 
+
+∂u ∂σ (x; θ) = 
+
+> M
+
+X
+
+> i=1
+
+pλi(l)ϕi(x; l)ξi, (51) 
+
+∂u ∂μ (x; θ) = 1 . (52) Here, ∂λ i(l)/∂l m and ∂ϕ i(x; l)/∂l m correspond to the partial derivatives of Eq. (23). Let αi
+
+be the multi-index corresponding to the i-th eigenpair. Then these derivatives are given by 
+
+∂λ i
+
+∂l m
+
+(l) = ∂λ αi,m 
+
+∂l m
+
+(lm)
+
+> d
+
+Y
+
+> n=1
+> n̸=m
+
+λαi,n (ln), (53) 19 ∂ϕ i
+
+∂l m
+
+(x; l) = ∂ϕ αi,m 
+
+∂l m
+
+(xm; lm)
+
+> d
+
+Y
+
+> n=1
+> n̸=m
+
+ϕαi,n (xn; ln). (54) Hereafter, the derivatives of the one-dimensional eigenpairs are considered. For no-tational simplicity, ∂λ i(l)/∂l and ∂ϕ i(x; l)/∂l are used in place of ∂λ αi,m (lm)/∂l m and 
+
+∂ϕ αi,m (xm; lm)/∂l m throughout in this section. By the chain rule, these derivatives are expressed as ∂λ i
+
+∂l (l) = ∂∂l λi (γ(l; s∗)) = ∂λ i
+
+∂γ (γ(l; s∗)) · ∂γ ∂l (l; s∗), (55) 
+
+∂ϕ i
+
+∂l (x; l) = ∂∂l ϕi(x; γ(l; s∗), s ∗) = ∂ϕ i
+
+∂γ (x; γ(l; s∗), s ∗) · ∂γ ∂l (l; s∗), (56) where ∂γ ∂l (l; s∗) = − 8s∗2
+
+l3
+
+r
+
+1 + 8s∗2
+
+l2
+
+. (57) The partial derivatives of eigenpairs with respect to γ are obtained by differentiating Eqs. (20) and (21): 
+
+∂λ i
+
+∂γ (γ) = (4 i − 2γ − 2) (γ − 1) i−2
+
+(γ + 1) i+1 , (58) 
+
+∂ϕ i
+
+∂γ (x; γ, s ∗) = 14
+
+ πγ3
+
+14
+
+exp 
+
+ x2
+
+4s∗2
+
+  
+
+ψi−1
+
+r γ
+
+2
+
+xs∗
+
+
+
++
+
+√2γx s∗ ψ′
+
+> i−1
+
+r γ
+
+2
+
+xs∗
+
+ 
+
+, (59) where the derivative of the Hermite function ψ′ 
+
+> i
+
+is given by [39] 
+
+ψ′
+
+> i
+
+(x) = 
+
+r i
+
+2ψi−1(x) −
+
+ri + 1 2 ψi+1 (x). (60) 
+
+7. Numerical experiments of the inverse problem 
+
+We consider an inverse problem using the steady Darcy flow model, governed by Darcy’s law and the continuity equation: 
+
+q = −k∇h, ∇ · q = Q in D, (61) where k is the hydraulic conductivity, h is the total hydraulic head, q is the volumetric flux, and Q is the source term. Combining these two equations yields the following PDE: 
+
+−∇ · (k∇h) = Q in D. (62) Assume that the boundary ∂D consists of the Dirichlet boundary ΓD and the Neumann boundary ΓN (i.e., ∂D = Γ D ∪ ΓN, ΓD ∩ ΓN = ∅), with the boundary conditions given by 
+
+h = hD on ΓD, q · n = qN on ΓN. (63) 20 Here, hD and qN are given boundary data, and n denotes the outward unit normal vector on the boundary. The unknown hydraulic conductivity k is estimated using two types of observations: the hydraulic head and the flow rate. Let Oh := ( Oh, 1, . . . , O h,N h ) and 
+
+Oq :=  Oq, 1, . . . , O q,N q
+
+ be observation operators for the hydraulic head and the flow rate, respectively. Here and in the following, the subscripts h and q indicate association with the hydraulic head and the flow rate. Each component of Oh and Oq corresponds to an individual observation. Specifically, the hydraulic head at the observation point xn ∈ D
+
+(n = 1 , . . . , N h) is given by 
+
+Oh,n (h) = 
+
+Z
+
+> D
+
+δ(x − xn)h(x) d x. (64) Similarly, the flow rate over the boundary segments Γq,n (n = 1 , . . . , N q), which are mutually disjoint (i.e., Γq,n ∩ Γq,m = ∅ for n̸ = m), is given by 
+
+Oq,n (q) = 
+
+Z
+
+> Γq,n
+
+q(x) · n dS(x). (65) Note that the flow rate is observed on the Dirichlet boundary ΓD, since the flow rate on the Neumann boundary ΓN is prescribed and provides no additional information. Hence, 
+
+Γq,n ⊂ ΓD for n = 1 , . . . , N q.Let Gh be the forward operator for h (i.e., h = Gh(k)), and Gq be the forward operator for q (i.e., q = Gq(k)). The corresponding parameter-to-observation operators are then de-fined as Gh(θ) = ( Oh ◦ Gh) ( k(·; θ)) and Gq(θ) = ( Oq ◦ Gq) ( k(·; θ)) , respectively. Assuming mutually independent Gaussian observation noise, the observation model in Eq. (32) can be written as 
+
+ yh
+
+yq
+
+
+
+=
+
+ Gh(θ)
+
+Gq(θ)
+
+
+
++
+
+ ηh
+
+ηq
+
+
+
+,
+
+ ηh
+
+ηq
+
+
+
+∼ N 
+
+ 00
+
+
+
+,
+
+ Rh 00 Rq
+
+ 
+
+, (66) where Rh and Rq denote diagonal covariance matrices corresponding to the observation noises ηh and ηq, respectively. It is worth mentioning that, regardless of the choice of prior for θ, the Bayesian inverse problem associated with the additive Gaussian noise model in Eq. (66) is well-posed in at least the weak, Hellinger, and total variation senses defined in [4]. We consider two inverse problems for the steady Darcy flow model. Test 1 is similar to the benchmark problem used in [27, 37, 48]. Test 2 is defined on a complex geometric domain and aims to demonstrate the effectiveness of the analytical KL expansion for arbitrary domains. Throughout this section, all physical quantities are expressed in SI units. The units of key physical quantities are listed in Table 3. Hereafter, units are omitted unless otherwise stated. 
+
+7.1. Test 1 
+
+Consider the hydraulic conductivity field k on D = [0 , 10] × [0 , 10] as shown in Fig. 5. The true field is generated numerically through the log-hydraulic conductivity u, represented 21 Table 3: Units of key physical quantities. Descriptions of these quantities can be found in Section 7. 
+
+Quantity Unit 
+
+x1, x 2, l 1, l 2, h, O h,i (h) m
+
+k m/s
+
+Oq,i (q) m2/s
+
+u, σ, μ –x 1 [m]                      
+
+> 0246810
+> x 2 [m]
+> 0246810
+> 10 −510 −410 −310 −210 −1
+> Figure 5: The true hydraulic conductivity field generated through the log-hydraulic conductivity urepre-sented by the KL expansion with (l1, l 2, σ, μ ) = (6 ,3,1,−3) . White squares indicate observation points for the hydraulic head.
+
+by the KL expansion with hyperparameters (l1, l 2, σ, μ ) = (6 , 3, 1, −3) . The source term is 
+
+Q = 0 , and the boundary conditions are defined as 
+
+h(x1, 0) = 0 , ∂h ∂x 1
+
+(10 , x 2) = 0 ,
+
+−k ∂h ∂x 1
+
+(0 , x 2) = 5 × 10 −4, ∂h ∂x 2
+
+(x1, 10) = 0 .
+
+(67) These conditions are similar to the benchmark setup used in [27, 37, 48]. The observational data include only the total hydraulic head at 36 points equally distributed over D (white squares in Fig. 5). The noise-free observations are synthetically generated using FEM with 
+
+120 ×120 FE meshes, and then contaminated by independent noise with a standard deviation of 10% of their respective values. The prior for k is set to the log-normal random field; that is, the prior for u is given by u ∼ GP (μ, C SE (·, ·; σ, l)) . The prior for the random coefficients 
+
+ξ in the KL expansion is the standard normal ξ ∼ N (0, I), while hyperparameters are assigned weakly informative priors: log 10 (l1/l min 1 ) ∼ HN (0 , 1) , log 10 (l2/l min 2 ) ∼ HN (0 , 1) ,
+
+σ ∼ HN (0 , 1) , and μ ∼ N (−4, 2) . The priors for σ and μ are selected such that the induced Gaussian random fields adequately represent hydraulic conductivity relevant to engineering applications, ranging approximately from 10 −8 to 10 0 m/s [49]. The priors for the correlation lengths ln (n = 1 , 2) ensure ln ≥ lmin  
+
+> n
+
+, while allowing ln to take values up to roughly 10 2lmin  
+
+> n
+
+.22 MCMC steps 0 1000 2000 3000 
+
+> log  10  l 1
+> 0.0 0.5 1.0
+
+(a) Lag 0 20 40 60 80 100 ACF 0.0 0.2 0.4 (b)      
+
+> 𝛉 index 050 100 150 200
+> R̂
+> 1.000 1.005 1.010
+
+(c)      
+
+> 𝛉 index 050 100 150 200 Bulk ‐ESS  (×10  3)0510 15
+
+(d)      
+
+> 𝛉 index 050 100 150 200 Tail ‐ESS  (×10 3)0246
+
+(e) Figure 6: Convergence Diagnostics for HMC. (a) Trace plots and (b) ACF plots for log 10 l1 across all chains. (c) Rank-normalized ˆR, (d) Bulk-ESS, and (e) Tail-ESS for all elements of θ. The red line in each panel indicates the thresholds, i.e., ˆR = 1 .01 and ESS = 400 .
+
+The lower bounds are set to lmin 1 = lmin 2 = 1 , which corresponds to one-tenth of the domain length in each spatial direction. This choice excludes excessively short correlation lengths while still retaining sufficient flexibility for the random field to represent fine-scale spatial variability. The prescribed tolerance of the mean error variance is set to εσ = 10 −2, and the number of terms in the KL expansion is chosen such that this tolerance is satisfied even at 
+
+l1 = lmin 1 and l2 = lmin 2 . To this end, the number of terms M is set to M ∗ = 222 , which is obtained by solving Problem 2 under the conditions εσ = 10 −2, l1 = lmin 1 , l2 = lmin 2 , and 
+
+Dbound = D. The corresponding s∗ = [1 .9116 , 1.9116] is kept fixed as s during the entire inversion process. Samples of p(θ|y) are generated from four Markov chains, with initial state of each chain drawn from the prior distribution p(θ). Each chain has 3000 samples, with the first 1000 
+
+samples discarded as burn-in. Sampling is performed using AdvancedHMC.jl [45], in which the leapfrog parameter ϵ, and L, as well as the mass matrix M, are automatically tuned during the burn-in period in a manner similar to Stan’s HMC adaptation [43]. As a representative sample, trace and autocorrelation function (ACF) plots for log 10 l1
+
+are shown in Fig. 6(a) and Fig. 6(b), respectively. All Markov chains converge in a similar range and exhibit well-mixed behavior. The autocorrelations decay rapidly to near zero within a few lags, indicating efficient sampling and adequate convergence of the Markov 23 x 1 [m]                              
+
+> 0246810
+> x 2 [m]
+> 0246810
+> x1[m]
+> 0246810
+> x 2 [m]
+> 0246810
+> x1[m]
+> 0246810
+> x 2 [m]
+> 0246810
+> 10 −510 −410 −310 −210 −1
+
+(a) (b) (c) Figure 7: Profiles of the posterior hydraulic conductivity k|y: (a) 2.5th, (b) 50 th (median), and (c) 97 .5th percentile fields. Panels (a) and (c) correspond to the lower and upper bounds of the 95% CI, respectively. x 2 [m]                  
+
+> 0246810
+> k (x 1 = 5, x 2) [m/s] 10 −610 −510 −410 −310 −210 −110 0
+> True Median 50% CI 95% CI
+
+Figure 8: Cross-sectional profiles of the posterior log-hydraulic conductivity field u|y at x1 = 5 .
+
+chains. The convergence of Markov chains is also assessed using the ˆR and the bulk/tail effective sample sizes (ESS), as implemented in ArviZ [50]. The ˆR statistic measures chain convergence, while ESS quantifies the effective number of independent samples; bulk ESS reflects sampling efficiency in the central region of the posterior, whereas tail ESS evaluates it in the distribution tails [51]. In this study, we define tail ESS as the minimum ESS associated with the 2.5th and 97 .5th percentiles. The recommended thresholds are ˆR < 1.01 
+
+and ESS > 400 , respectively [51]. As shown in Fig. 6(c)–(e), all elements of θ satisfy these criteria. This suggests adequate sampling quality across both the bulk and the tails of the posterior distribution. The profile of posterior hydraulic conductivity k|y is illustrated in Fig. 7. The median field (Fig. 7(b)) closely resembles the true field. The 95 % credible interval (CI), bounded by the 2.5th and 97 .5th percentile fields (Fig. 7(a) and Fig. 7(c)), contains the true field within an interval spanning approximately 1–2 orders of magnitude. Fig. 8 shows a cross-sectional profile of k|y at x1 = 5 as a representative example. In most regions, the true field aligns well with the median field. In the lower region ( x2 ≤ 5), the true field is contained within a relatively narrow 95% CI, indicating low uncertainty. In the upper region ( x2 ≥ 5), 24 x 1 [m]                
+
+> 0246810
+> x 2 [m]
+> 0246810
+> (a)
+> −5
+> −4
+> −3
+> −2
+> −1
+> x1[m]
+> 0246810
+> x 2 [m]
+> 0246810
+> (b)
+> 0.0 0.2 0.4 0.6 0.8 1.0 Figure 9: The profiles of the posterior log-hydraulic conductivity field u|y:(a) mean and (b) standard deviation.
+
+although the 95% CI is wider than in the lower region, the 50% CI ( 25 th– 75 th percentile interval) still contains the true field. The behavior of uncertainty range is consistent with the statistics of the posterior log-hydraulic conductivity u|y shown in Fig. 9. The mean of u|y
+
+(Fig. 9(a)) closely matches the true field. The standard deviation of u|y (Fig. 9(b)) tends to be smaller in the lower region, which corresponds to a narrower uncertainty range. Although 
+
+u|y is not strictly Gaussian, the uncertainty range can be evaluated as approximately ±2
+
+standard deviations from the mean. These results demonstrate that the posterior hydraulic conductivity captures the true field within a narrow uncertainty range, suggesting that the estimation is accurate. The posterior distributions of (ξ1, ξ 2, ξ 101 , ξ 102 , log 10 l1, log 10 l2, σ, μ ) are shown in Fig. 10. For all hyperparameters (log 10 l1, log 10 l2, σ, μ ), the 95% Highest Probability Density (HPD) regions encompass the true values. Moreover, the posterior medians and the true values agree well, indicating accurate estimation of the hyperparameters and effective capture of the characteristics of the random field. Furthermore, the hyperparameters and KL coef-ficients corresponding to large eigenvalues dominantly contribute to the representation of the random field, and correlations are observed among some of these principal parameters in their posterior distributions (e.g., ξ1–μ, ξ2–σ). In contrast, KL coefficients associated with small eigenvalues (represented by ξ101 and ξ102 ) are almost independent of the other parameters, with each posterior distribution remaining close to the prior N (0 , 1) . This is because these parameters have a negligible impact on the likelihood, causing the prior characteristics to remain dominant. Specifically, the KL expansion constructed to achieve 
+
+εσ = 10 −2 for l1 = l2 = 1 is overparameterized for representing the random fields with larger correlation lengths, such as those of the posterior median (corresponding to l1 ≈ 6.9 and 
+
+l2 ≈ 2.7). Consequently, the KL coefficients associated with small eigenvalues become re-dundant. This finding also indicates that the chosen lower bounds for the correlation lengths are sufficiently small to ensure adequate representational capability of the KL expansion in the inversion process. Additionally, these redundant parameters exhibit a higher ESS than the principal parameters (see Fig. 6(d) and Fig. 6(e)). This behavior reflects the relatively simple geometry of their posterior distributions, which stems from their prior distributions, 25 0.0 0.5 
+
+01
+
+0.00 0.25 
+
+0.00 0.25 
+
+02
+
+02
+
+01
+
+𝜇 
+
+−5.0 −2.5 0.0 0.0 0.5 
+
+> 𝜉  2
+
+−2
+
+−1
+
+> 𝜉  101
+
+− 303
+
+> 𝜉  102
+
+− 303log  10  l 1
+
+0.5 1.0 
+
+> log  10  l 2
+
+0.0 0.3 0.6 
+
+> 𝜎
+
+12
+
+𝜉 1
+
+−2 0 2
+
+> 𝜇
+
+−5.0 
+
+−2.5 0.0 
+
+𝜉 2
+
+−2 −1
+
+𝜉 101 
+
+− 3 0 3
+
+𝜉 102 
+
+− 3 0 3log 10 l 1
+
+0.5 1.0 
+
+log 10 l 2
+
+0.0 0.3 0.6 
+
+𝜎 
+
+1 2Figure 10: Posterior marginal distributions of (ξ1, ξ 2, ξ 101 , ξ 102 , log 10 l1, log 10 l2, σ, μ ). The red diamonds and dashed lines indicate the posterior medians. For (log 10 l1, log 10 l2, σ, μ ), blue circles and solid lines represent the true values. In the 1D distribution plots, the grey shaded areas indicate the 95% HPD regions. In the 2D distribution plots, the three contours represent the 10% , 50% , and 95% HPD regions. 
+
+26 x 1 [m]                        
+
+> 0246810
+> x 2 [m]
+> 0246810
+> (a)
+> −5
+> −4
+> −3
+> −2
+> −1
+> x1[m]
+> 0246810
+> x 2 [m]
+> 0246810
+> (b)
+> 0.0 0.1 0.2 0.3 0.4
+> x1[m]
+> 0246810
+> x 2 [m]
+> 0246810
+> (c)
+> −0.50
+> −0.25 0.00 0.25 0.50 Figure 11: (a) Mean, (b) standard deviation, and (c) bias of the posterior means E[ u|yi]across the 100
+> observational datasets.
+
+namely independent normal distributions. To verify that the above results are not incidental to a specific dataset, inverse anal-yses are performed on 100 observational datasets {yi}100  
+
+> i=1
+
+with identical noise character-istics. Fig. 11(a) presents the mean of the posterior means across the 100 observational datasets, (1 /100) P100  
+
+> i=1
+
+E[ u|yi], where E[ u|yi] denotes the posterior mean for the i-th dataset. Fig. 11(b) and Fig. 11(c) show, respectively, the standard deviation of the posterior means and the bias (defined as the difference between the mean of the posterior means and the true field). The standard deviation (Fig. 11(b)) is within 0.4 across the entire domain, indicating that the estimates do not significantly vary with differences in the observational data, which suggests a degree of robustness. Additionally, the mean (Fig. 11(a)) agrees well with the true field (Fig. 5). Indeed, the bias has a small magnitude over most of the domain, as shown in Fig. 11(c). These findings suggest that, under the current problem setting, estimates close to the true field can be achieved stably regardless of the observational data. 
+
+7.2. Test 2 
+
+Consider the hydraulic conductivity field k over the domain D with a complex geometry, as shown in Fig. 12. The domain D includes a circle centered at (x1, x 2) = (3 , 2) with a radius of 1.25 . The true field is generated numerically through the log-hydraulic conductivity 
+
+u, represented by the KL expansion with hyperparameters (l1, l 2, σ, μ ) = (10 , 5, 1, −5) . The source term is Q = 0 , and boundary conditions are defined as 
+
+h(x) = 9 on Γleft , h(x) = 4 on Γright ,h(x) = x2 on Γtop , ∂h ∂n(x) = 0 on ΓN, (68) where Γleft = {x ∈ ∂D | x1 = 0 }, Γright = {x ∈ ∂D | x1 = 15 }, Γtop = Γ D\(Γ left ∪ Γright ),and ΓN = {x ∈ ∂D | x2 = 0 } ∪ { x ∈ ∂D | (x1 − 3) 2 + ( x2 − 2) 2 = 1 .25 2}. These boundary conditions describe gravity-driven seepage flow in saturated soil and can be interpreted as representing subsurface groundwater flow within a slope that becomes fully saturated due to heavy rainfall. The governing equation is homogeneous (Eq. (62) with Q = 0 ), and homoge-neous Neumann boundary conditions are imposed. Consequently, for a given hydraulic head 27 x 1 [m]                        
+
+> 0510 15
+> x 2 [m]
+> 0369
+> 10 −710 −610 −510 −410 −3Figure 12: The true hydraulic conductivity field generated through the log-hydraulic conductivity urepre-sented by the KL expansion with (l1, l 2, σ, μ ) = (10 ,5,1,−5) . White squares indicate observation points for the hydraulic head.
+
+h, the hydraulic conductivity k is determined only up to a positive multiplicative constant. Therefore, the absolute scale of k cannot be uniquely determined from observations of h
+
+alone, and flux information is essential for its identification. Accordingly, in this test case, the observational data consist of the total hydraulic head at 27 points in D (white squares in Fig. 12), together with the flow rate from the right edge of D, i.e., {x ∈ ∂D |x1 = 15 }. The noise-free observations are synthetically generated using FEM with finer FE meshes than those used for inversion. Assuming the observation points are known precisely, the elevation heads are error-free; therefore, all observation errors in the total head originate solely from the pressure head. Consequently, independent noise is added to both the pressure head and the flow rate, with a standard deviation of 1.5% of their respective values. The prior for k is set to the log-normal random field, as in Test 1. The prior for the random coefficients ξ in the KL expansion is the standard normal ξ ∼ N (0, I),while hyperparameters are assigned weakly informative priors: log 10 (l1/l min 1 ) ∼ HN (0 , 1) ,
+
+log 10 (l2/l min 2 ) ∼ HN (0 , 1) , σ ∼ HN (0 , 1) , and μ ∼ N (−4, 2) . The lower bounds are set to lmin 1 = 1 .5 and lmin 2 = 1 .0, respectively, which correspond to approximately one-tenth of the lengths of the bounding domain Dbound = [0 , 15] × [0 , 9] in each spatial direction. As in Test 1, the number of the KL expansion terms M is set to M ∗ = 200 , which is obtained by solving Problem 2 on Dbound with εσ = 10 −2, l1 = lmin 1 , and l2 = lmin 2 . The corresponding 
+
+s∗ = [2 .8401 , 1.6813] is kept fixed as s during the inversion process. The HMC sampling settings are the same as in Test 1: Using AdvancedHMC.jl, four Markov chains are run with initial states drawn from the prior distribution. Each chain consists of 3000 samples, with the first 1000 discarded as burn-in. The HMC diagnostic results are shown in Fig. 13. Representative trace and ACF plots for log 10 l1 are shown in Fig. 13(a) and Fig. 13(b), respectively, indicating sufficient convergence and efficient sampling of Markov chains. All elements of θ satisfy the recommended thresholds for the rank-normalized ˆR and the bulk/tail ESS as shown in Fig. 13(c)–(e); specifically, ˆR < 1.01 
+
+28 MCMC steps 0 1000 2000 3000                             
+
+> log  10  l 1
+> 024(a) Lag 020 40 60 80 100 ACF 0.00 0.25 0.50 (b)
+> 𝛉 index 050 100 150 200
+> R̂
+> 1.000 1.005 1.010 (c)
+> 𝛉 index 050 100 150 200 Bulk ‐ESS  (×10  3)0510 (d)
+> 𝛉 index 050 100 150 200 Tail ‐ESS  (×10 3)0246(e) Figure 13: Convergence Diagnostics for HMC. (a) Trace plots and (b) ACF plots for θ1across all chains. (c) Rank-normalized ˆR, (d) Bulk-ESS, and (e) Tail-ESS for all elements of θ. The red line in each panel indicates the thresholds, i.e., ˆR= 1 .01 and ESS = 400 .
+
+and ESS > 400 . These results suggest adequate sampling quality across both the bulk and the tails of the posterior distribution. The 2.5th, 50 th, and 97 .5th percentile fields of the posterior hydraulic conductivity k|y
+
+are shown in Fig. 14. The 50 th percentile (median) field (Fig. 14(b)) closely resembles the true field, and Fig. 14(a) and Fig. 14(c) show that the 95% CI contains the true field. However, the width of the 95% CI is larger near the top of the domain D, indicating a relatively high degree of uncertainty. A similar pattern in uncertainty can be observed in the mean and standard deviation of the log-hydraulic conductivity u|y, as shown in Fig. 15. Although the mean closely resembles the true field, the standard deviation of u|y tends to be higher in the upper part of D. This trend in uncertainty can be attributed to the boundary conditions in Eq. (68). Since the upper part of D is surrounded by the Dirichlet boundaries, the hydraulic head does not change significantly even when hydraulic conductivity varies. This makes it difficult to identify the hydraulic conductivity within this region. Conversely, in the lower part of D, which is relatively distant from the Dirichlet boundary, variations in hydraulic conductivity are reflected in the observed hydraulic heads. Consequently, the posterior estimates of the hydraulic conductivity in this region exhibit lower uncertainty. The posterior distributions of (ξ1, ξ 2, ξ 101 , ξ 102 , log 10 l1, log 10 l2, σ, μ ) are shown in Fig. 16. For all hyperparameters (log 10 l1, log 10 l2, σ, μ ), the 95% HPD regions encompass the true 29 x 1 [m]    
+
+> 0510 15
+> x 2 [m]
+> 0369
+
+(a) 
+
+x 1 [m]    
+
+> 0510 15
+> x 2 [m]
+> 0369
+
+(b) 
+
+x 1 [m]    
+
+> 0510 15
+> x 2 [m]
+> 0369
+
+(c)               
+
+> 10 −710 −610 −510 −410 −3
+
+Figure 14: The profiles of the posterior hydraulic conductivity k|y: (a) 2.5th, (b) 50 th (median), and (c) 
+
+97 .5th percentile fields. Panels (a) and (c) correspond to the lower and upper bounds of the 95% CI, respectively. 
+
+30 x 1 [m]                     
+
+> 0510 15
+> x 2 [m]
+> 0369(a)
+> −7−6−5−4−3
+> x1[m]
+> 0510 15
+> x 2 [m]
+> 0369(b)
+> 0.0 0.2 0.4 0.6 0.8 1.0 Figure 15: The profiles of the posterior log-hydraulic conductivity field u|y:(a) mean and (b) standard deviation.
+
+values. For the correlation lengths, the true values deviate from the posterior medians and lie near the edges of the 95% HPD region, indicating that the estimation accuracy may be somewhat lower. However, this is not a critical issue because the main focus is the estimation of the hydraulic conductivity field, while the hyperparameter estimates them-selves serve only as auxiliary indicators. Fig. 17 shows a sample of u|y, generated with 
+
+(l1, l 2, σ, μ ) = (23 .795 , 3.4590 , 0.90983 , −4.5215) , along with the residual compared to the true field. These hyperparameters differ from (l1, l 2, σ, μ ) = (10 , 5, 1, −5) , which are used to generate the true field, particularly in the correlation lengths. Nevertheless, the two fields exhibit similar spatial structures. This indicates that similar fields can be generated even with different hyperparameter settings. In the presence of such non-identifiability, fixing the hyperparameters to a single value (e.g., the maximum likelihood estimation) may not be sufficient. This insight highlights the importance of adopting a hierarchical Bayesian approach, where hyperparameters are treated as random variables to properly quantify un-certainty. For the KL coefficients, similar behavior is observed in Test 1. Specifically, the posterior distributions of ξ1 and ξ2, associated with the larger eigenvalues, show correlations with several parameters (e.g., ξ1–μ, ξ2– log 10 l1). In contrast, the posterior distributions of 
+
+ξ101 and ξ102 , corresponding to small eigenvalues, closely resemble their prior distributions 
+
+N (0 , 1) , indicating that they are almost independent of the other parameters. As in Test 1, inverse analyses are performed on 100 observational datasets {yi}100  
+
+> i=1
+
+with identical noise characteristics. Fig. 18 shows the mean, standard deviation, and bias of the posterior means E[ u|yi] (i = 1 , . . . , 100 ). Although a notable negative bias and higher standard deviation are observed in the upper region, the overall trend of the mean is generally consistent with the true field, particularly in the lower region. These results suggest that the estimation achieves a certain level of accuracy regardless of the observational data, indicating that the results for the representative dataset are not merely coincidental. It should be noted that the reduced accuracy in the upper region is likely attributable to the Dirichlet boundary condition, as discussed in the representative case. 31 0.0 0.5 
+
+> 01
+> 0.00 0.25
+> 0.00 0.25
+> 02
+> 02
+> 01
+
+𝜇      
+
+> −9−6−30.0 0.5
+> 𝜉  2
+> 02
+> 𝜉  101
+> −303
+> 𝜉  102
+> −303log  10  l 1
+> 12
+> log  10  l 2
+> 0.0 0.5 1.0
+> 𝜎
+> 0123
+
+𝜉 1  
+
+> −202
+> 𝜇
+> −9
+> −6
+> −3
+
+𝜉 2 
+
+> 02
+
+𝜉 101    
+
+> −303
+
+𝜉 102    
+
+> −303
+
+log 10 l 1 
+
+> 12
+
+log 10 l 2  
+
+> 0.0 0.5 1.0
+
+𝜎    
+
+> 0123
+
+Figure 16: Posterior marginal distributions of (ξ1, ξ 2, ξ 101 , ξ 102 , log 10 l1, log 10 l2, σ, μ ). The red diamonds and dashed lines indicate the posterior medians. For (log 10 l1, log 10 l2, σ, μ ), blue circles and solid lines represent the true values. In the 1D distribution plots, the grey shaded areas indicate the 95% HPD regions. In the 2D distribution plots, the three contours represent the 10% , 50% , and 95% HPD regions. 
+
+32 x 1 [m]                            
+
+> 0510 15
+> x 2 [m]
+> 0369(a)
+> −7−6−5−4−3
+> x1[m]
+> 0510 15
+> x 2 [m]
+> 0369(b)
+> −0.50 −0.25 0.00 0.25 0.50 Figure 17: (a) A sample from the posterior u|y, with (l1, l 2, σ, μ ) = (23 .795 ,3.4590 ,0.90983 ,−4.5215) . (b) The residual relative to the true field with (l1, l 2, σ, μ ) = (10 ,5,1,−5) , whose magnitude is less than 0.2over most of the domain and is relatively small.
+
+8. Conclusions 
+
+We modeled a Gaussian random field with a squared exponential kernel using the Karhunen–Loève (KL) expansion based on the analytical solution to an integral eigenvalue problem (IEVP), with the aim of applying it to hierarchical Bayesian inversion. The analyt-ical solution of the squared exponential kernel exists for a Gaussian-weighted IEVP defined on R. Although the KL expansion based on the analytical eigenpairs (analytical KL ex-pansion) requires a larger number of terms than the conventional KL expansion to achieve a comparable level of approximation accuracy, it retains the domain independence prop-erty and enables the generation of Gaussian random field samples over any closed physical domain. The standard deviation of the Gaussian weight function can be chosen as any positive value. In this study, we propose an optimization-based approach for selecting both the stan-dard deviation and the number of KL terms to achieve high approximation accuracy with as few KL terms as possible. Specifically, optimal parameters are determined by minimizing the mean error variance. To simplify the optimization process, the mean error variance is evaluated over the hyperrectangle bounding domain rather than the physical domain. Conse-quently, it is confirmed that the mean error variance in the physical domain is approximately comparable to the error tolerance prescribed for the bounding domain. By employing this analytical solution, repeated IEVP computations during posterior sampling in hierarchical Bayesian inversion can be avoided, thereby eliminating a computa-tional bottleneck. Furthermore, the analytical KL expansion can be differentiated in closed-form with respect to all parameters, including the KL coefficients and hyperparameters. This property enables efficient posterior sampling via Hamiltonian Monte Carlo (HMC). Finally, we applied the analytical KL expansion to a Bayesian inverse problem to esti-mate the hydraulic conductivity field in two-dimensional Darcy flow. A lower bound for the 33 x 1 [m]                             
+
+> 0510 15
+> x 2 [m]
+> 0369(a)
+> −7−6−5−4−3
+> x1[m]
+> 0510 15
+> x 2 [m]
+> 0369(b)
+> 0.0 0.2 0.4 0.6
+> x1[m]
+> 0510 15
+> x 2 [m]
+> 0369(c)
+> −0.8 −0.4 0.0 0.4 0.8 Figure 18: (a) Mean, (b) standard deviation, and (c) bias of the posterior means E[ u|yi]across the 100
+> observational datasets.
+
+correlation lengths is prescribed to represent sufficiently high-frequency spatial variations. The standard deviation of the Gaussian weight function and the number of KL terms are then determined to meet the prescribed error tolerance, even under this most demanding condition. These values are fixed throughout the entire inversion process. The posterior ran-dom field is successfully characterized in terms of typical magnitude, fluctuation amplitude, and spatial frequency under weakly informative priors on hyperparameters. These priors are chosen to adequately represent hydraulic conductivity relevant to engineering applica-tions. Furthermore, it is shown that the analytical KL expansion is applicable to inverse problems not only on a square domain but also on a domain with complex geometry. This result suggests a potential extension in which the analytical KL expansion can be utilized as a component for constructing complex random fields. For instance, by applying it to each zoning subdomain separately [52–54], it is possible to represent non-stationary fields with distinct statistical properties across different regions. This approach effectively intro-34 duces discontinuities and local structures, thereby alleviating the smoothness of the squared exponential kernel. 
+
+Acknowledgements 
+
+This work was supported by JSPS KAKENHI Grant Numbers JP25KJ1594 and JP25H00951. 
+
+Appendix A. Adjoint method 
+
+The adjoint method provides an efficient way to compute the gradient of the potential energy ∂U (θ)/∂ θ without explicitly evaluating the sensitivities of the forward problem with respect to each parameter in θ. Let Gh,n and Gq,n denote the n-th components of Gh and Gq,respectively, defined as 
+
+Gh,n (θ) = ( Oh,n ◦ Gh) ( k(·; θ)) , Gq,n (θ) = ( Oq,n ◦ Gq) ( k(·; θ)) . (A.1) According to Eqs. (48), (64) and (65), the derivatives of Gh,n and Gq,n with respect to θj are given by ∂Gh,n 
+
+∂θ j
+
+(θ) = 
+
+Z
+
+> D
+
+∂h ∂θ j
+
+(x; θ)δ(x − xn) d x, (A.2) 
+
+∂Gq,n 
+
+∂θ j
+
+(θ) = 
+
+Z
+
+> Γq,n
+
+∂q
+
+∂θ j
+
+(x; θ) · n dS(x). (A.3) These expressions explicitly depend on the forward sensitivities ∂h/∂θ j and ∂q/∂θ j , the com-putation of which for all θj become prohibitively expensive in high-dimensional parameter spaces. To avoid this difficulty, an adjoint problem is introduced. Let φ be an adjoint field satisfying the adjoint PDE 
+
+−∇ · (k∇φ) = 
+
+> Nh
+
+X
+
+> n=1
+
+eQnδ(x − xn) in D, (A.4) subject to the boundary conditions: 
+
+φ =
+
+(0 on ΓD\
+
+
+
+∪Nq
+
+> n=1
+
+Γq,n 
+
+eφn on Γq,n 
+
+, ∇φ · n = 0 on ΓN. (A.5) Here, the adjoint source terms eQn and the adjoint boundary values eφn are the n-th compo-nents of the vectors eQ and eφ, respectively, which are defined as 
+
+eQ = −R−1 
+
+> h
+
+(yh − G h(θ)) , eφ = −R−1 
+
+> q
+
+(yq − G q(θ)) . (A.6) These adjoint quantities are designed such that the forward sensitivity terms in ∂U (θ)/∂ θ
+
+can be eliminated, as demonstrated below. 35 Differentiating the original problem Eqs. (62) and (63) with respect to θj yields 
+
+∂∂θ j
+
+(−∇ · (k∇h)) = ∇ · ∂q
+
+∂θ j
+
+= 0 in D, (A.7) subject to the boundary conditions 
+
+∂h ∂θ j
+
+= 0 on Γ D, ∂q
+
+∂θ j
+
+· n = 0 on ΓN, (A.8) where invariance of Q, hD, and qN with respect to θj has been used. Hereafter, the depen-dence of k, h, and q on θ is omitted for notational simplicity. Define the Lagrangian by incorporating the PDE constraint as 
+
+L(θ) = 12(y − G (θ)) ⊤R−1(y − G (θ)) + 
+
+Z
+
+> D
+
+φ
+
+
+
+∇ · (k∇h) + Q
+
+
+
+dx
+
+= 12(y − G (θ)) ⊤R−1(y − G (θ)) + 
+
+Z
+
+> D
+
+φ
+
+
+
+−∇ · q + Q
+
+
+
+dx.
+
+(A.9) Since the second term is identically zero due to the PDE constraint, we obtain 
+
+U (θ) = L(θ) + E(θ). (A.10) Differentiating Eq. (A.10) with respect to θj yields 
+
+∂U ∂θ j
+
+(θ) = −(y − G (θ)) ⊤R−1 ∂G
+
+∂θ j
+
+(θ) −
+
+Z
+
+> D
+
+φ∇ · ∂q
+
+∂θ j
+
+dx + ∂E ∂θ j
+
+(θ)= eQ⊤ ∂Gh
+
+∂θ j
+
+(θ) + eφ⊤ ∂Gq
+
+∂θ j
+
+(θ) −
+
+Z
+
+> D
+
+φ∇ · ∂q
+
+∂θ j
+
+dx + ∂E ∂θ j
+
+(θ),
+
+(A.11) where the volume integral term can be rewritten using integration by parts as follows: 
+
+−
+
+Z
+
+> D
+
+φ∇ · ∂q
+
+∂θ j
+
+dx = −
+
+Z
+
+> ∂D
+
+φ
+
+ ∂q
+
+∂θ j
+
+· n
+
+
+
+dS(x) + 
+
+Z
+
+> D
+
+∇φ · ∂q
+
+∂θ j
+
+dx. (A.12) Using the boundary conditions on ∂q/∂θ j and φ, the boundary integral reduces to 
+
+−
+
+Z
+
+> ∂D
+
+φ
+
+ ∂q
+
+∂θ j
+
+· n
+
+
+
+dS(x) = −
+
+> Nq
+
+X
+
+> n=1
+
+eφn
+
+Z
+
+> Γq,n
+
+∂q
+
+∂θ j
+
+· n dS(x) = − eφ⊤ ∂Gq
+
+∂θ j
+
+(θ). (A.13) Recalling Darcy’s law q = −k∇h, the remaining volume integral becomes 
+
+Z
+
+> D
+
+∇φ · ∂q
+
+∂θ j
+
+dx = −
+
+Z
+
+> D
+
+k
+
+
+
+∇φ · ∇ ∂h ∂θ j
+
+
+
+dx −
+
+Z
+
+> D
+
+∂k ∂θ j
+
+(∇φ · ∇ h) d x. (A.14) The first term is further integrated by parts: 
+
+−
+
+Z
+
+> D
+
+k
+
+
+
+∇φ · ∇ ∂h ∂θ j
+
+
+
+dx = −
+
+Z
+
+> ∂D
+
+∂h ∂θ j
+
+k (∇φ · n) d S(x) + 
+
+Z
+
+> D
+
+∂h ∂θ j
+
+∇ · (k∇φ) d x. (A.15) 36 The boundary integral term vanishes due to the boundary conditions on ∂h/∂θ j and φ.Substituting the adjoint PDE Eq. (A.4) into the remaining volume integral yields 
+
+Z
+
+> D
+
+∂h ∂θ j
+
+∇ · (k∇φ) d x = −
+
+> Nh
+
+X
+
+> n=1
+
+eQn
+
+Z
+
+> D
+
+∂h ∂θ j
+
+δ(x − xn) d x = − eQ⊤ ∂Gh
+
+∂θ j
+
+(θ). (A.16) Combining the above results, Eq. (A.11) is rewritten as 
+
+∂U ∂θ j
+
+(θ) = −
+
+Z
+
+> D
+
+∂k ∂θ j
+
+(∇φ · ∇ h) d x + ∂E ∂θ j
+
+(θ). (A.17) Hence, the term involving ∂G(θ)/∂θ j , which requires expensive forward sensitivity com-putation, is eliminated and replaced by an expression involving the adjoint field φ. As a result, the computation of the forward sensitivities for all parameters θ is reduced to a single adjoint solve. 
+
+References 
+
+[1] V. Isakov, Inverse Problems for Partial Differential Equations, Vol. 127 of Applied Mathematical Sciences, Springer International Publishing, Cham, 2017. doi:10.1007/ 978-3-319-51658-5 .[2] J. Kaipio, E. Somersalo, Statistical and Computational Inverse Problems, Vol. 160 of Applied Mathematical Sciences, Springer, New York, NY, 2005. doi:10.1007/b138659 .[3] A. M. Stuart, Inverse problems: A Bayesian perspective, Acta Numerica 19 (2010) 451–559. doi:10.1017/S0962492910000061 .[4] J. Latz, Bayesian Inverse Problems Are Usually Well-Posed, SIAM Review 65 (3) (2023) 831–865. doi:10.1137/23M1556435 .[5] N. Metropolis, A. W. Rosenbluth, M. N. Rosenbluth, A. H. Teller, E. Teller, Equation of State Calculations by Fast Computing Machines, The Journal of Chemical Physics 21 (6) (1953) 1087–1092. doi:10.1063/1.1699114 .[6] W. K. Hastings, Monte Carlo sampling methods using Markov chains and their appli-cations, Biometrika 57 (1) (1970) 97–109. doi:10.1093/biomet/57.1.97 .[7] D. Gamerman, H. F. Lopes, Markov Chain Monte Carlo: Stochastic Simulation for Bayesian Inference, Second Edition, 2nd Edition, Chapman and Hall/CRC, New York, 2006. doi:10.1201/9781482296426 .[8] R. G. Ghanem, P. D. Spanos, Stochastic Finite Elements: A Spectral Approach, Springer, New York, NY, 1991. doi:10.1007/978-1-4612-3094-6 .37 [9] J. Latz, M. Eisenberger, E. Ullmann, Fast sampling of parameterised Gaussian random fields, Computer Methods in Applied Mechanics and Engineering 348 (2019) 978–1012. 
+
+doi:10.1016/j.cma.2019.02.003 .[10] Y. M. Marzouk, H. N. Najm, Dimensionality reduction and polynomial chaos accel-eration of Bayesian inference in inverse problems, Journal of Computational Physics 228 (6) (2009) 1862–1902. doi:10.1016/j.jcp.2008.11.024 .[11] I. Sraj, O. P. Le Maître, O. M. Knio, I. Hoteit, Coordinate transformation and Poly-nomial Chaos for the Bayesian inference of a Gaussian process with parametrized prior covariance function, Computer Methods in Applied Mechanics and Engineering 298 (2016) 205–228. doi:10.1016/j.cma.2015.10.002 .[12] P. M. Tagade, H.-L. Choi, A Generalized Polynomial Chaos-Based Method for Efficient Bayesian Calibration of Uncertain Computational Models, Inverse Problems in Science and Engineering 22 (4) (2014) 602–624. doi:10.1080/17415977.2013.823411 .[13] A. Siripatana, O. Le Maitre, O. Knio, C. Dawson, I. Hoteit, Bayesian inference of spatially varying Manning’s n coefficients in an idealized coastal ocean model using a generalized Karhunen-Loève expansion and polynomial chaos, Ocean Dynamics 70 (8) (2020) 1103–1127. doi:10.1007/s10236-020-01382-4 .[14] N. Polette, O. Le Maître, P. Sochala, A. Gesret, Change of measure for Bayesian field in-version with hierarchical hyperparameters sampling, Journal of Computational Physics 529 (2025) 113888. doi:10.1016/j.jcp.2025.113888 .[15] T. Shibata, M. C. Koch, I. Papaioannou, K. Fujisawa, Efficient Bayesian inversion for simultaneous estimation of geometry and spatial field using the Karhunen-Loève ex-pansion, Computer Methods in Applied Mechanics and Engineering 441 (2025) 117960. 
+
+doi:10.1016/j.cma.2025.117960 .[16] M. C. Koch, K. Fujisawa, A. Murakami, Adjoint Hamiltonian Monte Carlo algorithm for the estimation of elastic modulus through the inversion of elastic wave propagation data, International Journal for Numerical Methods in Engineering 121 (6) (2020) 1037– 1067. doi:10.1002/nme.6256 .[17] M. C. Koch, M. Osugi, K. Fujisawa, A. Murakami, Hamiltonian Monte Carlo for Si-multaneous Interface and Spatial Field Detection (HMCSISFD) and its application to a piping zone interface detection problem, International Journal for Numerical and An-alytical Methods in Geomechanics 45 (17) (2021) 2602–2626. doi:10.1002/nag.3279 .[18] F. Uribe, I. Papaioannou, W. Betz, D. Straub, Bayesian inference of random fields repre-sented with the Karhunen–Loève expansion, Computer Methods in Applied Mechanics and Engineering 358 (2020) 112632. doi:10.1016/j.cma.2019.112632 .38 [19] A. Mondal, B. Mallick, Y. Efendiev, A. Datta-Gupta, Bayesian Uncertainty Quantifi-cation for Subsurface Inversion Using a Multiscale Hierarchical Model, Technometrics 56 (3) (2014) 381–392. doi:10.1080/00401706.2013.838190 .[20] P. D. Spanos, M. Beer, J. Red-Horse, Karhunen–Loéve Expansion of Stochastic Pro-cesses with a Modified Exponential Covariance Kernel, Journal of Engineering Mechan-ics 133 (7) (2007) 773–779. doi:10.1061/(ASCE)0733-9399(2007)133:7(773) .[21] S. Pranesh, D. Ghosh, Faster computation of the Karhunen–Loève expansion using its domain independence property, Computer Methods in Applied Mechanics and Engi-neering 285 (2015) 125–145. doi:10.1016/j.cma.2014.10.053 .[22] I. Papaioannou, Non-intrusive finite element reliability analysis methods, Ph.D. thesis, Technische Universität München (2012). [23] A. A. Basmaji, M. M. Dannert, F. Bensel, R. M. N. Fleury, A. Fau, U. Nackenhorst, Karhunen-Loève expansion based on an analytical solution over a bounding box domain, Probabilistic Engineering Mechanics 74 (2023) 103519. doi:10.1016/j.probengmech. 2023.103519 .[24] H. Zhu, C. K. I. Williams, R. Rohwer, M. Morciniec, Gaussian regression and optimal finite dimensional linear models, Neural networks and machine learning (1998). [25] C. E. Rasmussen, C. K. I. Williams, Gaussian Processes for Machine Learning, The MIT Press, 2005. doi:10.7551/mitpress/3206.001.0001 .[26] M. L. Stein, Interpolation of Spatial Data, Springer Series in Statistics, Springer, New York, NY, 1999. doi:10.1007/978-1-4612-1494-6 .[27] M. A. Iglesias, Y. Lu, A. M. Stuart, A Bayesian level set method for geometric inverse problems, Interfaces and Free Boundaries 18 (2) (2016) 181–217. doi:10.4171/ifb/ 362 .[28] S. P. Huang, S. T. Quek, K. K. Phoon, Convergence study of the truncated Karhunen– Loeve expansion for simulation of stochastic processes, International Journal for Nu-merical Methods in Engineering 52 (9) (2001) 1029–1043. doi:10.1002/nme.255 .[29] B. Sudret, A. D. Kiureghian, Stochastic Finite Element Methods and Reliability: AState-of-the-Art Report, Department of Civil Engineering, University of California, 2000. [30] M. G. R. Faes, M. Broggi, P. D. Spanos, M. Beer, Elucidating appealing features of differentiable auto-correlation functions: A study on the modified exponential kernel, Probabilistic Engineering Mechanics 69 (2022) 103269. doi:10.1016/j.probengmech. 2022.103269 .39 [31] K. Yin, A. Mondal, Bayesian uncertainty quantification of local volatility model, Sankhya B 85 (1) (2023) 290–324. doi:10.1007/s13571-022-00286-1 .[32] H. Sun, Mercer theorem for RKHS on noncompact sets, Journal of Complexity 21 (3) (2005) 337–349. doi:10.1016/j.jco.2004.09.002 .[33] G. E. Fasshauer, M. J. McCourt, Stable Evaluation of Gaussian Radial Basis Function Interpolants, SIAM Journal on Scientific Computing 34 (2) (2012) A737–A762. doi: 10.1137/110824784 .[34] R. M. Neal, MCMC Using Hamiltonian Dynamics, 1st Edition, Chapman and Hall/CRC, New York, 2011, Ch. 5, pp. 113–162. doi:10.1201/b10905-6 .[35] M. Betancourt, A conceptual introduction to Hamiltonian Monte Carlo (Jul. 2018). 
+
+arXiv:1701.02434 , doi:10.48550/arXiv.1701.02434 .[36] M. D. Hoffman, A. Gelman, The No-U-Turn sampler: Adaptively setting path lengths in Hamiltonian Monte Carlo, Journal of Machine Learning Research 15 (47) (2014) 1593–1623. URL http://jmlr.org/papers/v15/hoffman14a.html 
+
+[37] M. M. Dunlop, M. A. Iglesias, A. M. Stuart, Hierarchical Bayesian level set inversion, Statistics and Computing 27 (6) (2017) 1555–1584. doi:10.1007/s11222-016-9704-8 .[38] W. Betz, I. Papaioannou, D. Straub, Numerical methods for the discretization of ran-dom fields by means of the Karhunen–Loève expansion, Computer Methods in Applied Mechanics and Engineering 271 (2014) 109–129. doi:10.1016/j.cma.2013.12.010 .[39] G. G. Walter, Properties of Hermite Series Estimation of Probability Density, The Annals of Statistics 5 (6) (1977) 1258–1264. URL http://www.jstor.org/stable/2958661 
+
+[40] R. Tipireddy, D. A. Barajas-Solano, A. M. Tartakovsky, Conditional Karhunen-Loève expansion for uncertainty quantification and active learning in partial differential equa-tion models, Journal of Computational Physics 418 (2020) 109604. doi:10.1016/j. jcp.2020.109604 .[41] M. Betancourt, M. Girolami, Hamiltonian Monte Carlo for Hierarchical Models, in: Current Trends in Bayesian Methodology with Applications, Chapman and Hall/CRC, 2015. [42] H. M. Afshar, R. Oliveira, S. Cripps, Non-Volume Preserving Hamiltonian Monte Carlo and No-U-TurnSamplers, in: Proceedings of The 24th International Conference on Artificial Intelligence and Statistics, PMLR, 2021, pp. 1675–1683. URL https://proceedings.mlr.press/v130/mohasel-afshar21a.html 
+
+40 [43] B. Carpenter, A. Gelman, M. D. Hoffman, D. Lee, B. Goodrich, M. Betancourt, M. Brubaker, J. Guo, P. Li, A. Riddell, Stan: A probabilistic programming language, Journal of Statistical Software 76 (2017) 1–32. doi:10.18637/jss.v076.i01 .[44] Y. Nesterov, Primal-dual subgradient methods for convex problems, Mathematical Pro-gramming 120 (1) (2009) 221–259. doi:10.1007/s10107-007-0149-x .[45] K. Xu, H. Ge, W. Tebbutt, M. Tarek, M. Trapp, Z. Ghahramani, AdvancedHMC.jl: A robust, modular and efficient implementation of advanced HMC algorithms, in: Sym-posium on Advances in Approximate Bayesian Inference, PMLR, 2020, pp. 1–10. URL https://proceedings.mlr.press/v118/xu20a.html 
+
+[46] A. Fichtner, H. P. Bunge, H. Igel, The adjoint method in seismology: I. Theory, Physics of the Earth and Planetary Interiors 157 (1) (2006) 86–104. doi:10.1016/j.pepi. 2006.03.016 .[47] A. Aghasi, E. L. Miller, Sensitivity Calculations for Poisson’s Equation via the Adjoint Field Method, IEEE Geoscience and Remote Sensing Letters 9 (2) (2012) 237–241. 
+
+doi:10.1109/LGRS.2011.2164052 .[48] M. A. Iglesias, K. J. H. Law, A. M. Stuart, Ensemble Kalman methods for inverse problems, Inverse Problems. An International Journal on the Theory and Practice of Inverse Problems, Inverse Methods and Computerized Inversion of Data 29 (4) (2013) 045001, 20. doi:10.1088/0266-5611/29/4/045001 .[49] K. Terzaghi, R. B. Peck, G. Mesri, Soil Mechanics in Engineering Practice, 3rd Edition, John wiley & sons, New York, 1996. [50] R. Kumar, C. Carroll, A. Hartikainen, O. Martin, ArviZ a unified library for exploratory analysis of Bayesian models in Python, Journal of Open Source Software 4 (33) (2019) 1143. doi:10.21105/joss.01143 .[51] A. Vehtari, A. Gelman, D. Simpson, B. Carpenter, P.-C. Bürkner, Rank-Normalization, Folding, and Localization: An Improved R^ for Assessing Convergence of MCMC (with Discussion), Bayesian Analysis 16 (2) (2021) 667–718. doi:10.1214/20-BA1221 .[52] R. Tipireddy, P. Stinis, A. M. Tartakovsky, Basis adaptation and domain decomposi-tion for steady-state partial differential equations with random coefficients, Journal of Computational Physics 351 (2017) 203–215. doi:10.1016/j.jcp.2017.08.067 .[53] R. Tipireddy, P. Stinis, A. M. Tartakovsky, Stochastic basis adaptation and spa-tial domain decomposition for partial differential equations with random coefficients, SIAM/ASA Journal on Uncertainty Quantification 6 (1) (2018) 273–301. doi:10.1137/ 16M1097134 .41 [54] Z. Xu, Q. Liao, J. Li, Domain-decomposed Bayesian inversion based on local Karhunen-Loève expansions, Journal of Computational Physics 504 (2024) 112856. doi:10.1016/ j.jcp.2024.112856 .42

@@ -1,0 +1,684 @@
+Title: A Minimal Interpretable Architecture for Zero-Shot Reconstruction of Dynamical Systems
+
+URL Source: https://arxiv.org/pdf/2607.14937v1
+
+Published Time: Fri, 17 Jul 2026 01:45:15 GMT
+
+Number of Pages: 25
+
+Markdown Content:
+# A Minimal Interpretable Architecture for Zero-Shot Reconstruction of Dynamical Systems 
+
+Christoph Jürgen Hemmer 2,1,3 ∗
+
+, Florian Plaswig 1,3 ∗
+
+, Daniel Durstewitz 1,2,3 
+
+> 1
+
+Dept. of Theoretical Neuroscience, Central Institute of Mental Health, Mannheim, Germany 
+
+> 2
+
+Interdisciplinary Center for Scientific Computing (IWR), Heidelberg, Germany 
+
+> 3
+
+Faculty of Physics and Astronomy, Heidelberg University, Heidelberg, Germany 
+
+## Abstract 
+
+Recent foundation models (FMs) for zero-shot reconstruction of dynamical systems (DS) achieve strong out-of-domain generalization but provide little insight into the 
+
+mechanisms that underlie their forecasts. Such an understanding could help to strip down overladen FM architectures to their bare essence and expose the minimal requirements for in-context learning in the DS domain. Toward this goal, here we iteratively reduce a recent powerful SOTA model for DS reconstruction, DynaMix [43 ], to a minimal interpretable two-parameter form, which we call DynaBase .DynaBase produces forecasts through a linear blend of the current latent state and the nearest in-context neighbor and its temporal successor. Surprisingly, despite its extreme simplicity, DynaBase produces highly competitive zero-shot DS reconstructions across chaotic and cyclic systems, with a negligible parameter load, many orders of magnitude below that of other FMs. Even more, this extreme simplicity permits direct model optimization on DS reconstruction measures, as well as closed-form one-step analytical solutions on prediction MSE. Theoretical and empirical analysis of DynaBase further leads to a 1-parameter family of maps, with the context-parroting algorithm of [ 92 ] recovered at one end, and chaotic (divergent but bounded) behavior at the other. We further show how different training strategies lead to models either optimal for short-term prediction or for DS reconstruction. Thus, DynaBase not only exposes the minimal mechanisms required for producing zero-shot DS reconstruction, but also reconciles within an accessible mathematical frame divergent observations in the literature. 
+
+## 1 Introduction 
+
+Many, if not most, natural and engineered systems, from chemical and molecular processes to climate, ecosystems, brain activity, or stock markets, are naturally described as dynamical systems (DS) [ 30 , 37 , 62 , 81 , 10 , 21 , 59 ]. Reconstructing these DS (DSR) in a data-driven way from just time series observations is of fundamental interest to all sciences, which seek tractable models that enable mechanistic insight into the underlying dynamical processes. DSR, hence, aims for 
+
+generative surrogate models of the underlying dynamics which not only forecast a few steps ahead, but—importantly—reproduce long-term statistical properties of the DS in question, such as its attractor geometry (ergodic distribution) and power spectrum [ 14 , 30 , 38 , 41 , 71 , 19 , 17 , 31 ]. While traditionally DSR involved custom-training ML/AI models on each particular dataset [ 13 , 45 , 41 , 70 ,71 ], inspired by the success of in-context learning in large language and time-series foundation models (FMs) [ 4 , 5, 11 ], a new line of research explored whether zero-shot generalization to previously unseen DS is also feasible [43, 53]. 
+
+> *These authors contributed equally to this work. Corresponding authors: {christoph.hemmer, daniel.durstewitz}@zi-mannheim.de Preprint. arXiv:2607.14937v1 [cs.LG] 16 Jul 2026
+
+However, as for most if not all FMs, it is currently utterly unclear how SOTA DSR FMs like Dy-naMix [ 43 ] achieve their zero-shot out-of-domain generalization, and what the essential architectural requirements for this are. Insight into how AI models solve their problems is of general interest, but is particularly important in scientific and medical domains where the focus is on mechanistic understanding [ 73 , 30 ]. Here we tackle this question in the context of DSR by reverse-engineering the pretrained DynaMix model. We produce a series of systematic ablations and simplifications that largely retain, or even improve on, the model’s zero-shot DSR performance. We ultimately arrive at an algebraically minimal form consisting just of a linear combination of the model’s previous state, the nearest neighbor from the context signal, and its immediate temporal successor. A natural 
+
+symmetry requirement on the context points further condenses the model into a two-parameter form. We show that this recursive map, DynaBase , can generate point, cyclic, and chaotic attractors, and allows for closed-form one-step least-squares fitting to time series data. Theoretical and empirical analysis of DynaBase trained directly for DSR reveals that optimal zero-shot solutions essentially lie along a 1-parameter curve with truly chaotic dynamics at one end and ‘context parroting’ of a time series snippet at the other, a strategy recently observed in transformer-based time series FMs like Chronos [ 92 , 91 ]. Our observations are in line with a recent literature that demonstrates that tiny ML/AI models, many orders of magnitude below the parameter load of modern FMs, often achieve comparable, or even widely superior performance, on a range of tasks from cognitive and behavioral modeling [54] to challenging reasoning problems [85, 48]. In a nutshell, our main results are: • Minimal zero-shot DSR model: Through iterative simplification of DynaMix [ 43 ] we create a minimal 2-parameter map, DynaBase, which exhibits competitive zero-shot DSR performance at essentially zero training costs. • Mechanistic insight: The model’s two coefficients (α, β ) parametrize a continuous spec-trum of dynamical behaviors, with optimal DSR solutions essentially driven to a 1-parameter subspace. We show that at one end of this subspace DynaBase produces strictly chaotic dynamics, mimicking chaotic DS provided in-context, while at the other it yields the exact context-parroting algorithm of [92]. • Impact of training strategy: We further demonstrate that training using either a standard ahead-prediction MSE loss vs. a specific DSR loss yields fundamentally different solutions: Training for ahead-prediction often collapses to simple context parroting and hence does not recover the true dynamics, especially for chaotic systems, which is only achieved by DSR-specific training. 
+
+## 2 Related work 
+
+Dynamical systems reconstruction (DSR) DSR aims to learn generative models from time series data that capture the underlying system’s dynamical long-term behavior, i.e. its long-term or “climate” statistics and state space geometry [ 71 , 30 , 45 , 60 , 38 , 19 ]. Custom-trained models for this purpose build on library-based methods like SINDy [ 18 , 56 ], reservoir computing [ 68 , 70 , 71 , 22 , 42 ], neural ODEs [ 23 , 3, 51 ], Koopman operators [ 58 , 65 , 6, 63 , 20 , 87 ], or on various types of RNNs [ 80 , 29 , 83 , 13 , 74 , 45 , 44 , 14 , 12 ]. More important than the particular architecture appears to be the training strategy: sparse or generalized teacher forcing [ 60 , 45 ] are control-theoretic training techniques that enable long trajectory roll-outs even for chaotic DS, while specific regularization methods based on a system’s invariant measures have been designed to enforce agreement in long-term statistics [ 35 , 71 , 47 ]. All of these methods, however, require purpose-training on each new system, and out-of-domain generalization remains a key challenge [41]. 
+
+Zero-shot DSR and time-series foundation models (FMs) Multi-environment [ 90 , 50 ], hyper-network-guided [ 82 ], or hierarchical [ 15 ] approaches have been used to train DSR models on many DS simultaneously, but all of these still require fine-tuning on new systems or parameter configurations not seen in training. More recently, inspired by the success of in-context inference in LLMs [ 16 , 36 , 1], a line of general-purpose time series (TS) FMs pretrained on large corpora of real and synthetic data has emerged, which forecast TS from a short observed context snippet zero-shot. Most of these, like Chronos [ 4, 5], TimesFM [ 27 ], or Panda [ 53 ], are based on transformers, with a few exceptions that engage RNNs like the xLSTM [ 8] or Mamba [ 39 ] as their core. All of these, however, lack the 2ability to reproduce a system’s long-term behavior as required in DSR [ 41 , 43 , 31 ]. They mostly either converge to just fixed points in the limit, or cyclically repeat the context [ 91 , 92 ], and thus fail to capture DS with inherently chaotic dynamics [ 43 ]. DynaMix [ 43 ] closes this gap by pretraining, based on DSR-specific training techniques [ 60 ], a mixture of AL-RNN [ 14 ] experts, weighted by a context-dependent gating network. It delivers competitive short-term forecasts and SOTA long-term performance, while being relatively lightweight with ∼ 10 4 parameters. 
+
+Mechanisms of in-context learning What is at the root of in-context learning has been intensely studied in the past few years [ 16 , 36 , 1], and hypotheses range from transformers implementing gradient-descent in-context [ 7, 84 , 55 , 89 ] to mechanisms that more or less boil down to a simple remixing of their memory contents [ 77 , 86 , 88 ]. For DSR FMs, the analogous problem remains largely open but—at the same time—appears more tractable due to the more constrained and mathematically better defined [ 41 ] nature of the question. Recent studies using Chronos suggested that TS FMs may long-term forecast DS by the simple mechanism of context parroting [ 91 ], a well known pattern in LLMs [ 64 , 32 , 24 ]. Based on this phenomenon, Zhang and Gilpin [92] explicitly design a ‘context parroting algorithm’ which takes the last D values of the context as a delay-embedded query, retrieves the best-matching motif elsewhere in the context, and copies the subsequent fragment as forecast. They show that this strategy works surprisingly well and actually outperforms most TS FMs. But context parroting, as exhibited by Chronos or conceptualized in this form, can only reproduce discrete-cyclic activity and thus inherently fails to capture defining signatures of chaotic systems, like positive Lyapunov exponents and rather broad power spectra [ 43 , 31 ]. A superficially similar principle is employed in classical nonlinear forecasting algorithms that retrieve from a library (history) locally neighboring trajectories whose next time step predictions are either just averaged or based on which a locally linear model is fit [ 33 , 49 ]. Crucially, in contrast to mere context parroting, this neighborhood may change, however, with each prediction step taken. Through iterative reduction of DynaMix we arrive at a mathematical form that contains these classes of algorithms as special cases. 
+
+## 3 Methods 
+
+3.1 Background: DynaMix 
+
+DynaMix [ 43 ] is a DSR foundation model based on a mixture-of-experts architecture, using j =1 . . . J almost-linear RNNs (AL-RNNs) [14] as experts, 
+
+zjt+1 = F exp  
+
+> j
+
+(zt) = Aj zt + Wj Φ∗(zt) + hj , (1) where zjt ∈ RM is an M -dimensional latent state, Φ∗(zt) := [ z1: M −P,t , ReLU( zM −P +1: M,t )] ⊤ is the activation function with M − P linear units and P ReLUs, and Aj ∈ diag( RM ), Wj ∈ RM ×M ,and hj ∈ RM are learnable parameters. The different experts are combined into an overall next state prediction by zt+1 = PJj=1 wexp j,t · zjt+1 , where the weights wexp j,t ∈ (0 , 1) are determined by a gating network through 
+
+wexp t (zt, ˜Cw att t ) = σ MLP ( ˜Cw att t , zt)
+
+τexp 
+
+!
+
+∈ RJ , (2) where τexp is a temperature parameter and ˜C = CNN (C) are temporal features obtained from the provided context signal C = {ct} ∈ RN ×TC through a CNN. Attention weights watt t at each time step t are in turn computed based on a distance between current latent state zt and the context C as 
+
+watt t (zt, C) = σ C − (Dz t + ϵ) 1⊤ 
+
+> TC
+> ⊤
+
+1N
+
+τatt 
+
+!
+
+∈ RTC , (3) where τatt is another temperature, D ∈ RN ×M a learnable matrix, ϵ ∼ N (0 , Σ) exploration noise, and 1{TC ,N } are column vectors of ones of length TC , N , respectively. In [ 43 ], DynaMix was trained on ≈ 6 × 10 5 trajectories from 34 3 d DS in the cyclic or chaotic regime using control-theoretic training techniques that ensure DSR criteria are met [ 60 , 45 ]. After pretraining, given any context time series snippet C, DynaMix is charged with forecasting the long-term trajectory evolution of the underlying DS without any retraining or fine-tuning. 33.2 Reducing DynaMix 
+
+At a high level, DynaMix can be compactly expressed as a single RNN of the following form 
+
+zt+1 = FDynaMix (zt, C) := X
+
+> j
+
+F exp  
+
+> j
+
+(zt) · wexp t (zt, ˜Cw att t ) , (4) with (see [43]) 
+
+˜Cw att t = 
+
+> TC−1
+
+X
+
+> i=1
+
+CNN (C)i · watt  
+
+> i
+
+(zt, C) . (5) Note that eq. 4 is a weighted sum of piecewise-linear systems F exp  
+
+> j
+
+, where, however, the weights 
+
+wexp t (zt, C) themselves are nonlinear functions of the current state and the context. As already shown in [ 43 ], the MLP in eq. 2 may be replaced by a linear layer w/o significant loss in performance, while in Appx. A.3 we show the output nonlinearity σ (softmax) can as well be linearized over the relevant range. Further, the almost-linear term Φ∗(zt) in eq. 1 can be made fully linear (Appx. A.3), leaving ˜C = CNN (C) and watt t (zt, C) as the only nonlinearities: 
+
+zt+1 = FLinear (zt, C) = Az t + B(CNN (C)watt t (zt, C)) + h (6) We next observe that for τatt → 0, watt t (zt, C) essentially just boils down to a nearest neighbor selector, τ (zt) = arg min s ∥cs − zt∥2. Further assuming a CNN kernel size of 2 and noticing that for a single linear CNN layer (as used in DynaMix) the CNN operations can be combined with B in eq. 6, we obtain 
+
+fLinear (zt, C) = Azt + B(1) cτ (zt) + B(2) cτ (zt)+1 + ˜h (7) 
+
+τ (zt) = arg min 
+
+> s
+
+∥cs − zt∥2 (8) where A, B(1) , B(2) ∈ RM ×M and ˜h ∈ RM . We call this form a recursive affine nearest-neighbor (NN) map .
+
+3.3 DynaBase 
+
+In DSR, two vector fields that differ only by a rigid coordinate transformation describe the same underlying flow and therefore yield dynamically equivalent reconstructions [ 69 ]. Recognizing this invariance, we can state the following result: 
+
+Theorem 1 (Uniqueness of recursive affine NN maps) . Any nearest-neighbor recursive map of the form eq. 7 that is affine in zt, c1, and c2, equivariant under O(N ) rotations and reflections, and translation equivariant, belongs to the two-parameter linear family fα,β ,
+
+zt+1 = fα,β (zt) = α zt + β c1 + (1 − α − β) c2. (9) 
+
+Proof. See Appx. B. Exploiting Thm. 1, we obtain a minimal model, which we call DynaBase , as 
+
+zt+1 = fα,β (zt) = α zt + β cτ (zt) + γ cτ (zt)+1 , τ (zt) = arg min  
+
+> s
+
+∥cs − zt∥2, (10) with α, β, γ ∈ R and α + β + γ = 1 . Thus, γ = 1 − α − β leaves (α, β ) ∈ R2 as the only free parameters of the minimal model (formalized in Thm. 1). If the data were noise-free, a natural 
+
+self-consistency condition would be given by 
+
+ci+1 = fα,β (ci) ∀i ∈ [1 , T C − 1] , (11) which guarantees that whenever zt coincides with a context point ci, update eq. 10 maps zt 7 → ci+1 
+
+exactly. Using this reasonable assumption, the affine NN map could be simplified further by imposing 
+
+α = −β =⇒ γ = 1 , such that the whole construction depends only on a single parameter: 
+
+zt+1 = fα(zt) = α (zt − cτ (zt)) + cτ (zt)+1 , (12) where the local rate of con- or divergence is determined solely by α.43.4 Training 
+
+For training DynaBase, we assume we are given N -dimensional training data X ∈ RN ×T , of which we define the first TC time steps as the context signal C ∈ RN ×TC . Given the model’s simplicity, it allows for straightforward training, where we assume zt = xt (i.e., the dynamics is directly defined in the observation space). Specifically, we explore the two following approaches: 
+
+Linear regression As DynaBase is linear in parameters, its one-step-ahead prediction error loss is convex and we can optimize it by least-squares regression in one step using the reparameterized form 
+
+zt+1 − cτ (zt)+1 = α (zt − cτ (zt)+1 ) + β (cτ (zt) − cτ (zt)+1 ). (13) Given a training sequence, nearest neighbors (cτ (xt), cτ (xt)+1 ) ∀xi ∈ X are simply precomputed based on eq. 8, and ordinary-least-squares is used to solve for (ˆ α, ˆβ) in closed form. No backpropa-gation or teacher forcing is required; fitting is embarrassingly cheap compared to conventional FM pretraining. 
+
+Grid search However, linear regression only optimizes for short term forecasts, and hence might not be optimal for DSR problems which require capturing long-term behavior. We therefore investigate a second strategy, where the loss is given through a long-term reconstruction measure [52, 60] Loss (X, ˆX) = Dstsp (ptrue (X)∥ppred ( ˆX)) , (14) i.e. the Kullback-Leibler divergence between the true and model-generated trajectory distributions based on long term rollouts ˆX of DynaBase. Dstsp is a common measure in the DSR literature to assess the agreement in true and reconstructed attractor geometries [ 52 , 60 , 38 , 45 , 66 , 91 , 53 ]. Since the model has only 2 trainable parameters, searching for an optimal solution by grid search is fairly straightforward and inexpensive. 
+
+## 4 Results 
+
+4.1 Theoretical results 
+
+We now establish a theoretical characterization of the forecasting properties of DynaBase. 
+
+Structural characterization By Thm. 1, DynaBase is a unique nearest-neighbor affine family compatible with the symmetry assumptions in Sec. 3.3. We use this structural result as the starting point for the two main mechanism-level consequences below. 
+
+Theorem 2 (Reduction to context parroting) . Let C1: TC ∈ R1×TC be a context sequence and C1: TC −D+1 ∈ RD×(TC −D+1) its delay embedding with dimension D, defined as cs =(cs, c s+1 , . . . , c s+D−1). Let f0 denote DynaBase with α = 0 (hence β = 0 , γ = 1 ) on the em-bedded context C, and consider the discrete-time system zt+1 = f0(zt) with initial condition 
+
+z0 = cTC −D+1 and τ (z0) ∈ [1 , T C − 2D]. Then the projection xt = zD,t exactly reproduces the context-parroting algorithm of [92]. Proof. See Appx. B. Theorem 2 shows that the context-parroting baseline of [ 92 ] is recovered for free from DynaBase by simply setting (α, β ) = (0 , 0) and delay-embedding the context. Any DynaBase model with 
+
+α̸ = 0 is therefore strictly more expressive than parroting in the sense that a larger class of DS can be embedded. Given that the map fα is piecewise-affine, we can also derive an exact continuous-time analogue [ 61 ]
+
+ζ(t), such that ζ(kh ) = zk∀k ∈ Z, h ∈ R, by integrating the equations 
+
+dζ
+
+dt = log αh ζ − 1
+
+h
+
+log α
+
+1 − α (cτ (ζ)+1 − αcτ (ζ)) (15) where we denote the discrete timestep size of fα as h and log α 
+
+> 1−α
+
+|α=1 is defined by its continuous extension. Notably, this limit does not exist for α = 0 (context parroting), and is only defined in 5the complex number space for α < 0. For α = 0 , the map collapses onto C at every step, i.e. hops between a discrete set of points , which is not reproducible by a continuous flow unless C contains exactly one (fixed) point. Importantly, context parroting is therefore an inherently discrete special case of DynaBase, defined on a measure-zero set , which cannot reproduce true limit cycles or chaotic behavior. A detailed derivation is given in Appx. A.6. 
+
+Dynamical characterization We now characterize the dynamical properties of the self-consistent DynaBase – specifically how the parameter α governs the transition from trivial to genuinely chaotic behavior. 
+
+Theorem 3 (Long-term dynamics) . For α = 0 , every orbit of DynaBase converges after finitely many steps onto a terminal cycle contained in the context sequence, and thus has max. Lyapunov exponent 
+
+λmax < 0.Proof. See Appx. B. The case α = 0 is therefore dynamically trivial: all orbits eventually collapse to C; context parroting is thus structurally incapable of producing chaos .
+
+Theorem 4 (Boundedness) . Let fα be the self-consistent DynaBase map with parameter α ≥ 0 and context sequence C1: TC ⊂ RN . Then α ∈ [0 , 1] is a sufficient but not a necessary condition for the orbits of fα to remain bounded. More precisely, α ∈ [0 , 1] guarantees dC (zt+1 ) ≤ dC (zt) for all 
+
+t. For α > 1, there exist Voronoi parcellations by C which allow for strictly chaotic dynamics (i.e., such that λmax > 0 and the dynamics is bounded). Proof. See Appx. B. The theorem thus establishes that α ∈ [0 , 1] is sufficient for the orbit to remain confined to – or track – the context sequence, as distances to C are non-increasing. For α > 1, the map will diverge almost everywhere. If the arrangement of Voronoi cells through the context C is, however, such that its dynamics still remains bounded, it will almost surely follow a chaotic attractor [2, 40]. An example is discussed in the proof to Thm. 4 and illustrated in Fig. 2b. 
+
+4.2 Empirical forecasting comparison 0 2 4 6 8 10 12 14 16              
+
+> Dstsp
+> ReservoirCo.
+> DynaBaseDSR
+> DynaBaseZeroShot
+> NeuralODE
+> DynaMix
+> ALRNN
+> DynaBaseLR
+> Parrot
+> Chronos
+> Chronos − 2
+> 1.33
+> 1.78
+> 1.93
+> 3.43
+> 3.80
+> 3.86
+> 4.93
+> 5.52
+> 9.48
+> 11.12
+> Geometrical Disagreement
+> 0.0 0.1 0.2 0.3 0.4 0.5 0.6
+> DH
+> DynaBaseLR
+> DynaBaseDSR
+> DynaBaseZeroShot
+> Parrot
+> ReservoirCo.
+> ALRNN
+> NeuralODE
+> DynaMix
+> Chronos − 2
+> Chronos
+> 0.05
+> 0.06
+> 0.06
+> 0.07
+> 0.08
+> 0.08
+> 0.09
+> 0.16
+> 0.28
+> 0.41
+> Temporal Disagreement
+> 0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4
+> MASE
+> DynaBaseDSR
+> DynaBaseLR
+> DynaBaseZeroShot
+> NeuralODE
+> Parrot
+> DynaMix
+> Chronos
+> ALRNN
+> Chronos − 2
+> ReservoirCo.
+> 0.13
+> 0.13
+> 0.13
+> 0.18
+> 0.34
+> 0.35
+> 0.42
+> 0.47
+> 0.60
+> 0.86
+> Short-term Prediction Error
+
+Figure 1: DSR performance across all 54 test DS used in [ 43 ]. Minimal models (red: DynaBase training variants and pure context parroting), custom-trained DSR models (gray), and pretrained zero-shot foundation models including a zero-shot variant of DynaBase (blue) are compared for the same context length TC = 2000 (values for custom-trained and foundation models taken from [ 43 ]). Median ±MAD of Dstsp (left, geometrical disagreement), DH (center, temporal disagreement) and MASE (right, 10 -step prediction error). We evaluate DynaBase on the same DSR test set as in [ 43 ], reporting the same three complementary measures, two of them specific to DSR (see Appx. A.2 for definitions): the disagreement Dstsp in state space geometry, the long-term temporal disagreement DH , and the short-term mean absolute scaled error (MASE). To evaluate the long-term statistics Dstsp and DH , each system is forecast for T = 10 ,000 time steps, following [ 43 ] and in agreement more generally with the DSR literature [45 , 71 , 31 ] (note that point forecasts become meaningless for chaotic systems beyond a few Lyapunov times). As introduced in Sec. 3.4, we fit DynaBase by either (i) closed-form one-step linear regression, optimizing the one-step MSE in eq. 13, or (ii) directly for DSR over the grid of parameter values. As baselines we include context parroting as reported in [ 91 , 92 ], DynaMix [ 43 ] and Chronos [ 4, 5] as 6FMs, and three custom-trained DSR baselines (AL-RNN [ 14 ], reservoir computers [ 67 ], and Neural ODEs [23]) trained directly on the context signal provided to the FMs. As shown in Fig. 1, DynaBase generally performs best, with the variant optimized for DSR (ii) better than the one trained for ahead-prediction (i) on the long-term measure Dstsp (while the differences in MASE and DH are not statistically significant, Wilcoxon signed-rank test, p > 0.1). However, for longer (but not too long) prediction horizons, optimizing for ahead-prediction achieves lower MASE than DSR-optimization (Table 2). This difference illustrates that, not unexpectedly, the choice of 
+
+training objective determines the model’s forecasting strategy: a one-step MSE penalizes any local deviations from the ground truth, and hence tends to produce smaller α values enabling the map to track the immediate next step tightly, yielding better short-term predictions. In contrast, the grid optimization strategy (ii) directly targets the invariant attractor geometry, outperforming (i) on DSR. In both cases, however, training DynaBase with its few parameters is extremely cheap and rapid. 
+
+Figure 2: a) Comparison of distributions of estimated ˆα values across all 54 chaotic test DS [ 43 ] for the two training objectives (sect. 3.4). Closed-form minimization of the 1-step MSE yields α < 1,outside of the chaotic regime. In contrast, optimization for DSR places most α values firmly (and correctly) into the chaotic regime, with a median ˆα ≈ 1.01 . b) DSR loss landscape (optimization for 
+
+Dstsp ) across (α, β ) shows a valley at α = −β in agreement with the self-consistency condition, as well as a minimum at α > 1. c) Bifurcation diagram of the self-consistent DynaBase map fα for the 
+
+1d context sequence C = ( −1, 1, −1) (the boundedness of this map was shown in the proof of Thm. 4). The graph shows the map’s long-term behavior (attractor structure) as a function of α, obtained by drawing 1,000 random initial conditions from the interval [−2, 2] and discarding transients. The red line ( α = 1 ) marks the transition from a stable 2-cycle (−1, +1) to the chaotic regime. The distribution of estimated ˆα values across the test systems in Fig. 2 a makes this point explicit. The two training objectives lead to qualitatively different parameter regimes: linear regression on the 1-step MSE places the map mostly into the parroting/ semi-cyclic regime with α < 1, while optimizing directly on Dstsp , in contrast, produces mostly chaotic behavior (in accordance with the ground-truth DS) with α > 1. This implies that only DSR-based training has correctly inferred the chaotic ground truth systems, as further confirmed by a high correlation ( r ≈ 0.90 ) between max. Lyapunov exponents of the GT DS and the DynaBase map when fitted by DSR, but not when fitted by least-squares ( r ≈ 0.18 ), Fig. 11. Moreover, the loss landscape reveals an elongated valley along the α = −β axis (Fig. 2 b), providing empirical support for the self-consistency condition in eq. 12, which reduces DynaBase to a one-parameter map. The bifurcation graph in Fig. 2 c further illustrates on a synthetic toy example the cyclic behavior for α < 1 and emergence of chaos for α > 1.Another interesting observation is that for DSR-specific training, ˆα tightly concentrates on a single value near α ≈ 1.01 , across the diverse set of DS used. This suggests that, at least on this benchmark, the α-parameter may be fixed a priori . We test this by estimating α on a separate training set (similar to the one used for training DynaMix in [ 43 ]), obtaining α = 1 .006 close to the median in Fig. 2 a,which leads to a parameter-free zero-shot forecaster that requires no DS-specific fitting. Applying this to the context signals from the test set, we still achieve performance comparable to the custom-trained models (see Fig. 1, and Figs. 6-9 for zero-shot reconstructions). 
+
+4.3 Loss landscape tracks dynamics 
+
+To examine how DynaBase’ parameters map onto the ground truth system’s dynamical regime, we study the DSR loss landscape on a representative chaotic, cyclic and fixed point system (Fig. 3). 7Figure 3: DynaBase’ loss landscape reflects the dynamics of the target system when trained for DSR. 
+
+Top: Lorenz-63 in chaotic regime (gray). The geometrical misalignment Dstsp across α exhibits a global minimum (red dot) at α ≈ 1.01 , which produces a valid reconstruction of the attractor (red). 
+
+Center: Lorenz-63 in cyclic regime. The Dstsp minimum occurs at α = 1 . Bottom: A fixed point or cyclic point (discrete cycle) (gray). The Dstsp minimum occurs at α = 0 , corresponding to context parroting. For these different dynamical regimes, the loss landscape exhibits distinct global minima which correspond to different dynamical mechanisms: • Context parroting α = −β = 0 : the map reduces to zt+1 = cτ (zt)+1 , i.e. the state snaps onto the successor of its nearest context neighbor. For a delay-embedded context signal, this exactly reproduces the context-parroting algorithm of Zhang and Gilpin [92] (see Thm. 2). • Flow mimicry α = −β = 1 : the map reduces to zt+1 − zt = cτ (zt)+1 − cτ (zt), a forward-Euler step driven by the local finite difference ˙c ≈ (cτ (zt)+1 − cτ (zt))/h of the underlying vector field as sampled from the context. This yields a ‘zero-friction’ direction in state space (neither con- nor divergence), as along the limit cycle ( λmax = 0 ) of a continuous-time DS. • Chaos α > 1: One obtains local divergence almost everywhere and, if bounded, chaotic trajectories are produced (cf. Fig. 12 for Lorenz-63 reconstructions along a bifurcation diagram). The nearest-neighbor lookup τ (·) induces a Voronoi tessellation of the state space (Fig. 4 a). Inside each cell Vs = {z : τ (z) = s}, DynaBase is a strictly affine map zt+1 = α zt + ˜ cs, where 
+
+˜cs = βcs + γcs+1 is fixed by the cell, hence belongs to the class of well-studied switching piecewise-linear (PL) systems [ 26 , 78 ]. Within each cell Vs, the model’s Jacobian is simply given by αI, i.e. a single scalar α controls the local con- or divergence almost everywhere in state space. With ˆα ≈ 1.01 
+
+just slightly above 1 (Fig. 2), DynaBase diverges almost everywhere but still stays sufficiently close to the cell centers to create a chaotic attractor , despite not having a nonlinear activation function (in line with Thm. 3 & Thm. 4). For context parroting with α = 0 (Thm. 2), on the other hand, DynaBase snaps onto a cyclic point that perfectly traces out the empirically observed context trajectory. However, a cyclic point would result in this case even if the observed trajectory snippet comes from a chaotic system (Fig. 13). Pure context parroting also prevents generalization to new initial conditions of an observed DS, a feature of DynaMix demonstrated in [ 43 ]. This is illustrated for the Selkov DS in Fig. 4 b: For α = 0 ,DynaBase strictly follows the context points and thus fails to map the vector field anywhere outside the context. On the other hand, pure context mimicry, f1, while reproducing the λmax = 0 direction 
+
+on a limit cycle, fails to capture the convergence when started off the stable cycle, since the finite difference cτ (zt)+1 − cτ (zt) is always evaluated at the nearest context point. Fitting ˆα via eq. 14 on 8Figure 4: a) Voronoi tessellation for the periodic Selkov DS induced by the nearest-neighbor lookup 
+
+τ (·) in DynaBase. The context C1: TC partitions the state space into cells Vs = {z : τ (z) = s},within which DynaBase is described by a strictly affine map zt+1 = α zt + ˜ cs. b) Out-of-context forecasting on the 2d Selkov system. When the initial condition lies outside of the context-covered region, neither parroting ( α = 0 , left) nor pure flow mimicry ( α = 1 , center) recovers the true vector field. Refitting ˆα from a single additional short trajectory via eq. 13 produces a local flow estimate that aligns better with the true vector field (right). a trajectory bit that contains a transient, however, yields a better approximation of the surrounding vector field outside the observed context while still reproducing the cycle (Fig. 4 b). 
+
+## 5 Conclusion 
+
+We reduce DynaMix, a mixture-of-experts DSR foundation model, into DynaBase , a two-parameter nearest-neighbor affine recurrence that can be further reduced to a 1d family of maps by imposing a consistency condition. Despite this minimal form, variants of DynaBase match or exceed substantially larger architectures on both long-horizon DSR measures and short-term predictions, while remaining computationally extremely cheap with either training via 1-step closed-form least squares or grid search on a DSR objective. Analysis of this minimal map and its training provides a number of interesting insights into the minimal requirements TS and DSR FMs may need to achieve zero-shot DS forecasts. First, α = 0 
+
+exactly reproduces context parroting as observed in [ 91 , 92 ], but this mechanism is inherently unable to reproduce chaotic or even true limit cycle behavior. Second, for α > 0 this affine nearest-neighbor form admits the whole spectrum from convergence to fixed points or cycles to strictly chaotic activity for α > 1, thus being sufficiently expressive to approximate a large range of DS. Third, for 
+
+α ≈ 1.01 the map can even operate in zero-shot mode, at least on a common DSR benchmark set, exposing the profound role the context alone plays in structuring the forecast. Fourth, optimizing for ahead-predictions biases the map toward convergence to fixed or cyclic points, even when the underlying DS is chaotic, explaining why this training objective is suboptimal if DSR is the goal [60 , 45 , 71 , 47 ]. More generally, with DynaBase we have established a formal framework that enables to study mechanisms of DSR in FMs and beyond in detail, creating an instrument for mathematical analysis of context-based forecasting and DSR methods. 
+
+Limitations DynaBase is a minimal 2-parameter model. Although it highlights the fact that complex architectures with tens of thousands to many millions of parameters may not be needed for DSR and time series forecasting, the assumptions on which its reduction is based come at a cost in terms of the diversity of DS and vector field topologies that can be learned, as well as the accuracy with which geometrical properties of the vector field can be captured (as apparent from the remaining mismatch in Fig. 4 b). Also, we so far did not explicitly consider the impact of noise (but see Fig. 14, where noise degrades but does not preclude DSR). Currently, DynaBase may be viewed more as a research tool that allows for detailed mathematical analysis of context-based DSR FMs. A more in-depth study of DynaBase, e.g. its DS approximation capabilities or the computation of the full Lyapunov spectrum, which requires the concept of a saltation operator [28, 25], is still pending. 9Acknowledgements 
+
+This work was supported by individual grants Du 354/15-1 (# 502196519) and Du 354/18-1 (# 567025973) from the German Research Foundation (DFG), and by the German Ministry for Re-search, Astronautics, and Technology (BMFTR) through NAILIt (“Neuro-Inspired AI for Learning & Inference in Non-Stationary Environments”, # 01GQ2509A). 
+
+## References 
+
+[1] Ekin Akyürek, Dale Schuurmans, Jacob Andreas, Tengyu Ma, and Denny Zhou. What learning algorithm is in-context learning? Investigations with linear models. In Proceedings of the 11th International Conference on Learning Representations (ICLR) , 2023. URL https:// openreview.net/forum?id=0g0X4H8yN4I .[2] Kathleen T. Alligood, Tim D. Sauer, and James A. Yorke. Chaos: An Introduction to Dynamical Systems . Textbooks in Mathematical Sciences. Springer, 1996. ISBN 978-0-387-94677-1 978-0-387-22492-3. doi: 10.1007/b97589. [3] Victor M Martinez Alvarez, Rare¸ s Ro¸ sca, and Cristian G F˘ alcu¸ tescu. Dynode: Neural or-dinary differential equations for dynamics modeling in continuous control. arXiv preprint arXiv:2009.04278 , 2020. [4] Abdul Fatir Ansari, Lorenzo Stella, Ali Caner Turkmen, Xiyuan Zhang, Pedro Mercado, Huibin Shen, Oleksandr Shchur, Syama Sundar Rangapuram, Sebastian Pineda Arango, Shub-ham Kapoor, Jasper Zschiegner, Danielle C. Maddix, Hao Wang, Michael W. Mahoney, Kari Torkkola, Andrew Gordon Wilson, Michael Bohlke-Schneider, and Bernie Wang. Chronos: Learning the language of time series. Transactions on Machine Learning Research , 2024. ISSN 2835-8856. URL https://openreview.net/forum?id=gerNCVqqtR .[5] Abdul Fatir Ansari, Oleksandr Shchur, Jaris Küken, Andreas Auer, Boran Han, Pedro Mercado, Syama Sundar Rangapuram, Huibin Shen, Lorenzo Stella, Xiyuan Zhang, Mononito Goswami, Shubham Kapoor, Danielle C. Maddix, Pablo Guerron, Tony Hu, Junming Yin, Nick Erickson, Prateek Mutalik Desai, Hao Wang, Huzefa Rangwala, George Karypis, Yuyang Wang, and Michael Bohlke-Schneider. Chronos-2: From univariate to universal forecasting, 2025. URL 
+
+https://arxiv.org/abs/2510.15821 .[6] Omri Azencot, N. Benjamin Erichson, Vanessa Lin, and Michael W. Mahoney. Forecasting Se-quential Data using Consistent Koopman Autoencoders. In Proceedings of the 37th International Conference on Machine Learning , 2020. URL http://arxiv.org/abs/2003.02236 .[7] Yu Bai, Fan Chen, Huan Wang, Caiming Xiong, and Song Mei. Transformers as statisti-cians: Provable in-context learning with in-context algorithm selection. In A. Oh, T. Nau-mann, A. Globerson, K. Saenko, M. Hardt, and S. Levine, editors, Advances in Neu-ral Information Processing Systems , volume 36, pages 57125–57211. Curran Associates, Inc., 2023. URL https://proceedings.neurips.cc/paper_files/paper/2023/file/ b2e63e36c57e153b9015fece2352a9f9-Paper-Conference.pdf .[8] Maximilian Beck, Korbinian Pöppel, Markus Spanring, Andreas Auer, Oleksandra Prudnikova, Michael Kopp, Günter Klambauer, Johannes Brandstetter, and Sepp Hochreiter. xlstm: Extended long short-term memory. Advances in Neural Information Processing Systems , 37:107547– 107603, 2024. [9] Giancarlo Benettin, Luigi Galgani, Antonio Giorgilli, and Jean-Marie Strelcyn. Lyapunov characteristic exponents for smooth dynamical systems and for hamiltonian systems; a method for computing all of them. part 1: Theory. Meccanica , 15(1):9–20, 1980. [10] Upinder S. Bhalla and Ravi Iyengar. Emergent properties of networks of biological signaling pathways. Science , 283(5400):381–387, 1999. doi: 10.1126/science.283.5400.381. [11] Sathya Kamesh Bhethanabhotla, Omar Swelam, Julien Siems, David Salinas, and Frank Hutter. Mamba4cast: Efficient zero-shot time series forecasting with state space models. arXiv preprint arXiv:2410.09385 , 2024. [12] Alena Brändle, Lukas Eisenmann, Florian Götz, and Daniel Durstewitz. Continuous-time piecewise-linear recurrent neural networks. arXiv preprint arXiv:2602.15649 , 2026. 10 [13] Manuel Brenner, Florian Hess, Jonas M. Mikhaeil, Leonard F. Bereska, Zahra Monfared, Po-Chen Kuo, and Daniel Durstewitz. Tractable Dendritic RNNs for Reconstructing Nonlinear Dynamical Systems. In Proceedings of the 39th International Conference on Machine Learn-ing , pages 2292–2320. PMLR, June 2022. URL https://proceedings.mlr.press/v162/ brenner22a.html . ISSN: 2640-3498. [14] Manuel Brenner, Christoph Jürgen Hemmer, Zahra Monfared, and Daniel Durstewitz. Almost-linear rnns yield highly interpretable symbolic codes in dynamical systems reconstruction. In A. Globerson, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and C. Zhang, editors, 
+
+Advances in Neural Information Processing Systems , volume 37, pages 36829–36868. Curran Associates, Inc., 2024. [15] Manuel Brenner, Elias Weber, Georgia Koppe, and Daniel Durstewitz. Learning interpretable hierarchical dynamical systems models from time series data. In The Thirteenth International Conference on Learning Representations (ICLR) , 2025. URL https://openreview.net/ forum?id=Vp2OAxMs2s .[16] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are few-shot learners. Advances in neural information processing systems , 33:1877–1901, 2020. [17] Steven L Brunton and J Nathan Kutz. Data-driven science and engineering: Machine learning, dynamical systems, and control . Cambridge University Press, 2019. [18] Steven L. Brunton, Joshua L. Proctor, and J. Nathan Kutz. Discovering governing equations from data by sparse identification of nonlinear dynamical systems. Proceedings of the National Academy of Sciences USA , 113(15):3932–3937, 2016. ISSN 0027-8424. doi: 10.1073/pnas. 1517384113. [19] Steven L. Brunton, Bingni W. Brunton, Joshua L. Proctor, Eurika Kaiser, and J. Nathan Kutz. Chaos as an intermittently forced linear system. Nature Communications , 8(1):19, May 2017. ISSN 2041-1723. doi: 10.1038/s41467-017-00030-8. URL https://www.nature.com/ articles/s41467-017-00030-8 . Publisher: Nature Publishing Group. [20] Steven L. Brunton, Marko Budiši´ c, Eurika Kaiser, and J. Nathan Kutz. Modern koopman theory for dynamical systems. SIAM Review , 64(2):229–340, 2022. doi: 10.1137/21M1401243. URL 
+
+https://doi.org/10.1137/21M1401243 .[21] Gyorgy Buzsaki. Rhythms of the Brain . Oxford University Press, August 2006. ISBN 978-0-19-804125-2. Google-Books-ID: ldz58irprjYC. [22] Thomas L. Carroll and Louis M. Pecora. Network Structure Effects in Reservoir Computers. 
+
+Chaos: An Interdisciplinary Journal of Nonlinear Science , 29(8):083130, August 2019. ISSN 1054-1500, 1089-7682. doi: 10.1063/1.5097686. [23] Ricky T. Q. Chen, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. Neural Ordinary Differential Equations. In Advances in Neural Information Processing Systems 31 , 2018. URL 
+
+http://arxiv.org/abs/1806.07366 .[24] Siyu Chen, Heejune Sheen, Tianhao Wang, and Zhuoran Yang. Unveiling induction heads: Prov-able training dynamics and feature learning in transformers. Advances in Neural Information Processing Systems , 37:66479–66567, 2024. [25] Stephen Coombes, Mustafa ¸ Sayli, R"udiger Thul, Rachel Nicks, Mason A. Porter, and Yi Ming Lai. Oscillatory networks: Insights from piecewise-linear modeling. SIAM Review , 66(4): 619–679, 2024. doi: 10.1137/22M1534365. [26] J. Daafouz, P. Riedinger, and C. Iung. Stability analysis and control synthesis for switched systems: a switched Lyapunov function approach. IEEE Transactions on Automatic Control , 47 (11):1883–1887, November 2002. ISSN 1558-2523. doi: 10.1109/TAC.2002.804474. URL 
+
+https://ieeexplore.ieee.org/document/1047016 . Conference Name: IEEE Transac-tions on Automatic Control. [27] Abhimanyu Das, Weihao Kong, Rajat Sen, and Yichen Zhou. A decoder-only foundation model for time-series forecasting. In Forty-first International Conference on Machine Learning , 2024. [28] Mario di Bernardo, Chris J. Budd, Alan R. Champneys, and Piotr Kowalczyk. Piecewise-Smooth Dynamical Systems: Theory and Applications , volume 163 of Applied Mathematical Sciences .Springer, London, 2008. ISBN 978-1-84628-039-9. doi: 10.1007/978-1-84628-708-4. 11 [29] Daniel Durstewitz. A state space approach for piecewise-linear recurrent neural networks for identifying computational dynamics from neural measurements. PLoS Comput. Biol. , 13(6): e1005542, 2017. ISSN 1553-7358. doi: 10.1371/journal.pcbi.1005542. [30] Daniel Durstewitz, Georgia Koppe, and Max Ingo Thurm. Reconstructing computational system dynamics from neural data with recurrent neural networks. Nature Reviews. Neuroscience , 24 (11):693–710, November 2023. ISSN 1471-0048. doi: 10.1038/s41583-023-00740-7. [31] Daniel Durstewitz, Christoph Jürgen Hemmer, Florian Hess, Charlotte Ricarda Doll, and Lukas Eisenmann. Position: Why a dynamical systems perspective is needed to advance time series modeling. arXiv preprint arXiv:2602.16864 , 2026. [32] Ezra Edelman, Nikolaos Tsilivis, Benjamin L Edelman, Eran Malach, and Surbhi Goel. The evolution of statistical induction heads: In-context learning markov chains. Advances in neural information processing systems , 37:64273–64311, 2024. [33] J. Doyne Farmer and John J. Sidorowich. Predicting chaotic time series. Physical Review Letters , 59(8):845–848, August 1987. doi: 10.1103/PhysRevLett.59.845. URL https://link. aps.org/doi/10.1103/PhysRevLett.59.845 . Publisher: American Physical Society. [34] Jerome H Friedman, Jon Louis Bentley, and Raphael Ari Finkel. An algorithm for finding best matches in logarithmic expected time. ACM Transactions on Mathematical Software (TOMS) , 3 (3):209–226, 1977. [35] L. Fumagalli, K. Lüdge, J. de Wiljes, H. Haario, and L. Jaurigue. Data-driven performance measures using global properties of attractors for testing black-box surrogate models of chaotic systems. Chaos: An Interdisciplinary Journal of Nonlinear Science , 35(11):113121, 11 2025. ISSN 1054-1500. doi: 10.1063/5.0283424. URL https://doi.org/10.1063/5.0283424 .[36] Shivam Garg, Dimitris Tsipras, Percy S Liang, and Gregory Valiant. What can transformers learn in-context? a case study of simple function classes. Advances in Neural Information Processing Systems , 35:30583–30598, 2022. [37] William Gilpin. Chaos as an interpretable benchmark for forecasting and data-driven modelling. In Thirty-fifth Conference on Neural Information Processing Systems Datasets and Benchmarks Track (Round 2) , 2022. URL https://openreview.net/forum?id=enYjtbjYJrf .[38] William Gilpin. Model scale versus domain knowledge in statistical forecasting of chaotic systems. Physical Review Research , 5(4):043252, 2023. [39] Albert Gu and Tri Dao. Mamba: Linear-time sequence modeling with selective state spaces. In 
+
+First conference on language modeling , 2024. [40] John Guckenheimer and Philip Holmes. Nonlinear Oscillations, Dynamical Systems, and Bifurcations of Vector Fields , volume 42 of Applied Mathematical Sciences . Springer, New York, NY, 1983. ISBN 978-1-4612-7020-1 978-1-4612-1140-2. doi: 10.1007/978-1-4612-1140-2. URL http://link.springer.com/10.1007/978-1-4612-1140-2 .[41] Niclas Alexander Göring, Florian Hess, Manuel Brenner, Zahra Monfared, and Daniel Durste-witz. Out-of-Domain Generalization in Dynamical Systems Reconstruction. In Proceedings of the 41st International Conference on Machine Learning , pages 16071–16114. PMLR, July 2024. URL https://proceedings.mlr.press/v235/goring24a.html . ISSN: 2640-3498. [42] Xinyu Han, Yi Zhao, and Michael Small. A tighter generalization bound for reservoir computing. 
+
+Chaos: An Interdisciplinary Journal of Nonlinear Science , 32(4):043115, April 2022. ISSN 1054-1500. doi: 10.1063/5.0082258. [43] Christoph Jürgen Hemmer and Daniel Durstewitz. True zero-shot inference of dynamical sys-tems preserving long-term statistics. In The Thirty-ninth Annual Conference on Neural Informa-tion Processing Systems , 2025. URL https://openreview.net/forum?id=RE97LT26w8 .[44] Christoph Jürgen Hemmer, Manuel Brenner, Florian Hess, and Daniel Durstewitz. Optimal Recurrent Network Topologies for Dynamical Systems Reconstruction. In Proceedings of the 41st International Conference on Machine Learning , pages 18174–18204. PMLR, July 2024. URL https://proceedings.mlr.press/v235/hemmer24a.html . ISSN: 2640-3498. [45] Florian Hess, Zahra Monfared, Manuel Brenner, and Daniel Durstewitz. Generalized Teacher Forcing for Learning Chaotic Dynamics. In Proceedings of the 40th International Conference on Machine Learning , pages 13017–13049. PMLR, July 2023. URL https://proceedings. mlr.press/v202/hess23a.html . ISSN: 2640-3498. 12 [46] Hansika Hewamalage, Klaus Ackermann, and Christoph Bergmeir. Forecast evaluation for data scientists: common pitfalls and best practices. Data Mining and Knowledge Discov-ery , 37(2):788–832, 2023. URL https://link.springer.com/content/pdf/10.1007/ s10618-022-00894-5.pdf?pdf=button . (IF 4.8, Q2 in “Computer Science, Artificial Intel-ligence”, JCR 2022). [47] Ruoxi Jiang, Peter Y Lu, Elena Orlova, and Rebecca Willett. Training neural operators to preserve invariant measures of chaotic attractors. Advances in Neural Information Processing Systems , 36:27645–27669, 2023. [48] Alexia Jolicoeur-Martineau. Less is more: Recursive reasoning with tiny networks, 2025. URL 
+
+https://arxiv.org/abs/2510.04871 .[49] Holger Kantz and Thomas Schreiber. Nonlinear time series analysis , volume 7. Cambridge university press, 2004. [50] Matthieu Kirchmeyer, Yuan Yin, Jérémie Donà, Nicolas Baskiotis, Alain Rakotomamonjy, and Patrick Gallinari. Generalizing to new physical systems via context-informed dynamics model. In International Conference on Machine Learning , pages 11283–11301. PMLR, 2022. [51] Joon-Hyuk Ko, Hankyul Koh, Nojun Park, and Wonho Jhe. Homotopy-based training of neuralodes for accurate dynamics discovery. Advances in Neural Information Processing Systems , 36:64725–64752, 2023. [52] Georgia Koppe, Hazem Toutounji, Peter Kirsch, Stefanie Lis, and Daniel Durstewitz. Identifying nonlinear dynamical systems via generative recurrent neural networks with applications to fMRI. 
+
+PLOS Computational Biology , 15(8):e1007263, 2019. ISSN 1553-7358. doi: 10.1371/journal. pcbi.1007263. [53] Jeffrey Lai, Anthony Bao, and William Gilpin. Panda: A pretrained forecast model for universal representation of chaotic dynamics. arXiv preprint arXiv:2505.13755 , 2025. [54] Ji-An Li, Marcus K. Benna, and Matthew G. Mattar. Discovering cognitive strategies with tiny recurrent neural networks. Nature , 644:993–1001, 2025. doi: 10.1038/s41586-025-09142-4. [55] Ziqian Lin and Kangwook Lee. Dual operating modes of in-context learning. In Forty-first International Conference on Machine Learning , 2024. [56] Jean-Christophe Loiseau and Steven L. Brunton. Constrained sparse Galerkin regression. 
+
+Journal of Fluid Mechanics , 838:42–67, March 2018. ISSN 0022-1120, 1469-7645. doi: 10.1017/jfm.2017.823. Publisher: Cambridge University Press. [57] Edward N Lorenz. Deterministic nonperiodic flow. Journal of atmospheric sciences , 20(2): 130–141, 1963. [58] Bethany Lusch, J. Nathan Kutz, and Steven L. Brunton. Deep learning for universal linear embeddings of nonlinear dynamics. Nat Commun , 9(1):4950, December 2018. ISSN 2041-1723. doi: 10.1038/s41467-018-07210-0. URL http://arxiv.org/abs/1712.09707 . arXiv: 1712.09707. [59] Benoit Mandelbrot and Richard L Hudson. The Misbehavior of Markets: A fractal view of financial turbulence . Basic books, 2007. [60] Jonas Mikhaeil, Zahra Monfared, and Daniel Durstewitz. On the difficulty of learning chaotic dynamics with RNNs. Advances in Neural Information Processing Systems , 35:11297–11312, December 2022. [61] Zahra Monfared and Daniel Durstewitz. Transformation of ReLU-based recurrent neural networks from discrete-time to continuous-time. In Proceedings of the 37th International Conference on Machine Learning , 2020. URL http://proceedings.mlr.press/v119/ monfared20a.html .[62] Peter J. Mumby, Alan Hastings, and Helen J. Edwards. Thresholds and the resilience of caribbean coral reefs. Nature , 450(7166):98–101, 2007. doi: 10.1038/nature06252. URL 
+
+https://doi.org/10.1038/nature06252 .[63] Ilan Naiman and Omri Azencot. A Koopman Approach to Understanding Sequence Neural Models. arXiv:2102.07824 [cs, math] , October 2021. URL http://arxiv.org/abs/2102. 07824 . arXiv: 2102.07824. 13 [64] Catherine Olsson, Nelson Elhage, Neel Nanda, Nicholas Joseph, Nova DasSarma, Tom Henighan, Ben Mann, Amanda Askell, Yuntao Bai, Anna Chen, et al. In-context learning and induction heads. arXiv preprint arXiv:2209.11895 , 2022. [65] Samuel E. Otto and Clarence W. Rowley. Linearly recurrent autoencoder networks for learning dynamics. SIAM Journal on Applied Dynamical Systems , 18(1):558–593, 2019. doi: 10.1137/ 18M1177846. URL https://doi.org/10.1137/18M1177846 .[66] Matthijs Pals, A Erdem Sa˘ gtekin, Felix Pei, Manuel Gloeckler, and Jakob H Macke. Inferring stochastic low-rank recurrent neural networks from neural data. In A. Globerson, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and C. Zhang, editors, Advances in Neural Information Processing Systems , volume 37, pages 18225–18264. Curran Associates, Inc., 2024. doi: 10.52202/079017-0579. [67] Dhruvit Patel and Edward Ott. Using machine learning to anticipate tipping points and extrapo-late to post-tipping dynamics of non-stationary dynamical systems. Chaos (Woodbury, N.Y.) , 33 (2):023143, February 2023. ISSN 1089-7682. doi: 10.1063/5.0131787. [68] Jaideep Pathak, Zhixin Lu, Brian R. Hunt, Michelle Girvan, and Edward Ott. Using Machine Learning to Replicate Chaotic Attractors and Calculate Lyapunov Exponents from Data. Chaos: An Interdisciplinary Journal of Nonlinear Science , 27(12):121102, December 2017. ISSN 1054-1500, 1089-7682. doi: 10.1063/1.5010300. URL http://arxiv.org/abs/1710.07313 .arXiv: 1710.07313. [69] Lawrence Perko. Differential equations and dynamical systems . Number 7 in Texts in applied mathematics. Springer, New York, 3rd ed edition, 2001. ISBN 978-0-387-95116-4. [70] Jason A Platt, Stephen G Penny, Timothy A Smith, Tse-Chun Chen, and Henry DI Abarbanel. A systematic exploration of reservoir computing for forecasting complex spatiotemporal dynamics. 
+
+Neural Networks , 153:530–552, 2022. [71] Jason A Platt, Stephen G Penny, Timothy A Smith, Tse-Chun Chen, and Henry DI Abarbanel. Constraining chaos: Enforcing dynamical invariants in the training of reservoir computers. 
+
+Chaos: An Interdisciplinary Journal of Nonlinear Science , 33(10), 2023. [72] Michael T Rosenstein, James J Collins, and Carlo J De Luca. A practical method for calculating largest lyapunov exponents from small data sets. Physica D: Nonlinear Phenomena , 65(1-2): 117–134, 1993. [73] Cynthia Rudin. Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead. Nature Machine Intelligence , 1(5):206–215, 2019. doi: 10.1038/s42256-019-0048-x. [74] T Konstantin Rusch, Siddhartha Mishra, N Benjamin Erichson, and Michael W Mahoney. Long expressive memory for sequence modeling. In International Conference on Learning Representations , 2022. [75] Tim Sauer, James A Yorke, and Martin Casdagli. Embedology. Journal of statistical Physics ,65(3):579–616, 1991. [76] Evgeni E SEL’KOV. Self-oscillations in glycolysis 1. a simple kinetic model. European Journal of Biochemistry , 4(1):79–86, 1968. [77] Lingfeng Shen, Aayush Mishra, and Daniel Khashabi. Position: Do pretrained transformers learn in-context by gradient descent? In Ruslan Salakhutdinov, Zico Kolter, Katherine Heller, Adrian Weller, Nuria Oliver, Jonathan Scarlett, and Felix Berkenkamp, editors, Proceedings of the 41st International Conference on Machine Learning , volume 235 of Proceedings of Machine Learning Research , pages 44712–44740. PMLR, 21–27 Jul 2024. URL https: //proceedings.mlr.press/v235/shen24d.html .[78] Zhendong Sun. Switched Linear Systems: Control and Design . Springer Science & Business Media, March 2006. ISBN 978-1-84628-131-0. Google-Books-ID: u4GArZN1bmsC. [79] Floris Takens. Detecting strange attractors in turbulence. In Dynamical Systems and Turbulence, Warwick 1980 , volume 898, pages 366–381. Springer, 1981. ISBN 978-3-540-11171-9 978-3-540-38945-3. URL http://link.springer.com/10.1007/BFb0091924 .[80] Adam P. Trischler and Gabriele M.T. D’Eleuterio. Synthesis of recurrent neural networks for dynamical system simulation. Neural Networks , 80:67–78, 2016. ISSN 08936080. doi: 10. 14 1016/j.neunet.2016.04.001. URL https://linkinghub.elsevier.com/retrieve/pii/ S0893608016300314 .[81] Eli Tziperman, Harvey Scher, Stephen E. Zebiak, and Mark A. Cane. Controlling spatiotemporal chaos in a realistic el niño prediction model. Phys. Rev. Lett. , 79:1034–1037, Aug 1997. doi: 10. 1103/PhysRevLett.79.1034. URL https://link.aps.org/doi/10.1103/PhysRevLett. 79.1034 .[82] Ayesha Vermani, Josue Nassar, Hyungju Jeon, Matthew Dowling, and Il Memming Park. Meta-dynamical state space models for integrative neural data analysis. In The Thirteenth International Conference on Learning Representations , 2025. URL https://openreview. net/forum?id=SRpq5OBpED .[83] Pantelis R. Vlachas, Wonmin Byeon, Zhong Y. Wan, Themistoklis P. Sapsis, and Petros Koumoutsakos. Data-driven forecasting of high-dimensional chaotic systems with long short-term memory networks. Proc. R. Soc. A. , 474(2213):20170844, 2018. ISSN 1364-5021, 1471-2946. doi: 10.1098/rspa.2017.0844. URL https://royalsocietypublishing.org/ doi/10.1098/rspa.2017.0844 .[84] Johannes von Oswald, Eyvind Niklasson, Ettore Randazzo, João Sacramento, Alexander Mord-vintsev, Andrey Zhmoginov, and Max Vladymyrov. Transformers learn in-context by gradient descent. In Proceedings of the 40th International Conference on Machine Learning , volume 202 of Proceedings of Machine Learning Research , pages 35151–35174. PMLR, 2023. URL 
+
+https://proceedings.mlr.press/v202/von-oswald23a.html .[85] Guan Wang, Jin Li, Yuhao Sun, Xing Chen, Changling Liu, Yue Wu, Meng Lu, Sen Song, and Yasin Abbasi Yadkori. Hierarchical reasoning model, 2025. URL https://arxiv.org/abs/ 2506.21734 .[86] Qixun Wang, Yifei Wang, Xianghua Ying, and Yisen Wang. Can in-context learning really generalize to out-of-distribution tasks? In The Thirteenth International Conference on Learning Representations , 2025. URL https://openreview.net/forum?id=INe4otjryz .[87] Rui Wang, Yihe Dong, Sercan Ö Arik, and Rose Yu. Koopman Neural Forecaster for Time Series with Temporal Distribution Shifts, October 2022. URL http://arxiv.org/abs/2210. 03675 . arXiv:2210.03675 [cs, stat]. [88] Weimin Wu, Teng-Yun Hsiao, Jerry Yao-Chieh Hu, Wenxin Zhang, and Han Liu. In-context learning as conditioned associative memory retrieval. In Aarti Singh, Maryam Fazel, Daniel Hsu, Simon Lacoste-Julien, Felix Berkenkamp, Tegan Maharaj, Kiri Wagstaff, and Jerry Zhu, editors, Proceedings of the 42nd International Conference on Machine Learning , volume 267 of Proceedings of Machine Learning Research , pages 67300–67325. PMLR, 13–19 Jul 2025. URL https://proceedings.mlr.press/v267/wu25k.html .[89] Sang Michael Xie, Aditi Raghunathan, Percy Liang, and Tengyu Ma. An explanation of in-context learning as implicit bayesian inference. arXiv preprint arXiv:2111.02080 , 2021. [90] Yuan Yin, Ibrahim Ayed, Emmanuel de Bézenac, Nicolas Baskiotis, and Patrick Gallinari. Leads: Learning dynamical systems that generalize across environments. Advances in Neural Information Processing Systems , 34:7561–7573, 2021. [91] Yuanzhao Zhang and William Gilpin. Zero-shot forecasting of chaotic systems. In The Thirteenth International Conference on Learning Representations , 2025. URL https:// openreview.net/forum?id=TqYjhJrp9m .[92] Yuanzhao Zhang and William Gilpin. Context parroting: A simple but tough-to-beat baseline for foundation models in scientific machine learning. In The Fourteenth International Conference on Learning Representations , 2026. URL https://openreview.net/forum?id=EUAXc9Hlvm .15 A Appendix 
+
+A.1 Methodological details Training details Training of the DynaBase parameters (α, β ) uses a sampled training sequence 
+
+Xtrain ∈ RN ×T drawn from a DS, where the first TC steps serve as context signal C. For the experiments in Fig. 1, we set T = 2000 and TC = 1000 . At evaluation time, we supplied the training sequence as context alongside the estimated parameter values (α, β ), and assessed performance on a sequence unseen during training and context construction (using the self-consistent DynaBase fα
+
+as defined in eq. 12). This ensures that DynaBase receives exactly the same context and training sequence information as all other comparison methods. To fit DynaBase via linear regression , we compute (ˆ α, ˆβ) in closed form via ordinary least-squares. Nearest neighbors τ (·) are precomputed once via ℓ2-distances over C and the training sequence X.To cast this as a standard linear regression problem, we define the response vector b and design matrix 
+
+A based on eq. 10, for each training sample i
+
+bi = zi+1 − cτ (zi)+1 , (16) 
+
+Ai =
+
+h
+
+zi − cτ (zi)+1 , cτ (zi) − cτ (zi)+1 
+
+i
+
+. (17) The regression then takes the form b = A[α, β ]⊤, and the coefficients are obtained by the standard least-squares solution 
+
+[ˆ α, ˆβ]⊤ = ( A⊤A)−1A⊤b. (18) In the self-consistent setting of eq. 12, the constraint β = −α reduces the two-parameter fit to a single unknown scalar, simplifying Ai = zi − cτ (zi).To train parameters via grid search , we sweep across α ∈ [0 , 1.2] with step size ∆α = 0 .002 along the self-consistency line β = −α. For each candidate α, DynaBase is rolled out for T = 10 ,000 
+
+steps using the context C and scored by the KL-divergence loss given in eq. 14 between predicted trajectories ˆX and the training data. The global minimizer ˆα is returned. Training and evaluation of DynaBase was performed on a single CPU (AMD EPYC 9655 96-Core). 
+
+Comparison methods We compare DynaBase against three groups of baselines, all evaluated on the same 54 test DS and the same input data of length T = 2000 as in [43]. 
+
+Zero-shot foundation models: DynaMix [ 43 ], the DSR FM that DynaBase is reduced from (mixture-of-experts of AL-RNNs with context-dependent gating; pretrained on ∼ 6 × 10 5 trajectories from 34 
+
+DS); Chronos-T5-base [ 4], a transformer FM that quantizes real-valued series into discrete tokens and forecasts autoregressively on a corpus of synthetic and real-world time series; and Chronos-2 [ 5], its multivariate extension augmenting the T5 backbone with a group-attention mechanism. Evaluations were taken from [43]. 
+
+Custom-trained DSR models: an AL-RNN [ 14 ] (eq. 1), which is used for the experts in DynaMix, a Neural-ODE [ 23 ], and a reservoir computer [ 67 ]; each is trained from scratch on the same T = 2000 
+
+context segment provided to the foundation models. Evaluations were taken from [43]. 
+
+Context parroting: the algorithm of Zhang and Gilpin [92] , which retrieves the best-matching motif in C and copies its successor as forecast. As shown in Thm. 2, this baseline corresponds to the α = 0 
+
+case of DynaBase on a delay-embedded context. 
+
+A.2 Performance measures Long-term metrics To evaluate the geometric similarity between true and model-generated recon-structions, we employ a measure, Dstsp , based on the Kullback-Leibler (KL) divergence evaluated in state space [ 52 , 60 , 38 , 66 , 91 , 53 , 43 ]. This measure quantifies the (mis)match between the ground-truth spatial distribution of trajectory points, ptrue (x), and the distribution pgen (x|z) of points from trajectories freely generated by the model: 
+
+Dstsp 
+
+ ptrue (x) ∥ pgen (x|z) =
+
+Z
+
+ptrue (x) log ptrue (x)
+
+pgen (x|z) dx. (19) 16 In practice, we approximate this via a discrete binning of the state space into K = mN bins, where 
+
+m is the number of bins per dimension and N is the system dimensionality, estimating occupation probabilities through relative frequency of visits ˆpi:
+
+Dstsp ≈
+
+> K
+
+X
+
+> i=1
+
+ˆptrue ;i log ˆptrue ;i
+
+ˆpgen ;i
+
+. (20) To ensure that the system has reached a steady-state distribution, long trajectories ( T = 10000 ) are sampled from the trained model. For the 3d attractors we set m = 30 bins per dimension, following [44]. To evaluate long-term temporal reconstruction quality, we calculate the Hellinger distance DH
+
+between the power spectra of the ground-truth and model-generated time series [ 60 , 45 , 66 , 31 ]. We first apply dimension-wise Fast Fourier Transforms (FFT) to the time series and then smooth the resulting power spectra with a Gaussian kernel (with σ = 20 ), followed by normalization to enable comparison across dimensions. High-frequency tails dominated by noise are removed. The Hellinger distance between the smoothed true spectrum F (ω) and the generated spectrum G(ω) is given by 
+
+DH
+
+ F (ω), G (ω) =
+
+s
+
+1 −
+
+Z ∞−∞ 
+
+pF (ω) G(ω) dω ∈ [0 , 1] , (21) where values close to 0 indicate high spectral agreement and values close to 1 indicate complete disagreement. DH is reported as the average across all dimensions. Note that both Dstsp and DH
+
+are designed to capture long-term reconstruction quality in the limit T → ∞ , after transients have settled and the attractor geometry has been traced out reasonably well (which was the case here for 
+
+T = 10000 steps). 
+
+Short-term forecast quality For evaluating short-term predictive performance, we use the Mean Absolute Scaled Error (MASE) [ 46 , 43 ], which is a normalized n-step-ahead prediction error aggre-gated across all N output dimensions: MASE = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+1
+
+n
+
+> n
+
+X
+
+> t=1
+
+xi,t − ˆxi,t 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+xi,t − xi,t −1
+
+, (22) where T denotes the total length of the ground truth time series, n is the forecast horizon, xi,t the true value, and ˆxi,t the model prediction for dimension i at time t. We evaluate at n = 10 steps. 
+
+Lyapunov exponent To numerically estimate the maximum Lyapunov exponent λmax from a time series X, we use the Rosenstein algorithm [72 ]. For each state xi, its nearest neighbor xj is identified subject to |i − j| > l t, which excludes direct temporal neighbors on the same trajectory segment. We set lt = 100 (based on the mean periodicity [ 72 ]). The divergence between neighboring trajectories is then tracked over time steps k = 0 , . . . , k max ,
+
+di(k) = ∥xi+k − xj(i)+ k∥2 . (23) Since nearby trajectories diverge as 
+
+di(k) ≈ di(0) eλmax k∆t , (24) where ∆t is the sampling interval, taking the logarithm and averaging over all pairs gives 
+
+⟨ln d(k)⟩ ≈ λmax k∆t + C . (25) For chaotic systems, this quantity grows approximately linearly with k for a suitable kmax (here: 100 )[49], with slope λmax > 0, whereas periodic systems yield λmax = 0 .When the equations of motion ˙x = f (x) are known, the full Lyapunov spectrum {λi} can be computed via a QR decomposition algorithm [ 9], which integrates the system along its variational equations ˙Q = J(x)Q, where J(x) = ∂f /∂ x is the Jacobian of f and Q is an n × n matrix of 17 perturbation vectors initialized to the identity In. At regular time intervals, a QR decomposition 
+
+Q = ˜QR is performed and the columns of ˜Q, which form an orthonormal basis, replace Q. The diagonal entries Rii record the local expansion rates, and the k-th Lyapunov exponent is obtained as the time-averaged logarithmic growth rate, 
+
+λk = lim  
+
+> T→∞
+
+1
+
+T
+
+X
+
+> j
+
+log R(j) 
+
+> kk
+
+, (26) where the sum runs over all QR factorizations performed up to time T .
+
+A.3 Details on DynaMix reduction 
+
+Table 1: Zero-shot performance of DynaMix and model simplifications across all 54 test DS used in [ 43 ]. DynaMix and simplified models are compared for the same context length TC = 2000 .Reported are median ±MAD for geometrical disagreement Dstsp , temporal disagreement DH , and 10-step-ahead prediction error MASE Model Dstsp ↓ DH ↓ MASE ↓
+
+Original DynaMix 3.80 ± 1.40 0.16 ± 0.06 0.35 ± 0.17 
+
+Linear experts & gating ( M > N ) 3.10 ± 1.19 0.13 ± 0.07 0.26 ± 0.11 
+
+Linear experts & gating ( M = N ) 2.85 ± 1.30 0.13 ± 0.06 0.23 ± 0.10 
+
+Here we provide the supporting evidence and derivation details for the successive reduction of DynaMix to the recursive affine NN map eq. 7 described in Sec. 3.2. 
+
+Linear approximation As noted in [ 43 ], replacing the MLP in eq. 5 with a linear layer does not reduce performance. Here we further show that dropping the softmax nonlinearity σ in eq. 3 and the piecewise-linear activation Φ∗ in eq. 1, reducing the mixture of AL-RNN experts to a single affine map FLinear as in eq. 6, does not cause performance to degrade either. Table 1 confirms this: Linear experts & gating matches, or even improves upon, the original DynaMix checkpoint on all three measures across the DS test set. 
+
+Latent dimension The AL-RNN experts in DynaMix operate in an M -dimensional latent space distinct from the N -dimensional observation space, requiring the projection D in eq. 3. Replacing the expert block with FLinear eliminates this distinction, yielding M = N and D = I, such that the model operates entirely in observation space. Table 1 ( Linear experts & gating, M = N ) confirms this does not reduce performance on the present test set. Working in a single space is also a prerequisite for the O(N ) equivariance exploited in Thm. 1, since rotations and the nearest-neighbor distance must act on the same space in which the state zt and the context C live. Note we can always perform a classical delay-embedding [ 79 , 75 ] should this dimensionality not be sufficient to properly represent an empirically observed DS. 
+
+Nearest-neighbor selector In the publicly available DynaMix checkpoint, the learned attention temperature τatt converged to |τatt ,learned | ≈ 0.06 , indicating that the soft attention eq. 3 is already operating close to its τatt → 0 limit, i.e. effectively selecting a single nearest context point at each step. Two deliberate departures from DynaMix are made in passing to the hard limit. First, DynaMix injects Gaussian exploration noise ε ∼ N (0 , Σ) into the attention eq. 3; in favor of a minimal and deterministic model, we set Σ = 0 . Second, DynaMix computes context distances with the 
+
+ℓ1-norm, whereas we adopt the Euclidean ℓ2-norm. The invariance of ℓ2 distances under orthogonal transformations R ∈ O(N ), is used in Thm. 1. Together these choices yield the deterministic selector 
+
+τ (zt) = arg min s ∥cs − zt∥2.
+
+CNN expansion To make the recursive map fully explicit in terms of individual context points, we expand the CNN operation. Since DynaMix uses a single linear CNN layer with kernel size 2, for 
+
+s ∈ 1 . . . T C − 1 we have 
+
+˜cs = CNN (C)s = K(1) cs + K(2) cs+1 + b, (27) where K(1) , K(2) ∈ RN ×N and b ∈ RN are learned weights. Substituting into eq. 6 with the nearest-neighbor selector and absorbing BK (1) , BK (2) and the bias into B(1) , B(2) , and ˜h respectively, yields the recursive affine NN map eq. 7 as stated in the main text. 18 A.4 Datasets 
+
+Our DS dataset consists of simulated time series of length 10 5, produced from 3d DS collected in [ 37 ]. For the test set, we used the same 54 distinct systems as in [ 43 ] to enable a fair comparison among all the baseline models in relation to the originally published results. To evaluate DynaBase in a zero-shot setting, we estimated α using a training set of 30 different chaotic DS, analogous to the setup in [43]. 
+
+Figure 5: DSR test set of 54 different DS gathered from [ 37 ]. Ground truth (gray) and DynaBase reconstructions using a context window of TC = 2000 (red). In addition, we conduct experiments on the 2d Selkov system [ 76 ], which models the kinetics of an open monosubstrate enzyme reaction and is defined by the equations 
+
+dx dt = −x + ay + x2y, dy dt = b − ay − x2y, 
+
+(28) where we chose a = 0 .1 and b = 0 .5. The system was solved numerically with integration time step 
+
+∆t = 0 .3 using scipy.integrate with the RK45 solver. For Fig. 12 we used the Lorenz-63 attractor [ 57 ], originally formulated by Edward Lorenz in 1963 [57] to model atmospheric convection. It is defined by dx
+
+dt = σ(y − x) (29) dy
+
+dt = x(ρ − z) − y
+
+dz
+
+dt = xy − βz, 
+
+where σ, ρ, β , are control parameters of the system (we fix σ = 10 and ρ = 28 , and vary β ∈ [0 , 1] ,producing regimes with point attractors, cyclic, and chaotic dynamics). The system was solved numerically with integration time step ∆t = 0 .02 using scipy.integrate with the RK45 solver. 19 A.5 Further empirical results 
+
+Figure 6: Zero-shot reconstruction of chaotic Lorenz-63 system using DynaBase with α = 1 .006 .Left: State space, center: time graphs, right: power spectrum. 
+
+Figure 7: Zero-shot reconstruction of chaotic Sprott-F system using DynaBase with α = 1 .006 . Left: State space, center: time graphs, right: power spectrum. 
+
+Figure 8: Zero-shot reconstruction of chaotic Sprott-D system using DynaBase with α = 1 .006 . Left: State space, center: time graphs, right: power spectrum. 
+
+Figure 9: Zero-shot reconstruction using α = 1 of cyclic Lorenz-63 system using DynaBase. Left: State space, center: time graphs, right: power spectrum. 20 Figure 10: Illustration of context parroting and flow mimicry. Left: context parroting — at (α, β ) = (0 , 0) the state snaps onto the successor cτ (zt)+1 of its nearest context neighbor, producing a piecewise-constant map that replays the context. Right: flow mimicry — at (α, β ) = (1 , −1) the state is updated by adding the finite-difference increment cτ (zt)+1 − cτ (zt) evaluated at the nearest context neighbor, a local Euler step on the context vector field. 
+
+Figure 11: Lyapunov exponents estimated via the Rosenstein algorithm (see Appx. A.2) across test DS for both linear regression (blue) and DSR-based training (red) vs. ground truth exponents. Only DSR training produces long-term dynamics that closely follows that of the ground truth, including chaotic attractors with λmax > 0.
+
+Figure 12: Different reconstructions by DynaBase along a bifurcation diagram of the Lorenz-63 system with system parameters σ = 10 , ρ = 28 and β ∈ [0 , 1] . For each reconstruction, the estimated alpha value together with the GT system’s true Lyapunov exponent (estimated via QR decomposition, see Sec. A.2) is indicated. 21 Figure 13: DynaBase forecasting of a chaotic laser system [ 37 ], using the same context once with 
+
+α > 1 and once with α = 0 . Note that despite the system’s non-periodic context trajectory, parroting (α = 0 ) incorrectly produces a discrete cycle. Shown are time graphs (left), state space (center), and power spectrum (right). 
+
+Figure 14: DynaBase reconstruction of Lorenz-63 adding 15% Gaussian noise to the context signal. Left: State space, center: time graphs, right: power spectrum. Table 2: Short-term forecasting accuracy (MASE, median ± MAD) on the DS test set for three DynaBase training strategies (linear regression (LR), DSR objective, and zero-shot) across various prediction horizons n. Best median values in bold. Note that LR training outperforms the other approaches on this measure for intermediate forecasting horizons, while for larger horizons ( n = 300 )performance differences narrow down again due to the general limitations caused by exponential trajectory divergence in chaotic systems. Model MASE (n = 10) MASE (n = 50) MASE (n = 100) MASE (n = 200) MASE (n = 300)                                              
+
+> DynaBase LR 0.13 ±0.08 0.51 ±0.40 0.71 ±0.62 1.06 ±0.93 2.64 ±2.18
+> DynaBase DSR & Gating 0.13 ±0.08 0.62 ±0.48 1.06 ±0.89 2.22 ±1.64 2.80 ±1.96
+> DynaBase zero-shot 0.13 ±0.07 0.61 ±0.48 0.94 ±0.80 2.29 ±1.69 3.07 ±2.09
+
+A.6 Further theoretical results Details on continuous-time limit. We begin by writing eq. 12 explicitly as a piecewise-affine discrete-time system 
+
+zk+1 = fα(zk) = αIz k + ( cτ (zk )+1 − αcτ (zk )) . (30) For values of α ∈ R/{0, 1}, Thm. 3 in [ 61 ] guarantees the existence of an equivalent affine continuous-time system, in the sense that 
+
+ζ(t0) = zk0 , ζ(t0 + h) = zk0+1 , (31) where h denotes the discrete timestep at which observations zk are sampled. The equivalent continuous-time system is then given by 
+
+dζ
+
+dt = log αh ζ − 1
+
+h
+
+log α
+
+1 − α (cτ (ζ)+1 − αcτ (ζ)) . (32) 22 For the case α = 1 , we define log α 
+
+> 1−α
+
+|α=1 := −1 by its continuous extension. Such an extension does, however, not exist for α = 0 . For α < 0, the logarithm is complex-valued. Hence, a real-valued continuous-time limit for fα exists only for α > 0.
+
+Computational complexity The minimal architecture of DynaBase makes it computationally highly efficient for zero-shot inference. By exploiting discrete nearest-neighbor lookup and efficient heuristic search algorithms such as k-d trees [ 34 ], the time complexity of running DynaBase autoregressively over TF forecast steps is 
+
+T = O(TF log TC ), (33) with a one-time overhead of O(TC log TC ) for constructing the k-d tree. In higher dimensions, query time degrades toward O(TC ) in the worst case. Provided the generated trajectory is not retained, the space complexity reduces to 
+
+S = O(TC ). (34) These bounds allow DynaBase to generate long forecasts over extended contexts at low computational cost — in contrast to standard transformer architectures, which incur quadratic time and space complexity in context length. 
+
+## B Proofs of Theorems 
+
+In the following we use the same notation as introduced in Sec. 3.3, with C = {c1, . . . , cTC } ∈ 
+
+RN ×TC a context sequence, τ (z) = arg min s ∥cs − z∥2 the nearest-neighbor lookup, and 
+
+fα,β (z) = αz + βcτ (z) + γcτ (z)+1 , γ = 1 − α − β, (35) the two-parameter DynaBase map; fα denotes its self-consistent reduction with β = −α, γ = 1 .Ties in τ are broken by the smallest index; the tie set has measure zero and does not affect any of the statements below. 
+
+B.1 Proof of Theorem 1 (Uniqueness of form) 
+
+Proof. We start from the affine ansatz eq. 7, 
+
+fLinear (z, C) = Az + B(1) cτ (z) + B(2) cτ (z)+1 + ˜h, (36) with A, B(1) , B(2) ∈ RN ×N and h ∈ RN , and impose the two structural assumptions in turn. 
+
+Orthogonal equivariance. O(N )-equivariance requires Q f Linear (z, C) = fLinear (Qz, Q C) for all Q ∈ O(N ), where QC := {Qcs}s. Since τ is itself O(N )-equivariant, substituting eq. 36 and matching coefficients of the independent vectors z, cτ (z), cτ (z)+1 gives 
+
+QA = AQ, QB(1) = B(1) Q, QB(2) = B(2) Q, Qh = h, ∀Q ∈ O(N ). (37) The standard representation of O(N ) on RN is irreducible for N ≥ 2, so by Schur’s lemma every commuting matrix is a scalar multiple of the identity, and the only O(N )-fixed vector is 0:
+
+A = αI, B(1) = βI, B(2) = γI, h = 0, α, β, γ ∈ R. (38) Hence eq. 36 reduces to f (z) = αz + βcτ (z) + γcτ (z)+1 .
+
+Translation equivariance. For any v ∈ RN , applying the joint shift z 7 → z + v, C 7 → C + v
+
+leaves τ invariant. Substituting into the previous form, 
+
+f (z + v; C + v) = α(z + v) + β(cτ (z) + v) + γ(cτ (z)+1 + v) = f (z; C) + ( α + β + γ)v. (39) Translation equivariance demands f (z + v; C + v) = f (z; C) + v for all v, hence α + β + γ = 1 .Setting γ = 1 − α − β yields the two-parameter family 
+
+fα,β (z) = αz + βcτ (z) + (1 − α − β) cτ (z)+1 . (40) 23 B.2 Proof of Theorem 2 (Reduction to context parroting) 
+
+Proof. For α = β = 0, the DynaBase map on the delay-embedded context C1: TC −D+1 ∈
+
+RD×(TC −D+1) reduces to the deterministic lookup 
+
+zt+1 = f0(zt) = cτ (zt)+1 , τ (z) = arg min  
+
+> 1≤s≤TC−D
+
+∥cs − z∥2. (41) 
+
+Initial step. Starting from z0 = cTC −D+1 (the most recent D context entries), the first application of eq. 41, assuming the final D steps are omitted for τ (z0) (see [92]), yields 
+
+s⋆ := τ (z0) = arg min  
+
+> 1≤s≤TC−2D
+
+∥cs − cTC −D+1 ∥2. (42) Since cs = ( cs, . . . , c s+D−1), this distance is the Euclidean distance between two D-length motifs of the original context—identical to the motif-matching step of [ 92 , Algorithm 1]. Hence s⋆ coincides with the best-matching motif index produced by context parroting. 
+
+Induction step. Suppose zk = cs⋆+k with s⋆ + k ≤ TC − D. Then τ (zk) = s⋆ + k at zero distance, and 
+
+zk+1 = cs⋆+k+1 = ( cs⋆+k+1 , . . . , c s⋆+k+D ). (43) By induction, zt = cs⋆+t for all 0 ≤ t ≤ TC − D − s⋆. Extracting observations from the delay embedded vectors results in 
+
+xt = zD,t = cs⋆+t+D−1, (44) which is exactly the forecast emitted by [ 92 , Algorithm 1] after locating the best-matching motif s⋆.
+
+Wrap-around. Once s⋆ + t exceeds TC − D, both algorithms treat the current tail as a new query and repeat the motif search. Both procedures execute the same operation, so the equivalence extends to arbitrary forecast horizons. 
+
+B.3 Proof of Theorem 3 (Long-term dynamics) 
+
+Proof. For α = 0 , fα reduces to f0(z) = cτ (z)+1 , with finite range {c2, . . . , cTC }. After one iteration every orbit lies in this finite set, on which f0 acts as the deterministic graph map cs 7 →
+
+cτ (cs)+1 = cs+1 for s < T C . Each node has out-degree exactly one, so iteration on a finite directed functional graph must enter a cycle in at most TC − 1 steps and remain periodic thereafter. The differential of f0 vanishes on the interior of every Voronoi cell (the map is piecewise constant), so the Lyapunov exponent within each cell is λmax = −∞ < 0 everywhere. Since the saltation operator 
+
+Ss,s +1 = I between two Voronoi cells Vs and Vs+1 is always finite and nonzero for α = 0 , we obtain 
+
+λmax = −∞ globally. 
+
+B.4 Proof of Theorem 4 (Boundedness) 
+
+Proof. For z ∈ RN define the distance to the context set 
+
+dC (z) := min  
+
+> c∈C
+
+∥c − z∥2 = z − cτ (z) 2. (45) 
+
+Sufficiency ( α ∈ [0 , 1] ). Fix any zt and let zt+1 = fα(zt) = α(zt − cτ (zt)) + cτ (zt)+1 as in eq. 12. Since cτ (zt)+1 ∈ C,
+
+dC (zt+1 ) ≤ zt+1 − cτ (zt)+1 2 = |α| zt − cτ (zt) 2 = |α| dC (zt). (46) For α ∈ [0 , 1] , this gives dC (zt+1 ) ≤ dC (zt). By induction, dC (zt) ≤ dC (z0) for all t ≥ 0, so 
+
+∥zt∥2 ≤ max   
+
+> 1≤s≤TC−1
+
+∥cs∥2 + dC (z0) < ∞, (47) and the orbit is bounded. 24 Non-necessity ( α > 1 counterexample). Let N = 1 , α = 2 , and C = ( c1, c 2, c 3) = ( −1, 1, −1) .The induced Voronoi cells are V1 = {z ≤ 0} and V2 = {z > 0}, with successors c2 = 1 and 
+
+c3 = −1, respectively. Substituting into eq. 12 gives the piecewise-affine map 
+
+f2(z) = 
+
+2z + 3 , z ≤ 0,
+
+2z − 3, z > 0. (48) A direct check shows f2([ −3, 3]) ⊆ [−3, 3] : for z ∈ [−3, 0] we have 2z + 3 ∈ [−3, 3] , and for 
+
+z ∈ (0 , 3] we have 2z − 3 ∈ (−3, 3] . Hence any orbit with z0 ∈ [−3, 3] remains in [−3, 3] for all 
+
+t ≥ 0, proving bounded dynamics for α = 2 > 1. This map is conjugate to the doubling/sawtooth map xt+1 = 2 xt mod 1 , whose Lyapunov exponent equals log 2 on its invariant set. 25
