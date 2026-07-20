@@ -6,76 +6,71 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-19
-- 运行时间：2026-07-19 21:25:38 UTC
+- 最新运行日期：2026-07-20
+- 运行时间：2026-07-20 01:24:55 UTC
 - 运行状态：成功
-- 本次总论文数：18
-- 精读区：5
-- 速读区：13
+- 本次总论文数：17
+- 精读区：6
+- 速读区：11
 
 ### 今日简报（AI）
-1) 今日18篇论文聚焦代理模型逆向设计与冲击问题信息几何正则化，精读2篇高价值工作。  
-2) 最值得关注：基于增量Transformer的地质聚合物混合物逆向设计方法，以及用于刚性/冲击主导PDE的硬约束物理信息网络SPARC-Net。  
-3) 建议优先精读这两篇论文，重点理解代理模型如何解决逆向设计的高维优化，以及硬约束对物理信息网络稳定性的提升。
-- 详情：[/202607/19/README](/202607/19/README)
+今日整理了17篇论文，精读6篇，重点关注物理信息神经网络与谱神经算子的前沿进展。最值得看的两篇高分享分别是解决刚性/激波PDE的因果感知架构SPARC-Net和分布式谱神经算子加速方法DRIFT。建议普通读者优先精读这两篇9分论文，其余速读可作技术补充。
+- 详情：[/202607/20/README](/202607/20/README)
 
 ### 精读区论文标签
-1. [Incremental Transformer for Surrogate-Based Inverse Design of Geopolymer Mixtures](/202607/19/2607.10896v1-incremental-transformer-for-surrogate-based-inverse-design-of-geopolymer-mixtures)  
+1. [SPARC-Net: A Spectral, Causality-Aware, and Hard-Constrained Physics-Informed Architecture for Stiff and Shock-Dominated Partial Differential Equations](/202607/20/2607.11310v1-sparc-net-a-spectral-causality-aware-and-hard-constrained-physics-informed-architecture-for-stiff-and-shock-dominated-partial-differential-equations)  
+   标签：评分：9.0/10、query:flow-pred
+   evidence：使用谱方法和硬约束的激波主导偏微分方程物理信息架构
+2. [DRIFT: Direct Reduced Fourier Transforms for Distributed Spectral Neural Operators](/202607/20/2607.14394v1-drift-direct-reduced-fourier-transforms-for-distributed-spectral-neural-operators)  
+   标签：评分：9.0/10、query:flow-pred
+   evidence：分布式傅里叶神经算子用于高分辨率偏微分方程代理建模
+3. [Cluster-Weighted EDMD](/202607/20/2607.12243v1-cluster-weighted-edmd)  
    标签：评分：8.0/10、query:pc-latent
-   evidence：物理约束逆设计，潜在空间优化
-2. [Shock solutions for the one-dimensional information geometric regularization of compressible flow](/202607/19/2607.12693v1-shock-solutions-for-the-one-dimensional-information-geometric-regularization-of-compressible-flow)  
-   标签：评分：8.0/10、query:sfc
-   evidence：使用信息几何正则化的可压缩流中的激波解
-3. [Evaluation of State-of-the-Art Deep Learning Architectures for Aerodynamical Predictions](/202607/19/2607.13866v1-evaluation-of-state-of-the-art-deep-learning-architectures-for-aerodynamical-predictions)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：对用于气动预测的深度学习架构进行全面评估
-4. [Learning reduced-order latent linear models for Kalman filtering of nonlinear systems](/202607/19/2607.14273v1-learning-reduced-order-latent-linear-models-for-kalman-filtering-of-nonlinear-systems)  
+   evidence：聚类加权EDMD用于学习局部Koopman动力学
+4. [Human population dynamics as a Bayesian inverse transport problem](/202607/20/2607.13171v1-human-population-dynamics-as-a-bayesian-inverse-transport-problem)  
    标签：评分：8.0/10、query:pc-latent
-   evidence：学习用于卡尔曼滤波的降阶潜在线性模型
-5. [Split Complex-Valued Physics-Informed Neural Networks for Forward and Inverse Nonlinear PDEs](/202607/19/2607.15087v1-split-complex-valued-physics-informed-neural-networks-for-forward-and-inverse-nonlinear-pdes)  
+   evidence：贝叶斯神经网络嵌入PDE强制质量守恒，学习潜在本构关系
+5. [Generating synthetic evolution of turbulent flames with an experimental data-based spatiotemporal diffusion model](/202607/20/2607.13193v1-generating-synthetic-evolution-of-turbulent-flames-with-an-experimental-data-based-spatiotemporal-diffusion-model)  
    标签：评分：8.0/10、query:flow-pred
-   evidence：物理信息神经网络用于求解PDE，直接适用于流场预测
+   evidence：基于实验数据的湍流火焰时空扩散生成模型
+6. [A Minimal Interpretable Architecture for Zero-Shot Reconstruction of Dynamical Systems](/202607/20/2607.14937v1-a-minimal-interpretable-architecture-for-zero-shot-reconstruction-of-dynamical-systems)  
+   标签：评分：8.0/10、query:flow-pred
+   evidence：利用潜在状态和上下文学习从有限数据中零样本重建动力系统
 
 ### 速读区论文标签
-1. [Compact and Stable Representation of Real-Frequency Spectral Functions for Machine Learning](/202607/19/2607.11190v1-compact-and-stable-representation-of-real-frequency-spectral-functions-for-machine-learning)  
+1. [Energy-guided Recursive Model](/202607/20/2607.10128v1-energy-guided-recursive-model)  
    标签：评分：7.0/10、query:pc-latent
-   evidence：引入包含物理约束（归一化、正定性）的紧凑表示用于谱函数
-2. [SPARC-Net: A Spectral, Causality-Aware, and Hard-Constrained Physics-Informed Architecture for Stiff and Shock-Dominated Partial Differential Equations](/202607/19/2607.11310v1-sparc-net-a-spectral-causality-aware-and-hard-constrained-physics-informed-architecture-for-stiff-and-shock-dominated-partial-differential-equations)  
-   标签：评分：7.0/10、query:sfc
-   evidence：解决激波主导的PDE，与激波相互作用相关
-3. [Cluster-Weighted EDMD](/202607/19/2607.12243v1-cluster-weighted-edmd)  
+   evidence：使用Hopfield能量引导重复更新潜在状态
+2. [Learning to Discretize: Diffusion-Based Adaptive Mesh with Spectral Guidance](/202607/20/2607.11974v1-learning-to-discretize-diffusion-based-adaptive-mesh-with-spectral-guidance)  
    标签：评分：7.0/10、query:flow-pred
-   evidence：聚类加权EDMD学习Koopman算子，可应用于流体动力学预测
-4. [ConFlow: Constraints-Guided Learning with Flow Matching for Motion Generation](/202607/19/2607.14424v1-conflow-constraints-guided-learning-with-flow-matching-for-motion-generation)  
-   标签：评分：7.0/10、query:pc-latent
-   evidence：约束引导的流匹配运动生成，含类似物理的约束
-5. [A Minimal Interpretable Architecture for Zero-Shot Reconstruction of Dynamical Systems](/202607/19/2607.14937v1-a-minimal-interpretable-architecture-for-zero-shot-reconstruction-of-dynamical-systems)  
-   标签：评分：7.0/10、query:pc-latent
-   evidence：使用潜在状态零样本重构动力系统
-6. [Harnessing Machine Learning for Hybrid Constitutive Modelling of Viscoelastic Fluid Flows in Computational Rheology](/202607/19/2607.14944v1-harnessing-machine-learning-for-hybrid-constitutive-modelling-of-viscoelastic-fluid-flows-in-computational-rheology)  
+   evidence：扩散模型驱动的自适应网格用于PDE场预测
+3. [Harnessing Machine Learning for Hybrid Constitutive Modelling of Viscoelastic Fluid Flows in Computational Rheology](/202607/20/2607.14944v1-harnessing-machine-learning-for-hybrid-constitutive-modelling-of-viscoelastic-fluid-flows-in-computational-rheology)  
    标签：评分：7.0/10、query:flow-pred
-   evidence：数据驱动混合建模用于粘弹性流体流动，可应用于CFD
-7. [LLM-PDESR: Robust PDE Discovery via Subdomain Weighted Residuals and LLM-Guided Symbolic Hypothesis Generation](/202607/19/2607.10546v1-llm-pdesr-robust-pde-discovery-via-subdomain-weighted-residuals-and-llm-guided-symbolic-hypothesis-generation)  
+   evidence：机器学习用于粘弹性流体流动的本构建模
+4. [Split Complex-Valued Physics-Informed Neural Networks for Forward and Inverse Nonlinear PDEs](/202607/20/2607.15087v1-split-complex-valued-physics-informed-neural-networks-for-forward-and-inverse-nonlinear-pdes)  
+   标签：评分：7.0/10、query:pc-latent
+   evidence：复值潜在空间的物理约束学习
+5. [Multiscale Mixed-Dimensional Simulation via Domain Decomposition and Non-Intrusive Neural Model Order Reduction](/202607/20/2607.15171v1-multiscale-mixed-dimensional-simulation-via-domain-decomposition-and-non-intrusive-neural-model-order-reduction)  
+   标签：评分：7.0/10、query:flow-pred
+   evidence：域分解神经网络模型降阶用于多尺度模拟
+6. [Dynamic Online Processor-Native Inference for State Estimation](/202607/20/2607.12095v1-dynamic-online-processor-native-inference-for-state-estimation)  
    标签：评分：6.0/10、query:flow-pred
-   evidence：使用LLM的数据驱动PDE发现，与流场预测相关
-8. [Machines that Predict Trajectories from Templates](/202607/19/2607.11551v1-machines-that-predict-trajectories-from-templates)  
+   evidence：使用贝叶斯滤波从噪声传感器测量进行状态估计
+7. [A Log-Gaussian Scale-Space Limiter for Hybrid Continuum--Ballistic Gas Dynamics](/202607/20/2607.12218v1-a-log-gaussian-scale-space-limiter-for-hybrid-continuum--ballistic-gas-dynamics)  
+   标签：评分：6.0/10、query:sfc
+   evidence：用于稀薄流动的混合连续-弹道气体动力学限制器
+8. [Tensor-Based Reduced-Order Modeling for Optimization-Based Inverse Problems](/202607/20/2607.12613v1-tensor-based-reduced-order-modeling-for-optimization-based-inverse-problems)  
    标签：评分：6.0/10、query:flow-pred
-   evidence：从模板库预测轨迹，可应用于流场预测
-9. [Dynamic Online Processor-Native Inference for State Estimation](/202607/19/2607.12095v1-dynamic-online-processor-native-inference-for-state-estimation)  
-   标签：评分：6.0/10、query:flow-pred
-   evidence：基于贝叶斯滤波的状态估计方法，可用于流场重建
-10. [Tensor-Based Reduced-Order Modeling for Optimization-Based Inverse Problems](/202607/19/2607.12613v1-tensor-based-reduced-order-modeling-for-optimization-based-inverse-problems)  
-   标签：评分：6.0/10、query:flow-pred
-   evidence：用于动力系统反问题的张量降阶建模
-11. [LatentFlow: A General Framework for Conditioning Stochastic Processes](/202607/19/2607.12922v1-latentflow-a-general-framework-for-conditioning-stochastic-processes)  
+   evidence：基于张量的参数依赖动力系统降阶建模，可应用于流场预测
+9. [Data driven non-equilibrium moist phase exchanges for atmospheric convection within a discontinuous Galerkin model of the compressible Euler equations](/202607/20/2607.13360v1-data-driven-non-equilibrium-moist-phase-exchanges-for-atmospheric-convection-within-a-discontinuous-galerkin-model-of-the-compressible-euler-equations)  
    标签：评分：6.0/10、query:pc-latent
-   evidence：随机过程的潜在空间推断
-12. [Generating synthetic evolution of turbulent flames with an experimental data-based spatiotemporal diffusion model](/202607/19/2607.13193v1-generating-synthetic-evolution-of-turbulent-flames-with-an-experimental-data-based-spatiotemporal-diffusion-model)  
+   evidence：神经网络学习相变满足质量守恒和热力学平衡
+10. [Residual-Christoffel Sampling for Random Feature Collocation of Linear PDEs](/202607/20/2607.13382v1-residual-christoffel-sampling-for-random-feature-collocation-of-linear-pdes)  
    标签：评分：6.0/10、query:flow-pred
-   evidence：生成湍流火焰时空演化的扩散模型
-13. [Data driven non-equilibrium moist phase exchanges for atmospheric convection within a discontinuous Galerkin model of the compressible Euler equations](/202607/19/2607.13360v1-data-driven-non-equilibrium-moist-phase-exchanges-for-atmospheric-convection-within-a-discontinuous-galerkin-model-of-the-compressible-euler-equations)  
+   evidence：针对PDE求解的操作感知离散化方法，可用于流场预测
+11. [Change-Aware Self-Adaptive AI-Aided Kalman Filters With Neural Change Point Detection](/202607/20/2607.13387v1-change-aware-self-adaptive-ai-aided-kalman-filters-with-neural-change-point-detection)  
    标签：评分：6.0/10、query:flow-pred
-   evidence：可压缩欧拉方程的数据驱动建模用于大气对流
+   evidence：基于神经变化点检测的自适应卡尔曼滤波用于状态估计
 
 
 <div class="dpr-home-promo-card">

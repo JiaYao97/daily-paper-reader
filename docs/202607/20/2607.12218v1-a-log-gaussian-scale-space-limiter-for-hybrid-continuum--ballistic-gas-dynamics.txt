@@ -1,0 +1,682 @@
+Title: A Log-Gaussian Scale-Space Limiter for Hybrid Continuum–Ballistic Gas Dynamics
+
+URL Source: https://arxiv.org/pdf/2607.12218v1
+
+Published Time: Wed, 15 Jul 2026 11:55:56 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# A Log-Gaussian Scale-Space Limiter for Hybrid Continuum–Ballistic Gas Dynamics 
+
+Bjørn Wu 11Schraelbert Research, Oslo, Norway 
+
+Abstract 
+
+Rarefied hypersonic gas flows involve a continuous competition between collisional relax-ation and ballistic molecular transport. Classical Chapman–Enskog hydrodynamics is valid when the local Knudsen number is small, whereas free-molecular or kinetic descriptions are required when the molecular mean free path becomes comparable to or larger than the macroscopic variation length. Existing multiscale kinetic schemes provide robust treatments across these regimes but may be expensive when embedded in large-scale continuum solvers. In this work, we propose a log-Gaussian scale-space limiter for hybrid continuum–ballistic gas dynamics. The local Knudsen number is interpreted as a stochastic scale ratio, and the transition between collisional and ballistic transport is modeled as a probability partition in logarithmic Knudsen space. The resulting continuum and ballistic weights are com-plementary Gaussian cumulative probabilities. This construction provides super-algebraic suppression of inverse-Knudsen corrections in the continuum limit and of Chapman–Enskog corrections in the free-molecular limit. A conservative interface flux is then built by blend-ing a Navier–Stokes–Fourier flux with a half-range Maxwellian kinetic flux. The proposed framework preserves the conservative structure of the macroscopic equations, recovers the continuum and free-molecular limits, and provides a physically interpretable transition mech-anism for high-Mach rarefied flows. The method is intended as a lightweight hybrid closure suitable for finite-volume, discrete Boltzmann, or gas-kinetic solvers. Numerical tests using one-dimensional DVM/BGK Fourier and Couette benchmarks show that rarefaction correc-tions improve the macroscopic profiles relative to NSF. Calibration against these references suggests a broader transition, K0 = 0 .03 , σ = 2 .5, reducing the combined mean profile error by about 40% for the tested planar wall-bounded flows. 
+
+Keywords: rarefied gas dynamics; Knudsen number; Chapman–Enskog expansion; free-molecular flow; hybrid kinetic-continuum method; log-Gaussian limiter; hypersonic flow. 
+
+# 1 Introduction 
+
+Gas flows in hypersonic and high-altitude environments frequently operate outside the strict continuum regime. In such cases, the molecular mean free path may become comparable to the macroscopic gradient length, and the local Knudsen number, 
+
+Kn = λL , (1) is no longer small. The Navier–Stokes–Fourier equations, derived from the first-order Chapman– Enskog expansion, then lose accuracy because the distribution function is no longer a small perturbation around the local Maxwellian. In the opposite limit, when Kn ≫ 1, intermolecular collisions are weak over a macroscopic variation length and the flow approaches the free-molecular or ballistic transport regime. 1arXiv:2607.12218v1 [math.NA] 13 Jul 2026 Several families of methods have been developed to handle this multiscale problem. Direct simulation Monte Carlo is reliable in the rarefied and free-molecular regimes but becomes costly in near-continuum flows. Unified gas-kinetic schemes and discrete unified gas-kinetic schemes construct interface fluxes from kinetic evolution solutions and possess asymptotic-preserving properties across a broad range of Knudsen numbers. Moment methods, such as regularized 13-moment and higher-order systems, extend hydrodynamics by evolving stress and heat flux as independent non-equilibrium variables. Hybrid continuum-kinetic methods couple Navier– Stokes solvers with kinetic solvers based on local rarefaction indicators. The present work proposes a complementary route. Rather than introducing a full kinetic solver everywhere, we construct a physically interpretable Knudsen-dependent probability weight that blends continuum and ballistic fluxes at the interface level. The key idea is to view the local Knudsen number not merely as a deterministic switch but as a scale-space random variable. Since Kn = λ/L is a ratio of positive scales, and both λ and L may vary multiplicatively in shock layers, boundary layers, and expansion regions, the logarithm of the local rarefaction measure is a natural variable. We therefore define a Gaussian distribution in s = ln Kn and obtain continuum and ballistic weights as complementary cumulative probabilities. The main contributions of this paper are: 1. A log-Gaussian scale-space interpretation of the continuum–ballistic transition. 2. A pair of complementary Knudsen weights with correct asymptotic behavior in both 
+
+Kn → 0 and Kn → ∞ limits. 3. A conservative hybrid interface flux combining Navier–Stokes–Fourier and half-range Maxwellian free-molecular fluxes. 4. A macroscopic equation system with Knudsen-weighted stress and heat-flux closures. 5. A DVM/BGK-based numerical assessment for planar Fourier and Couette benchmarks, including calibration of K0 and σ.
+
+# 2 Physical Motivation 
+
+2.1 Collision-number interpretation of the Knudsen number 
+
+The local Knudsen number is 
+
+K = λL , (2) where λ is the molecular mean free path and L is a local macroscopic variation length. Equiva-lently, 1
+
+K = Lλ (3) is the expected number of mean free paths contained in one macroscopic variation length. Thus 
+
+K−1 may be interpreted as an estimate of the number of collisions available for local relaxation before a molecule traverses a region over which the macroscopic fields vary appreciably. When 
+
+K ≪ 1, (4) many collisions occur within the macroscopic length L. The gas locally relaxes toward a Maxwellian distribution, and Chapman–Enskog hydrodynamics is appropriate. When 
+
+K ≫ 1, (5) a molecule may cross the macroscopic variation length with few or no collisions. The flow then retains upstream memory, and ballistic or kinetic transport dominates. 2If the number of collisions over a distance L is modeled as a Poisson process with mean 
+
+¯N = Lλ = 1
+
+K , (6) then the probability of no collision over the macroscopic scale is 
+
+P0 = exp 
+
+
+
+− 1
+
+K
+
+
+
+, (7) and the probability of at least one collision is 
+
+P≥1 = 1 − exp 
+
+
+
+− 1
+
+K
+
+
+
+. (8) This elementary argument suggests that continuum and ballistic transport may be interpreted probabilistically rather than as a sharp deterministic switch. 
+
+2.2 Scale-space uncertainty and log-Gaussian transition 
+
+In hypersonic rarefied flows, neither λ nor L is a fixed deterministic quantity. The mean free path depends on local density, temperature, and molecular interaction model, while the gradient length depends on which field is used: 
+
+Lρ = ρ
+
+|∇ ρ| , LT = T
+
+|∇ T | , Lu = |u| + a
+
+∥∇ u∥ . (9) Moreover, shock layers, wall Knudsen layers, and expansion fans introduce directional and history-dependent non-equilibrium effects. Therefore, the critical transition between collisional and ballistic behavior should not be treated as a single deterministic threshold. Because K = λ/L is a ratio of positive scales, a multiplicative uncertainty model suggests that ln K is the natural transition variable. We introduce 
+
+s = ln 
+
+ KK0
+
+
+
+, (10) where K0 is the nominal transition Knudsen number. The parameter K−10 can be interpreted as the critical number of collisions over a macroscopic scale. If K0 = 1 , the transition is centered at one collision per macroscopic variation length. If K0 = 0 .1, the ballistic correction is activated when fewer than approximately ten collisions occur across L.We assume that the critical transition scale in log-Knudsen space is Gaussian distributed with standard deviation σ. The continuum and ballistic weights are then defined as complementary cumulative probabilities: 
+
+Wc(K) = 12 erfc 
+
+ ln( K/K 0)
+
+√2σ
+
+
+
+, (11) 
+
+Wf (K) = 1 − Wc(K) = 12 erfc 
+
+
+
+− ln( K/K 0)
+
+√2σ
+
+
+
+. (12) Here Wc is interpreted as the probability that collisional relaxation dominates locally, and Wf
+
+is interpreted as the probability that ballistic transport dominates locally. 33 Asymptotic Properties of the Log-Gaussian Weight 
+
+The proposed weights satisfy 
+
+K → 0 : Wc → 1, Wf → 0, (13) and 
+
+K → ∞ : Wc → 0, Wf → 1. (14) More importantly, the log-Gaussian tails suppress divergent asymptotic branches. As K → 0,let 
+
+y = − ln K → ∞ . (15) Then Wf has the asymptotic form 
+
+Wf (K) ∼ exp 
+
+
+
+− (ln K)2
+
+2σ2
+
+
+
+, (16) up to algebraic factors. For any finite m > 0,
+
+Wf (K)K−m ∼ exp 
+
+
+
+− y2
+
+2σ2 + my 
+
+
+
+→ 0. (17) Thus inverse-Knudsen terms are super-algebraically suppressed in the continuum limit. Simi-larly, as K → ∞ ,
+
+Wc(K)Kn → 0 (18) for any finite n > 0. Therefore, the weight can consistently combine positive powers and inverse powers of K without introducing endpoint divergences. This motivates the formal double-asymptotic representation 
+
+f = f M + Wc(K)
+
+> N
+
+X
+
+> n=1
+
+Knf (n) 
+
+> c
+
++ Wf (K)
+
+> M
+
+X
+
+> m=1
+
+K−mf (m) 
+
+> f
+
+, (19) where f M is the local Maxwellian, f (n) 
+
+> c
+
+are continuum-side Chapman–Enskog corrections, and 
+
+f (m) 
+
+> f
+
+are ballistic-side inverse-Knudsen corrections. The log-Gaussian weights ensure that each branch is active only in the regime where it is asymptotically meaningful. 
+
+# 4 Local Rarefaction Indicator 
+
+The local rarefaction parameter is defined as 
+
+K = max( Kρ, K T , K u), (20) where 
+
+Kρ = λ |∇ ρ|
+
+ρ , (21) 
+
+KT = λ |∇ T |
+
+T , (22) 
+
+Ku = λ ∥∇ u∥|u| + a , (23) and 
+
+a = pγRT (24) 4is the local sound speed. Alternative definitions may include pressure gradients, heat-flux-based indicators, or thermodynamic non-equilibrium measures. In a discrete Boltzmann implementa-tion, one may define 
+
+KTNE = C2
+
+∥∆∗
+
+> 2
+
+∥
+
+p + C3
+
+∥∆∗
+
+> 3,1
+
+∥
+
+p√RT + · · · , (25) where ∆∗ 
+
+> 2
+
+and ∆∗ 
+
+> 3,1
+
+are non-equilibrium stress and heat-flux moments. Such a definition links the weight directly to the departure of the local distribution function from the hydrodynamic slow manifold. For a finite-volume face, we use 
+
+Kf ace = max( KL, K R), (26) which biases the flux toward kinetic treatment whenever either side of the interface is locally rarefied. 
+
+# 5 Conservative Hybrid Flux 
+
+We consider the conservative variables 
+
+U =
+
+
+
+ρρu x
+
+ρu y
+
+E
+
+ , (27) with 
+
+E = ρc vT + 12 ρ|u|2, (28) and the ideal-gas equation of state 
+
+p = ρRT. (29) At a cell interface with unit normal n, the proposed hybrid flux is 
+
+Fn = Wc(Kf ace )FN S n + Wf (Kf ace )FKn . (30) Here FN S n is the Navier–Stokes–Fourier flux and FKn is a kinetic or ballistic flux. The interface flux is shared by neighboring cells with opposite sign, so conservation follows immediately in a finite-volume discretization. 
+
+# 6 Continuum Flux 
+
+The Navier–Stokes–Fourier flux in the normal direction is 
+
+FN S n =
+
+
+
+ρu n
+
+ρu nu + pn − σN S · n
+
+(E + p)un − (σN S · u) · n + qN S n
+
+ , (31) where 
+
+un = u · n. (32) The viscous stress is 
+
+σN S ij = μ
+
+
+
+∂iuj + ∂j ui − 2
+
+D (∇ · u)δij 
+
+
+
++ ζ(∇ · u)δij , (33) and the Fourier heat flux is 
+
+qN S = −κ∇T. (34) 5The heat conductivity is 
+
+κ = μc p
+
+P r . (35) For a monatomic gas, ζ may be set to zero. For hypersonic air or gases with internal degrees of freedom, bulk viscosity and temperature-dependent transport coefficients may be included. 
+
+# 7 Half-Range Maxwellian Free-Molecular Flux 
+
+The ballistic component is constructed from a half-range kinetic flux. Let ξ be the molecular velocity and 
+
+ξn = ξ · n. (36) Define the collision invariants 
+
+ψ(ξ, η ) = 
+
+
+
+1
+
+ξx
+
+ξy 
+
+> 12
+
+(ξ2 + η2)
+
+ , (37) where η denotes internal degrees of freedom. The free-molecular flux is 
+
+FF M n =
+
+Z
+
+> ξn>0
+
+ξnψf ML dξdη +
+
+Z
+
+> ξn<0
+
+ξnψf MR dξdη. (38) The Maxwellian with internal degrees of freedom is 
+
+f M = ρ 1(2 πRT )D/ 2
+
+1(2 πRT )b/ 2 exp 
+
+
+
+− |ξ − u|2 + η2
+
+2RT 
+
+
+
+, (39) where 
+
+γ = D + b + 2 
+
+D + b , (40) or equivalently, 
+
+b = 2
+
+γ − 1 − D. (41) For a face-local coordinate system with normal velocity un, tangential velocity ut, and 
+
+θ = RT, (42) define 
+
+a = un
+
+√2θ , (43) 
+
+A+ = 12 erfc( −a), A− = 12 erfc( a), (44) and 
+
+B =
+
+r θ
+
+2π exp  −a2. (45) The positive half-range Maxwellian moments are 
+
+M +0 = ρA +, (46) 
+
+M +1 = ρ(unA+ + B), (47) 
+
+M +2 = ρ[( u2 
+
+> n
+
++ θ)A+ + unB], (48) 
+
+M +3 = ρ[( u3 
+
+> n
+
++ 3 unθ)A+ + ( u2 
+
+> n
+
++ 2 θ)B]. (49) 6The negative half-range moments are 
+
+M − 
+
+> 0
+
+= ρA −, (50) 
+
+M − 
+
+> 1
+
+= ρ(unA− − B), (51) 
+
+M − 
+
+> 2
+
+= ρ[( u2 
+
+> n
+
++ θ)A− − unB], (52) 
+
+M − 
+
+> 3
+
+= ρ[( u3 
+
+> n
+
++ 3 unθ)A− − (u2 
+
+> n
+
++ 2 θ)B]. (53) For a two-dimensional gas with one tangential velocity, the half-range flux contributions are 
+
+F ± 
+
+> ρ
+
+= M ± 
+
+> 1
+
+, (54) 
+
+F ± 
+
+> ρu n
+
+= M ± 
+
+> 2
+
+, (55) 
+
+F ± 
+
+> ρu t
+
+= utM ± 
+
+> 1
+
+, (56) 
+
+F ± 
+
+> E
+
+= 12 M ± 
+
+> 3
+
++ 12
+
+u2 
+
+> t
+
++ (1 + b)θ M ± 
+
+> 1
+
+. (57) The total free-molecular interface flux is 
+
+FF M n = F+(ρL, u n,L , u t,L , T L) + F−(ρR, u n,R , u t,R , T R). (58) The local momentum flux is then rotated back from (n, t ) coordinates to Cartesian coordinates. 
+
+# 8 BGK-Corrected Kinetic Flux 
+
+The pure free-molecular flux is appropriate in the limit K ≫ 1, but in the transition regime a finite collision correction is desirable. A simple BGK-inspired kinetic flux may be written as 
+
+FKn = αFF M n + (1 − α)FEQ n , (59) where FEQ n is the equilibrium Euler flux and 
+
+α = τ
+
+∆t
+
+
+
+1 − e−∆t/τ 
+
+. (60) When τ ≫ ∆t,
+
+α → 1, (61) and the kinetic flux approaches the free-molecular flux. When τ ≪ ∆t,
+
+α → 0, (62) and the kinetic flux approaches the equilibrium flux. The final proposed interface flux is therefore 
+
+Fn = Wc(Kf ace )FN S n + Wf (Kf ace ) αFF M n + (1 − α)FEQ n
+
+ . (63) This expression is conservative, inexpensive, and naturally recovers the continuum and ballistic limits. 
+
+# 9 Macroscopic Equations 
+
+The finite-volume formulation corresponds to the macroscopic conservation law 
+
+∂tU + ∇ · FK = 0 , (64) 7where the Knudsen-weighted flux may be written formally as 
+
+FK = WcFN S + Wf FK . (65) Equivalently, the equations can be expressed in stress–heat-flux form: 
+
+∂tρ + ∇ · (ρu) = 0 , (66) 
+
+∂t(ρu) + ∇ · (ρuu + pI) = ∇ · σK , (67) 
+
+∂tE + ∇ · [( E + p)u] = ∇ · (σK · u − qK ) , (68) with 
+
+σK = WcσN S + Wf σK , (69) 
+
+qK = WcqN S + Wf qK . (70) Here σK and qK are not assumed to be local gradient closures. They are induced by the kinetic interface flux. Therefore, in the rarefied limit the model should be understood as a conservative macroscopic balance equipped with a nonlocal kinetic flux closure. 
+
+# 10 Limiting Behavior 
+
+10.1 Continuum limit 
+
+When 
+
+K → 0, (71) we have 
+
+Wc → 1, Wf → 0. (72) Thus 
+
+Fn → FN S n , (73) and the model recovers the Navier–Stokes–Fourier equations. 
+
+10.2 Free-molecular limit 
+
+When 
+
+K → ∞ , (74) we have 
+
+Wc → 0, Wf → 1. (75) If τ ≫ ∆t, then 
+
+α → 1, (76) and 
+
+Fn → FF M n . (77) Therefore, the model recovers the half-range Maxwellian free-molecular flux. 
+
+10.3 Transition regime 
+
+When 
+
+K = O(1) , (78) both weights are active. The flux is a probability-weighted combination of continuum relaxation and ballistic transport. The parameter σ controls the width of the transition region in log-Knudsen space. 811 Numerical Implementation 
+
+A typical finite-volume implementation proceeds as follows. 
+
+Algorithm 1 Log-Gaussian hybrid continuum–ballistic flux  
+
+> 1:
+
+Reconstruct left and right interface states: 
+
+(ρL, uL, T L), (ρR, uR, T R). 
+
+> 2:
+
+Compute local mean free path λ and local rarefaction indicators Kρ, K T , K u. 
+
+> 3:
+
+Set 
+
+Kf ace = max( KL, K R). 
+
+> 4:
+
+Evaluate 
+
+Wc(Kf ace ), Wf (Kf ace ). 
+
+> 5:
+
+Compute the Navier–Stokes–Fourier flux FN S n . 
+
+> 6:
+
+Compute the half-range Maxwellian free-molecular flux FF M n using analytic error-function moments.  
+
+> 7:
+
+Compute the BGK relaxation coefficient 
+
+α = τ
+
+∆t
+
+
+
+1 − e−∆t/τ 
+
+. 
+
+> 8:
+
+Construct 
+
+Fn = WcFN S n + Wf
+
+αFF M n + (1 − α)FEQ n
+
+ . 
+
+> 9:
+
+Update cell averages conservatively. This algorithm requires no global domain decomposition between continuum and kinetic regions. The transition is local, smooth, and controlled by physically interpretable scale-space probabilities. 
+
+# 12 Numerical Experiments 
+
+This section tests the proposed log-Gaussian continuum–ballistic limiter and calibrates its tran-sition parameters against one-dimensional discrete-velocity BGK (DVM/BGK) reference solu-tions. The experiments focus on three questions: whether the weight behaves smoothly across Knudsen regimes, whether rarefaction corrections improve planar wall-bounded profiles rela-tive to NSF, and how the parameters K0 and σ should be chosen. In the planar benchmark problems below, the global Knudsen number is used as the controlled rarefaction parameter; in multidimensional finite-volume applications it is replaced by the local face indicator Kface .
+
+12.1 Weight behavior 
+
+The ballistic weight is 
+
+Wf (K) = 12 erfc 
+
+
+
+− ln( K/K 0)
+
+√2σ
+
+
+
+, Wc(K) = 1 − Wf (K).
+
+9Here K0 sets the transition center in logarithmic Knudsen space and σ sets the transition width. The default setting is K0 = 0 .1, σ = 1 .0.
+
+Figure 1: Comparison of log-Gaussian, algebraic, and hard-switch ballistic weights. 
+
+12.2 DVM/BGK Fourier benchmark 
+
+Fourier heat transfer is considered between two diffuse walls with Tc = 1 and Th = 1 .5. Astationary DVM/BGK equation, 
+
+vy∂yf = M [f ] − fτ ,
+
+is solved in the wall-normal coordinate and used as a kinetic reference. Figure 2 compares the DVM/BGK temperature profiles with NSF, hard-switch, algebraic, log-Gaussian, and jump-branch predictions. 
+
+Figure 2: DVM/BGK Fourier benchmark. Temperature profiles from the kinetic reference are compared with continuum and rarefied-branch predictions. 
+
+12.3 DVM/BGK Couette benchmark 
+
+Couette flow is considered between diffuse walls. The lower wall is stationary and the upper wall moves with Uw = 0 .2, with fixed wall temperature Tw = 1 . Figure 3 shows that the NSF 10 no-slip profile increasingly deviates from the DVM/BGK reference as Kn grows, while slip-type and log-Gaussian predictions capture the rarefaction-induced velocity-slip trend. 
+
+Figure 3: DVM/BGK Couette benchmark. Velocity profiles from the kinetic reference are compared with continuum and rarefied-branch predictions. 
+
+12.4 Parameter calibration 
+
+The default pair K0 = 0 .1, σ = 1 .0 is physically transparent but not necessarily optimal for wall-bounded rarefied flows. We therefore scan K0 and σ and compute 
+
+Eϕ = ∥ϕmodel − ϕDVM ∥2
+
+∥ϕDVM ∥2
+
+,
+
+where ϕ = T for Fourier flow and ϕ = u for Couette flow. Within the scanned range, the best tested pair is 
+
+K0 = 0 .03 , σ = 2 .5.
+
+Figure 4: Mean profile error against DVM/BGK Fourier and Couette references as a function of K0 and σ.Table 1 summarizes the default and calibrated choices. The calibrated pair reduces the overall mean profile error from 2.44 × 10 −2 to 1.45 × 10 −2, approximately a 40% reduction. 11 Table 1: Default and DVM/BGK-calibrated log-Gaussian parameters. Choice Parameters Fourier mean Couette mean Overall mean Max error default K0 = 0 .1, σ = 1 .0 1.3819e-02 3.4916e-02 2.4368e-02 5.3505e-02 fitted K0 = 0 .03 , σ = 2 .5 1.0526e-02 1.8540e-02 1.4533e-02 3.5527e-02 
+
+Figure 5: DVM/BGK Fourier benchmark: comparison of default and calibrated log-Gaussian parameters. 
+
+Figure 6: DVM/BGK Couette benchmark: comparison of default and calibrated log-Gaussian parameters. 
+
+Figure 7: Relative profile errors for default and calibrated log-Gaussian parameters. 12 The calibrated pair should be interpreted as a DVM/BGK-informed recommendation for planar wall-bounded rarefied flows, not as a universal optimum. 
+
+# 13 Discussion 
+
+The proposed limiter differs from a purely empirical switch because the weights are defined in logarithmic Knudsen space and can be interpreted as a probability partition between collisional and ballistic transport. The DVM/BGK Fourier and Couette benchmarks show that rarefaction corrections improve macroscopic profiles relative to NSF in planar wall-bounded flows. The calibrated pair K0 = 0 .03 , σ = 2 .5 performs better than the default K0 = 0 .1, σ = 1 .0
+
+for the present benchmark set. This suggests that wall-induced kinetic effects can become visible before the conventional Kn = 0 .1 threshold and that a broader transition in logarithmic Knudsen space is beneficial for these flows. The calibrated parameters should not be interpreted as universal constants. Strong shocks, hypersonic blunt-body flows, highly non-Maxwellian distributions, and multidimensional sepa-rated flows may require different rarefaction indicators or more accurate kinetic branches. In particular, accurate heat-flux prediction may require a more detailed kinetic branch than the present slip/jump or half-range Maxwellian approximation. The present framework is modular and can be combined with more sophisticated continuum fluxes, kinetic fluxes, or DVM/DSMC-informed closures. 
+
+# 14 Conclusions 
+
+A log-Gaussian scale-space limiter has been proposed for hybrid continuum–ballistic gas dynam-ics. By treating the local Knudsen number as a stochastic scale ratio, the continuum and ballistic weights are defined as complementary cumulative probabilities in logarithmic Knudsen space. The resulting weights possess correct limiting behavior in the continuum and free-molecular regimes. The limiter is incorporated into a conservative interface flux blending continuum and kinetic contributions. Numerical experiments using planar Fourier and Couette DVM/BGK references show that rarefaction corrections improve the profiles relative to NSF. Calibration against these references suggests K0 = 0 .03 , σ = 2 .5, reducing the combined mean profile error by about 40% 
+
+for the tested planar wall-bounded flows. The present study is a proof of concept and calibration study rather than a replacement for kinetic solvers. Future work will include DSMC and UGKS comparisons, normal shock structures, multidimensional hypersonic flows, improved non-Maxwellian kinetic branches, and analysis of positivity, entropy stability, and asymptotic-preserving behavior. 
+
+# References 
+
+[1] S. Chapman and T. G. Cowling, The Mathematical Theory of Non-Uniform Gases , Cam-bridge University Press. [2] C. Cercignani, The Boltzmann Equation and Its Applications , Springer. [3] G. A. Bird, Molecular Gas Dynamics and the Direct Simulation of Gas Flows , Clarendon Press. [4] K. Xu and J.-C. Huang, A unified gas-kinetic scheme for continuum and rarefied flows, 
+
+Journal of Computational Physics , 229, 7747–7764, 2010. 13 [5] Z. Guo, K. Xu, and R. Wang, Discrete unified gas kinetic scheme for all Knudsen number flows: low-speed isothermal case, Physical Review E , 88, 033305, 2013. [6] H. Struchtrup and M. Torrilhon, Regularization of Grad’s 13 moment equations: derivation and linear analysis, Physics of Fluids , 15, 2668–2680, 2003. [7] M. Torrilhon, Modeling nonequilibrium gas flow based on moment equations, Annual Review of Fluid Mechanics , 48, 429–458, 2016. [8] E. M. Shakhov, Generalization of the Krook kinetic relaxation equation, Fluid Dynamics ,3, 95–96, 1968. [9] L. H. Holway, New statistical models for kinetic theory: methods of construction, Physics of Fluids , 9, 1658–1673, 1966. [10] H. Grad, On the kinetic theory of rarefied gases, Communications on Pure and Applied Mathematics , 2, 331–407, 1949. 14
