@@ -1,0 +1,530 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-21T21:40:53.971711+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 3,
+    "deep_divecandidates": 9,
+    "deep_cap": 8,
+    "deep_selected": 8,
+    "quick_candidates": 5,
+    "quick_skim_target": 13,
+    "quick_selected": 5
+  },
+  "deep_dive": [
+    {
+      "id": "2607.15821v1",
+      "source": "arxiv",
+      "title": "Global solutions for the sensors placement problem via weakly convex optimization",
+      "abstract": "We address the problem of optimally placing a limited number of sensors to reconstruct high-dimensional signals without knowledge of the underlying dynamics. The task is formulated as a nonconvex combinatorial optimisation problem and recast as a weakly convex constrained projection problem. This reformulation allows us to compute $\\varepsilon$-global solutions using the Inexact Cutting Sphere algorithm. We further propose the Inverse Cutting Sphere algorithm, which starts from any feasible heuristic solution and either improves it by a prescribed tolerance $\\varepsilon$ or certifies its $\\varepsilon$-global optimality. The framework is evaluated on pressure reconstruction for NACA airfoils using XFOIL data.",
+      "authors": [
+        "Giovanni Bruccola"
+      ],
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC"
+      ],
+      "published": "2026-07-17T10:29:10+00:00",
+      "link": "https://arxiv.org/pdf/2607.15821v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:sfc"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "sensor placement for pressure reconstruction on airfoils",
+      "llm_evidence_cn": "用于翼型压力重构的传感器放置",
+      "llm_evidence": "用于翼型压力重构的传感器放置",
+      "canonical_evidence": "用于翼型压力重构的传感器放置",
+      "llm_tldr_en": "Addresses optimal sensor placement for reconstructing high-dimensional signals without dynamics knowledge, formulated as weakly convex optimization, evaluated on NACA airfoil pressure reconstruction.",
+      "llm_tldr_cn": "研究了在未知动力学情况下，通过优化传感器位置来重构高维信号的问题。将非凸组合优化问题转化为弱凸约束投影问题，使用不精确切割球算法计算全局解。在NACA翼型压力重构任务上验证了方法，表明能够有效放置有限传感器以准确重构流场压力分布，为稀疏传感器流场重构提供了理论最优解。",
+      "llm_tldr": "研究了在未知动力学情况下，通过优化传感器位置来重构高维信号的问题。将非凸组合优化问题转化为弱凸约束投影问题，使用不精确切割球算法计算全局解。在NACA翼型压力重构任务上验证了方法，表明能够有效放置有限传感器以准确重构流场压力分布，为稀疏传感器流场重构提供了理论最优解。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "sparse sensor flow reconstruction",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.17036v1",
+      "source": "arxiv",
+      "title": "A Linear Variable-Step Embedded ETD Scheme with Uniform-in-Time Stability for the 2D Navier--Stokes Equations",
+      "abstract": "We propose a linear variable-step exponential time-differencing method for the incompressible Navier--Stokes equations in vorticity--streamfunction formulation on a two-dimensional periodic box. The method consists of a second-order scheme and an embedded first-order variant, yielding a natural mechanism for adaptive time stepping and a posteriori error control. Each time step requires only uniquely solvable linear problems: two heat equation solves, efficiently handled by Fourier methods in the periodic setting, and one linear scalar auxiliary-variable equation, evaluated via Laplace transform and Talbot's numerical inverse transform.   The construction combines the ETD framework, a mean-reverting scalar auxiliary variable (mr-SAV), and second-order extrapolation of the nonlinear term. The mean-reverting correction enables long-time stability while preserving full linearity, distinguishing the method from related mr-SAV schemes that require nonlinear algebraic solves. We prove unconditional long-time stability: for uniformly bounded $L^2$ forcing, the discrete vorticity remains bounded in $L^\\infty(0,\\infty;L^2)$ for all Reynolds numbers and time-step sizes. Numerical experiments",
+      "authors": [
+        "Haifeng Wang",
+        "Xiaoming Wang",
+        "Min Zhang"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA"
+      ],
+      "published": "2026-07-19T02:43:30+00:00",
+      "link": "https://arxiv.org/pdf/2607.17036v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "numerical scheme for Navier-Stokes equations, enabling flow field prediction",
+      "llm_evidence_cn": "用于纳维-斯托克斯方程的数值格式，支持流场预测",
+      "llm_evidence": "用于纳维-斯托克斯方程的数值格式，支持流场预测",
+      "canonical_evidence": "用于纳维-斯托克斯方程的数值格式，支持流场预测",
+      "llm_tldr_en": "Proposes a linear variable-step exponential time-differencing method for 2D Navier-Stokes equations with uniform-in-time stability and adaptive time stepping.",
+      "llm_tldr_cn": "针对二维周期性盒中的不可压缩纳维-斯托克斯方程，提出了一种线性变步长指数时间差分方法。该方法包含二阶格式和嵌入式一阶变体，实现自适应时间步长和后验误差控制。每个时间步仅需解线性问题，通过傅里叶方法高效处理。数值测试显示了良好的稳定性和精度，为流场预测提供了可靠的数值工具。",
+      "llm_tldr": "针对二维周期性盒中的不可压缩纳维-斯托克斯方程，提出了一种线性变步长指数时间差分方法。该方法包含二阶格式和嵌入式一阶变体，实现自适应时间步长和后验误差控制。每个时间步仅需解线性问题，通过傅里叶方法高效处理。数值测试显示了良好的稳定性和精度，为流场预测提供了可靠的数值工具。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "flow field prediction methods",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.18058v1",
+      "source": "arxiv",
+      "title": "A machine-learned probability distribution in the phase space of turbulent channel flow for synthetic turbulence and flow reconstruction",
+      "abstract": "Although a complete characterisation of the probability distribution in the phase space of turbulent flows remains elusive, accurately sampling this distribution is essential for both synthetic turbulence generation and turbulent flow reconstruction. Motivated by these applications, we examine to what extent a machine-learned distribution can approximate the physical invariant distribution of turbulent channel flow at $\\mathrm{Re}_τ=180$. We assess three important properties of the approximation: physical ensemble statistics, consistent conditional sampling, and dynamical invariance. To this end, a flow-based generative model is trained on a minimal conditional flow unit, which we define as the smallest domain outside which conditional fields, given a single observation at the domain centre, are indistinguishable from unconditional fields in terms of mean-square discrepancy to other conditional fields. We also introduce a consistent procedure for sampling from the conditional learned distribution. Comparisons with direct numerical simulation show that synthetic turbulent fields reproduce key statistical and dynamical features of turbulence, including intermittency and nonlinear energy transfer. The consistency of conditional sampling is demonstrated in a flow reconstruction problem, and subsequently used to generate synthetic turbulent velocity fields on a large domain. When adopted as initial conditions in direct numerical simulations, these fields yield physical and statistically stationary ensemble statistics, indicating that the learned distribution provides a good approximation to the natural distribution of the turbulent dynamical system.",
+      "authors": [
+        "Frederik Aerts",
+        "Dirk Nuyens",
+        "Johan Meyers"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-20T15:26:50+00:00",
+      "link": "https://arxiv.org/pdf/2607.18058v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:sfc"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "machine-learned distribution for turbulent flow reconstruction",
+      "llm_evidence_cn": "机器学习湍流概率分布用于流场重构",
+      "llm_evidence": "机器学习湍流概率分布用于流场重构",
+      "canonical_evidence": "机器学习湍流概率分布用于流场重构",
+      "llm_tldr_en": "Proposes a flow-based generative model trained on minimal conditional flow unit to approximate the invariant distribution of turbulent channel flow, enabling synthetic turbulence generation and flow reconstruction.",
+      "llm_tldr_cn": "针对湍流相空间概率分布难以完整刻画的问题，本文提出用基于流的生成模型学习湍流通道流的物理不变分布。模型在最小条件流单元上训练，能够生成合成湍流并用于流场重构。实验验证了模型在物理系综统计、条件采样一致性和动力学不变性三个关键性质上的表现。该工作为欠采样湍流场的高精度重构提供了数据驱动的新范式。",
+      "llm_tldr": "针对湍流相空间概率分布难以完整刻画的问题，本文提出用基于流的生成模型学习湍流通道流的物理不变分布。模型在最小条件流单元上训练，能够生成合成湍流并用于流场重构。实验验证了模型在物理系综统计、条件采样一致性和动力学不变性三个关键性质上的表现。该工作为欠采样湍流场的高精度重构提供了数据驱动的新范式。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.14394v1",
+      "source": "arxiv",
+      "title": "DRIFT: Direct Reduced Fourier Transforms for Distributed Spectral Neural Operators",
+      "abstract": "Fourier Neural Operators (FNOs) learn solution operators for partial differential equations and offer orders of magnitude speedup over traditional numerical solvers at inference time, which makes them attractive surrogates for high-resolution computational physics. Scaling FNOs to high-resolution spatial grids requires distributing the data across GPUs, but the distributed FFT at the core of each spectral layer requires multiple dense all-to-all collectives that communicate the full spatial tensor, only for most coefficients to be discarded immediately. We introduce the Distributed Truncated Spectral Transform (DTST), which reverses this order. Each GPU computes only a small subset of frequency modes used by the spectral convolution locally via a partial DFT, and two collectives combine the results with a payload that depends only on this mode count, not the spatial resolution. DTST produces spectral coefficients identical to the standard distributed FFT with truncation, while providing both spatial data parallelism and spectral weight model parallelism. We present DRIFT, a GPU implementation of DTST for distributed Fourier Neural Operators, using separable per-dimension basis matrices and efficient GPU-to-GPU communication. On a 3D+time FNO across 4--32 GPUs, on up to 8 nodes (4 GPUs/node), DRIFT achieves a forward-pass speedup of 38--64$\\times$ and a 37$\\times$ training speedup over the distributed FNO baseline, reducing communication time from 97\\% to under 6\\% of the forward-pass time, with growing speedups at higher resolution.",
+      "authors": [
+        "Sana Taghipour Anvari",
+        "David Kaeli"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-07-15T22:17:25+00:00",
+      "link": "https://arxiv.org/pdf/2607.14394v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Fourier Neural Operator for distributed computing",
+      "llm_evidence_cn": "傅里叶神经算子的分布式计算",
+      "llm_evidence": "傅里叶神经算子的分布式计算",
+      "canonical_evidence": "傅里叶神经算子的分布式计算",
+      "llm_tldr_en": "Introduces Distributed Truncated Spectral Transform (DTST) to scale Fourier Neural Operators to high-resolution grids with reduced communication.",
+      "llm_tldr_cn": "针对傅里叶神经算子（FNO）在高分辨率网格上分布计算时全对全通信开销大的问题，提出分布式截断谱变换（DTST），使每个GPU仅本地计算少量频率模式，无需全张量通信。该方法将FNO扩展到更高分辨率，同时保持精度，显著加速推理。",
+      "llm_tldr": "针对傅里叶神经算子（FNO）在高分辨率网格上分布计算时全对全通信开销大的问题，提出分布式截断谱变换（DTST），使每个GPU仅本地计算少量频率模式，无需全张量通信。该方法将FNO扩展到更高分辨率，同时保持精度，显著加速推理。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "neural operators for fluid dynamics",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.18020v1",
+      "source": "arxiv",
+      "title": "FlashPDE: A Drop-in Fused Triton Operator Library for Neural PDE Solvers",
+      "abstract": "Physics-Informed Neural Networks (PINNs) solve PDEs by incorporating physical constraints into neural-network training, but large-scale problems are limited by automatic-differentiation memory overhead and inefficient execution of grid-based PDE operators. We present FlashPDE, a drop-in fused operator library for grid-based scientific machine learning. FlashPDE replaces fragmented PyTorch finite-difference execution with differentiable Triton kernels. Each operator integrates fused stencil evaluation, an analytic discrete-adjoint backward pass, and boundary-gradient correction within a unified torch.autograd.Function interface. The library provides 14 differentiable PDE operators covering 17 configurations across 1D--3D elliptic, parabolic, and Navier--Stokes systems, while remaining independent of neural architectures and training strategies. Experiments on an NVIDIA A100 GPU show that FlashPDE reduces peak memory usage by up to 37.0x compared with coordinate-based automatic differentiation and reduces CUDA kernel launches by up to 3.5x compared with eager PyTorch finite-difference implementations. Across six representative PDE benchmarks, FlashPDE achieves up to 2.30x end-to-end time-to-solution speedup and up to 19.2x kernel-level acceleration while maintaining numerical agreement with PyTorch finite-difference references. FlashPDE provides a hardware-efficient execution layer that bridges differentiable PDE solvers and GPU-optimized numerical computation within the PyTorch ecosystem.",
+      "authors": [
+        "Peiyu Zang",
+        "Bosen Xie",
+        "Ruoxiang Xu",
+        "Yongqiang Cai"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.MS"
+      ],
+      "published": "2026-07-20T14:54:03+00:00",
+      "link": "https://arxiv.org/pdf/2607.18020v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:sfc"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Drop-in fused operator library for neural PDE solvers, PINNs, supporting differentiable operators for fluid dynamics (Navier-Stokes).",
+      "llm_evidence_cn": "用于神经PDE求解器的即插即用融合算子库，支持流体动力学（纳维-斯托克斯）的可微算子。",
+      "llm_evidence": "用于神经PDE求解器的即插即用融合算子库，支持流体动力学（纳维-斯托克斯）的可微算子。",
+      "canonical_evidence": "用于神经PDE求解器的即插即用融合算子库，支持流体动力学（纳维-斯托克斯）的可微算子。",
+      "llm_tldr_en": "FlashPDE provides fused Triton kernels for differentiable PDE operators (including Navier-Stokes) with analytic adjoint, reducing memory and execution cost for neural PDE solvers in scientific machine learning.",
+      "llm_tldr_cn": "FlashPDE是一个面向网格科学机器学习的即插即用融合算子库，它用可微的Triton内核替代碎片化的PyTorch有限差分实现，支持包括纳维-斯托克斯在内的14种可微PDE算子（涵盖1D-3D椭圆、抛物型和双曲型）。每个算子整合融合模板评估、解析离散伴随反向传播和边界梯度校正。该库显著降低了神经PDE求解器（如PINNs）的内存开销和执行时间，为大规模流体动力学问题的高效求解提供了基础工具。",
+      "llm_tldr": "FlashPDE是一个面向网格科学机器学习的即插即用融合算子库，它用可微的Triton内核替代碎片化的PyTorch有限差分实现，支持包括纳维-斯托克斯在内的14种可微PDE算子（涵盖1D-3D椭圆、抛物型和双曲型）。每个算子整合融合模板评估、解析离散伴随反向传播和边界梯度校正。该库显著降低了神经PDE求解器（如PINNs）的内存开销和执行时间，为大规模流体动力学问题的高效求解提供了基础工具。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.17297v1",
+      "source": "arxiv",
+      "title": "Multi-Granularity Conformal Prediction for Reliable Neural-Operator Automotive Aerodynamic Surrogates",
+      "abstract": "High-fidelity computational fluid dynamics (CFD) provides detailed aerodynamic data for vehicle design, but its cost limits design iteration. Neural-operator surrogates reduce this cost, yet their deterministic predictions do not indicate when a geometry or surface region is reliable. This study develops a conformal-prediction framework for reliability-aware automotive aerodynamic surrogate modeling on the DrivAerML dataset. GeoTransolver is the main backbone, while Transolver assesses transfer across neural-operator architectures. For drag coefficient prediction, conformalized quantile regression constructs calibrated case-level intervals. For surface pressure and wall shear stress (WSS), point prediction is combined with residual-scale estimation and residual-normalized conformal calibration to obtain spatially adaptive intervals. Global absolute, point-adaptive normalized, and case-wise normalized calibration are compared under split and cross-validation-assisted out-of-fold protocols. All experiments target 90% nominal coverage. Conformal calibration corrects the under-coverage of raw drag-coefficient quantile intervals, while out-of-fold score aggregation reduces the Monte Carlo coverage standard deviation from 10.41 to 3.10 percentage points. For surface fields, point-adaptive normalized calibration yields the narrowest near-nominal intervals, reducing mean width by 22.68% for pressure and 25.35%--27.09% for WSS under the out-of-fold protocol. Case-wise normalized calibration is more conservative but improves vehicle-level reliability. Smoothness regularization reduces the residual-scale local-variation score by 74.29% and lowers interval widths without material coverage loss. The framework converts deterministic neural-operator outputs into calibrated reliability indicators for prioritizing uncertain vehicle geometries and surface regions in follow-up CFD verification.",
+      "authors": [
+        "Chundong Jia",
+        "Chao Xia",
+        "Alexey Vdovin",
+        "Qing Jia",
+        "Simone Sebben",
+        "Zhigang Yang"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-19T15:27:47+00:00",
+      "link": "https://arxiv.org/pdf/2607.17297v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "neural operators for fluid dynamics; conformal prediction for aerodynamic surrogates",
+      "llm_evidence_cn": "神经算子用于流体动力学；空气动力学代理的共形预测",
+      "llm_evidence": "神经算子用于流体动力学；空气动力学代理的共形预测",
+      "canonical_evidence": "神经算子用于流体动力学；空气动力学代理的共形预测",
+      "llm_tldr_en": "Develops a conformal prediction framework for neural operator surrogates of automotive aerodynamics, enabling reliability-aware predictions with case-level intervals and point prediction using conformalized quantile regression and Venn-Abers predictors.",
+      "llm_tldr_cn": "该研究针对汽车空气动力学中的神经算子代理模型，提出一个共形预测框架以提供可靠性感知预测。方法结合GeoTransolver和Transolver架构，通过共形分位数回归构建案例级区间，并使用Venn-Abers预测器进行点预测。在DrivAerML数据集上验证了框架的有效性，提高了代理模型的可信度。",
+      "llm_tldr": "该研究针对汽车空气动力学中的神经算子代理模型，提出一个共形预测框架以提供可靠性感知预测。方法结合GeoTransolver和Transolver架构，通过共形分位数回归构建案例级区间，并使用Venn-Abers预测器进行点预测。在DrivAerML数据集上验证了框架的有效性，提高了代理模型的可信度。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "neural operators for fluid dynamics",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.17357v1",
+      "source": "arxiv",
+      "title": "Differentiable Hybrid Neural-CFD Modelling of Wall-Bounded Turbulence: Coupled Learning of Subgrid-Scale and Wall Closures",
+      "abstract": "Wall-modelled large-eddy simulation (WMLES) treats the subgrid-scale (SGS) closure, wall closure and numerical discretization as independent components, although their effects are coupled through the same resolved field. We present a differentiable hybrid neural--CFD framework in which the SGS and wall closures are learned jointly, end-to-end, within a differentiable flow solver, using only low-order statistics as training targets. Each closure is a composed neural operator: a trainable neural network followed by a fixed differentiable layer that preserves the structure of its conventional counterpart, so that the network learns only the functions left undetermined by the conventional form. Because every operation is differentiable, gradients of the training loss are back-propagated through the coupled solver, allowing both neural closures to be optimized consistently against the flow field, rather than fitted offline or in isolation. We demonstrate the framework, denoted Hybrid-Joint, on a zero-pressure-gradient turbulent boundary layer across a posteriori tests spanning Re_θ= 600--6500, computational domains and mesh resolutions. The model outperforms WMLES baselines, extrapolates to more than four times the highest training Reynolds number, and transfers to grids and domains absent from training. It recovers a logarithmic mean-velocity region, not imposed by the wall closure, and reproduces the resolved energy spectra accurately, although spectral information is excluded from the training objective. Ablation studies show that learning either closure alone is insufficient and that only joint optimization recovers the full set of statistics, confirming that SGS closure, wall closure and discretization are coupled and must be trained jointly. Once trained, the closures are reused without retraining across all cases, so that training cost is amortized over repeated deployment.",
+      "authors": [
+        "Xiantao Fan",
+        "Yi Liu",
+        "Meng Wang",
+        "Jian-Xun Wang"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-19T17:49:51+00:00",
+      "link": "https://arxiv.org/pdf/2607.17357v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "neural operator for fluid dynamics",
+      "llm_evidence_cn": "流体动力学的神经算子",
+      "llm_evidence": "流体动力学的神经算子",
+      "canonical_evidence": "流体动力学的神经算子",
+      "llm_tldr_en": "Proposes a differentiable hybrid neural-CFD framework that jointly learns subgrid-scale and wall closures using neural operators, achieving coupled end-to-end learning.",
+      "llm_tldr_cn": "针对壁面模化大涡模拟中不同闭合模型独立而效果耦合的问题，提出了一种可微分的神经-CFD混合框架，利用神经算子联合学习亚网格和壁面闭合，仅需低阶统计量作为训练目标，从而在可微分解算器中实现端到端的耦合学习。该方法在湍流预测中展现出精度和泛化能力。",
+      "llm_tldr": "针对壁面模化大涡模拟中不同闭合模型独立而效果耦合的问题，提出了一种可微分的神经-CFD混合框架，利用神经算子联合学习亚网格和壁面闭合，仅需低阶统计量作为训练目标，从而在可微分解算器中实现端到端的耦合学习。该方法在湍流预测中展现出精度和泛化能力。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "neural operators for fluid dynamics",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.18133v1",
+      "source": "arxiv",
+      "title": "Physics-Guided Spectral Parametric Reduced-Order Modeling for Transient Prediction of Controlled Dynamical Systems",
+      "abstract": "Efficient parametric transient prediction at unseen parameter values and under new operating conditions remains challenging because repeated high-fidelity simulations are computationally prohibitive. Existing data-driven surrogates and parametric reduced-order models perform well within sampled ranges but often lose reliability beyond them. This study proposes a physics-guided spectral parametric reduced-order modeling framework for controlled dynamical systems. Parameter-dependent reduced spectral operators are identified from transient snapshots using Dynamic Mode Decomposition with control, separating intrinsic dynamics from external control effects. After physics-guided parameter transformation, aligned spectral quantities and reduced operator components are propagated across parameter conditions using Secondary Dynamic Mode Decomposition, with linear and radial basis function regressions as baselines. Baseline regularization and nondimensional time mapping improve robustness. Validation uses a mechanical transmission system, a Helium-Xenon closed Brayton cycle, and a Karman vortex street, covering linear transient, nonlinear transient, and nonlinear periodic dynamics. For the mechanical and Brayton systems, system-level multivariable responses at unseen parameter values and under new operating conditions are predicted with relative norm errors below 1%. For the vortex-street system, nondimensional time mapping preserves dominant vortex-shedding structures across Reynolds numbers. Further analyses compare the framework with an LSTM surrogate and assess extrapolation confidence using an auxiliary error-prediction model. Overall, the framework extends parametric reduced-order modeling from in-domain approximation toward extrapolative transient prediction of controlled dynamical systems under unseen conditions.",
+      "authors": [
+        "Ao Zhang",
+        "Tian Zhang",
+        "Antonio Cammi",
+        "Xiang Wang"
+      ],
+      "primary_category": "math.DS",
+      "categories": [
+        "math.DS"
+      ],
+      "published": "2026-07-20T16:25:24+00:00",
+      "link": "https://arxiv.org/pdf/2607.18133v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Physics-guided reduced-order modeling for transient prediction, applicable to flow field prediction",
+      "llm_evidence_cn": "物理引导的降阶建模，适用于流场预测",
+      "llm_evidence": "物理引导的降阶建模，适用于流场预测",
+      "canonical_evidence": "物理引导的降阶建模，适用于流场预测",
+      "llm_tldr_en": "Proposes physics-guided spectral parametric ROM for transient prediction of controlled dynamical systems. Uses DMDc and physics-guided parameter transformation to improve generalization beyond training range.",
+      "llm_tldr_cn": "该论文针对受控动态系统在未见过参数下的瞬态预测挑战，提出物理引导的谱参数化降阶建模框架。通过动态模式分解（DMDc）提取参数依赖的降阶谱算子，并采用物理引导的参数变换提升外推能力。在数值案例上验证了该方法在参数外推时的准确性和鲁棒性，为流场预测等领域提供了可迁移的降阶建模方案。",
+      "llm_tldr": "该论文针对受控动态系统在未见过参数下的瞬态预测挑战，提出物理引导的谱参数化降阶建模框架。通过动态模式分解（DMDc）提取参数依赖的降阶谱算子，并采用物理引导的参数变换提升外推能力。在数值案例上验证了该方法在参数外推时的准确性和鲁棒性，为流场预测等领域提供了可迁移的降阶建模方案。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.17376v1",
+      "source": "arxiv",
+      "title": "Solver-in-the-loop training of deep learning closures for large-eddy simulation of turbulent premixed jet flames",
+      "abstract": "Large-eddy simulation (LES) turbulence models often fail to capture the effects of chemical heat release and the resulting modulation of turbulence in premixed flames, underscoring the need for a framework that remains accurate across a broad range of physical regimes. We develop an augmented eddy-viscosity closure, based on deep neural networks calibrated jointly with the LES solution using adjoint-based optimization and differentiable programming, ensuring consistency with the governing partial differential equations (PDEs). Several objective functions and training methods are examined, and each model is assessed for its capability to interpolate and extrapolate across a wide range of Damköhler numbers. Relative to the Smagorinsky-model baseline, the best neural network model improves a posteriori errors in the LES primitive variables by 25-50% and in the resolved Reynolds stress and scalar flux by more than 60%. Crucially, the model generalizes across Damköhler number regimes, maintaining stability and accuracy even for out-of-sample conditions. These results demonstrate that PDE-consistent deep learning closures can recover both mean fields and resolved turbulence statistics in LES of turbulent premixed flames and can therefore provide a broadly applicable framework for turbulent combustion modeling.",
+      "authors": [
+        "Priyesh Kakka",
+        "Jonathan F. MacArt"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn",
+        "physics.comp-ph"
+      ],
+      "published": "2026-07-19T18:33:57+00:00",
+      "link": "https://arxiv.org/pdf/2607.17376v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Deep learning closure for LES of turbulent flames with solver-in-loop training",
+      "llm_evidence_cn": "大涡模拟中基于深度学习且结合求解器在环训练的闭合模型",
+      "llm_evidence": "大涡模拟中基于深度学习且结合求解器在环训练的闭合模型",
+      "canonical_evidence": "大涡模拟中基于深度学习且结合求解器在环训练的闭合模型",
+      "llm_tldr_en": "Proposes a deep neural network augmented eddy-viscosity closure for LES of turbulent premixed jet flames, trained jointly with the solver using adjoint optimization to ensure PDE consistency, achieving accurate interpolation and extrapolation across Damkoehler numbers.",
+      "llm_tldr_cn": "针对大涡模拟（LES）湍流模型无法捕捉化学反应释热及湍流调制的问题，论文提出了一种基于深度神经网络的增强型涡粘闭合模型。该方法通过伴随优化和可微分编程将深度学习模型与LES求解器联合训练，确保闭合模型与流动控制方程（PDE）的一致性。实验评估了多种目标函数和训练方法，证明该模型能够在较宽的Damköhler数范围内实现准确的插值与外推，为湍流预混燃烧的高精度数据驱动建模提供了新框架。",
+      "llm_tldr": "针对大涡模拟（LES）湍流模型无法捕捉化学反应释热及湍流调制的问题，论文提出了一种基于深度神经网络的增强型涡粘闭合模型。该方法通过伴随优化和可微分编程将深度学习模型与LES求解器联合训练，确保闭合模型与流动控制方程（PDE）的一致性。实验评估了多种目标函数和训练方法，证明该模型能够在较宽的Damköhler数范围内实现准确的插值与外推，为湍流预混燃烧的高精度数据驱动建模提供了新框架。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "Recent advances in data driven fluid flow modeling and prediction",
+      "matched_requirement_id": "req-14",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2607.13108v1",
+      "source": "arxiv",
+      "title": "STKAN: Kolmogorov-Arnold Networks for Spatio-Temporal Forecasting",
+      "abstract": "Real-world traffic data exhibit heterogeneous spatial correlations and nonlinear temporal dynamics, posing substantial challenges for accurate spatio-temporal forecasting. Existing approaches have developed increasingly sophisticated graph, attention, and decomposition architectures, while the influence of the underlying nonlinear function approximator has received comparatively less attention. In this work, we propose STKAN, a spatio-temporal forecasting architecture that introduces Taylor-polynomial Kolmogorov--Arnold Network modules into spatial and temporal token mixing. STKAN first constructs high-level spatial representations through a learnable soft node-group assignment mechanism, applies group-wise spatial mixing, and subsequently models temporal dependencies over the compressed sequence. Spatial and temporal self-attention layers are further employed to capture long-range interactions. Experiments on five traffic forecasting benchmarks show that STKAN achieves competitive performance and performs better than the evaluated MLP-based variant in the tested settings. These results suggest that the design of nonlinear function approximators can serve as a useful complement to architectural design in spatio-temporal forecasting.",
+      "authors": [
+        "Sicong Lai",
+        "Yuehong Hu",
+        "Siru Zhong",
+        "Si Qiao",
+        "Yuxuan Liang",
+        "Guangyin Jin"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-07-14T10:18:54+00:00",
+      "link": "https://arxiv.org/pdf/2607.13108v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Kolmogorov-Arnold networks for spatio-temporal forecasting applicable to flow field prediction",
+      "llm_evidence_cn": "Kolmogorov-Arnold网络用于时空预测，可迁移至流场预测",
+      "llm_evidence": "Kolmogorov-Arnold网络用于时空预测，可迁移至流场预测",
+      "canonical_evidence": "Kolmogorov-Arnold网络用于时空预测，可迁移至流场预测",
+      "llm_tldr_en": "This paper proposes STKAN, a spatio-temporal forecasting architecture using Taylor-polynomial Kolmogorov-Arnold Network modules, achieving strong performance on traffic data and offering a transferable method for flow field prediction.",
+      "llm_tldr_cn": "该文提出STKAN，一种基于泰勒多项式Kolmogorov-Arnold网络的时空预测架构。通过可学习的软节点分组机制构建高层空间表示，并进行组内空间混合和时序建模。在交通数据上表现优异，其神经算子方法可迁移应用于流场预测与重构任务。",
+      "llm_tldr": "该文提出STKAN，一种基于泰勒多项式Kolmogorov-Arnold网络的时空预测架构。通过可学习的软节点分组机制构建高层空间表示，并进行组内空间混合和时序建模。在交通数据上表现优异，其神经算子方法可迁移应用于流场预测与重构任务。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.15702v1",
+      "source": "arxiv",
+      "title": "A Statistical Formulation Gap for Nonlinear Multiscale Physics-Informed Learning",
+      "abstract": "We prove a finite-sample formulation gap for physics-informed learning of nonlinear multiscale elliptic equations. For a uniformly monotone divergence-form class with coefficients oscillating at scale $ε$, we derive a finite-width, finite-sample, and finite-iteration error bound for a boundary-compatible variational neural solver. Its stability, sampling, and optimization constants are independent of $ε$, while all unresolved scale dependence is isolated in the best-approximation error.   We then construct a minimal obstruction witness for a one-dimensional periodic diffusion equation with cubic reaction. Already on the one-parameter family $v_c(x)=cx(1-x)$, the empirical Rademacher complexity of the strong residual is bounded below by a constant multiple of $(ε\\sqrt{N})^{-1}$, while that of the squared strong-residual loss is bounded below by a constant multiple of $(ε^2\\sqrt{N})^{-1}$. These are optimizer-independent properties of the sampled residual and loss classes, rather than neural-tangent-kernel conditioning statements. The corresponding variational energy complexity is bounded above by a constant multiple of $N^{-1/2}$ uniformly in $ε$.   A tensor-product construction shows that the same obstruction rates persist in every spatial dimension. Numerical evaluation gives fitted exponents $0.9971$, $1.9860$, and $-0.0028$ for the strong residual, squared strong loss, and variational energy, respectively. Thus, differentiating the microscopic coefficient creates finite-sample statistical ill-conditioning. The variational formulation removes this statistical penalty but does not remove the separate multiscale approximation problem.",
+      "authors": [
+        "Ronald Katende"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA",
+        "cs.LG",
+        "math.AP"
+      ],
+      "published": "2026-07-17T07:26:29+00:00",
+      "link": "https://arxiv.org/pdf/2607.15702v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "physics-informed learning gap for multiscale equations",
+      "llm_evidence_cn": "多尺度方程物理知情学习的公式化差距",
+      "llm_evidence": "多尺度方程物理知情学习的公式化差距",
+      "canonical_evidence": "多尺度方程物理知情学习的公式化差距",
+      "llm_tldr_en": "Proves finite-sample formulation gap for physics-informed learning of multiscale elliptic equations, isolating scale dependence in approximation error.",
+      "llm_tldr_cn": "针对非线性多尺度椭圆方程的物理知情学习，证明了有限样本下公式化差距的存在，并导出了与ε无关的误差界限。通过一维周期扩散方程的阻挠示例，展示了即使简单函数族也存在下界，揭示了物理知情学习在多尺度问题中的根本性挑战。",
+      "llm_tldr": "针对非线性多尺度椭圆方程的物理知情学习，证明了有限样本下公式化差距的存在，并导出了与ε无关的误差界限。通过一维周期扩散方程的阻挠示例，展示了即使简单函数族也存在下界，揭示了物理知情学习在多尺度问题中的根本性挑战。",
+      "llm_tags": [
+        "query:pc-latent:composite"
+      ],
+      "matched_query_tag": "query:pc-latent:composite",
+      "matched_query_text": "Papers central to 物理约束潜在空间学习与优化, especially work that connects or combines: latent dynamics; physics constrained learning for latent space models; latent space optimization under physical constraints; latent space methods with physical constraints; latent variable models with constraints from physics; learning latent space that satisfies physical laws; optimizing latent variables with physics constraints; physics constrained autoencoder training.",
+      "matched_requirement_id": "req-composite-pc-latent",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.16918v1",
+      "source": "arxiv",
+      "title": "Novel Adaptive Methods for Hyperbolic Conservation Laws Based on New Quasi-Linear Seventh- and Ninth-Order Schemes",
+      "abstract": "We develop new adaptive numerical schemes for one- and two-dimensional hyperbolic systems of conservation laws. The methodology relies on the use of a smoothness indicator to automatically partition the computational domain into smooth and nonsmooth (``rough``) regions. We then follow the scheme adaption strategy recently introduced in [S. Chu, P. Feng, V. A. Kolotilov, A. Kurganov, and V. V. Ostapenko, Commun. Comput. Phys., accepted], but instead of the quasi-linear (QL) fifth-order finite-difference scheme used there, we employ the new QL seventh- and ninth-order schemes in the smooth regions. A series of numerical experiments for the Euler equations of gas dynamics demonstrates that the new adaptive schemes contain a smaller amount of numerical dissipation and achieve higher resolution compared with their counterpart that uses the QL fifth-order scheme in the smooth areas.",
+      "authors": [
+        "Shaoshuai Chu",
+        "Pingyao Feng",
+        "Vadim A. Kolotilov",
+        "Alexander Kurganov",
+        "Vladimir V. Ostapenko"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA"
+      ],
+      "published": "2026-07-18T18:18:12+00:00",
+      "link": "https://arxiv.org/pdf/2607.16918v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:sfc"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "adaptive high-order schemes for Euler equations",
+      "llm_evidence_cn": "欧拉方程的自适应高阶格式",
+      "llm_evidence": "欧拉方程的自适应高阶格式",
+      "canonical_evidence": "欧拉方程的自适应高阶格式",
+      "llm_tldr_en": "Develops adaptive seventh- and ninth-order quasi-linear schemes for hyperbolic conservation laws, tested on Euler equations.",
+      "llm_tldr_cn": "该论文针对双曲守恒律数值模拟中光滑与非光滑区域精度需求不同的问题，提出基于光滑度指标的自适应方法。在光滑区域使用新开发的七阶和九阶准线性有限差分格式，非光滑区域使用低阶格式。通过欧拉方程数值实验验证，新自适应方案在保持激波分辨率的同时提高了光滑区域的计算效率。",
+      "llm_tldr": "该论文针对双曲守恒律数值模拟中光滑与非光滑区域精度需求不同的问题，提出基于光滑度指标的自适应方法。在光滑区域使用新开发的七阶和九阶准线性有限差分格式，非光滑区域使用低阶格式。通过欧拉方程数值实验验证，新自适应方案在保持激波分辨率的同时提高了光滑区域的计算效率。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "flow field prediction methods",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.16813v1",
+      "source": "arxiv",
+      "title": "Honest Physical-Support Inference after Latent Dictionary Learning: Collision Singularities and Minimax Resolution",
+      "abstract": "Sparse-support uncertainty is usually quantified by treating the dictionary as known, an assumption that can produce overconfident, label-dependent conclusions when the dictionary is learned from latent sparse mixtures. Near collisions of coherent atoms, a test signal may identify the active physical group even though the training data cannot distinguish the physical rays within it.   We develop inference for active physical rays, unit atoms modulo sign, after latent dictionary learning. In a fixed-dimensional Gaussian train-test experiment, we retain all dictionaries compatible with a robust training-moment region, profile the test representation over them, and project surviving configurations onto a permutation-invariant support space. The resulting confidence correspondence can report cross-sheet inconclusiveness, group resolution with child ambiguity, or fine-support resolution.   We characterize both its statistical cost and decision-theoretic benefit. Residual block orientation first affects the latent training density at cubic order, yielding information of order $s^6$, where $s$ is the within-block collision scale. The correspondence provides high-probability-over-training conditional test coverage, with resolution governed separately by parent detectability, test-time support separation, and learned-dictionary orientation. In the resolved fixed-shell regime, its projective Hausdorff diameter contracts at the minimax-optimal rate $s \\wedge (\\sqrt{N}s^2)^{-1}$, up to constants. A restricted-task theorem further determines when coefficient asymmetry allows test replication to supplement training information and when calibration uncertainty remains irreducible. The framework thus yields honest, resolution-adaptive support statements and guides the allocation of training versus test measurements.",
+      "authors": [
+        "Guan-Ju Peng"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "math.ST"
+      ],
+      "published": "2026-07-18T13:15:32+00:00",
+      "link": "https://arxiv.org/pdf/2607.16813v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:pc-latent"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "latent dictionary learning with physical support inference",
+      "llm_evidence_cn": "潜在字典学习与物理支撑推断",
+      "llm_evidence": "潜在字典学习与物理支撑推断",
+      "canonical_evidence": "潜在字典学习与物理支撑推断",
+      "llm_tldr_en": "Develops honest inference for active physical rays after latent dictionary learning, addressing collision singularities.",
+      "llm_tldr_cn": "该论文针对潜在字典学习后稀疏支撑不确定性量化问题，提出一种诚实推断方法。通过保留所有与训练矩鲁棒区域兼容的字典，并投影测试表示，能够推断活跃物理射线。在固定维度高斯实验中，该方法在碰撞奇异性下仍能提供有效的物理支撑置信区间。",
+      "llm_tldr": "该论文针对潜在字典学习后稀疏支撑不确定性量化问题，提出一种诚实推断方法。通过保留所有与训练矩鲁棒区域兼容的字典，并投影测试表示，能够推断活跃物理射线。在固定维度高斯实验中，该方法在碰撞奇异性下仍能提供有效的物理支撑置信区间。",
+      "llm_tags": [
+        "query:pc-latent"
+      ],
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "latent variable models with constraints from physics",
+      "matched_requirement_id": "req-19",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

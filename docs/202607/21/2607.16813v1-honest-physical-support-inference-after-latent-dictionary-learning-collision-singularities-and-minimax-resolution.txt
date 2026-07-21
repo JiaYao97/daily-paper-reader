@@ -1,0 +1,3636 @@
+Title: Honest Physical-Support Inference after Latent Dictionary Learning: Collision Singularities and Minimax Resolution
+
+URL Source: https://arxiv.org/pdf/2607.16813v1
+
+Published Time: Tue, 21 Jul 2026 00:37:59 GMT
+
+Number of Pages: 58
+
+Markdown Content:
+# Honest Physical-Support Inference after Latent Dictionary Learning: Collision Singularities and Minimax Resolution 
+
+Guan-Ju Peng ∗
+
+July 2026 
+
+Abstract 
+
+Sparse-support uncertainty is usually quantified after treating the dictionary as known. This conditioning can be misleading when the dictionary was itself learned from latent sparse mixtures: near a collision of coherent atoms, a new signal may reliably identify the active physical group while the training experiment cannot identify which physical rays inside that group generated it. Freezing one learned dictionary converts this unresolved calibration uncertainty into apparently precise but label-dependent support statements. We formulate inference for the active physical rays —unit atoms modulo sign—after latent dictionary learning. In a fixed-dimensional Gaussian train–test experiment, the block membership, hierarchy, and collision shell are supplied, while the child rays, block shape, residual orientation, and separated anchor are unknown. We retain every dictionary compatible with a robust training-moment region, profile the sparse test representation over all retained dictionaries, and project the surviving configurations onto a permutation-invariant physical-support space. The output is therefore allowed to be cross-sheet inconclusive, group-resolved but child-ambiguous, or fine-support resolved, instead of being forced to name unstable atom labels. The analysis identifies the statistical price and the decision-theoretic gain of this construction. Residual block orientation first enters the latent training density at cubic order, so its information is of order s6, where s is the within-block collision scale. The confidence correspondence has high-probability-over-training conditional test coverage, and its resolution is governed by three separate information budgets: parent detectability, test-time support separation, and learned-dictionary orientation. In the resolved fixed-shell regime its projective Hausdorff diameter contracts at the minimax-optimal rate s ∧ (√N s 2)−1, up to constants. A restricted task theorem further shows when coefficient asymmetry lets test replication supplement the training information and when no amount of additional test data can remove the calibration bottleneck. These results turn learned-dictionary uncertainty into an honest, resolution-adaptive sparse statement and an explicit guide for allocating training versus test measurements. 
+
+# 1 Introduction 
+
+Sparse representations are useful only when their active atoms support a scientifically meaningful statement. In source separation, material decomposition, and learned feature analysis, the support is interpreted as the set of components present in a new signal. Most support-inference methods nevertheless condition on the dictionary. That is appropriate when the atoms are known physical templates. It is a different statistical problem when the dictionary has first been estimated from a separate sample of mixtures whose supports and coefficients were never observed. 
+
+> ∗
+
+Institute of Data Science and Information Computing, National Chung Hsing University. Email: 
+
+gjpeng@email.nchu.edu.tw . ORCID: 0000-0001-5508-9485. 
+
+1arXiv:2607.16813v1 [cs.LG] 18 Jul 2026 The distinction becomes consequential near a collision of coherent atoms. Suppose that the physical rays inside a coherent block are separated at scale s, the dictionary-training sample has size N , and the new signal is observed T times. If the dictionary were known, the test experiment can distinguish child supports once its separation information 
+
+IS = T β 2
+
+> −
+
+s2
+
+σ2+
+
+(1) is large. After latent dictionary learning, however, residual block orientation is learned only through information of order 
+
+ID = N s 6. (2) There is therefore a nonempty regime IS ≫ 1 but ID ≲ 1. In that regime, a known-dictionary analysis can distinguish coordinate supports, while the training experiment does not identify the physical rays to which those coordinates refer. Freezing one learned dictionary hides this mismatch: it can turn unresolved calibration uncertainty into a precise but alignment-dependent atom label. The honest conclusion is coarser—the coherent block is active, but its active physical children are not yet resolved. This paper asks for the finest sparse statement justified by the joint train–test experiment. Given unlabeled training data Y N and an independent replicated test sample ZT , we construct a random compact correspondence ̂ C satisfying 
+
+Ptrain 
+
+> [
+
+Ptest 
+
+> {
+
+ϑ⋆ ∈̂ C | Y N }
+
+≥ 1 − αT
+
+> ]
+
+≥ 1 − αD. (3) Here ϑ⋆ is a marked set of active physical rays , modulo simultaneous dictionary–support relabelling; it is not a coordinate support attached to one arbitrary alignment. The primary output is the collection of all physical support statements compatible with both data sources. A lower/upper support pair is available as a summary, but would discard which alternative branches coexist and is therefore not our estimand. Sparsity is not merely a regularizer in this problem. It creates the information that identifies the atoms. At the centered collision core, full activation of the child block preserves a continuous rotational ambiguity. In contrast, mixtures generated from proper subdictionaries leave an orientation signature. We prove that the observed training density cancels its orientation dependence through second order and first reveals it at cubic order. The cubic coefficient is nonzero exactly when the exchangeable code law assigns positive power to a proper nonempty subdictionary. Squaring the score produces the N s 6 orientation gate in equation (2). Our procedure keeps that singular training uncertainty explicit. First, a simultaneous confidence region for observable training moments is inverted into the set of all compatible dictionary orbits. Second, every retained dictionary, support, and positive coefficient vector is profiled against one confidence ball for the replicated test mean. Third, the surviving dictionary–support pairs are mapped to physical-ray sets. The truth is retained on one joint event, so this construction needs neither a support-labelled calibration sample nor a multiplicity correction over all candidate supports. The statistical gain is adaptive resolution , not universal narrowness. The same output has three scientifically distinct operating states. It is cross-sheet inconclusive when even the coherent block and a separated alternative cannot be distinguished; it identifies the coherent parent while retaining several child explanations when the block is detectable but the fine support is not; and it contracts to one transported physical support branch once both the test and dictionary gates open. The corresponding information budgets are 
+
+I(r) 
+
+> G
+
+= T r 2β2
+
+> −
+
+σ2+
+
+, IS = T β 2
+
+> −
+
+s2
+
+σ2+
+
+, ID = N s 6. (4) 2They have a direct measurement-allocation interpretation. A closed parent gate calls for more test information to detect the correct sheet; a closed support gate calls for more test replication or higher signal-to-noise ratio; and a closed dictionary gate generally calls for more informative dictionary training. A separate task theorem identifies the exceptional directions in which coefficient asymmetry lets the test experiment break a training-side symmetry. 
+
+Contributions. Under the fixed-dimensional, fixed-shell experiment stated in section 4, we establish four claims. 
+
+C1. We derive a quotient-complete statistical geometry for latent sparse training near atom collision. The all-pair Hellinger/Kullback–Leibler chord is regular in observable invariants, but its physical inverse loses powers of s; nuisance-profiled orientation information is of order s6.
+
+C2. We construct a finite-sample cross-dictionary confidence correspondence with the two-level honesty guarantee equation (3). It does not select or align a point dictionary before test inference and requires no observed training codes. 
+
+C3. We prove a three-gate diameter bound and matching fixed-shell minimax lower bounds. Once the parent and support gates are open, the projective Hausdorff diameter is, up to constants, 
+
+s ∧ 1
+
+√N s 2 ,
+
+so the method attains the finest physical resolution permitted by the joint experiment. 
+
+C4. We characterize task-dependent symmetry breaking. For arbitrary fixed 2 ≤ r ≤ q − 1 we give the local coefficient-profiled test information, and on a separately declared one-dimensional orbit we obtain a finite matching train–test rate and an explicit two-atom amplitude contrast crossover. Each ingredient has close predecessors: group inference under coherence, honest sparse confidence sets, set-valued prediction, dictionary identifiability, learned-estimator uncertainty quantification, and invariant-based orbit recovery. We do not claim priority over any one of them. The contribution is their conjunction in a latent train–test sparse inverse problem, together with a sharp physical-support diameter through a collision-singular learned representation. The remainder of the paper begins with a concrete collision thought experiment and a closest-work reduction, then defines the statistical target and confidence construction. The main theorems separate the obstruction, the method, its optimality, and the downstream task effect. A proof roadmap exposes the mechanism, and the appendices give a complete proof chain, including the finite-sample moment construction, quotient geometry, measurability argument, and least-favourable pairs. 
+
+# 2 A collision thought experiment 
+
+Before introducing the full affine-simplex model, consider four coherent children d1, . . . , d 4 around one parent ray and a test signal using two of them. Two dictionary orientations D and D′ can induce nearly the same distribution of latent sparse training mixtures even though the physical child rays have moved by order s. A point learner must choose one orientation. Conditional on that choice, a high-SNR test signal may strongly prefer the coordinate pair {1, 2}. But under another training-compatible orientation, the same coordinate pair denotes a different set of physical rays. This produces a gap between two questions: 3Known or frozen dictionary Learned dictionary treated hon-estly Target coordinate support in one sup-plied frame active physical rays across all training-compatible frames Uncertainty source test noise test noise and latent dictionary-training uncertainty Fine answer requires IS large IS and ID large When only IS is large leaf support coherent parent, children unre-solved The distinction is not semantic. The known-dictionary output can be correct as a statement about the selected coordinate system while being too precise as a statement about the physical components. Our inferential object therefore does not force a leaf label. It returns every marked physical support still compatible with training and test data. The three possible outputs are summarized by coherent or separated?   
+
+> ︸︷︷ ︸
+> I(r)
+> G
+
+−→ which child support?   
+
+> ︸︷︷ ︸
+> IS
+
+−→ which physical child rays?   
+
+> ︸︷︷ ︸
+> ID
+
+. (5) If the first gate is closed, the result is cross-sheet inconclusive. If the first is open but either of the last two is closed, the result can certify the coherent parent without pretending to know its active children in physical space. If all three gates are open, the same construction resolves one transported support branch. The main results show both that this sequence is attainable and that no uniformly honest method can bypass its closed gates. There is a second lesson. More test data do not automatically compensate for inadequate dictionary training. Along a compensated orientation path, the coefficients may change so that the entire test mean stays fixed while the active rays move. Test replication then contains no information about that direction. With asymmetric coefficients, however, some orientation directions change the test mean transversely and the test sample can help. Theorem 6.7 makes this distinction exact. 
+
+# 3 Related work and problem boundary 
+
+The ingredients of our construction have substantial precedents. Group-level inference under collinearity, honest sparse confidence sets, set-valued prediction, dictionary identifiability, learned-estimator uncertainty quantification, and estimation modulo symmetries are all established topics. The relevant boundary is therefore not whether any one of these tools has appeared before. It is whether they answer the following joint question: after a dictionary has been learned from noisy mixtures with latent sparse codes, what physical support statement about a separate fixed sparse signal is honest as child atoms approach collision? We organize the comparison around the changes in design, target, and guarantee that this question requires. 
+
+3.1 Known-design support inference versus a latent-trained design 
+
+For an observed regression design, a coherent group can remain inferentially detectable even when its individual variables cannot. Group-bound provides confidence statements for groups without requiring favorable design conditions, while hierarchical testing moves from coarse to fine groups of correlated variables with error control (Meinshausen, 2015; Mandozzi and Bühlmann, 2016). Setwise variable-selection procedures provide a further modern version of this principle (Organ et al., 42026). Thus neither “infer the group when the members are ambiguous” nor traversal of a supplied hierarchy is itself new. Honesty and adaptation also have a mature known-design theory. Honest sparse regression confidence sets require separation from statistically indistinguishable alternatives (Nickl and van de Geer, 2013). Model confidence bounds and confidence sets of models report multiple plausible supports rather than forcing a single selected model (Li et al., 2019; Lewis and Battey, 2025). These works establish the general lesson that support uncertainty should be set-valued and that adaptation has an information-theoretic price. Our design is not observed. It is inferred from an independent sample whose codes and supports are latent, and an atom index has physical meaning only together with the dictionary that carries it. Near collision, two training- compatible dictionaries can attach the same index to different rays. The resulting object is therefore a joint confidence correspondence of marked dictionary–support configurations, projected onto physical ray sets, rather than a confidence set for coefficients or model indices under one fixed design. The block membership, hierarchy, and collision shell are supplied; the child rays, block shape, and residual orientation are learned from latent mixtures. What adapts is the finest physical support resolution justified jointly by training and test information. In particular, the additional N s 6 orientation gate in our upper and lower bounds has no analogue in a problem that conditions on the design. 
+
+3.2 Dictionary recovery versus uncertainty in a downstream sparse statement 
+
+Dictionary-learning theory supplies conditions for local identifiability of a generating dictionary, including Bernoulli–Gaussian and exact-sparse models (Gribonval and Schnass, 2010; Wu and Yu, 2018). It also gives localization guarantees in the presence of noise and outliers and minimax limits for dictionary estimation (Gribonval et al., 2015; Jung et al., 2016). Perturbation analyses quantify the stability of sparse codes and downstream predictors when the supplied dictionary changes (Mehta and Gray, 2013). These results explain when a dictionary or a code can be recovered; they do not turn uncertainty from the blind training experiment into an honest statement about the active rays of one new signal. That distinction matters at a collision. A small global dictionary error is not by itself an adequate downstream certificate: the same perturbation can be irrelevant to detecting the coherent parent yet decisive for naming its active children. Conversely, a deterministic coding-stability bound typically presupposes a margin that is precisely what degenerates along the collision shell. Our estimand and loss are consequently support-aware and permutation-invariant. We do not claim a new general dictionary-identification algorithm or a sharper global dictionary-estimation rate. The contribution is to propagate the specific nonregular training geometry through a downstream physical-support decision and to match the resulting fixed-shell resolution by a lower bound for that same decision. 
+
+3.3 Learned-estimator UQ versus uncertainty in the forward dictionary 
+
+Rigorous uncertainty quantification is available for learned sparse solvers and for much broader learned predictors. Confidence intervals have been constructed for LISTA with a supplied forward operator (Hoppe et al., 2023), and a subsequent non-asymptotic framework calibrates a large class of learned estimators using appropriate estimation and calibration data (Hoppe et al., 2024). Hence neither UQ for LISTA nor generic UQ for a learned map is a priority claim of this paper. Here the uncertain learned object is the forward dictionary itself. The training data contain neither the latent dictionary codes nor labelled test-support calibration pairs, and the target changes physical resolution as atoms collide. Residual block orientation is first visible in the latent training 5law through a cubic invariant, yielding order-s6 information rather than a uniform root-N variance correction. We therefore invert the training experiment and profile the test representation over every retained dictionary; we do not freeze a learned operator and calibrate only the conditional error of a solver. The current paper analyzes exact compact profiling, not an unrolled network, a learned stopping rule, or a scalable computational improvement. 
+
+3.4 Set-valued and latent-label prediction versus a fixed multi-atom physical support 
+
+Set-valued prediction already provides coverage while allowing the output to grow on ambiguous instances. This includes least-ambiguous classification sets, conformal sets with adaptive size, and finite-sample multiclass or multilabel confidence sets (Sadinle et al., 2019; Romano et al., 2020; Cauchois et al., 2021). Confidence sets for cluster trees quantify uncertainty in a learned hierarchy (Kim et al., 2016). More directly, conformal clustering handles permutation-ambiguous latent cluster labels, and weighted conformal clustering studies the additional distributional mismatch involved in moving from synthetic to latent labels (Nath et al., 2026b,a). These precedents rule out broad claims based merely on latent labels, permutation alignment, hierarchical outputs, or singleton-to-set adaptation. Our target is instead the active set of physical rays for one fixed multi-atom inverse problem. It is not a random categorical label, and no sample of true support labels is available for conformal calibration. The guarantee is two-level: with high probability over blind dictionary training, the conditional test-time coverage of the physical-support correspondence is high. Its size is controlled in projective Hausdorff distance and is compared with a minimax lower bound along the same collision shell. Thus set-valued output is the reporting language, while the train–test collision geometry determines which set sizes are statistically unavoidable. 
+
+3.5 Orbit and singular geometry versus an honest train–test target 
+
+Estimating an orbit rather than an arbitrary labelled representative is a standard response to group symmetries, and low-degree separating invariants can govern sample complexity under group actions (Bandeira et al., 2023). Cubic invariants and sixth-order information are therefore not new phenomena in isolation. Singular mixture models and weak-identification theory likewise show how degenerating information invalidates ordinary regular asymptotics (Ho and Nguyen, 2019; Kaji, 2021). In a regular square-ICA setting, contraction and local asymptotic normality have also been formulated modulo source ambiguities (Datta et al., 2025). Finally, projecting or profiling a confidence region to obtain a set-valued estimand has general precedents in inference for identified sets (Chernozhukov et al., 2007). Our use of this geometry is narrower and downstream-facing. The child permutation quotient is carried through a collision-local dictionary experiment to a marked physical support; the same cubic obstruction then appears in both the achievable diameter and a least-favorable support construction. A separate task-aligned theorem specifies when test coefficient asymmetry breaks that training symmetry and when it does not. The paper-level claim is therefore the following conjunction, not ownership of any component: latent exchangeable dictionary training + collision-singular quotient geometry 
+
++ training-conditional physical-support profiling 
+
++ matching fixed-shell resolution limits .
+
+6To our knowledge, the existing results above do not establish this exact conjunction. This is a bounded closest-work statement, not an absolute priority claim. In particular, we do not claim the first learned-dictionary UQ method, the first group-valued support set, or the first sixth-order orbit law. 
+
+# 4 Problem formulation and physical target 
+
+4.1 Why the plug-in target is not stable 
+
+The usual two-stage pipeline learns a dictionary ̂ D and then solves a known-dictionary sparse-coding problem. Conditional uncertainty quantification for the second stage can be statistically valid for the optimization problem defined by ̂ D, yet fail to answer the physical question. If two admissible training dictionaries differ by a permutation or a small rotation of a coherent child block, the same atom index refers to different rays. A narrow interval or a singleton support at one selected alignment may therefore express confidence about a coordinate system that the training data did not identify. A two-ray thought experiment makes the issue visible. For normalized atoms with d⊤ 
+
+> 1
+
+d2 = ρ,distinguishing the two one-atom signals βd 1 and βd 2 depends on β2(1 −ρ)/σ 2, whereas detecting that their common coherent group is active depends primarily on β2/σ 2. Hence there is a regime in which the group is detectable but the child identity is not. Our formal model uses a higher-dimensional block because the learned dictionary also has an orientation degree of freedom that is invisible to low-order training information. The inferential target must accommodate both phenomena: test-time ambiguity among children and training-time uncertainty about the physical child rays themselves. 
+
+4.2 Independent training and test experiments 
+
+Fix an ambient dimension q ≥ 4, let n = q + 1 , and fix a test support cardinality 2 ≤ r ≤ q − 1.The training sample consists of independent latent sparse mixtures 
+
+Yi = D⋆ci + ξi, ξi ∼ N q(0 , ν ⋆Iq), i = 1 , . . . , N. (2.4) Neither the support nor the nonzero entries of ci are observed. The flagship unknown-law branch is Bernoulli–Gaussian, 
+
+cij = Iij Gij , Iij iid 
+
+∼ Bernoulli( p⋆), Gij iid 
+
+∼ N (0 , 1) , (2.7) with p⋆ ∈ [p−, p +] ⋐ (0 , 1/2) and ν⋆ ∈ [ν−, ν +] ⋐ (0 , ∞). We also treat a separately typed fixed, known exchangeable masked-Gaussian code law; the required nondegeneracy condition is stated in section 6. Independently of training, the test experiment observes replicated measurements of one fixed sparse signal, 
+
+Zℓ iid 
+
+∼ N q(μ⋆, σ 2 
+
+> ⋆
+
+Iq), ℓ = 1 , . . . , T, σ⋆ ∈ [σ−, σ +]. (2.8) On the coherent, or fine-support, sheet, 
+
+μ⋆ = ∑
+
+> j∈S⋆
+
+x⋆j d⋆j , S⋆ ∈
+
+> (
+
+[q]
+
+r
+
+> )
+
+, x⋆j ∈ [β−, β +], β− > 0. (2.9) 7The competing separated sheet is 
+
+μ⋆ = γ⋆a⋆, γ⋆ ∈ ΓA = [ γ−, γ +] ⋐ (0 , ∞), (2.10) where a⋆ is a separated anchor atom. The symbol ∂ denotes this sheet; it is not a no-signal null. 
+
+4.3 A supplied coherent block near collision 
+
+Let Rq = U ⊕span {u}, with dim U = q −1, and choose regular-simplex reference vertices v1, . . . , v q ∈
+
+U satisfying q∑
+
+> j=1
+
+vj = 0 , v⊤ 
+
+> i
+
+vj = − 1
+
+q − 1 (i̸ = j),
+
+> q∑
+> j=1
+
+vj v⊤ 
+
+> j
+
+= qq − 1 IU . (6) For z ∈ U , define the unit atom 
+
+d(z) = 
+
+> √
+
+1 − ∥ z∥2 u + z. (7) The coherent children are 
+
+zj = b + Lv j , dj = d(zj ), j = 1 , . . . , q. (8) For one externally supplied collision scale s ∈ (0 , s 0], the compact shell obeys 
+
+max  
+
+> j
+
+∥b + Lv j ∥ ≤ C0s, κ−s ≤ σmin (L) ≤ σmax (L) ≤ κ+s. (2.1) The anchor projector and training-noise variance obey 
+
+∥Pa − Pa0 ∥F ≤ Cas, 0 < ν − ≤ ν ≤ ν+ < ∞. (2.2) Canonical positive-cap signs remove local sign ambiguity; the remaining dictionary nonidentifiability is simultaneous permutation of the q children. 
+
+Lemma 4.1 (Affine-simplex chart) . Let ˜z1, . . . , ˜zq ∈ U be affinely independent and put b = q−1 ∑ 
+
+> j˜
+
+zj .There is a unique invertible linear map L : U → U such that ˜zj = b + Lv j for every j. If ∥b∥ ≤ Cbs,the centered diameter is of order s, and the normalized affine condition number is bounded, then equation (2.1) holds after changing fixed shell constants. Proof. Let wj = ˜zj − b. Then ∑ 
+
+> j
+
+wj = 0 . The simplex vertices span U , and their only linear relation is ∑ 
+
+> j
+
+vj = 0 . Therefore the assignment vj 7 → wj extends to a unique linear map L : U → U : it is well defined because the sole relation is preserved, and it is unique because the vj span. Affine independence of the ˜zj implies that the wj span U , so L is invertible. Finally, the tight-frame identity for the vj makes the centered diameter comparable to ∥L∥op . If that diameter is comparable to s and the condition number of L is bounded, then all singular values are bounded above and below by fixed multiples of s. Together with ∥b∥ ≤ Cbs and the fixed unit norms of the vj , this also gives max j ∥b + Lv j ∥ ≤ C0s, proving equation (2.1) after changing the fixed constants. Thus the observed child block need not be a regular simplex. The regular simplex supplies quotient-complete coordinates for every locally affinely independent collision in the declared shell. 84.4 The estimand: marked sets of physical rays 
+
+Let [D] denote the dictionary orbit under child permutation, and let QDq,s be the resulting compact quotient shell. Its physical transport metric is 
+
+dD
+
+> Q
+
+([ D], [D′]) = min 
+
+> π∈Sq
+
+max 
+
+> {
+
+max  
+
+> 1≤j≤q
+
+∥zj − z′
+
+> π(j)
+
+∥, ∥Pa − P ′
+
+> a
+
+∥F
+
+> }
+
+. (2.10b) For unit vectors define the projective metric 
+
+dpr ([ v], [w]) = 
+
+> √
+
+1 − (v⊤w)2, (9) with induced Hausdorff metric dpr  
+
+> H
+
+. Write K(E) for the nonempty compact subsets of a metric space 
+
+E. The physical target is 
+
+ϑ(D, S ) = (1, {[dj ] : j ∈ S}), ϑ(D, ∂ ) = (0, {[a]}), (2.11) taking values in 
+
+Vq = {0, 1}disc × K (RP q−1). (10) We equip it with the genuine compact metric 
+
+dV{(m, A ), (m′, A ′)} = |m − m′| + dpr  
+
+> H
+
+(A, A ′). (2.11a) The binary mark distinguishes the coherent and separated sheets. Physical survival of mark 1 alone is the formal parent/group certificate; multiple surviving ray sets with that mark record unresolved child identity. Physical resolution is measured by 
+
+diam pr (C) = sup 
+
+> (m,A ),(m′,A ′)∈C
+
+dpr  
+
+> H
+
+(A, A ′), (2.11b) which intentionally omits the mark: sheet certification and within-sheet ray resolution are different questions. The target in equation (2.11) changes the decision being made. We do not ask the procedure to guess an arbitrary child alignment. We ask it to retain every physical support statement still compatible with both experiments. This permits honest coarsening when the data do not justify a leaf-level answer and exact physical localization when they do. 
+
+4.5 Standing scope and least-favourable hard core 
+
+The following assumption collects the fixed-shell scope used by the main results and records the balanced submodel used only to prove the lower bounds. It is deliberately narrower than a general coherent dictionary model. 
+
+Assumption 4.2 (Fixed-shell train–test experiment) . All dimensions, compact parameter bounds, confidence levels, and shell constants in equations (2.4) to (2.1) are fixed. The code law is either one fixed exchangeable masked-Gaussian law satisfying 
+
+a1 ≥ a− > 0, ∆L ≥ ∆− > 0, (2.6) with the quantities defined in equations (14) and (2.5), or the Bernoulli–Gaussian law equation (2.7). Test coefficients belong to the positive box in equation (2.9); test noise lies in [σ−, σ +] ⋐ (0 , ∞).9For the least-favourable submodels, fix a unit e1 ∈ U and a constant 
+
+λ⋆ ∈ (κ−, κ +) ∩ (0 , C 0). (2.3) Then take 
+
+a0 = ( u + e1)/√2, b = 0 , L = λ⋆sR, Pa = Pa0 , (2.3a) The interval ΓA contains, with a fixed interior margin, the anchor projection of every fine mean in this balanced submodel: 
+
+> 
+
+a⊤
+
+> 0
+> ∑
+> j∈S
+
+xj dj : S ∈ ([q]
+
+> r
+> )
+
+, x j ∈ [β−, β +], b = 0 , L = λ⋆sR  
+
+> 
+
+⊂ int(Γ A). (2.10a) The supplied s0 is chosen once, before observing data, small enough for the local chart, quotient inverse, support matching, and separation margins below. No adaptation over an unknown collision scale is asserted. Let Ppq,r (s) denote the resulting joint unknown-p parameter class, including both the fine and separated sheets. The fixed known-law class is defined analogously after omitting p. Unless stated otherwise, all constants below may depend on the fixed quantities in theorem 4.2, but not on N, T ,or the supplied s.
+
+# 5 An honest cross-dictionary confidence construction 
+
+The construction is a fixed-dimensional statistical benchmark. It follows the inferential question rather than the order in which the proof was discovered: 
+
+Y N −→ training-compatible dictionary region 
+
+−→ joint dictionary–support profiles −→ physical-support correspondence . (11) The decisive departure from plug-in sparse coding is the middle step. No single ̂ D is selected and frozen. Dictionary uncertainty is kept as a joint nuisance until after the test support and coefficients have been profiled. 
+
+5.1 Observable training invariants 
+
+Write Pj = dj d⊤ 
+
+> j
+
+and 
+
+Σ2(D) = 
+
+> n∑
+> j=1
+
+Pj , Σ4(D) = 
+
+> n∑
+> j=1
+
+P ⊙2 
+
+> j
+
+. (12) Here ⊙ is normalized full symmetrization, so a centered Gaussian vector with covariance C satisfies 
+
+EX⊗4 = 3 C⊙2. Define 
+
+M2 = E(Y Y ⊤), K4 = E(Y ⊗4) − 3M ⊙22 . (13) Under Bernoulli–Gaussian coding, 
+
+M2 = νI q + pΣ2(D), K4 = 3 p(1 − p)Σ 4(D). (3.3) Because every atom has unit norm, a normalized double contraction gives 
+
+Tr 2 K4
+
+3n = p(1 − p). (3.4) 10 The branch p < 1/2 makes p and subsequently ν identifiable. The finite-sample procedure does not 
+
+plug sample moments into this inverse; it retains (p, ν, D ) jointly. For a fixed known exchangeable code law, let K be the number of active atoms and λK the conditional active variance. Put 
+
+a1 = E(λK K)
+
+n , a2d = E(λ2 
+
+> K
+
+K)
+
+n , a2o = E{λ2 
+
+> K
+
+K(K − 1) }
+
+n(n − 1) , (14) and 
+
+∆L = a2d − a2o = E{λ2 
+
+> K
+
+K(n − K)}
+
+n(n − 1) . (2.5) Then 
+
+M2 = νI q + a1Σ2(D), (3.1) 
+
+K4 = 3 
+
+> [
+
+∆LΣ4(D) + ( a2o − a21)Σ 2(D)⊙2]
+
+. (3.2) The quantity ∆L will be the exact gate for whether latent subdictionary variation reveals residual child orientation. 
+
+Lemma 5.1 (Observable moment reduction) . For the fixed exchangeable code law, the population moments are exactly equations (3.1) and (3.2) , with 
+
+∆L = E{λ2 
+
+> K
+
+K(n − K)}
+
+n(n − 1) . (15) 
+
+Consequently, ∆L > 0 exactly when the law assigns positive power to a proper nonempty support with positive probability. For Bernoulli–Gaussian coding, equations (3.3) and (3.4) identify 
+
+p = 1 − √1 − 4u
+
+2 , u = Tr 2 K4
+
+3n , ν = tr M2 − np q , Σ2 = M2 − νI q
+
+p , Σ4 = K4
+
+3p(1 − p) .
+
+(3.5) This lemma explains why the construction uses both second and fourth moments. Second-order information locates the block and its quadratic shape, while fourth-order information separates activation uncertainty and exposes the cubic orientation invariant below. The quotient-complete dictionary coordinates are 
+
+G2 = LL ⊤, G3 = L⊗3Tq, Tq =
+
+> q∑
+> j=1
+
+v⊗3 
+
+> j
+
+. (16) The quadratic invariant G2 determines shape. The cubic invariant G3 is the first term that retains residual physical orientation modulo the finite simplex group. Concretely, expanding the observable fourth-order projector moment reduces its degree-three cross block to a fixed linear image of 
+
+B3 = qb ⊗3 + qq − 1 Sym 3(b ⊗ G2) + G3,
+
+so the fourth moment carries the cubic orientation coordinate even though the latent codes are unobserved. These coordinates are used to analyze the method; the implemented region is defined directly through the observable moment equations. 11 5.2 A training confidence region, not a point dictionary 
+
+Let ̂ M2 and ̂ M4 be fixed Borel robust moment estimators and set ̂
+
+K4 =̂ M4 − 3̂ M ⊙22 . (17) The coverage theory requires deterministic radii satisfying the uniform rectangular event 
+
+inf  
+
+> p,ν,D
+
+PNp,ν,D 
+
+{
+
+∥̂M2 − M2∥F ≤ ϵ2,N , ∥̂K4 − K4∥F ≤ ϵK,N 
+
+}
+
+≥ 1 − αD. (3.9) The coordinatewise median-of-means construction in the supplement is one fully specified, uniformly valid implementation. It is conservative but has ϵN = ( ϵ22,N + ϵ2 
+
+> K,N
+
+)1/2 = O(N −1/2) above a fixed block threshold. Any sharper Borel construction may replace it only after re-establishing equation (3.9); empirical tuning is not a substitute for this interface. For the unknown-p model, invert the rectangle jointly: ̂
+
+Kpq,s =
+
+(p, ν, [D]) : 
+
+p ∈ [p−, p +], ν ∈ [ν−, ν +], [D] ∈ Q Dq,s ,
+
+∥̂ M2 − { νI q + pΣ2(D)}∥ F ≤ ϵ2,N ,
+
+∥̂ K4 − 3p(1 − p)Σ 4(D)∥F ≤ ϵK,N 
+
+ . (3.10) The known-law profile replaces the last two population expressions by equations (3.1) and (3.2) and omits p. If the robust-moment block threshold is not met, the method returns the full compact training shell before evaluating any zero-block radius. 
+
+5.3 One test ball profiles every support and dictionary 
+
+Let 
+
+¯Z = T −1
+
+> T
+
+∑
+
+> ℓ=1
+
+Zℓ, τT,q = σ+
+
+√T
+
+√
+
+χ2 
+
+> q, 1−αT
+
+. (18) For every retained dictionary and fine support, define the box-constrained profile loss 
+
+ℓprof ( ¯Z, D, S ) = min  
+
+> xj∈[β−,β +]
+
+∥∥∥∥∥∥
+
+¯Z − ∑
+
+> j∈S
+
+xj dj
+
+∥∥∥∥∥∥ , (19) and for the separated sheet 
+
+ℓprof ( ¯Z, D, ∂ ) = min 
+
+> γ∈ΓA
+
+∥ ¯Z − γa ∥. (20) Let ζ = [ D, S ] be the simultaneous dictionary–support orbit. The raw joint profile is 
+
+Rpq,r,s =
+
+(p, ν, ζ ) : (p, ν, [D]) ∈̂ Kpq,s ,S ∈ ([q]
+
+> r
+
+) ⊔ { ∂},ℓprof ( ¯Z, D, S ) ≤ τT,q 
+
+ . (3.14) The same Gaussian ball is used for all candidates. On ∥ ¯Z − μ⋆∥ ≤ τT,q , the true dictionary, support, and coefficient witness survive simultaneously, so no union bound over the continuum of dictionaries or the finite set of supports is required. The reported confidence correspondence is the physical image ̂
+
+Cpq,r,s =
+
+{
+
+ϑ(D, S ) : ∃ p, ν with (p, ν, [D, S ]) ∈ R pq,r,s 
+
+}
+
+(3.15) when the raw profile is nonempty. If it is empty, a fixed admissible null-marked singleton {v†}
+
+makes the random set total and measurable. This fallback is reported as an administrative failure status; it creates neither coverage nor evidence for the separated sheet. 12 Proposition 5.2 (Well-defined exact profile and one-event retention) . The raw profile in equa-tion (3.14) has compact sections, and the reported object in equation (3.15) is a Borel measurable, nonempty, compact-valued random correspondence. On the intersection of the training rectangle equation (3.9) and the test event 
+
+∥ ¯Z − μ⋆∥ ≤ τT,q , (21) 
+
+the true dictionary orbit, sheet, support, and coefficient witness belong to the raw profile, and hence 
+
+ϑ⋆ ∈̂ Cpq,r,s .
+
+The proposition is the coverage mechanism in one line. Profiling enlarges the output but does not spend confidence level: every candidate is tested against the same ball, and the true witness needs to survive only once. 
+
+5.4 What the procedure reports 
+
+The object in equation (3.15) has a direct decision interpretation. If both marks survive, the data do not distinguish the coherent and separated sheets. If only coherent-sheet targets survive but several transported supports remain, the group is identified while child identity is unresolved. If one transported branch remains, the output has fine physical resolution up to the learned-dictionary radius. If only the separated mark survives, the anchor explanation remains alone. 
+
+Step 1. Compute ̂ M2,̂ M4,̂ K4 and certified radii satisfying equation (3.9). 
+
+Step 2. Construct the complete training-compatible region equation (3.10); do not select a repre-sentative dictionary. 
+
+Step 3. For every retained dictionary orbit, profile every admissible fine support and the separated sheet using equations (19) and (20). 
+
+Step 4. Retain all candidates inside the common test ball and map them through ϑ.
+
+Step 5. Report the surviving marks, physical diameter, and support-branch geometry, together with the empty-profile status when applicable. These are exact compact feasibility operations in fixed dimension. The construction is statistically well defined, but we do not claim a polynomial-time or high-dimensional solver. A numerical approximation is honest only if it is a certified outer approximation that cannot remove a feasible truth. 
+
+# 6 Main results 
+
+The results follow the statistical narrative: first the obstruction in the latent training experiment, then the honest construction, then its optimality, and finally the circumstances under which the downstream test task can break the training-side symmetry. 
+
+6.1 Collision-singular training geometry 
+
+Let Pj = dj d⊤ 
+
+> j
+
+, and define 
+
+Tq =
+
+> q∑
+> j=1
+
+v⊗3 
+
+> j
+
+, G2 = LL ⊤, G3 = L⊗3Tq. (22) 13 For θ = ( D, ν ), put 
+
+F (θ) = ( b, P a, G 2, G 3, ν ) (23) and let δF be Euclidean/Frobenius distance in these coordinates. On the Bernoulli branch, δ2 
+
+> F,p
+
+=
+
+|p − p′|2 + δ2 
+
+> F
+
+. The tensor G2 records the quadratic block shape; G3 is the first invariant that retains residual orientation modulo the finite simplex permutation group. Physical rotations are not quotiented out. 
+
+Theorem 6.1 (Exchangeable sparse-code training geometry) . Under theorem 4.2, there exist fixed 
+
+s0 > 0 and 0 < c < C < ∞ such that the following statements hold. 
+
+(i) Fixed-law statistical chord. For every ordered pair in the same supplied shell, 
+
+cδ 2 
+
+> F
+
+(θ, θ ′) ≤ H2(fθ, f θ′ ) ≤ KL( fθ∥fθ′ ) ≤ Cδ 2 
+
+> F
+
+(θ, θ ′). (4.1) (ii) Unknown-p statistical chord. Uniformly over p, p ′ ∈ [p−, p +],
+
+cδ 2 
+
+> F,p
+
+≤ H2(fp,θ , f p′,θ ′ ) ≤ KL( fp,θ ∥fp′,θ ′ ) ≤ Cδ 2
+
+> F,p
+
+. (4.2) 
+
+Both all-pair statements remain valid on the full closed fixed shell. 
+
+(iii) Physical quotient inverse. After an optimal child permutation π,
+
+max  
+
+> j
+
+∥zj − z′
+
+> π(j)
+
+∥ + ∥Pa − P ′
+
+> a
+
+∥F ≤ C(∥b − b′∥ + ∥Pa − P ′
+
+> a
+
+∥F
+
++ s−1∥G2 − G′
+
+> 2
+
+∥F + s−2∥G3 − G′
+
+> 3
+
+∥F
+
+). (4.3) (iv) Cubic orientation information. At the centered isotropic core in equation (2.3a) , let Rt =
+
+R exp (tΩ) , where Ω⊤ = −Ω. Then f0 below denotes the collapsed s = 0 mixture with the same regular nuisances and activation law, and 
+
+∂∂t fs,R t
+
+∣∣∣∣t=0 
+
+= s3gR, Ω + OL2(f −10 )(s4∥Ω∥F ), (4.4) 
+
+and gR, Ω̸ = 0 for every nonzero quotient-orientation tangent if and only if ∆L > 0.More generally, at an interior shell point use the point-adapted chart 
+
+L = sRG, Lt = R(sG + tS )etΩ, ˙L = R(S + sG Ω) , (4.4a) 
+
+with G = G⊤ > 0, S = S⊤, and Ω⊤ = −Ω. After profiling the regular nuisances (p, ν, b, P a, S ), with 
+
+p omitted for a fixed known law, the orientation Fisher information satisfies 
+
+cs 6∥Ω∥2 
+
+> F
+
+≤ IR|η,θ (Ω) ≤ Cs 6∥Ω∥2 
+
+> F
+
+. (4.5) 
+
+The Fisher/QMD statement is restricted to compact interior subbranches. In particular, on the centered core, 
+
+H2(fs,R , f s,R ′ ) ≍ KL( fs,R ∥fs,R ′ ) ≍ s6d2  
+
+> O(U)/Sq
+
+(R, R ′). (24) 
+
+What this result buys. The latent dictionary is not a regular root-N nuisance uniformly through collision. Its orientation score is s3, so a unit orientation change requires N s 6 information. This is also where sparse representation enters essentially: proper-subdictionary activation makes the cubic score nonzero, while exact full activation erases it. The physical inverse in equation (4.3) then converts apparently small invariant uncertainty into the s−2 loss that governs downstream ray resolution. 14 Lemma 6.2 (Cross-dictionary separation margins) . There are fixed constants cD, g 0
+
+> G
+
+, C S , C G > 0
+
+such that every dictionary in the supplied shell satisfies 
+
+∥∥∥∥∥∥
+
+> q
+
+∑
+
+> j=1
+
+hj dj
+
+∥∥∥∥∥∥ ≥ cDs∥h∥2, h ∈ Rq. (25) 
+
+If two candidate dictionaries have physical distance at most ρ, then different size-r fine supports are separated by at least 
+
+mS (ρ) = 
+
+[√2cDβ−s − CS rβ +ρ
+
+] 
+
+> +
+
+, (4.10) 
+
+and a fine-sheet mean and a separated-sheet mean are separated by at least 
+
+mG(ρ) = 
+
+[
+
+g0 
+
+> G
+
+− CG(rβ + + γ+)ρ
+
+] 
+
+> +
+
+. (4.9) 
+
+The constants may be chosen so that mS (ρ) > 0 also implies unique physical child matching across the two dictionaries. 
+
+6.2 One honest correspondence, three resolutions 
+
+Write ϵN = ( ϵ22,N + ϵ2 
+
+> K,N
+
+)1/2.
+
+Theorem 6.3 (Conditionally honest, resolution-adaptive support region) . Under theorem 4.2 and the rectangular coverage interface equation (3.9) , the correspondence ̂ Cpq,r,s is Borel measurable, nonempty, and compact-valued. Uniformly over the joint unknown-p parameter class, 
+
+PNp⋆,ν ⋆,D ⋆
+
+[
+
+PTμ⋆,σ ⋆
+
+{
+
+ϑ⋆ ∈̂ Cpq,r,s | Y N }
+
+≥ 1 − αT
+
+]
+
+≥ 1 − αD. (4.7) 
+
+Equivalently, for a full parameter ξ, define the measurable test kernel 
+
+Kξ(y) = PTμ(ξ),σ (ξ)
+
+{
+
+z : ϑ(ξ) ∈̂ Cpq,r,s (y, z )
+
+}
+
+. (4.7a) 
+
+By independence, with α = 1 − (1 − αD)(1 − αT ),
+
+inf  
+
+> ξ∈Ppq,r (s)
+
+PN,T ξ
+
+{
+
+ϑ(ξ) ∈̂ Cpq,r,s 
+
+}
+
+≥ 1 − α. (4.7c) 
+
+For N above the fixed median-of-means block threshold, put 
+
+ρN (s) = C
+
+[
+
+(s ∧ ϵN ) + 
+
+(
+
+s ∧ ϵN
+
+s
+
+)
+
++
+
+(
+
+s ∧ ϵN
+
+s2
+
+)] 
+
+. (4.8) 
+
+Every two dictionaries retained by one nonempty training profile have physical distance at most 
+
+ρN (s). If ϵN ≤ CN −1/2, then 
+
+ρN (s) ≤ C
+
+(
+
+s ∧ 1
+
+√N s 2
+
+)
+
+. (4.8a) 
+
+Below the block threshold, the procedure returns the full compact training shell and uses ρN (s) = 
+
+Cshell s. The supplied s0 may be chosen so this branch obeys the same order as equation (4.8a) .For every realization, 
+
+diam pr (̂ Cpq,r,s ) ≤ Cρ N (s)+ Cs 1{2τT,q ≥ mS (ρN (s)) }
+
+15 + C 1{2τT,q ≥ mG(ρN (s)) }. (4.11) 
+
+Thus the exact same correspondence has order-one, order-s, and order-ρN (s) physical resolutions, governed respectively by 
+
+I(r) 
+
+> G
+
+= T r 2β2
+
+> −
+
+σ2+
+
+, IS = T β 2
+
+> −
+
+s2
+
+σ2+
+
+, ID = N s 6. (26) 
+
+These are separate gates; no N T product gate is asserted. 
+
+What this result buys. The method is not merely a larger interval around a plug-in estimate. It changes the granularity of the reported sparse statement while retaining the physical truth: inconclusive across sheets, parent-resolved but child-ambiguous, or fine-support resolved. The two-level guarantee is stronger than a single unconditional average: for most training samples, the conditional test procedure covers. It uses no observed training codes and no support-labelled calibration pairs. 
+
+6.3 The three gates are unavoidable 
+
+Lemma 6.4 (Two-point honesty implies diameter) . Let two parameters ξ0, ξ 1 have physical target distance d. If a random compact set ̂ C has coverage at least 1 − α at both endpoints, then 
+
+Eξ0 diam pr (̂ C) ≥ d
+
+> {
+
+1 − 2α − TV( PN,T ξ0 , PN,T ξ1 ) 
+
+> }
+> +
+
+. (27) 
+
+Theorem 6.5 (Fixed-shell minimax lower bound and resolved optimality) . Assume (1 − αD)(1 −
+
+αT ) > 1/2 and set α = 1 − (1 − αD)(1 − αT ) < 1/2. Let 
+
+Hα{Ppq,r (s)} =
+
+> {̂
+
+C : inf  
+
+> ξ∈Ppq,r (s)
+
+PN,T ξ {ϑ(ξ) ∈̂ C} ≥ 1 − α
+
+> }
+
+, (28) 
+
+where ̂ C ranges over Borel nonempty compact-valued correspondences, and define 
+
+R(q,r ) 
+
+> N,T
+
+(s) = inf ̂
+
+> C∈Hα
+
+sup  
+
+> ξ∈Ppq,r (s)
+
+Eξ diam pr (̂C). (29) 
+
+There exist fixed positive constants and transition thresholds such that 
+
+R(q,r ) 
+
+> N,T
+
+(s) ≥ c max 
+
+> [
+
+1{I(r) 
+
+> G
+
+≤ cG}, s 1{IS ≤ cS }, s ∧ 1
+
+√N s 2
+
+> ]
+
+. (4.13) 
+
+When the parent and support gates exceed their fixed upper thresholds, the correspondence in theorem 6.3, equipped with the conservative certified radii in the supplement or any replacement satisfying ϵN ≤ CN −1/2, gives 
+
+R(q,r ) 
+
+> N,T
+
+(s) ≍ s ∧ 1
+
+√N s 2 . (4.14) 
+
+This is constant-factor optimality on one supplied fixed shell in the resolved regime. It is not a sharp-transition-constant theorem, a matching upper theorem throughout every transition band, a multiway candidate-list-size theorem, or adaptation over unknown s.
+
+Corollary 6.6 (The known-dictionary/learned-dictionary resolution gap) . Consider a sequence on the supplied shell for which I(r) 
+
+> G
+
+→ ∞ and IS → ∞ , while ID = N s 6 remains bounded. With the dictionary known, the common-ball test profile eventually separates the fine supports. Over the learned-dictionary class, however, every uniformly honest physical-support correspondence has worst-case expected diameter at least cs . Thus atom-level resolution in a selected dictionary can be strictly finer than the physical resolution justified after latent dictionary learning. 
+
+16 What this result buys. The method’s coarser outputs are not conservatism that a cleverer procedure can uniformly remove. Three least-favourable comparisons reproduce the three operating states, and the learned-dictionary rate matches the upper bound once the test-side gates are open. In particular, theorem 6.6 isolates the inferential failure that motivates the paper without claiming that every concrete plug-in estimator must undercover in every parameter cell. 
+
+6.4 When test data can break the training symmetry 
+
+At a centered-core fine support S, define the coefficient-profiled orientation secant 
+
+χtan (D, S, x ; Ω) = 1
+
+s inf  
+
+> ˙x∈Rr
+
+∥ ˙DS [Ω] x + DS ˙x∥ = 1
+
+s
+
+∥∥∥P ⊥  
+
+> span( DS)
+
+˙DS [Ω] x
+
+∥∥∥ . (4.15) 
+
+Theorem 6.7 (Task geometry can preserve or break the training singularity) . For every fixed 
+
+2 ≤ r ≤ q − 1, the exact local test efficient information is 
+
+Itest Ω|x = T s 2
+
+σ2 χ2tan (D, S, x ; Ω) . (4.16) 
+
+For a finite statement, fix interior p0, ν 0, the anchor, a support S0, every nonorientation dictionary coordinate, and known test noise σ. Let 
+
+Dϕ = D{b = 0 , L = λ⋆sR exp( ϕΩ) , P a = Pa0 }, |ϕ| ≤ h0, (30) 
+
+where the chart is injective modulo the finite simplex group. Let Xorb ⋐ (β−, β +)r and define 
+
+Porb = {(p0, ν 0, D ϕ, S 0, x, σ ) : |ϕ| ≤ h0, x ∈ X orb }. (31) 
+
+Assume the target and coefficient-profiled test means have two-sided secants 
+
+cV s|ϕ − ϕ′| ≤ dpr  
+
+> H
+
+{ϑ(Dϕ, S 0), ϑ (Dϕ′ , S 0)} ≤ CV s|ϕ − ϕ′|, (4.17) 
+
+csχ s|ϕ − ϕ′| ≤ inf 
+
+> x′∈X orb
+
+∥μ(Dϕ, S 0, x ) − μ(Dϕ′ , S 0, x ′)∥ ≤ Csχ s|ϕ − ϕ′|. (4.18) 
+
+Let Rtask  
+
+> N,T
+
+be the minimax expected physical diameter over Borel compact correspondences with marginal coverage 1 − α uniformly on this restricted orbit. Then 
+
+Rtask  
+
+> N,T
+
+(s, Xorb , σ ) ≍ s ∧ s
+
+√N s 6 + T χ 2 
+
+> s
+
+s2/σ 2 . (4.19) 
+
+This finite matching statement is restricted to Porb . Equation equation (4.16) , not equation (4.19) ,is the general-r, full-model conclusion. 
+
+Corollary 6.8 (Two-atom amplitude contrast) . Let r = 2 and write x1 = ¯β + d/ 2, x2 = ¯β − d/ 2.Fix d0̸ = 0 and a sign-preserving compact coefficient shell on which |d − d0| ≤ ϵd ≤ | d0|/2. On the orbit rotating v1 − v2 while fixing v1 + v2,
+
+inf 
+
+> ¯β′,d ′∈R
+
+∥μϕ, ¯β,d − μϕ′, ¯β′,d ′ ∥ = λ⋆s|d|∥ v1 − v2∥
+
+2 | sin( ϕ − ϕ′)|. (4.20) 
+
+Hence χs ≍ λ⋆∥v1 − v2∥| d0|/2, and the training/test crossover occurs at 
+
+|d0| ≍ σ
+
+√
+
+N/T s 2. (4.21) 
+
+The separate exact slice d = 0 is test invariant and remains limited by the N s 6 training information. 
+
+17 What this result buys. The theorem tells an experimenter when collecting more test replicates can help. A zero task secant means that coefficient profiling absorbs the orientation perturbation, so only dictionary training resolves the physical rays. A nonzero secant contributes additive test information, and theorem 6.8 gives an explicit crossover. The finite matching rate is intentionally not generalized beyond the declared orbit. 
+
+# 7 Why the rates arise 
+
+This section gives the proof logic in the same order as the statistical claims. Complete density expansions, uniform envelopes, quotient arguments, measurability details, and least-favourable constructions belong in the technical supplement; the purpose here is to expose the mechanism rather than hide it behind the moment algebra. 
+
+7.1 Why orientation appears at cubic order 
+
+Conditional on a training support indicator I, the observation Y is Gaussian with covariance 
+
+CI = νI q + λKn∑
+
+> j=1
+
+Ij Pj . (32) A conditional Wick expansion followed by exchangeable averaging gives theorem 5.1. The important proof choice is to aggregate over supports before taking absolute values. The aggregate density through degree three depends on the child power sums 
+
+Bk =
+
+> q∑
+> j=1
+
+z⊗kj , k = 1 , 2, 3. (33) At b = 0 , B1 = 0 ; B2 depends on LL ⊤ and is blind to residual right orientation. The first orientation-sensitive term is 
+
+B3 = L⊗3Tq. (34) Its coefficient is ∆L. This proves both cancellation through degree two and the exact proper-subdictionary criterion for a nonzero cubic score. A common Gaussian cross-weight envelope controls all finite-mixture components, and a fourth-order composed remainder yields the directed Hellinger/KL upper chord. A uniformly injective collapsed moment operator supplies the reverse Hellinger bound. The inverse step is geometric. Polar whitening recovers the quadratic shape from G2. The stabilizer identity 
+
+Stab O(U )(Tq) = Sq (35) then recovers residual orientation from G3 modulo the child permutations and no larger group. Because G2 and G3 have sizes s2 and s3, their physical inverse carries the s−1 and s−2 factors in equation (4.3). Finally, a point-adapted right-body chart separates the regular shape directions from orientation. Score–moment duality prevents the cubic direction from being absorbed by the regular nuisance tangent space, proving the profiled s6 information in equation (4.5). 18 7.2 Why one profile is honest 
+
+The coverage argument is intentionally simpler than the geometry. Let ED be the training rectangle in equation (3.9), and let ET = {∥ ¯Z − μ⋆∥ ≤ τT,q }. On ED, the true (p⋆, ν ⋆, [D⋆]) remains in the training profile. On ET , the true support and coefficient vector witness a feasible test profile for that same dictionary. Hence 
+
+ED ∩ E T ⊆ { ϑ⋆ ∈̂ Cpq,r,s }. (36) The two-level coverage statement follows because P(ED) ≥ 1 − αD and, conditional on every training sample, P(ET ) ≥ 1 − αT . There is no union bound over supports: the event only needs the true witness to survive. For measurability, the parameter shell and coefficient boxes are compact, the moment maps and profile losses are continuous, and the graph of the raw profile is Borel with compact sections. A measurable-projection theorem then gives a random compact physical image. The fallback only totalizes the map on an empty raw profile; the event in equation (36) never invokes it. On one nonempty training profile, two retained moment images differ by at most twice the rectangle radii. The all-pair chord and quotient inverse give ρN (s). The cross-dictionary margins in theorem 6.2 then have a transparent consequence: two candidates inside the same radius-τT,q 
+
+test ball cannot coexist if their means are more than 2τT,q apart. Excluding the separated sheet removes the order-one term; excluding wrong fine supports removes the order-s term; the remaining variation is the transported dictionary radius. 
+
+7.3 Why the three lower bounds match the three decisions 
+
+Theorem 6.4 converts indistinguishability into unavoidable confidence diameter. We apply it to three pairs in the same parameter class. 
+
+Pair 1. A fine-versus-anchor pair has identical training distribution, order-one physical separation, and test KL of order I(r) 
+
+> G
+
+. This produces the parent gate. 
+
+Pair 2. Two size-r supports differing by one child have identical training distribution, physical separation of order s, and test KL of order IS . This produces the child-support gate. 
+
+Pair 3. A compensated orientation pair moves an active physical ray by order s|h| while modifying the coefficients so that the entire test mean is unchanged. Its joint KL is therefore training-only and bounded by CN s 6h2. Taking 
+
+|h| ≍ min {1, (√N s 3)−1}
+
+produces s ∧ (√N s 2)−1.The third pair explains why increasing T cannot universally repair a closed dictionary gate: along that least-favourable path, the test law is exactly the same. Once the first two gates are open, the upper radius of theorem 6.3 and this third lower bound coincide up to constants. 
+
+7.4 Why some test signals nevertheless help 
+
+An orientation perturbation changes the test mean by ˙DS [Ω] x. Coefficient perturbations can absorb precisely the component in span (DS ). Projection onto the orthogonal complement therefore yields 19 the efficient secant χtan and the local information identity equation (4.16). On the restricted orbit, training and test KL add by independence: 
+
+KL joint ≍
+
+> (
+
+N s 6 + T χ 2 
+
+> s
+
+s2
+
+σ2
+
+> )
+
+|ϕ − ϕ′|2. (37) The target secant converts the admissible orientation width into physical diameter, producing equation (4.19). For two active atoms, equal amplitudes cancel the transverse component exactly; a nonzero contrast reveals it. This is why the explicit crossover depends on the amplitude difference rather than on reconstruction signal-to-noise ratio alone. 
+
+# 8 Discussion 
+
+The paper addresses a decision problem created by learning the representation before using it. Near coherent-atom collision, dictionary uncertainty does not simply add a regular variance term to a known-design confidence interval. It can change the finest physical support statement that is identifiable. The proposed correspondence responds by retaining all training-compatible dictionaries until after the test support is profiled. Its main gain is therefore calibrated granularity: it refuses unstable leaf precision when the dictionary gate is closed, yet avoids the permanent conservatism of an always-group rule when the joint information opens all three gates. The phase diagram also changes how additional data should be collected. A closed parent or support gate is a test-side limitation. A closed dictionary gate is a calibration limitation and, along compensated directions, cannot be repaired by arbitrarily many repeated measurements of the same test signal. The task secant refines that conclusion: asymmetric coefficients can create transverse test information, whereas symmetric signals remain training-limited. Thus the theory gives a diagnostic for allocating effort between dictionary training, test replication, and signal diversity. 
+
+Scope. The current theorem is fixed-dimensional. It treats one supplied coherent affine-simplex block, one separated anchor, one externally supplied positive shell s, positive beta-min coefficients, and fixed 2 ≤ r ≤ q − 1. It does not learn a hierarchy, adapt over an unknown collision scale, treat arbitrary coherent frames, allow growing q, or provide a polynomial-time high-dimensional solver. The finite matching task theorem applies only to the explicitly declared one-dimensional orbit; its general-r content is the local efficient-information identity. 
+
+Computation and finite-sample sharpness. Exact compact profiling defines a valid statistical benchmark and the supplementary median-of-means rectangle provides a uniformly covering fixed-
+
+q construction with the required N −1/2 order above its block threshold. That construction is conservative. A practically useful implementation must replace it with a sharper certified radius and must compute an outer approximation that cannot delete a feasible truth. Uncertified nonconvex optimization, bootstrap inflation around one selected dictionary, or empirical quantile tuning would not inherit the honesty theorem. 
+
+Relation to applications. Sparse array localization and blind spectral unmixing motivate physical rays, coherent groups, finite calibration, and resolution-adaptive statements. The present results do not claim a formal embedding of either application. The synthetic affine-simplex experiment is nevertheless a meaningful theory demonstration: it isolates the exact train–test phenomenon, provides physical support ground truth, and makes every information gate independently controllable. 20 A subsequent application paper should let the sensing geometry determine the hierarchy and should prove or validate the bridge rather than attach a generic reconstruction benchmark. 
+
+Outlook. Three extensions are especially natural. First, certified sharp profiling would turn the optimal statistical construction into an operational method. Second, multiple coherent blocks and data-driven but confidence-valid hierarchies would extend adaptive resolution beyond one supplied parent. Third, an amortized sparse solver could learn to approximate the exact profile while a deterministic outer certificate preserves honesty. These extensions should be judged against the same principle as the present paper: the output must state no more physical resolution than the full data can support. 21 A Complete proofs of the headline results 
+
+A.1 Proof of the collision-singular training geometry 
+
+Proof of theorem 6.1. Exact exchangeable moment reduction 
+
+Conditional on the support indicator I, the training observation is Gaussian with covariance 
+
+CI = νI q + λKn∑
+
+> j=1
+
+Ij Pj .
+
+Exchangeability gives, for i̸ = j,
+
+E(λK Ij ) = a1, E(λ2 
+
+> K
+
+Ij ) = a2d, E(λ2 
+
+> K
+
+IiIj ) = a2o. (5.1) Taking expectations proves (3.1). Conditional Wick expansion gives 
+
+K4 = 3 {E(C⊙2 
+
+> I
+
+) − (EC I )⊙2}.
+
+Separating diagonal and off-diagonal index pairs, 
+
+E
+
+λK
+
+∑
+
+> j
+
+Ij Pj
+
+
+
+> ⊙2
+
+= a2oΣ⊙22 + ( a2d − a2o)Σ 4,
+
+which proves (3.2). Finally, 
+
+a2d − a2o = E{λ2 
+
+> K
+
+K(n − K)}
+
+n(n − 1) . (5.2) Thus ∆L = 0 exactly when the code law puts no positive power on a proper nonempty support. On every fixed law satisfying (2.6), the triangular map 
+
+(M2, K 4) ←→ (ν, Σ2, Σ4) (5.3) is uniformly bi-Lipschitz. The Bernoulli specialization follows by setting a1 = a2d = p, a2o = p2,and then using (3.4)–(3.5). 
+
+Exchangeable subset aggregation 
+
+The density proof must aggregate subsets before taking absolute values. Let H1, . . . , H q belong to a commutative symmetric tensor algebra, Qm = ∑ 
+
+> j
+
+H⊙mj , and let C be uniform over all h-subsets of [q]. Put XC = ∑ 
+
+> j∈C
+
+Hj and 
+
+πm(h) = (h)m
+
+(q)m
+
+.
+
+Partitioning ordered index tuples by equality pattern gives 
+
+EhXC = π1Q1, (5.4) 
+
+EhX⊙2 
+
+> C
+
+= ( π1 − π2)Q2 + π2Q⊙21 , (5.5) and 22 EhX⊙3 
+
+> C
+
+= ( π1 − 3π2 + 2 π3)Q3
+
++ 3( π2 − π3)Q1 ⊙ Q2 + π3Q⊙31 . (5.6) These identities are exact for every h. They are the reason the componentwise order-s displace-ment does not determine the mixture-level orientation information. Condition on total support size K = k and anchor indicator A ∈ { 0, 1}. The active-child count is h = k − A, with weight 
+
+ρk,A =
+
+( qk−A
+
+)(q+1 
+
+> k
+
+) . (5.7) Define 
+
+Ak = {A ∈ { 0, 1} : 0 ≤ k − A ≤ q}.
+
+Every sum over (k, A ) below means A ∈ A k; no density is defined for an invalid stratum. Equivalently, use the conventions ( qm
+
+) = 0 outside m ∈ { 0, . . . , q }, and omit every zero-weight stratum. In (5.10), set em = 0 for m / ∈ { 0, . . . , q } and e0 = 1 .For Hj = Pj − Pu, the base and perturbation covariances are 
+
+Ck,A, 0 = νI q + λk(hP u + AP a), XC = λk
+
+∑
+
+> j∈C
+
+Hj .
+
+Taylor expansion of the already aggregated stratum through total child degree three depends only on 
+
+Q1, Q 2, Q 3, Q ⊙21 , Q 1 ⊙ Q2, Q ⊙31 . (5.8) After the projector chart is substituted, these are triangular analytic functions of the three child power sums 
+
+B1 = ∑
+
+> j
+
+zj , B2 = ∑
+
+> j
+
+z⊗2 
+
+> j
+
+, B3 = ∑
+
+> j
+
+z⊗3 
+
+> j
+
+. (5.9) The exact characteristic function, useful for checking that no support stratum has been omitted, is ̂
+
+f (t) = e−ν∥t∥2/2
+
+> n
+
+∑
+
+> k=0
+
+πk
+
+(nk
+
+) [ek(w1,k , . . . , w q,k ) + wa,k ek−1(w1,k , . . . , w q,k )] , (5.10) where 
+
+wj,k = exp {− λk(d⊤ 
+
+> j
+
+t)2/2}, wa,k = exp {− λk(d⊤ 
+
+> a
+
+t)2/2}.
+
+Cubic observed orientation score 
+
+At the centered isotropic core, 
+
+dj (s, R ) = 
+
+√
+
+1 − λ2
+
+> ⋆
+
+s2 u + λ⋆sRv j .
+
+Write α = u⊤t, x = PU t, and aj = x⊤Rv j . For a uniform h-subset C, let 23 AC = ∑
+
+> j∈C
+
+aj , BC = ∑
+
+> j∈C
+
+a2 
+
+> j
+
+.
+
+Simplex identities and (5.4)–(5.6) give 
+
+EhAC = 0 ,Eh(AC BC ) = h(q − h)
+
+q(q − 1) (R⊗3Tq)[ x, x, x ], (5.11) and 
+
+EhA3 
+
+> C
+
+= h(q − h)( q − 2h)
+
+q(q − 1)( q − 2) (R⊗3Tq)[ x, x, x ]. (5.12) The orientation-dependent part of the normalized stratum characteristic function is therefore cubic in s. Along Rϵ = R exp( ϵΩ) , its leading Fourier coefficient is ̂
+
+gR, Ω(t) = λ3
+
+> ⋆
+
+∆L
+
+2 α R ⊗3(Ω · Tq)[ x, x, x ] + O(∥t∥6). (5.13) The anchor-averaged coefficient used here follows from the exact identity 
+
+> 1∑
+> A=0
+
+ρk,A 
+
+(k − A){q − (k − A)}
+
+q(q − 1) = k(n − k)
+
+n(n − 1) . (5.14) Finally, 
+
+∥Ω · Tq∥2 
+
+> F
+
+= 3  
+
+> (
+
+qq − 1
+
+> )3
+
+∥Ω∥2 
+
+> F
+
+. (5.15) Hence gR, Ω̸ = 0 for every nonzero quotient-orientation tangent whenever ∆L > 0. Conversely, if ∆L = 0 , the nonnegative identity in (2.5) forces every positive-variance activation stratum to have K ∈ { 0, n }. The empty stratum is independent of the child orientation, and at the centered isotropic core the full-stratum covariance depends on the children only through the tight-frame sum ∑ 
+
+> j
+
+Pj , which is also orientation invariant. The complete mixture density is then orientation invariant and gR, Ω = 0 . This proves the equivalence. Weighted Gaussian derivative bounds in the next subsection turn (5.13) into the norm expansion (4.4). A matching lower information bound can also be obtained by differentiating (3.2), noting that the orientation derivative of Σ2 vanishes at the isotropic core while the derivative of Σ4 contains s3R⊗3(Ω · Tq), and applying the score–moment Cauchy–Schwarz inequality under uniform eighth moments. 
+
+Gaussian envelope and the full density chord 
+
+Lemma: — common cross-weight envelope 
+
+Suppose the eigenvalues of A lie in a fixed compact subset of (0 , ∞), and 
+
+∥A−1/2(B − A)A−1/2∥op ≤ ρ < 1/2.
+
+For every derivative order 0 ≤ m ≤ 5, 
+
+> ∫
+
+|DmγA[H1, . . . , H m]|2
+
+γB
+
+≤ Cmm∏
+
+> j=1
+
+∥Hj ∥2 
+
+> F
+
+. (5.16) 24 Proof. A covariance derivative is a degree-2m polynomial in y, with uniformly bounded coefficients, times γA(y). The first derivative is explicitly 
+
+Dγ A[H]( y) = γA(y)2
+
+{
+
+y⊤A−1HA −1y − tr( A−1H)
+
+}
+
+. (5.16a) Repeated differentiation proves the polynomial-times-Gaussian form used for orders two through five. The Gaussian quotient has precision 
+
+2A−1 − B−1 ⪰
+
+(
+
+2 − 11 − ρ
+
+)
+
+A−1 ≻ 0.
+
+All required polynomial moments are therefore uniformly finite. The same calculation controls integral Taylor remainders and one derivative of those remainders. □
+
+For each (k, A ) stratum, define the already aggregated full density map 
+
+Gk,A (z1, . . . , z q; Pa, ν ) = 
+
+(qh
+
+)−1 ∑
+
+> |C|=h
+
+γνI +λk {AP a+∑   
+
+> j∈CP(d(zj)) }
+
+.
+
+Let P≤3,k,A be its multivariate Taylor polynomial at the collapsed child point, truncated by total child degree three. Set 
+
+P≤3 = ∑
+
+> k,A
+
+πkρk,A P≤3,k,A , R≥4 = f − P ≤3.
+
+Straight paths between optimally aligned shell endpoints may leave the condition-number cone, but remain in an enlarged O(s) labelled cap. Taylor’s formula and Lemma 5.1 give there 
+
+∥∥∥∥
+
+Dz R≥4[ ˙ z]
+
+√fθ′
+
+∥∥∥∥2
+
+≤ Cs 3 max  
+
+> j
+
+∥ ˙zj ∥, (5.17) 
+
+∥∥∥∥∥
+
+D(Pa,ν )R≥4[ ˙Pa, ˙ν]
+
+√fθ′
+
+∥∥∥∥∥2
+
+≤ Cs 4(∥ ˙Pa∥F + | ˙ν|). (5.18) The physical inverse in Subsection 5.5 implies 
+
+s3 max  
+
+> j
+
+∥zj − z′
+
+> π(j)
+
+∥ ≤ C{s3∥∆b∥ + s2∥∆G2∥ + s∥∆G3∥} ≤ Csδ F . (5.19) Integrating (5.17)–(5.18) proves 
+
+∥∥∥∥
+
+R≥4(θ) − R≥4(θ′)
+
+√fθ′
+
+∥∥∥∥2
+
+≤ Csδ F (θ, θ ′). (5.20) Choose s0 and a fixed local-noise radius rν > 0 so that, whenever |ν − ν′| ≤ rν , every path covariance and either endpoint covariance obey the relative bound in Lemma 5.1. This is possible because the training noise is at least ν−, all code powers are bounded, the anchor patch and enlarged child cap are O(s), and there are finitely many strata. No minimum mixture weight is introduced: for component remainders rℓ, endpoint components qℓ, and weights wℓ,
+
+(∑ 
+
+> ℓ
+
+wℓrℓ)2
+
+∑ 
+
+> ℓ
+
+wℓqℓ
+
+≤ ∑
+
+> ℓ
+
+wℓ
+
+r2
+
+> ℓ
+
+qℓ
+
+. (5.21) For the low-order part, (5.4)–(5.9) reduce every coefficient to 25 B1, B 2, B 3, B ⊗21 , Sym( B1 ⊗ B2), B ⊗31 .
+
+The exact identities 
+
+B1 = qb, (5.22) 
+
+B2 = qb ⊗2 + qq − 1 G2, (5.23) 
+
+B3 = qb ⊗3 + qq − 1 Sym 3(b ⊗ G2) + G3 (5.24) and Lemma 5.1 yield 
+
+∥∥∥∥
+
+P≤3(θ) − P ≤3(θ′)
+
+√fθ′
+
+∥∥∥∥2
+
+≤ Cδ F (θ, θ ′). (5.25) Equations (5.20) and (5.25), and the same two estimates with the endpoints exchanged, give the two directed local-noise bounds 
+
+max 
+
+{∫ (fθ − fθ′ )2
+
+fθ′
+
+,
+
+∫ (fθ − fθ′ )2
+
+fθ
+
+}
+
+≤ Cδ 2 
+
+> F
+
+(θ, θ ′) if |ν − ν′| ≤ rν . (5.25a) If |ν − ν′| > r ν , align the child labels and apply log-sum to the common fixed-law component weights. Compactness of all component covariance pairs gives KL (fθ∥fθ′ ) ≤ K, whereas δ2 
+
+> F
+
+≥ r2 
+
+> ν
+
+.Hence 
+
+KL( fθ∥fθ′ ) ≤ Kr −2 
+
+> ν
+
+δ2 
+
+> F
+
+(θ, θ ′). (5.25b) Supplement S9 writes the component pairing, zero-weight convention, and both ordered directions continuously. For the Hellinger lower chord, take 
+
+Ψ( Y ) = {vech( Y Y ⊤), symvec( Y ⊗4)}.
+
+Uniform Gaussian-mixture eighth moments and Cauchy–Schwarz imply 
+
+∥EθΨ − Eθ′ Ψ∥ ≤ CH (fθ, f θ′ ). (5.26) Indeed, 
+
+EθΨ − Eθ′ Ψ = 
+
+∫
+
+Ψ( √f θ − √f θ′ )( √f θ + √f θ′ ),
+
+and the second Cauchy–Schwarz factor is uniformly bounded by the eighth moment envelope. This is the required moment-to-Hellinger lemma. The explicit fixed-law inverse and the uniform collapsed moment secant in Supplement S8 give the continuous lower chain 
+
+δF ≤ C∥∆( ν, Σ2, Σ4)∥ ≤ C∥∆( M2, K 4)∥ ≤ C∥∆EΨ∥ ≤ CH (fθ, f θ′ ). (5.26a) Together with H2 ≤ KL , (5.25a)–(5.26a) prove (4.1). For unknown Bernoulli p, the lower chord follows from (3.3)–(3.5). For the upper chord, hold p
+
+fixed and use (4.1), then change p at a fixed dictionary. With support-indicator weights 26 wI (p) = p|I|(1 − p)n−| I|,
+
+weighted Cauchy–Schwarz gives 
+
+∫ {fp,ν,D − fp′,ν,D }2
+
+fp′,ν,D 
+
+≤ ∑
+
+> I
+
+{wI (p) − wI (p′)}2
+
+wI (p′) ≤ C|p − p′|2. (5.27) All weights are uniformly positive on the fixed branch. To make the endpoint argument explicit, set f0 = fp,ν,D , f1 = fp,ν ′,D ′ , and f2 = fp′,ν ′,D ′ . Since only the Bernoulli weights change between f1
+
+and f2, compactness of [p−, p +] gives cf 1 ≤ f2 ≤ Cf 1 pointwise. Therefore, in the local-noise region, 
+
+χ2(f0∥f2) ≤ 2
+
+∫ (f0 − f1)2
+
+f2
+
++ 2 
+
+∫ (f1 − f2)2
+
+f2
+
+≤ Cχ 2(fp,ν,D ∥fp,ν ′,D ′ ) + C ∑
+
+> I
+
+{wI (p) − wI (p′)}2
+
+wI (p′)
+
+≤ C{δ2 
+
+> F
+
++ |p − p′|2}.
+
+(5.27a) The same calculation is repeated with endpoints exchanged. In the far-noise region, generalized log-sum bounds the joint latent-component KL by the Bernoulli weight KL plus a compact weighted Gaussian KL; the fixed noise separation absorbs the latter constant into δ2
+
+> F,p
+
+. This proves (4.2) without asserting pointwise comparability between different dictionaries. 
+
+Quotient inverse and nuisance-projected orientation information 
+
+Equations (5.22)–(5.24) give a triangular inverse from child power sums to (b, G 2, G 3). The separated anchor is identified jointly with these coordinates by the second/fourth-moment pair. In a local anchor chart a(w) = ( a0 + w)/∥a0 + w∥, with w ∈ a⊥ 
+
+> 0
+
+, let X = tu + x, x ∈ U , and 
+
+H( ˙ w) = a0 ˙w⊤ + ˙ wa ⊤ 
+
+> 0
+
+. For increments ˙B = ( ˙B1, ˙B2, ˙B3), define 
+
+S ˙B (t, x ) = 2 t ˙B1[x] + ˙B2[x, x ] − t2 tr ˙B2 − t ˙B3[x, I U ],
+
+Q ˙B (t, x ) = 4 t3 ˙B1[x] + 6 t2 ˙B2[x, x ] − 2t4 tr ˙B2
+
++ 4 t ˙B3[x, x, x ] − 6t3 ˙B3[x, I U ].
+
+(5.28) With h0(t, x ) = 12 (t + e⊤ 
+
+> 1
+
+x)2, the collapsed operator is 
+
+Aq( ˙B, ˙w, ˙ν) = ( ˙ν, S ˙B + H( ˙ w)[ X, X ], Q ˙B + 2 h0H( ˙ w)[ X, X ]) . (5.28a) Supplement S8 proves coefficient by coefficient that Aq is injective on U ⊕ Sym 2(U ) ⊕ Sym 3(U ) ⊕
+
+a⊥ 
+
+> 0
+
+⊕ R. Hence, for fixed q,
+
+∥Aqh∥ ≥ σq∥h∥, σq > 0. (5.28b) After the algebraic quotient alignment from the physical inverse below, the exact all-pair secant satisfies 
+
+R(θ) − R (θ′) = Aq{Ξ( θ) − Ξ( θ′)} + Rem q(θ, θ ′), ∥ Rem q ∥ ≤ Cqs∥Ξ( θ) − Ξ( θ′)∥, (5.28c) where Ξ = ( B1, B 2, B 3, w, ν ), R = ( ν, Σ2, Σ4), and ∥∆Ξ ∥ ≍ δF . Choosing s0 ≤ σq/(2 Cq) yields the uniform same-shell moment secant used in (5.26a). This step uses the quotient inverse only for algebraic alignment, so the statistical moment lower bound is not used circularly. 27 For the physical inverse, take the left polar decomposition 
+
+L = PLOL, PL = ( LL ⊤)1/2.
+
+Functional calculus on the normalized compact shape class gives 
+
+∥PL − P ′
+
+> L
+
+∥F ≤ Cs −1∥G2 − G′
+
+> 2
+
+∥F . (5.29) Normalize the cubic tensor: 
+
+W (L) = P −⊗ 3 
+
+> L
+
+G3 = O⊗3 
+
+> L
+
+Tq.
+
+The cubic x 7 → Tq[x, x, x ] has its positive spherical maxima exactly at the simplex vertices. Hence every orthogonal stabilizer of Tq permutes those vertices, and conversely every simplex permutation stabilizes the tensor. Therefore 
+
+Stab O(U )(Tq) = Sq. (5.29a) Identity (5.15) gives a uniformly injective orbit differential. Local quotient inverse bounds follow from the constant-rank/local-embedding theorem; compactness separates pairs outside a finite union of diagonal quotient charts. This proves the global estimate 
+
+min 
+
+> π∈Sq
+
+∥OL − O′
+
+> L
+
+Ππ∥F ≤ C
+
+> [
+
+s−3∥G3 − G′
+
+> 3
+
+∥F + s−2∥G2 − G′
+
+> 2
+
+∥F
+
+> ]
+
+. (5.30) Combining (5.29)–(5.30) proves (4.3). For nuisance-projected orientation information use exactly the right-body chart (4.4a). Direct differentiation gives 
+
+DG 2[h] = sR (SG + GS )R⊤, (5.31) and 
+
+DG 3[h] = SR,G,s [S] + ( sRG )⊗3(Ω · Tq), ∥S R,G,s [S]∥F ≤ Cs 2∥S∥F . (5.31a) The Lyapunov map S 7 → SG + GS is uniformly coercive on the normalized compact shape class. After its contribution is recovered from DG 2, invertibility of G⊗3 and (5.15) recover the orientation contribution from DG 3. Adding the separate coordinates therefore yields 
+
+∥D(p, F )( θ)[ h]∥2 ≍ | ˙p|2 + | ˙ν|2 + ∥˙b∥2 + ∥ ˙Pa∥2 
+
+> F
+
++ s2∥S∥2 
+
+> F
+
++ s6∥Ω∥2 
+
+> F
+
+, (5.31b) with ˙p omitted for a fixed law. This is the required s-uniform nonisotropic statement; global injectivity alone would not supply the weighted constant. Let ℓθ,h = Df θ[h]/f θ. Uniform eighth moments and the score identity 
+
+DE θΨ[ h] = Eθ{(Ψ − EθΨ) ℓθ,h }
+
+imply ∥D(M2, K 4)[ h]∥2 ≤ CI θ(h). Differentiating the all-pair moment chord and using (5.31b) gives the reverse lower bound, while the differentiated density expansion gives the upper bound. Consequently 
+
+c∥h∥2mix ,θ ≤ Iθ(h) ≤ C∥h∥2mix ,θ . (5.31c) Taking the infimum over all nuisance tangents proves the lower half of (4.5), and setting them to zero proves its upper half. Supplement S10 supplies the inner/enlarged-tube tangent scope and all derivative details. 28 A.2 Proof of measurability, conditional honesty, and adaptive diameter 
+
+Proof of theorems 5.2 and 6.3. Measurability, truth retention, and conditional coverage 
+
+Let 
+
+ψ(Y ) = {vech( Y Y ⊤), symvec( Y ⊗4)} ∈ Rdq .
+
+For each of the second- and fourth-order orthonormal symmetric-coordinate systems, split the sample deterministically into Bk ≍ log (2 dk/α k) blocks, take every coordinate block mean, and take its lower median under a fixed tie convention. Decode the result as (̂M2,̂ M4), then apply the explicit polynomial cumulant map 
+
+(A, B ) 7 → (A, B − 3A⊙2).
+
+Uniform eighth moments, the scalar median-of-means inequality, a finite coordinate union bound, fixed-dimensional norm equivalence, and the explicit raw-moment-to-cumulant propagation in Supplement S13 prove (3.9). For sample sizes below the block threshold, the procedure returns the full compact training class. Let ˜Dq,s be the closed, canonically signed labelled shell and form the compact associated quotient 
+
+Mpq,r,s = [p−, p +] × [ν−, ν +] × ˜Dq,s × 
+
+> (([q]
+> r
+> )
+
+⊔ { ∂}
+
+> )
+
+Sq
+
+. (5.31d) The training projection, the compact-fiber profile value, and the physical target map are continuous on this quotient. The graph of the raw set is a Borel intersection of two closed-in-parameter sublevel constraints and has compact sections. For every open hit set, its graph intersection has sigma-compact sections; the Arsenin–Kunugui projection theorem (Kechris, 1995, Theorem 18.18) therefore makes the hit event Borel. In particular, raw-profile nonemptiness is Borel. Taking the continuous physical image on that event and the fixed singleton {v†} on its complement proves that (3.15) is a Borel map into K(Vq) with its Hausdorff Borel sigma field. No global atom ordering or quotient selector is used. Supplement S11 gives the standalone random-correspondence lemma. Let 
+
+ED = {(p⋆, ν ⋆, [D⋆]) ∈̂ Kpq,s }.
+
+Equation (3.9) gives P (ED) ≥ 1 − αD. Conditional on any training realization in ED, the event 
+
+∥ ¯Z − μ⋆∥ ≤ τT,q 
+
+retains the true support and coefficient witness and has probability at least 1 − αT , uniformly over σ ≤ σ+. This proves (4.7). No union bound over candidate supports is used: the truth survives on one common test-noise event. For two members of the same nonempty training profile, (3.3)–(3.5) and the branch inequality 
+
+|p(1 − p) − p′(1 − p′)| = |p − p′| | 1 − p − p′| ≥ (1 − 2p+)|p − p′|
+
+give 
+
+|p − p′| + δF {(D, ν ), (D′, ν ′)} ≤ Cϵ N . (5.32) The physical inverse (4.3) proves (4.8). 29 Cross-dictionary margins and the upper phase diagram 
+
+Supplement S12 first proves a uniform child-frame singular-value bound. There is a displayed 
+
+cD > 0, depending only on the frozen shell, such that 
+
+> ∥∥∥∥∥∥
+> q∑
+> j=1
+
+hj dj 
+
+> ∥∥∥∥∥∥
+
+≥ cDs∥h∥2, h ∈ Rq. (5.32a) For two different size-r supports, the coefficient-difference vector has at least two exclusive entries of magnitude at least β−. Thus the same-dictionary margin is at least √2cDβ−s. Transporting r
+
+canonically signed atoms across dictionary distance ρ costs at most CS rβ +ρ, giving the explicit version of (4.10): 
+
+mS (ρ) = 
+
+> [
+
+√2cDβ−s − CS rβ +ρ 
+
+> ]
+> +
+
+. (5.32b) For the parent margin, put cu =
+
+> √
+
+1 − C20 s20 and ha = ( u − e1)/√2. Since ha ⊥ a0, canonical signs give |h⊤ 
+
+> a
+
+a| ≤ Cas0, whereas every fine mean satisfies 
+
+h⊤ 
+
+> a
+
+μ(D, S, x ) ≥ r
+
+√2 {β−cu − β+C0s0}.
+
+Shrink s0 once so that 
+
+g0 
+
+> G
+
+:= r
+
+√2 {β−cu − β+C0s0} − γ+Cas0 ≥ rβ −
+
+2√2 . (5.32c) Cross-dictionary transport then yields 
+
+mG(ρ) = 
+
+> [
+
+g0 
+
+> G
+
+− CG(rβ + + γ+)ρ 
+
+> ]
+> +
+
+, (5.32d) which is (4.9) after renaming fixed constants. Any two retained candidates have fitted means within 2τT,q . Consequently, a fine and separated candidate cannot coexist if 2τT,q < m G(ρ). If mS (ρ) = 0 , the support indicator in (4.11) is automatically active and every pair of fine ray sets lies in the common O(s) cap, so its distance is 
+
+O(s) without any matching. If mS (ρ) > 0, the transport constant CS is chosen large enough that 
+
+ρ < c match s; quotient separation then gives a unique child matching. Distinct transported supports cannot coexist when 2τT,q < m S (ρ), while rays on the same transported branch differ by O(ρ).Two separated candidates also differ by O(ρ) through their anchor projectors. These exhaustive deterministic cases prove (4.11). The operational labels “correct parent” and “correct leaf branch” are used only under a fine truth and on the coverage event. An empty raw profile has the singleton fallback and may have zero diameter, but it certifies neither event. 
+
+A.3 Proof of the minimax lower bound and resolved optimality 
+
+Proof of theorems 6.4 to 6.6. Matching fixed-shell lower pairs 
+
+For two joint parameters ξ0, ξ 1 with target distance d, any confidence correspondence having coverage 1 − α at both endpoints satisfies 
+
+Eξ0 diam pr (̂ C) ≥ d{1 − 2α − TV( P N,T ξ0 , P N,T ξ1 )}+. (5.33) 30 To verify (5.33), let Ai be the event that the confidence set contains the target at endpoint i.Under P0,
+
+P0(A0 ∩ A1) ≥ 1 − 2α − TV( P0, P 1).
+
+On this intersection the reported diameter is at least d. Multiplying and taking expectation proves the claim. Three fixed-p0 submodels of the unknown-p class yield (4.13). 1. Parent pair. On the hard core choose x = β−1S , σ = σ+, and γ⋆ = a⊤ 
+
+> 0
+
+μF ∈ int (Γ A), the last inclusion following from (2.10a). The training laws coincide and 
+
+KL N,T = T
+
+2σ2+
+
+∥(I − Pa0 )μF ∥2 ≤ C T r 2β2
+
+> −
+
+σ2+
+
+= CI (r) 
+
+> G
+
+. (5.33a) Meanwhile the physical target distance is at least dG = sin {π/ 4 − arcsin (λ⋆s0)} > 0 after shrinking s0.2. Wrong-support pair. Keep the hard-core dictionary fixed, choose two supports sharing 
+
+r − 1 atoms, and use the common coefficient β−. If i, j are the exchanged atoms, then 
+
+∥μS − μS′ ∥2 = β2
+
+> −
+
+∥di − dj ∥2 = 2 β2
+
+> −
+
+λ2
+
+> ⋆
+
+s2 qq − 1 , (5.33b) so the joint KL is T β 2
+
+> −
+
+λ2
+
+> ⋆
+
+s2q/ [( q − 1) σ2+] ≤ CI S . The physical target distance equals 
+
+> √
+
+1 − { 1 − λ2
+
+> ⋆
+
+s2q/ (q − 1) }2 ≍ s. (5.33c) 3. Compensated orientation pair. At the centered isotropic hard core L = λ⋆sR , with equal active coefficients, set wS = ∑ 
+
+> j∈S
+
+vj . For q ≥ 4, r ≥ 2, there exists a nonzero skew generator 
+
+Ω that fixes wS but moves at least one active vertex. Indeed, ∥wS ∥2 = r(q − r)/(q − 1) > 0,while the centered active differences span a nonzero subspace of w⊥ 
+
+> S
+
+; choose a skew rotation on a two-plane in w⊥ 
+
+> S
+
+containing one such difference. Normalize it so that max j∈S ∥Ωvj ∥ = 1 .Here is the required target-secant detail. At h = 0 , the finitely many active rays are pairwise separated by at least c0s. Choose a fixed h0 below both the finite-quotient injectivity radius and the radius on which every cross-label match remains at least c0s/ 2. On this chart the same-label match is optimal. The normalized generator moves at least one active ray with projective speed bounded below by cs , while all active rays have speed at most Cs . Taylor expansion, uniformly over the finite set of active labels, therefore gives 
+
+cs |h| ≤ dpr  
+
+> H
+
+{ϑ(D0, S ), ϑ (Dh, S )} ≤ Cs |h|, |h| ≤ h0.
+
+The path R exp (hΩ) leaves the complete test law identical and has training KL at most 
+
+CN s 6h2 by the fixed-law chord (4.1), applied to the law induced by p = p0. Taking 
+
+|h| ≍ min {h0, (√N s 3)−1}
+
+gives the lower term s ∧ (√N s 2)−1.31 Pinsker’s inequality and (5.33) complete the lower bound. For the matching upper bound put 
+
+RD(s, N ) = s ∧ (√N s 2)−1.
+
+By (4.8a), ρN ≤ CρRD. First choose the supplied shell radius s0 so that mG(Cρs) ≥ g0
+
+> G
+
+/2 for every 
+
+s ≤ s0, and then choose a fixed c0 > 0 so small that Cρc0 < c match and 
+
+√2cDβ−s − CS rβ +Cρc0s ≥ cDβ−
+
+√2 s. 
+
+The fixed upper threshold for the parent gate makes 2τT,q < g 0
+
+> G
+
+/2, so the order-one indicator in (4.11) always vanishes in the resolved regime. If RD ≥ c0s, the possible support term satisfies 
+
+Cs ≤ (C/c 0)RD and is absorbed without requiring support matching. If RD < c 0s, then ρN < C ρc0s,so the displayed inequality gives a positive order-s support margin and unique matching. The fixed upper threshold for IS makes 2τT,q < m S (ρN ), hence the support indicator vanishes. In both cases (4.11) is O(RD). The honest correspondence is therefore an admissible member of the minimax class with worst-case expected diameter at most CR D. Combined with the compensated-orientation lower pair, this proves (4.14) for the same class, target, and physical loss. For the known-dictionary comparison in theorem 6.6, set the training radius to zero and run the same common-ball profile at the true dictionary. The fixed-dictionary support margin is √2cDβ−s,while τT,q /s = O(I−1/2 
+
+> S
+
+); hence IS → ∞ leaves only the true fine-support branch. Likewise I(r) 
+
+> G
+
+→ ∞ 
+
+excludes the separated sheet. Its physical diameter therefore tends to zero. Over the learned-dictionary class, the compensated-orientation pair instead retains an order-s indistinguishable physical displacement whenever N s 6 stays bounded. This proves the asserted gap. 
+
+A.4 Proof of task-dependent symmetry breaking 
+
+Proof of theorems 6.7 and 6.8. Task-aligned orientation proof 
+
+Let 
+
+wS,x = ∑
+
+> j∈S
+
+xj vj , V0 
+
+> S
+
+=
+
+> ∑
+> j∈S
+
+cj vj : ∑
+
+> j∈S
+
+cj = 0  
+
+> 
+
+.
+
+At the centered core, an orientation generator changes the test mean by 
+
+˙μR = λ⋆sR ΩwS,x .
+
+Coefficient perturbations with zero sum generate λ⋆sR V0 
+
+> S
+
+; a nonzero sum creates an order-one axial component and cannot cancel a pure order-s transverse rotation. Orthogonal projection gives (4.15)–(4.16). A zero local margin need not imply a finite invariant chord: an O(sh 2) residual may remain. This is why theorem 6.7 explicitly assumes both the physical-target secant (4.17) and the test-mean secant (4.18). For the upper bound, restrict the training moment profile (3.10) and the raw test profile (3.14) to Porb , and use the known-noise test radius 
+
+τT = σ
+
+√T
+
+> √
+
+χ2 
+
+> q, 1−αT
+
+.
+
+Report the physical images of all retained orbit points, with the same fixed fallback on an empty profile. The training rectangle and the one common Gaussian test-ball event retain the truth, so 32 the restricted correspondence has the required uniform marginal coverage. For any two retained parameters, put h = ϕ − ϕ′. The fixed-law invariant chord on the injective orbit and the two-sided target secant give 
+
+s3|h| ≲ N −1/2
+
+from their common training profile, while the triangle inequality for the two fitted means and the lower test secant give 
+
+sχ s|h| ≲ σT −1/2
+
+from the test profile. Hence 
+
+|h| ≲ min 
+
+> {
+
+h0, (N s 6)−1/2,
+
+> (
+
+T χ 2 
+
+> s
+
+s2/σ 2)−1/2}
+
+.
+
+The minimum of the last two terms is within a fixed factor of the inverse square root of their sum. Since the target secant is comparable to s|h|, the worst-case diameter of this honest restricted profile has the upper rate in (4.19). For the lower bound, choose 
+
+|h| ≍ min 
+
+> {
+
+h0, (N s 6 + T χ 2 
+
+> s
+
+s2/σ 2)−1/2}
+
+,
+
+and use the coefficient path supplied by the upper secant. Training and test KL add by independence, while target separation is cs |h|. Equation (5.33) proves the matching lower bound. For the explicit two-atom contrast, write 
+
+e = v1 + v2, f = v1 − v2,
+
+and choose a rotation fixing e while sending f to cos (h)f + sin (h)g, with g ⊥ span {e, f } and 
+
+∥g∥ = ∥f ∥. Exact coefficient profiling gives 
+
+inf 
+
+> ¯β′,d ′∈R
+
+∥μϕ, ¯β,d − μϕ′, ¯β′,d ′ ∥ = λ⋆s|d|∥ f ∥
+
+2 | sin( ϕ − ϕ′)|. (5.34) Choose h0 below the injectivity radius of the finite simplex quotient. The selected generator fixes v1 + v2 but moves at least one active ray; continuity and compactness then give the two-sided physical target secant (4.17). On Xorb (d0, ϵ d), the constrained infimum is bounded below by (5.34), while the same ( ¯β, d ) candidate bounds it above by Cλ ⋆s|d|∥ f ∥| ϕ − ϕ′|. Since |d| ≍ | d0| on the sign-preserving shell, this verifies (4.18). For the separate d = 0 slice, the rotation fixes the entire test mean. Together these facts prove (4.20)–(4.21). 33 Technical appendices 
+
+# B Technical detail S1: projector chart through total degree three 
+
+For z ∈ U , write 
+
+d(z) = c(z)u + z, c(z) = 
+
+√
+
+1 − ∥ z∥2,
+
+and 
+
+H(z) = P {d(z)} − Pu.
+
+Since c(z)2 = 1 − ∥ z∥2 exactly and 
+
+c(z) = 1 − 12 ∥z∥2 + O(∥z∥4),
+
+the total-degree expansion is 
+
+H(z) = A1(z) + A2(z) + A3(z) + R4(z), (S1.1) where 
+
+A1(z) = uz ⊤ + zu ⊤, (S1.2) 
+
+A2(z) = zz ⊤ − ∥ z∥2Pu, (S1.3) 
+
+A3(z) = − 12 ∥z∥2(uz ⊤ + zu ⊤). (S1.4) In this particular chart the first omitted monomial is actually degree five, but the weaker uniform bounds 
+
+∥R4(z)∥F ≤ C∥z∥4, ∥DR 4(z)∥op ≤ C∥z∥3 (S1.5) are sufficient and remain stable under the multivariate density composition. All constants are uniform on the enlarged child cap. 
+
+# C Technical detail S2: one stratum and its total-degree density polynomial 
+
+Fix a support-size/anchor stratum (k, A ), set h = k − A, and write 
+
+C0 = νI q + λk(hP u + AP a).
+
+Only (k, A ) with 0 ≤ h ≤ q and positive stratum weight are included. We use ( qm
+
+) = 0 for invalid 
+
+m, and in elementary symmetric-polynomial formulas use em = 0 outside m ∈ { 0, . . . , q }, e0 = 1 .For a child subset C, define 34 Xm(C) = λk
+
+∑
+
+> j∈C
+
+Am(zj ), m = 1 , 2, 3,
+
+and 
+
+XR(C) = λk
+
+∑
+
+> j∈C
+
+R4(zj ).
+
+Let Dm = DmγC0 denote the m-th covariance derivative at the base covariance. Composing the Gaussian covariance Taylor series with (S1.1), and retaining monomials by total child degree, gives 
+
+P0,C = γC0 , (S2.1) 
+
+P1,C = D1[X1(C)] , (S2.2) 
+
+P2,C = D1[X2(C)] + 12 D2[X1(C), X 1(C)] , (S2.3) and 
+
+P3,C = D1[X3(C)] + D2[X1(C), X 2(C)] + 16 D3[X1(C), X 1(C), X 1(C)] . (S2.4) Every term omitted from 
+
+P≤3,C =
+
+> 3
+
+∑
+
+> m=0
+
+Pm,C 
+
+has total child degree at least four. This statement includes terms produced by the nonlinear projector chart; it is not merely a third-order covariance Taylor approximation. Let Eh denote the uniform average over all h-subsets. The aggregated stratum polynomial is 
+
+P≤3,k,A = EhP≤3,C .
+
+# D Technical detail S3: complete subset-aggregation table 
+
+Put 
+
+S(a) 
+
+> m
+
+=
+
+> q
+
+∑
+
+> j=1
+
+Am(zj )⊙a, Sm =
+
+> q
+
+∑
+
+> j=1
+
+Am(zj ).
+
+For two different homogeneous degrees, also put 
+
+S12 =
+
+> q
+
+∑
+
+> j=1
+
+A1(zj ) ⊙ A2(zj ).
+
+Let 35 πa = (h)a
+
+(q)a
+
+.
+
+Uniform subset averaging gives the following exact table. Powers of λk multiply each row according to the number of X factors and are suppressed in the middle column. Total degree Density term Exact subset aggregate Child invariant dependency 0 γC0 γC0 (Pa, ν )
+
+1 D1[X1] π1D1[S1] B1
+
+2 D1[X2] π1D1[S2] B2
+
+2 12 D2[X1, X 1] 12 D2[( π1 − π2)S(2) 1 +
+
+π2S⊙21 ]
+
+B2, B ⊗21
+
+3 D1[X3] π1D1[S3] B3
+
+3 D2[X1, X 2] D2[( π1 − π2)S12 +
+
+π2S1 ⊙ S2]
+
+B3, Sym( B1 ⊗ B2)
+
+3 16 D3[X1, X 1, X 1] 16 D3[( π1 − 3π2 +2π3)S(3) 1 + 3( π2 −
+
+π3)S1 ⊙ S(2) 1 + π3S⊙31 ]
+
+B3, Sym( B1 ⊗
+
+B2), B ⊗31
+
+The mixed second-derivative row follows by separating equal and unequal indices: 
+
+Eh
+
+∑
+
+> i∈C
+
+A1(zi) ⊙ ∑
+
+> j∈C
+
+A2(zj )
+
+ = ( π1 − π2)S12 + π2S1 ⊙ S2. (S3.1) The last row is the equality-pattern identity for ordered triples. Thus the table contains every degree-at-most-three density term and no componentwise triangle inequality has been used. 
+
+D.1 Reduction of the homogeneous projector sums 
+
+Let L (z) = uz ⊤ + zu ⊤. Then 
+
+S1 = L (B1). (S3.2) Moreover, 
+
+S2 = ∑
+
+> j
+
+zj z⊤ 
+
+> j
+
+− tr( B2)Pu, (S3.3) so S2 is a fixed linear image of B2. Since A1 is linear, 
+
+S(2) 1 = ∑
+
+> j
+
+L (zj )⊙2 (S3.4) is also a fixed linear image of B2.Let 
+
+c3 = B3[·, I U ] = ∑
+
+> j
+
+∥zj ∥2zj .
+
+36 Then 
+
+S3 = − 12 L (c3), (S3.5) and both 
+
+S12 = ∑
+
+> j
+
+A1(zj ) ⊙ A2(zj ), S(3) 1 = ∑
+
+> j
+
+A1(zj )⊙3 (S3.6) are fixed linear images of B3. Products of the aggregate sums give the displayed symmetrized products of B1, B 2, B 3. Therefore the table reduces exactly to 
+
+B1, B 2, B 3, B ⊗21 , Sym( B1 ⊗ B2), B ⊗31 . (S3.7) No degree-one or degree-two residual-orientation coordinate exists in this list: B1 = qb , while 
+
+B2 depends on L only through LL ⊤. Residual orientation first enters through the B3 term L⊗3Tq.
+
+D.2 Conversion to quotient coordinates 
+
+The exact affine-simplex identities are 
+
+B1 = qb, (S3.8) 
+
+B2 = qb ⊗2 + qq − 1 G2, (S3.9) 
+
+B3 = qb ⊗3 + qq − 1 Sym 3(b ⊗ G2) + G3. (S3.10) On the shell, 
+
+∥∆B1∥ ≤ C∥∆b∥, (S3.11) 
+
+∥∆B2∥ ≤ C{s∥∆b∥ + ∥∆G2∥} , (S3.12) 
+
+∥∆B3∥ ≤ C{s2∥∆b∥ + s∥∆G2∥ + ∥∆G3∥} . (S3.13) Because Bm = O(sm), every product row in the aggregation table obeys the same O(δF ) endpoint chord. Smooth changes in (Pa, ν ) are handled by differentiating the base covariance derivative operators and using the common Gaussian envelope. This proves the low-order endpoint bound in manuscript equation (5.25), term by term. 37 E Technical detail S4: full composed remainder 
+
+Let 
+
+Gk,A (z1, . . . , z q; Pa, ν ) = EhγC0+X1+X2+X3+XR
+
+be the already aggregated full stratum density, and let 
+
+R≥4,k,A = Gk,A − P ≤3,k,A .
+
+Before aggregating within this stratum, let R≥4,C = GC −P ≤3,C , and let qC,θ ′ be the corresponding endpoint subset density. For every collection of subsetwise remainder increments rC , weighted Cauchy–Schwarz gives the pointwise inequality 
+
+{EhrC }2
+
+EhqC,θ ′
+
+≤ Eh
+
+r2
+
+> C
+
+qC,θ ′
+
+. (S4.0) Thus the common Gaussian envelope may first be applied subset by subset and then averaged; no inverse subset probability or minimum component weight is introduced inside a stratum. Bundle all labelled child coordinates into z = ( z1, . . . , z q). Apply the integral Taylor formula to the derivative map Dz Gk,A . The exact Fréchet identity is 
+
+Dz R≥4,k,A (z)[ ˙ z] = 12
+
+∫ 10
+
+(1 − t)2D4 
+
+> z
+
+Gk,A (tz )[ z, z, z, ˙z], dt. (S4.1) For example, (S4.1) gives 4z3 ˙z when G(z) = z4, fixing the coefficient that would be lost by differentiating a schematic multiindex remainder. Every integrand is a finite combination of covariance derivatives of order at most four, projector derivatives, and three powers of child coordinates. Lemma 5.1 of the manuscript therefore gives 
+
+∥∥∥∥∥
+
+Dz R≥4,k,A [ ˙ z]
+
+√qk,A,θ ′
+
+∥∥∥∥∥2
+
+≤ Cs 3 max  
+
+> j
+
+∥ ˙zj ∥, (S4.2) where qk,A,θ ′ is the corresponding endpoint stratum density. For η = ( Pa, ν ), apply the fourth-order remainder formula directly to DηG:
+
+DηR≥4,k,A (z)[ ˙ η] = 16
+
+∫ 10
+
+(1 − t)3D4 
+
+> z
+
+DηGk,A (tz )[ z, z, z, z, ˙η], dt. (S4.2a) This raises the covariance derivative order by at most one. The same envelope through order five gives 
+
+∥∥∥∥∥
+
+D(Pa,ν )R≥4,k,A [ ˙Pa, ˙ν]
+
+√qk,A,θ ′
+
+∥∥∥∥∥2
+
+≤ Cs 4(∥ ˙Pa∥F + | ˙ν|). (S4.3) These equations account simultaneously for the Gaussian Taylor tail and the nonlinear projector terms omitted from (S1.1). For weights wk,A = πkρk,A ,
+
+{∑ 
+
+> k,A
+
+wk,A rk,A }2
+
+∑ 
+
+> k,A
+
+wk,A qk,A 
+
+≤ ∑
+
+> k,A
+
+wk,A 
+
+r2
+
+> k,A
+
+qk,A 
+
+. (S4.4) Thus stratum aggregation introduces no inverse minimum-weight factor. Along the aligned endpoint path, the physical inverse gives 38 s3 max  
+
+> j
+
+∥∆zj ∥ ≤ C{s3∥∆b∥ + s2∥∆G2∥ + s∥∆G3∥} ≤ Csδ F . (S4.5) Integrating (S4.2)–(S4.3), applying (S4.4), and adding strata proves 
+
+∥∥∥∥
+
+R≥4(θ) − R≥4(θ′)
+
+√fθ′
+
+∥∥∥∥2
+
+≤ Csδ F (θ, θ ′). (S4.6) The reverse-endpoint inequality is identical. Equations (S3.7)–(S3.13) and (S4.6) provide the complete local-noise chi-square upper chord. The far-noise log-sum patch and moment-to-Hellinger lower lemma are as stated in the integrated manuscript. 
+
+# F Technical detail S5: simplex cubic maxima and the global orbit inverse 
+
+For unit x ∈ U , set yj = v⊤ 
+
+> j
+
+x. Then 
+
+∑
+
+> j
+
+yj = 0 , ∑
+
+> j
+
+y2 
+
+> j
+
+= qq − 1 , Tq[x, x, x ] = ∑
+
+> j
+
+y3 
+
+> j
+
+. (S5.1) These constraints describe the entire image, not merely a necessary condition. The tight-frame map 
+
+A : U −→ H 0 := {y ∈ Rq : 1⊤y = 0 }, Ax = ( v⊤ 
+
+> 1
+
+x, . . . , v ⊤ 
+
+> q
+
+x),
+
+is a linear isomorphism. Its inverse is 
+
+x = q − 1
+
+q
+
+> q
+
+∑
+
+> j=1
+
+yj vj .
+
+Consequently every y ∈ H 0 with ∑ 
+
+> j
+
+y2 
+
+> j
+
+= q/ (q − 1) comes from a unit x ∈ U . Optimizing under (S5.1) therefore loses no sphere points. At a constrained stationary point of the last expression, Lagrange multipliers give 
+
+3y2 
+
+> j
+
+= λ + 2 μy j ,
+
+so the coordinates take at most two distinct values. If k coordinates equal the positive value and q − k the negative value, the constraints give 
+
+a2 = q − kk(q − 1) , b = − kq − k a, 
+
+and 
+
+∑
+
+> j
+
+y3 
+
+> j
+
+= q(q − 2k)(q − 1) 3/2√k(q − k) . (S5.2) For real t ∈ (0 , q/ 2) ,
+
+ddt q − 2t
+
+√t(q − t) = − q2
+
+2{t(q − t)}3/2 < 0.
+
+39 Hence among positive stationary values, (S5.2) is maximized at k = 1 . The corresponding coordinate pattern is 
+
+(1 , −1/(q − 1) , . . . , −1/(q − 1)) ,
+
+up to permutation, which is exactly the inner-product pattern of a simplex vertex. Hence the positive spherical maxima of Tq[x, x, x ] are exactly v1, . . . , v q. It follows that 
+
+Stab O(U )(Tq) = Sq. (S5.3) The differential identity 
+
+∥Ω · Tq∥2 
+
+> F
+
+= 3 
+
+( qq − 1
+
+)3
+
+∥Ω∥2 
+
+> F
+
+(S5.4) gives a lower singular value at every orbit point by orthogonal invariance. Let 
+
+dorb ([ R], [R′]) = min 
+
+> π∈Sq
+
+∥R − R′Ππ∥F .
+
+The constant-rank/local-embedding theorem gives 
+
+dorb ([ R], [R′]) ≤ C∥R⊗3Tq − R′⊗ 3Tq∥F (S5.5) on a uniform neighborhood of the quotient diagonal. Outside that neighborhood, the compact set of quotient pairs is separated from the zero set of the tensor difference by (S5.3), so (S5.5) holds globally after enlarging C.To transfer the orbit inverse from the normalized tensor to L, write 
+
+W (L) = P −⊗ 3 
+
+> L
+
+G3, PL = ( LL ⊤)1/2.
+
+On the shell, square-root functional calculus and the product rule give 
+
+∥W (L) − W (L′)∥F ≤ C
+
+[
+
+s−3∥G3 − G′
+
+> 3
+
+∥F + s−2∥G2 − G′
+
+> 2
+
+∥F
+
+]
+
+. (S5.6) Combining (S5.5)–(S5.6) with the corresponding polar-shape bound proves the global physical inverse used throughout the manuscript. 
+
+# G Technical detail S6: two-atom physical target secant 
+
+Fix S = {1, 2} on the balanced core and write 
+
+e = v1 + v2, f = v1 − v2.
+
+Choose g ⊥ span {e, f }, ∥g∥ = ∥f ∥, and a skew generator Ω such that 
+
+Ωe = 0 , exp( hΩ) f = cos( h)f + sin( h)g. 
+
+Then 
+
+Ωv1 = 12 g, Ωv2 = − 12 g. (S6.1) 40 For the physical child rays 
+
+dj (h) = 
+
+> √
+
+1 − λ2
+
+> ⋆
+
+s2 u + λ⋆s exp( hΩ) vj ,
+
+the projective derivative at every short-orbit point has norm comparable to s for both active atoms. Taylor expansion on a compact short chart gives 
+
+c1s|h − h′| ≤ dpr ([ dj (h)] , [dj (h′)]) ≤ C1s|h − h′|, j = 1 , 2. (S6.2) At h = h′, the two distinct active rays are separated by c0s. By continuity, choose h0 so small that, for every |h|, |h′| ≤ h0, each cross-match 
+
+dpr ([ d1(h)] , [d2(h′)]) 
+
+is at least c0s/ 2, while the same-label displacement in (S6.2) is less than c0s/ 4. Hence the Hausdorff-optimal set matching is the same-label matching. Therefore 
+
+cV s|h − h′| ≤ dpr 
+
+> H
+> (
+
+{[d1(h)] , [d2(h)] }, {[d1(h′)] , [d2(h′)] }) ≤ CV s|h − h′|. (S6.3) This is the target-space secant required in theorem 6.7. Together with the exact unconstrained profiled test-mean formula 
+
+inf 
+
+> ¯β′,d ′∈R
+
+∥μh, ¯β,d − μh′, ¯β′,d ′ ∥ = λ⋆s|d|∥ f ∥
+
+2 | sin( h − h′)|, (S6.4) it verifies the test secant on a formally declared coefficient shell. In fact, for d0̸ = 0 , take 
+
+Xorb (d0, ϵ d) = 
+
+> {
+
+( ¯β + d/ 2, ¯β − d/ 2) : ¯β ∈ [βd, β d], |d − d0| ≤ ϵd
+
+> }
+
+⋐ (β−, β +)2,
+
+where ϵd ≤ | d0|/2. The constrained infimum is at least the unconstrained value in (S6.4). For the reverse inequality, the same coefficient pair ( ¯β, d ) is always admissible, and its mean difference is at most 
+
+Cλ ⋆s|d|∥ f ∥| h − h′|.
+
+Since |d| ≍ | d0| on this sign-preserving shell, the two-sided secant holds with χs ≍ λ⋆∥f ∥| d0|/2.On the separate exact slice d = 0 , both the axial part and the e = v1 + v2 part are fixed by the orbit, so the test mean is exactly invariant. 
+
+# H Technical detail S7: consequences of the explicit expansions 
+
+The calculations in S1–S6 establish four facts used below: the composed Gaussian remainder starts at total child degree four with a differentiated uniform envelope; every degree-at-most-three aggregate reduces to the stated quotient invariants; the simplex cubic has no stabilizer beyond the finite child-permutation group; and the two-atom orbit has a genuine projective target secant after optimal matching. These statements are deterministic and hold uniformly on the fixed enlarged shell. 41 I Technical detail S8: collapsed power-sum operator and the uni-form moment secant 
+
+This section closes the algebraic gap between the quotient coordinates and the observable sec-ond/fourth moment pair. Use the anchor chart 
+
+a(w) = a0 + w
+
+∥a0 + w∥ , w ∈ a⊥ 
+
+> 0
+
+, (S8.1) and put 
+
+Bk =
+
+> q
+
+∑
+
+> j=1
+
+z⊗kj , Ξ = ( B1, B 2, B 3, w, ν ). (S8.2) For X = tu + x, x ∈ U , define 
+
+H( ˙ w) = a0 ˙w⊤ + ˙ wa ⊤ 
+
+> 0
+
+, h0(t, x ) = Pa0 [X, X ] = 12 (t + e⊤ 
+
+> 1
+
+x)2. (S8.3) For an increment ˙B = ( ˙B1, ˙B2, ˙B3), set 
+
+S ˙B (t, x ) = 2 t ˙B1[x] + ˙B2[x, x ] − t2 tr ˙B2 − t ˙B3[x, I U ],
+
+Q ˙B (t, x ) = 4 t3 ˙B1[x] + 6 t2 ˙B2[x, x ] − 2t4 tr ˙B2
+
++ 4 t ˙B3[x, x, x ] − 6t3 ˙B3[x, I U ].
+
+(S8.4) These are the degree-at-most-three increments of the child contributions to Σ2[X, X ] and 
+
+Σ4[X, X, X, X ]. Define the collapsed linear operator 
+
+Aq( ˙B, ˙w, ˙ν) = ( ˙ν, S ˙B + H( ˙ w)[ X, X ], Q ˙B + 2 h0H( ˙ w)[ X, X ]) . (S8.5) Its domain is 
+
+U ⊕ Sym 2(U ) ⊕ Sym 3(U ) ⊕ a⊥ 
+
+> 0
+
+⊕ R, (S8.6) and its codomain is R ⊕ Sym 2(Rq) ⊕ Sym 4(Rq).
+
+I.1 Lemma S8.1 — zero kernel 
+
+For every fixed q ≥ 3, Aq is injective. 
+
+Proof. Suppose Aq( ˙B, ˙w, ˙ν) = 0 . Then ˙ν = 0 and 
+
+H( ˙ w)[ X, X ] = −S ˙B (t, x ). (S8.7) The fourth-order output becomes the polynomial identity 
+
+Q ˙B (t, x ) = ( t + e⊤ 
+
+> 1
+
+x)2S ˙B (t, x ). (S8.8) Write 
+
+r2 = tr ˙B2, c3(x) = ˙B3[x, I U ], ℓ(x) = 2 ˙B1[x] − c3(x), q2(x) = ˙B2[x, x ]. (S8.9) Then S ˙B = −r2t2 + tℓ (x) + q2(x). Comparing powers of t in (S8.8) gives, in order: 1. the t4 coefficient gives −2r2 = −r2, hence r2 = 0 ;42 2. the t0 coefficient gives (e⊤ 
+
+> 1
+
+x)2q2(x) = 0 as a polynomial identity, hence q2 ≡ 0 and ˙B2 = 0 ;3. the t2 coefficient gives 2( e⊤ 
+
+> 1
+
+x)ℓ(x) = 0 , hence ℓ = 0 ;4. the t3 coefficient gives 4 ˙B1 − 6c3 = 0 , which together with 2 ˙B1 − c3 = 0 yields ˙B1 = c3 = 0 ;5. the t1 coefficient gives 4 ˙B3[x, x, x ] = 0 , and polarization yields ˙B3 = 0 .Equation (S8.7) now gives H( ˙w) = 0 . The map ˙w 7 → a0 ˙w⊤ + ˙wa ⊤ 
+
+> 0
+
+is injective on a⊥ 
+
+> 0
+
+, so ˙w = 0 .Every input coordinate vanishes. □
+
+Finite dimensionality therefore supplies a constant σq > 0 such that 
+
+∥Aqh∥ ≥ σq∥h∥. (S8.10) 
+
+I.2 Lemma S8.2 — all-pair nonlinear secant 
+
+Let 
+
+R(θ) = ( ν, Σ2, Σ4). (S8.11) For every same-shell pair, first use the algebraic quotient inverse from S5 to align the second labelled endpoint. To display the required squared-projector analogue, for X = tu + x and r = x⊤z,
+
+P (z)[ X, X ] = t2 + 2 tr + ( r2 − t2∥z∥2) − t∥z∥2r + R2,z (X),
+
+∥Dz R2,z ∥coeff ≤ C∥z∥4, (S8.11a) and 
+
+P (z)[ X, X ]2 = t4 + 4 t3r + 6 t2r2 − 2t4∥z∥2
+
++ 4 tr 3 − 6t3∥z∥2r + R4,z (X),
+
+∥Dz R4,z ∥coeff ≤ C∥z∥3.
+
+(S8.11b) These identities follow by inserting d(z)⊤X = t√1 − ∥ z∥2 + r and collecting total degree in z.After summing the children and applying the S5 label alignment, 
+
+∥∆Rchild ∥ ≤ Cqs3 max  
+
+> j
+
+∥zj − z′
+
+> π(j)
+
+∥ ≤ Cqs δ F (θ, θ ′), (S8.11c) while the anchor-chart remainder is at most Cs ∥w − w′∥. The projector expansions in S1 and the two displayed squared-projector identities therefore give the exact decomposition 
+
+R(θ) − R (θ′) = Aq{Ξ( θ) − Ξ( θ′)} + Rem q(θ, θ ′), (S8.12) where 
+
+∥ Rem q(θ, θ ′)∥ ≤ Cqs∥Ξ( θ) − Ξ( θ′)∥. (S8.13) Indeed, the child projector remainder has derivative O(s3); after the S5 alignment, (S4.5) bounds its secant by Csδ F . The anchor chart has a quadratic remainder whose derivative is O(s), and the noise coordinate is exact. The triangular identities (S3.8)–(S3.10), the bi-Lipschitz anchor chart, and S5 give 
+
+∥Ξ( θ) − Ξ( θ′)∥ ≍ δF (θ, θ ′). (S8.14) 43 The quotient inverse is used here only to choose an algebraic label alignment and bound the projector remainder; no statistical moment lower bound is used. Thus there is no circularity. Choose 
+
+s0 ≤ min {1, s chart , σ q/(2 Cq)}. (S8.15) Consequently, 
+
+∥∆R∥ ≥ (σq − Cqs)∥∆Ξ ∥ ≥ σq
+
+2 ∥∆Ξ ∥. (S8.15a) Equations (S8.10)–(S8.14) yield the uniform same-shell chord 
+
+cδ F (θ, θ ′) ≤ ∥ ∆( ν, Σ2, Σ4)∥ ≤ Cδ F (θ, θ ′). (S8.16) This includes nonlocal quotient rotations and closed-shell endpoints. 
+
+# J Technical detail S9: ordered all-pair statistical chords 
+
+J.1 Fixed exchangeable law 
+
+Index a latent component by its support I ⊆ [n]. For a fixed exchangeable law, omit every zero-weight component and write 
+
+wI = π|I|
+
+( n
+
+> |I|
+
+) , CI (θ) = νI q + λ|I|
+
+∑
+
+> j∈I
+
+Pj , fθ = ∑ 
+
+> I:wI>0
+
+wI γCI (θ). (S9.1) The code powers are bounded and ν ≥ ν− > 0, so all component spectra belong to one fixed compact subset of (0 , ∞). In (S9.2)–(S9.4), write θ0 = θ and θ1 = θ′.Choose rν > 0 and then s0 > 0 so that, whenever |ν − ν′| ≤ rν , every covariance on the aligned endpoint and radial paths obeys Lemma 5.1 relative to either endpoint covariance. The complete low-order table in S3 and the full composed remainder in S4 give 
+
+∥∥∥∥∥
+
+P≤3(θ) − P ≤3(θ′)
+
+√fθe
+
+∥∥∥∥∥2
+
+≤ Cδ F (θ, θ ′), e ∈ { 0, 1}, (S9.2) and 
+
+∥∥∥∥∥
+
+R≥4(θ) − R≥4(θ′)
+
+√fθe
+
+∥∥∥∥∥2
+
+≤ Csδ F (θ, θ ′), e ∈ { 0, 1}. (S9.3) Both bounds use the same endpoint in every denominator. The reverse direction is obtained by rerunning the identical argument with the endpoints exchanged, not by an appeal to symmetry of KL. Since (a + b)2 ≤ 2a2 + 2 b2,
+
+max 
+
+{
+
+χ2(fθ∥fθ′ ), χ 2(fθ′ ∥fθ)
+
+}
+
+≤ Cδ 2 
+
+> F
+
+(θ, θ ′) if |ν − ν′| ≤ rν . (S9.4) No inverse minimum mixture weight appears: the pointwise weighted inequality (S4.4) is applied only after subset aggregation has exposed the cancellations. If |ν − ν′| > r ν , align child labels and pair the corresponding supports. If a denotes the anchor label, the aligned action is 44 π(I) = {π(j) : j ∈ I ∩ [q]} ∪ (I ∩ { a}); 
+
+thus the anchor is fixed. The log-sum inequality gives 
+
+KL( fθ∥fθ′ ) ≤ ∑ 
+
+> I:wI>0
+
+wI KL {N (0 , C I (θ)) ∥N (0 , C π(I)(θ′)) }. (S9.5) The right side is at most a fixed Kq, L,sh , which may depend on the fixed law and compact shell constants, on the compact covariance-pair class. Since δ2 
+
+> F
+
+≥ | ν − ν′|2 > r 2 
+
+> ν
+
+,
+
+KL( fθ∥fθ′ ) ≤ Kq, L,sh r−2 
+
+> ν
+
+δ2 
+
+> F
+
+(θ, θ ′). (S9.6) Exchanging endpoints gives the reverse directed statement. For the lower chord, let 
+
+Ψ( Y ) = {vech( Y Y ⊤), symvec( Y ⊗4)}. (S9.7) Uniform eighth moments and Cauchy–Schwarz imply 
+
+∥EθΨ − Eθ′ Ψ∥ ≤ CH (fθ, f θ′ ). (S9.8) The raw-to-cumulant map is Lipschitz on the compact moment image. Moreover, for the fixed law, 
+
+ν = tr M2 − a1nq , Σ2 = M2 − νI q
+
+a1
+
+, (S9.9) and 
+
+Σ4 = K4/3 − (a2o − a21)Σ ⊙22
+
+∆L
+
+. (S9.10) The assumptions a1 ≥ a− > 0 and ∆L ≥ ∆− > 0, followed by S8.16, therefore give 
+
+δF ≤ C∥∆( ν, Σ2, Σ4)∥ ≤ C∥∆( M2, K 4)∥ ≤ C∥∆EΨ∥ ≤ CH (fθ, f θ′ ). (S9.11) Combining (S9.4), (S9.6), (S9.11), KL ≤ χ2, and H2 ≤ KL proves the full ordered fixed-law chord (4.1). 
+
+J.2 Bernoulli branch 
+
+For Bernoulli coding, the trace inverse (3.4)–(3.5) and 1 − p − p′ ≥ 1 − 2p+ > 0 give 
+
+|p − p′| = |p(1 − p) − p′(1 − p′)||1 − p − p′| ≤ |p(1 − p) − p′(1 − p′)|
+
+1 − 2p+
+
+. (S9.11a) By (3.4), the numerator is a fixed contraction of ∆K4. The remaining inverses in (3.5) are uniformly Lipschitz on the compact branch, so the raw-moment/Hellinger chain (S9.7)–(S9.11), now with |p − p′| included, gives the lower chord in δF,p . For the local upper chord define 
+
+f0 = fp,ν,D , f1 = fp,ν ′,D ′ , f2 = fp′,ν ′,D ′ . (S9.12) At the same dictionary/noise parameter, compactness of the Bernoulli branch implies cf 1 ≤
+
+f2 ≤ Cf 1, because every ratio wI (p)/w I (p′) is uniformly bounded. Consequently, 45 χ2(f0∥f2) ≤ 2 
+
+> ∫
+
+(f0 − f1)2
+
+f2
+
++ 2  
+
+> ∫
+
+(f1 − f2)2
+
+f2
+
+≤ Cχ 2(fp,ν,D ∥fp,ν ′,D ′ ) + C ∑
+
+> I
+
+{wI (p) − wI (p′)}2
+
+wI (p′)
+
+≤ C{δ2 
+
+> F
+
++ |p − p′|2}.
+
+(S9.13) The first term uses S9.4 for the fixed law induced by p, uniformly over the compact branch; the second is an ordinary finite-dimensional smooth weight chord. Repeat with endpoints exchanged. In the far-noise region, first relabel the children of D′ by the quotient alignment used in S9.1. Generalized log-sum then gives 
+
+KL( fp,θ ∥fp′,θ ′ ) ≤ KL {w(p)∥w(p′)}
+
++ ∑
+
+> I
+
+wI (p) KL {N (0 , C I (θ)) ∥N (0 , C I (θ′)) }, (S9.14) which is bounded on the compact class and is absorbed by the fixed noise separation. Repeating the same argument with endpoints exchanged gives the reverse directed bound. This proves (4.2) without claiming pointwise comparability across different dictionaries. 
+
+# K Technical detail S10: point-adapted nuisance coercivity 
+
+Fix normalized inner and enlarged open tubes Θin (s) ⋐ Θout (s). The eigenvalues of every normalized shape below lie in a fixed interval [g−, g +] ⋐ (0 , ∞), and the p, ν , centroid, and anchor coordinates of the inner tube have a fixed normalized distance from the outer boundary. This formulation covers interior base points and, on constrained faces, only tangent directions admitting two-sided paths in the enlarged tube; it never differentiates through s = 0 .At a base point write 
+
+L = sRG, R ∈ O(U ), G = G⊤ > 0, (S10.1) and use the retraction 
+
+Lt = R(sG + tS )etΩ, ˙L = R(S + sG Ω) , S⊤ = S, Ω⊤ = −Ω. (S10.2) For the anchor use the feasible chart 
+
+a(w) = a0 + w
+
+∥a0 + w∥ , Pa(w) = a(w)a(w)⊤, w ∈ a⊥ 
+
+> 0
+
+, (S10.2a) with wt = w + t ˙w and ˙Pa = DP a(w)[ ˙w]. Together with straight local paths only in the Euclidean coordinates (p, ν, b ), this defines 
+
+h = ( ˙ p, ˙ν, ˙b, ˙Pa, S, Ω) , (S10.3) where ˙p is omitted for a fixed known code law. For sufficiently small two-sided t, the path remains in Θout (s).46 K.1 Lemma S10.1 — invariant differential equivalence 
+
+Let 
+
+Fp(θ) = ( p, b, P a, G 2, G 3, ν ), (S10.4) with the first coordinate omitted for a fixed law. Uniformly on the inner tube, 
+
+∥DF p(θ)[ h]∥2 ≍ | ˙p|2 + | ˙ν|2 + ∥˙b∥2 + ∥ ˙Pa∥2 
+
+> F
+
++ s2∥S∥2 
+
+> F
+
++ s6∥Ω∥2 
+
+> F
+
+. (S10.5) 
+
+Proof. Direct differentiation of G2 = LL ⊤ gives 
+
+DG 2[h] = sR (SG + GS )R⊤. (S10.6) The Lyapunov map S 7 → SG + GS has singular values bounded above and away from zero on the normalized spectral cone, so 
+
+∥DG 2[h]∥F ≍ s∥S∥F . (S10.7) For the cubic invariant, 
+
+DG 3[h] = SR,G,s [S] + ( sRG )⊗3(Ω · Tq), ∥S R,G,s [S]∥F ≤ Cs 2∥S∥F . (S10.8) The first term is the sum of the three slotwise derivatives in the RS direction. Invertibility of 
+
+G⊗3, orthogonality of R, and (S5.4) imply 
+
+s3∥Ω∥F ≤ C{∥ DG 3[h]∥F + s2∥S∥F }. (S10.9) The reverse bound follows directly from (S10.8). Adding the coordinates that appear linearly in 
+
+Fp proves (S10.5). □
+
+The order of the factors in (S10.2) is essential. A generic expression with ΩG in place of GΩ is not the point-adapted right-body chart and need not separate shape and orientation uniformly. 
+
+K.2 Lemma S10.2 — observed mixed Fisher equivalence 
+
+Let 
+
+ℓθ,h (y) = Df θ[h]( y)
+
+fθ(y) , Iθ(h) = Eθℓ2
+
+> θ,h
+
+. (S10.10) Then 
+
+c∥h∥2mix ,θ ≤ Iθ(h) ≤ C∥h∥2mix ,θ , (S10.11) where the mixed norm is the right side of (S10.5). 
+
+Proof. For the upper bound, differentiate the finite aggregate polynomial from S3 and the remainder from S4 in the path (S10.2). The child derivatives are bounded in L2(f −1 
+
+> θ
+
+) by 
+
+C{∥ ˙b∥ + s∥S∥F + s3∥Ω∥F }. (S10.12) Mixture Cauchy–Schwarz and compact Gaussian covariance Fisher bounds control the anchor and noise derivatives. On the Bernoulli branch, differentiating the finite weight vector gives an additional C| ˙p| term. Squaring and adding proves the upper half of (S10.11). 47 For the lower half, use the observed feature Ψ from (S9.7). Uniform eighth moments and differentiation under the integral give 
+
+DE θΨ[ h] = Eθ{(Ψ − EθΨ) ℓθ,h }. (S10.13) Although K4 is a polynomial rather than a linear expectation, its derivative is a uniformly bounded linear transform of DE θΨ[ h] on the compact class. Thus 
+
+∥D(M2, K 4)θ[h]∥2 ≤ CI θ(h). (S10.14) Differentiate the moment/invariant chord supplied by S8–S9 along the feasible chart path. Equation (S10.5) yields 
+
+∥D(M2, K 4)θ[h]∥ ≥ c∥h∥mix ,θ . (S10.15) Combining (S10.14)–(S10.15) proves the lower half. In particular, no simultaneous nuisance direction can cancel a nonzero observed orientation score. □
+
+K.3 Lemma S10.3 — quadratic-mean differentiability 
+
+On every compact interior subbranch, the map from the point-adapted chart parameter to the one-observation training law is differentiable in quadratic mean. In particular, its directional score is ℓθ,h = Df θ[h]/f θ.
+
+Proof. Write the finite mixture in the chart as 
+
+fθ(y) = ∑
+
+> I⊆[n]
+
+wI (θ)φCI (θ)(y),
+
+where zero-weight components are omitted. On a compact interior subbranch, all retained weights are bounded away from zero, the maps θ 7 → wI (θ) and θ 7 → CI (θ) are twice continuously differentiable, and the positive noise floor gives cI q ⪯ CI (θ) ⪯ CI q, uniformly in I and θ. Every first or second chart derivative of a component density is therefore a polynomial of uniformly bounded degree times a Gaussian density. The common Gaussian envelopes of Technical details S2–S4 and the finite aggregation bound of Technical detail S9 supply one integrable dominating function for the corresponding L2(f −1 
+
+> θ
+
+) norms. Because the chart is finite-dimensional and the second derivatives obey this bound uniformly, Taylor’s theorem yields a chart neighborhood and a constant C such that, for every increment u in that neighborhood, 
+
+∥fθ+u − fθ − Df θ[u]∥L2(f −1  
+
+> θ)
+
+≤ C∥u∥2. (S10.15a) Since fθ > 0, the identity √
+
+fθ+u − √fθ = fθ+u − fθ
+
+> √
+
+fθ+u + √fθ
+
+together with (S10.15a), truncation on the likelihood-ratio event {| fθ+u/f θ − 1| ≤ 1/2}, and the same envelope on its complement gives 
+
+> ∥∥∥∥√
+
+fθ+u − √fθ − 12
+
+Df θ[u]
+
+√fθ
+
+> ∥∥∥∥2
+
+= o(∥u∥). (S10.15b) This is the full finite-dimensional quadratic-mean differentiability statement. Taking u = th shows that Eθℓ2 
+
+> θ,h
+
+is its Fisher quadratic form; see van der Vaart (1998, Chapter 7). □
+
+48 Define 
+
+IR|η,θ (Ω) = inf   
+
+> ( ˙ p, ˙ν, ˙b, ˙Pa,S )
+
+Iθ( ˙ p, ˙ν, ˙b, ˙Pa, S, Ω) . (S10.16) Here ˙Pa is restricted to the tangent space generated by (S10.2a), equivalently the tangent space of the rank-one projector manifold at Pa.Taking the infimum in the lower half of (S10.11), and choosing every nuisance tangent to be zero in its upper half, gives 
+
+cs 6∥Ω∥2 
+
+> F
+
+≤ IR|η,θ (Ω) ≤ Cs 6∥Ω∥2 
+
+> F
+
+. (S10.17) This proves (4.5) uniformly on compact interior subbranches. The all-pair chords remain valid on the full closed shell; only the Fisher/QMD statement uses the interior tangent scope. 
+
+# L Technical detail S11: random compact correspondence and conditional coverage 
+
+Let 
+
+ΩN,T = ( Rq)N × (Rq)T (S11.1) with its Euclidean Borel sigma field. Let ˜Dq,s be the labelled dictionary shell obtained from the geometric constraints (2.1) and the anchor-projector constraint in the first part of (2.2), excluding the separate noise coordinate ν, and imposing the canonical signs 
+
+u⊤dj ≥ ccap > 0, a⊤ 
+
+> 0
+
+a ≥ ca > 0. (S11.2) For the chosen s0, the positive lower bounds in (S11.2) are uniform. The labelled shell is therefore compact metric. Put 
+
+˜Epq,s = [ p−, p +] × [ν−, ν +] × ˜Dq,s (S11.3) and 
+
+Sq,r =
+
+([q]
+
+r
+
+)
+
+⊔ { ∂}. (S11.4) The finite group Sq acts simultaneously on child columns, supports, and coefficient coordinates, and fixes p, ν , and ∂. Define 
+
+Mpq,r,s = { ˜Epq,s × S q,r }/Sq. (S11.5) This is compact metrizable; no freeness assumption is needed. There is a continuous training projection 
+
+πtr : Mpq,r,s −→ E pq,s , πtr ([ p, ν, D, S ]) = ( p, ν, [D]) . (S11.6) Under the identification m = [ p, ν, D, S ] ↔ (p, ν, ζ ), where ζ = [ D, S ] ∈ Mq,r,s , this compact quotient is exactly the typed triple used in the raw profile (3.14); the coefficient coordinates are profiled inside the loss below rather than carried in m.49 L.1 Lemma S11.1 — continuous quotient-safe profiling 
+
+For m = [ p, ν, D, S ] ∈ M pq,r,s , define 
+
+L(z, m ) = 
+
+> 
+
+min  
+
+> xj∈[β−,β +], j ∈S
+> ∥∥∥∥∥∥
+
+z − ∑
+
+> j∈S
+
+xj dj 
+
+> ∥∥∥∥∥∥
+
+, S̸ = ∂, 
+
+min 
+
+> γ∈ΓA
+
+∥z − γa ∥, S = ∂. 
+
+(S11.7) Then L is jointly continuous on Rq × M pq,r,s .
+
+Proof. On each labelled support component, the objective is continuous on a compact coefficient fiber. Compact minimization gives continuity of its value. There are finitely many support components. Simultaneous permutation of the dictionary, support, and coefficient coordinates leaves the attainable mean set unchanged, so the value descends continuously to the quotient. □
+
+The physical target map 
+
+ϑ(m) = 
+
+> {
+
+(1 , {[dj ] : j ∈ S}), S̸ = ∂, 
+
+(0 , {[a]}), S = ∂ (S11.8) is likewise continuous into 
+
+Vq = {0, 1}disc × K (RP q−1) (S11.9) equipped with the metric (2.11a). 
+
+L.2 Lemma S11.2 — measurable compact raw profile 
+
+Let ̂ Kpq,s (y) be the training profile (3.10). Its graph is Borel: each constraint is Borel in y and continuous in the compact quotient parameter. Its sections are compact, possibly empty. For ω = ( y, z T ) ∈ ΩN,T , define 
+
+R(ω) = 
+
+> {
+
+m ∈ M pq,r,s : πtr (m) ∈̂ Kpq,s (y), L(¯ z, m ) ≤ τT,q 
+
+> }
+
+. (S11.10) Then Gr (R) is Borel and every section is compact, possibly empty. Moreover, R is a measurable random closed set and 
+
+Ane = {ω : R(ω)̸ = ∅} (S11.11) is Borel. 
+
+Proof. The training constraint is the inverse image of the Borel graph of ̂ Kpq,s under (y, z, m ) 7 →
+
+(y, π tr (m)) . The test constraint is the nonpositive sublevel set of a Borel-in-data, continuous-in-m
+
+function. Their intersection is Borel and closed in compact Mpq,r,s for fixed data. For an open set O ⊂ M pq,r,s , the hit event {ω : R(ω) ∩ O̸ = ∅} is the projection of Gr (R) ∩
+
+(Ω N,T × O). Every section of this intersection is an open subset of a compact metric space and hence sigma-compact. The Arsenin–Kunugui Borel projection theorem (Kechris, 1995, Theorem 18.18) makes the hit event Borel. Taking O = Mpq,r,s proves (S11.11). □
+
+50 L.3 Proposition S11.3 — measurable nonempty reported output 
+
+Fix the admissible reference dictionary D† from (3.15), put a† = a(D†), and set the admissible null target v† = (0 , {[a†]}). Define ̂
+
+C(ω) = 
+
+> {
+
+ϑ{R (ω)}, ω ∈ Ane ,
+
+{v†}, ω / ∈ Ane . (S11.12) Then ̂
+
+C : Ω N,T −→ K (Vq) (S11.13) is Borel measurable for the Hausdorff-metric Borel sigma field. 
+
+Proof. On Ane , the continuous image of the compact raw set is nonempty compact. For open 
+
+O ⊂ Vq,
+
+{ω : ϑ(R(ω)) ∩ O̸ = ∅} = {ω : R(ω) ∩ ϑ−1(O)̸ = ∅} (S11.14) is Borel by Lemma S11.2. Patch this weakly measurable compact-valued map on the Borel complement of Ane by the fixed singleton. For compact metric target spaces, weak compact-valued measurability is equivalent to Borel measurability as a map into the Hausdorff hyperspace. □
+
+The membership relation 
+
+{(C, v ) ∈ K (Vq) × Vq : v ∈ C}
+
+is closed. Composing this relation with the Borel correspondence above shows that the target-membership event has a Borel graph, so its Gaussian test-kernel probability is Borel in the training sample. On the training truth-retention event, the one common event 
+
+∥ ¯Z − μ⋆∥ ≤ τT,q (S11.15) retains the true support and coefficient witness with conditional probability at least 1 − αT .This proves (4.7a)–(4.7c). No union bound over candidate supports is used. The fallback is never invoked on the joint truth-retention/test-ball event and creates no coverage by itself. Finally, the topology (S11.9) retains the binary mark. The physical diameter may omit that mark as in (2.11b), but the measurable target topology may not. 
+
+# M Technical detail S12: cross-dictionary margins and lower pairs 
+
+M.1 Lemma S12.1 — uniform child-frame singular value 
+
+Let 
+
+cu =
+
+> √
+
+1 − C20 s20, λV = κ− 
+
+> √
+
+qq − 1 , κax = C20
+
+1 + cu
+
+. (S12.1) Define 
+
+A0 = 
+
+> {
+
+s0
+
+√q + C0s0
+
+λV
+
+> }2
+
++ λ−2
+
+> V
+> 
+> 1/2
+
+, cB = A−10 . (S12.2) 51 Shrink s0 so that C0s0 < 1 and √qκ ax s0 ≤ cB /2, and set cD = cB /2. Then every shell dictionary satisfies 
+
+∥∥∥∥∥∥
+
+> q
+
+∑
+
+> j=1
+
+hj dj
+
+∥∥∥∥∥∥ ≥ cDs∥h∥2, h ∈ Rq. (S12.3) 
+
+Proof. Put A = 1⊤h and h0 = h − (A/q )1. Since V 1 = 0 and the simplex frame is tight, 
+
+∥V h 0∥ =
+
+√ qq − 1 ∥h0∥. (S12.4) The ideal affine lift has orthogonal components 
+
+y0 = A, yU = bA + LV h 0. (S12.5) Because ∥b∥ ≤ C0s and σmin (L) ≥ κ−s,
+
+s∥h0∥ ≤ λ−1 
+
+> V
+
+{∥ yU ∥ + C0s|y0|} . (S12.6) Together with s∥h∥ ≤ s|A|/√q + s∥h0∥, Cauchy–Schwarz and (S12.2) yield 
+
+∥(y0, y U )∥ ≥ cB s∥h∥. (S12.7) For the actual normalized columns, 
+
+|
+
+√
+
+1 − ∥ zj ∥2 − 1| ≤ κax s2. (S12.8) Thus the axial row differs from its ideal value by at most √qκ ax s2∥h∥, which is absorbed by the chosen smallness condition. □
+
+M.2 Corollary S12.2 — same- and cross-dictionary support margins 
+
+For two distinct size-r supports, put 
+
+hj = xj 1{j ∈ S} − x′ 
+
+> j
+
+1{j ∈ S′}, k = |S△S′| ≥ 2. (S12.9) Every exclusive coordinate has magnitude at least β−, so ∥h∥2 ≥ β−
+
+√k. Lemma S12.1 gives 
+
+inf  
+
+> x,x ′
+
+∥μ(D, S, x ) − μ(D, S ′, x ′)∥ ≥ cDβ−s√k. (S12.10) At the balanced hard core this sharpens to 
+
+λ⋆β−s
+
+√
+
+qk q − 1 . (S12.11) Let dD
+
+> Q
+
+([ D], [D′]) ≤ ρ in (2.10b). For canonically oriented children, 
+
+∥d(z) − d(z′)∥ ≤ Lc∥z − z′∥, Lc = 1 + C0s0
+
+cu
+
+, (S12.12) and the canonical anchor lifts obey ∥a − a′∥ ≤ ∥ Pa − P ′
+
+> a
+
+∥F . Transporting the second fitted mean to the first dictionary therefore costs at most CS rβ +ρ. For the nearest k = 2 alternative, 52 mS (ρ) = 
+
+> [
+
+√2cDβ−s − CS rβ +ρ 
+
+> ]
+> +
+
+. (S12.13) The constant CS is enlarged, if necessary, so that positivity of mS implies ρ < c match s, where 
+
+cmatch is a fixed fraction of the minimum within-block ray separation. Hence support transport is unique whenever the support margin is used. 
+
+M.3 Lemma S12.3 — parent transversality with a displayed constant 
+
+Put ha = ( u − e1)/√2. Since ha ⊥ a0, canonical signs and the anchor patch imply 
+
+|h⊤ 
+
+> a
+
+a| ≤ ∥ a − a0∥ ≤ ∥ Pa − Pa0 ∥F ≤ Cas0. (S12.14) For every fine mean, 
+
+h⊤ 
+
+> a
+
+μ(D, S, x ) ≥ r
+
+√2 {β−cu − β+C0s0}. (S12.15) Therefore, uniformly over γ ∈ ΓA,
+
+∥μ(D, S, x ) − γa ∥ ≥ g0 
+
+> G
+
+:= r
+
+√2 {β−cu − β+C0s0} − γ+Cas0. (S12.16) Shrink s0 once more so that g0 
+
+> G
+
+≥ rβ −/(2 √2) . Cross-dictionary transport gives 
+
+mG(ρ) = 
+
+> [
+
+g0 
+
+> G
+
+− CG(rβ + + γ+)ρ 
+
+> ]
+> +
+
+. (S12.17) 
+
+M.4 Proposition S12.4 — adaptive diameter 
+
+Any two retained candidates have fitted means within 2τT,q . We separate all possible pairs. i. If their binary marks differ, then fine and separated candidates can coexist only when 
+
+2τT,q ≥ mG(ρ). Their physical ray-set distance is bounded by the fixed diameter of the admissible target, which is absorbed by the last indicator below. ii. If both candidates are fine and mS (ρ) = 0 , the support indicator below is automatically active. All child rays lie in the common O(s) cap, so their ray-set distance is O(s), without invoking a matching. iii. If both candidates are fine and mS (ρ) > 0, the chosen constants provide a unique child transport. Distinct transported supports can coexist only when 2τT,q ≥ mS (ρ). Each within-parent ray set has diameter O(s); dictionary transport contributes another O(ρ).iv. If both candidates are fine, mS (ρ) > 0, and they lie on the same transported support branch, unique matching and the projective Lipschitz chart give distance O(ρ).v. If both candidates are separated, their anchor projectors are already included in the physical dictionary metric, so their ray distance is O(ρ).The matching premise used in the two matched fine-support cases follows from the choice of CS :positivity of mS (ρ) forces ρ < c match s. Consequently, 
+
+diam pr (̂C) ≤ Cρ + Cs 1{2τT,q ≥ mS (ρ)} + C1{2τT,q ≥ mG(ρ)}. (S12.18) This proves (4.9)–(4.11) with all transport and matching premises explicit. 53 M.5 The three fixed-shell lower pairs 
+
+Let α = 1 − (1 − αD)(1 − αT ) < 1/2 and apply the direct honesty-to-diameter inequality (5.33). 1. Parent pair. Fix the hard-core dictionary, choose x = β−1S , σ = σ+, and γ⋆ = a⊤ 
+
+> 0
+
+μF .Assumption (2.10a) puts γ⋆ in the interior of ΓA. The training laws are identical and 
+
+KL N,T = T
+
+2σ2+
+
+∥(I − Pa0 )μF ∥2 ≤ CI (r) 
+
+> G
+
+. (S12.19) The ray-set target distance is at least 
+
+dG = sin {π/ 4 − arcsin( λ⋆s0)} > 0. (S12.20) 2. Wrong-support pair. Choose hard-core supports sharing r − 1 children, with common coefficient β−. If i, j are exchanged, 
+
+∥μS − μS′ ∥2 = 2 β2
+
+> −
+
+λ2
+
+> ⋆
+
+s2 qq − 1 , (S12.21) and hence 
+
+KL N,T = T β 2
+
+> −
+
+λ2
+
+> ⋆
+
+s2q
+
+(q − 1) σ2+
+
+≤ CI S . (S12.22) The projective Hausdorff distance is 
+
+> √
+
+1 − (1 − λ2
+
+> ⋆
+
+s2q/ (q − 1) )2 ≍ s. (S12.23) 3. Compensated orientation pair. Put wS = ∑ 
+
+> j∈S
+
+vj . For q ≥ 4 and 2 ≤ r ≤ q − 1, choose a nonzero skew Ω satisfying ΩwS = 0 and normalize it so that max j∈S ∥Ωvj ∥ = 1 . Equal active coefficients make the complete Gaussian test mean invariant along Rh = R exp (hΩ) . By the ordered fixed-law chord of Technical detail S9, 
+
+KL N,T ≤ CN s 6h2, (S12.24) while the finite-label short-chart argument gives 
+
+cV s|h| ≤ dpr  
+
+> H
+
+{ϑ(D0, S ), ϑ (Dh, S )} ≤ CV s|h|, |h| ≤ h0. (S12.25) Taking |h| = c min {h0, (√N s 3)−1} yields 
+
+c
+
+> {
+
+s ∧ 1
+
+√N s 2
+
+> }
+
+. (S12.26) Pinsker’s inequality and (5.33) prove (4.13). Since the three pairs are submodels of the same honesty class, the outer supremum permits their lower bounds to be maximized as in theorem 6.5. 54 N Technical detail S13: a computable rectangular median-of-means region 
+
+This section supplies one fully explicit valid instantiation of the modular training-radius interface (3.9). It is a theoretical validity construction; its constants are not claimed to be finite-sample sharp. Use fixed orthonormal bases of Sym 2(Rq) and Sym 4(Rq), of dimensions 
+
+d2 =
+
+(q + 1 2
+
+)
+
+, d4 =
+
+(q + 3 4
+
+)
+
+. (S13.1) Put 
+
+X2 = symvec 2(Y ⊗2), X4 = symvec 4(Y ⊗4). (S13.2) Let λmax = max k λk for a fixed law and λmax = 1 on the Bernoulli branch, and define 
+
+Λ = ν+ + nλ max . (S13.3) Every conditional covariance is bounded by ΛIq. Hence 
+
+v22 := sup 
+
+> θ
+
+Eθ∥Y ∥4 ≤ Λ2q(q + 2) , (S13.4) and 
+
+v24 := sup 
+
+> θ
+
+Eθ∥Y ∥8 ≤ Λ4q(q + 2)( q + 4)( q + 6) . (S13.5) These bounds dominate the variance of every orthonormal coordinate of X2 and X4, respectively. Choose α2, α 4 > 0 with α2 + α4 ≤ αD. For k ∈ { 2, 4}, set 
+
+Bk =
+
+⌈
+
+8 log 2dk
+
+αk
+
+⌉
+
+, mk =
+
+⌊ NBk
+
+⌋
+
+. (S13.6) When mk ≥ 1, split the first mkBk observations into deterministic consecutive blocks, compute every coordinate block mean, and take its lower median under a fixed tie rule. Decode the coordinate vectors as ̂ M2 and ̂ M4. These maps are Borel. For a scalar coordinate with variance at most v2
+
+> k
+
+, Chebyshev gives block failure probability at most 1/4 at radius 2vk/√mk. Hoeffding’s inequality gives probability at most e−Bk /8 that at least half of the blocks fail. This is the standard coordinatewise median-of-means construction (Devroye et al., 2016). A coordinate union bound therefore yields 
+
+P Nθ
+
+{
+
+∥̂ M2 − M2∥F ≤ ϵ2,N 
+
+}
+
+≥ 1 − α2, ϵ2,N = 2 v2
+
+√
+
+d2
+
+m2
+
+, (S13.7) and 
+
+P Nθ
+
+{
+
+∥̂ M4 − M4∥F ≤ ϵraw 4,N 
+
+}
+
+≥ 1 − α4, ϵraw 4,N = 2 v4
+
+√
+
+d4
+
+m4
+
+. (S13.8) For the normalized full symmetrization used here, A ⊙ B = Sym (A ⊗ B). The symmetrizer is the orthogonal projection onto the fully symmetric tensor space, so 
+
+∥A ⊙ B∥F ≤ ∥ A ⊗ B∥F = ∥A∥F ∥B∥F . (S13.9) 55 Thus the required operator constant obeys C⊙ ≤ 1 (indeed equality is attained on a common rank-one tensor in this normalization). Also 
+
+sup 
+
+> θ
+
+∥M2(θ)∥F ≤ √q Λ; 
+
+we therefore take the explicit envelope B⋆ 
+
+> 2
+
+= √q Λ. Since 
+
+∥A⊙2 − B⊙2∥F ≤ ∥ A − B∥F (∥A∥F + ∥B∥F ), (S13.10) the cumulant estimator ̂
+
+K4 =̂ M4 − 3̂ M ⊙22 (S13.11) obeys, on the intersection of (S13.7)–(S13.8), 
+
+∥̂ K4 − K4∥F ≤ ϵK,N := ϵraw 4,N + 3 ϵ2,N (2 B⋆ 
+
+> 2
+
++ ϵ2,N ). (S13.12) Thus the rectangular event (3.9) has probability at least 1 − αD, uniformly over the frozen class. For fixed confidence and fixed q, both radii are O(N −1/2) once the fixed block threshold is passed. Below 
+
+NMoM = max( B2, B 4) (S13.13) the procedure returns the full compact training class and uses the shell radius Cshell s.The rectangular interface permits a later sharper, still uniformly valid radius construction to replace (S13.7)–(S13.12). Such a replacement changes finite-sample width and operational behavior, but not the estimand, quotient-safe profile form, or conditional-coverage proof. Its diameter rate must be reverified from the replacement’s certified radii. 
+
+# References 
+
+Afonso S. Bandeira, Ben Blum-Smith, Joe Kileel, Amelia Perry, Jonathan Niles-Weed, and Alexan-der S. Wein. Estimation under group actions: Recovering orbits from invariants. Applied and Computational Harmonic Analysis , 66:236–319, 2023. doi: 10.1016/j.acha.2023.06.001. URL 
+
+https://doi.org/10.1016/j.acha.2023.06.001 .Maxime Cauchois, Suyash Gupta, and John C. Duchi. Knowing what you know: Valid and validated confidence sets in multiclass and multilabel prediction. Journal of Machine Learning Research , 22 (81):1–42, 2021. URL https://jmlr.org/papers/v22/20-753.html .Victor Chernozhukov, Han Hong, and Elie Tamer. Estimation and confidence regions for parameter sets in econometric models. Econometrica , 75(5):1243–1284, 2007. doi: 10.1111/j.1468-0262.2007. 00794.x. URL https://doi.org/10.1111/j.1468-0262.2007.00794.x .Jyotishka Datta, Soham Ghosh, and Nicholas G. Polson. Bayesian ICA with super-gaussian source priors, 2025. URL https://arxiv.org/abs/2406.17058 . Version 3; first posted in 2024. Luc Devroye, Matthieu Lerasle, Gábor Lugosi, and Roberto I. Oliveira. Sub-gaussian mean estimators. The Annals of Statistics , 44(6):2695–2725, 2016. doi: 10.1214/16-AOS1440. URL 
+
+https://doi.org/10.1214/16-AOS1440 .56 Rémi Gribonval and Karin Schnass. Dictionary identification—sparse matrix-factorization via 
+
+ℓ1-minimization. IEEE Transactions on Information Theory , 56(7):3523–3539, 2010. doi: 10. 1109/TIT.2010.2048466. URL https://doi.org/10.1109/TIT.2010.2048466 .Rémi Gribonval, Rodolphe Jenatton, and Francis Bach. Sparse and spurious: Dictionary learning with noise and outliers. IEEE Transactions on Information Theory , 61(11):6298–6319, 2015. doi: 10.1109/TIT.2015.2472522. URL https://doi.org/10.1109/TIT.2015.2472522 .Nhat Ho and XuanLong Nguyen. Singularity structures and impacts on parameter estimation in finite mixtures of distributions. SIAM Journal on Mathematics of Data Science , 1(4):730–758, 2019. doi: 10.1137/18M122947X. URL https://doi.org/10.1137/18M122947X .Frederik Hoppe, Claudio Mayrink Verdun, Hannah Laus, Felix Krahmer, and Holger Rauhut. Uncertainty quantification for learned ISTA. In 2023 IEEE 33rd International Workshop on Machine Learning for Signal Processing (MLSP) , pages 1–6. IEEE, 2023. doi: 10.1109/MLSP55844. 2023.10285912. URL https://doi.org/10.1109/MLSP55844.2023.10285912 .Frederik Hoppe, Claudio Mayrink Verdun, Hannah Laus, Felix Krahmer, and Holger Rauhut. Non-asymptotic uncertainty quantification in high-dimensional learning. In Advances in Neural Information Processing Systems , volume 37, pages 122524–122555, 2024. doi: 10.52202/079017-3894. URL https://proceedings.neurips.cc/paper_files/paper/2024/ hash/dd65d612d2ddafd54ef5eceb92f1a754-Abstract-Conference.html .Alexander Jung, Yonina C. Eldar, and Norbert Görtz. On the minimax risk of dictionary learning. 
+
+IEEE Transactions on Information Theory , 62(3):1501–1515, 2016. doi: 10.1109/TIT.2016.2517006. URL https://doi.org/10.1109/TIT.2016.2517006 .Tetsuya Kaji. Theory of weak identification in semiparametric models. Econometrica , 89(2):733–763, 2021. doi: 10.3982/ECTA16413. URL https://doi.org/10.3982/ECTA16413 .Alexander S. Kechris. Classical Descriptive Set Theory , volume 156 of Graduate Texts in Math-ematics . Springer, 1995. doi: 10.1007/978-1-4612-4190-4. URL https://doi.org/10.1007/ 978-1-4612-4190-4 .Jisu Kim, Yen-Chi Chen, Sivaraman Balakrishnan, Alessandro Rinaldo, and Larry Wasserman. Statistical inference for cluster trees. In Advances in Neural Information Processing Systems ,volume 29, pages 1839–1847. Curran Associates, Inc., 2016. URL https://proceedings.neurips. cc/paper/2016/hash/a9b7ba70783b617e9998dc4dd82eb3c5-Abstract.html .R. M. Lewis and H. S. Battey. Cox reduction and confidence sets of models: A theoretical elucidation. Statistical Science , 40(2):313–328, 2025. doi: 10.1214/24-STS934. URL https: //doi.org/10.1214/24-STS934 .Yang Li, Yuetian Luo, Davide Ferrari, Xiaonan Hu, and Yichen Qin. Model confidence bounds for variable selection. Biometrics , 75(2):392–403, 2019. doi: 10.1111/biom.13024. URL https: //doi.org/10.1111/biom.13024 .Jacopo Mandozzi and Peter Bühlmann. Hierarchical testing in the high-dimensional setting with correlated variables. Journal of the American Statistical Association , 111(513):331–343, 2016. doi: 10.1080/01621459.2015.1007209. URL https://doi.org/10.1080/01621459.2015.1007209 .57 Nishant Mehta and Alexander Gray. Sparsity-based generalization bounds for predictive sparse coding. In Proceedings of the 30th International Conference on Machine Learning , vol-ume 28 of Proceedings of Machine Learning Research , pages 36–44. PMLR, 2013. URL 
+
+https://proceedings.mlr.press/v28/mehta13.html .Nicolai Meinshausen. Group bound: Confidence intervals for groups of variables in sparse high dimensional regression without assumptions on the design. Journal of the Royal Statistical Society: Series B (Statistical Methodology) , 77(5):923–945, 2015. doi: 10.1111/rssb.12094. URL 
+
+https://doi.org/10.1111/rssb.12094 .Anirban Nath, YoonHaeng Hur, and Genevera I. Allen. Weighted conformal clustering, 2026a. URL 
+
+https://arxiv.org/abs/2606.00436 .Anirban Nath, YoonHaeng Hur, and Genevera I. Allen. Inference for clustering: Conformal sets for cluster labels, 2026b. URL https://arxiv.org/abs/2604.03488 . Version 2. Richard Nickl and Sara van de Geer. Confidence sets in sparse regression. The Annals of Statistics , 41 (6):2852–2876, 2013. doi: 10.1214/13-AOS1170. URL https://doi.org/10.1214/13-AOS1170 .Sarah Organ, Toby Kenney, and Hong Gu. Setwise hierarchical variable selection and the generalized linear step-up procedure for false discovery rate control, 2026. URL https://arxiv.org/abs/ 2603.02160 .Yaniv Romano, Matteo Sesia, and Emmanuel J. Candès. Classification with valid and adaptive coverage. In Advances in Neural Information Processing Systems , volume 33, pages 3581–3591. Curran Associates, Inc., 2020. URL https://proceedings.neurips.cc/paper_files/paper/ 2020/hash/244edd7e85dc81602b7615cd705545f5-Abstract.html .Mauricio Sadinle, Jing Lei, and Larry Wasserman. Least ambiguous set-valued classifiers with bounded error levels. Journal of the American Statistical Association , 114(525):223–234, 2019. doi: 10.1080/01621459.2017.1395341. URL https://doi.org/10.1080/01621459.2017.1395341 .Aad W. van der Vaart. Asymptotic Statistics . Cambridge Series in Statistical and Probabilistic Mathematics. Cambridge University Press, 1998. doi: 10.1017/CBO9780511802256. URL 
+
+https://doi.org/10.1017/CBO9780511802256 .Siqi Wu and Bin Yu. Local identifiability of ℓ1-minimization dictionary learning: A sufficient and almost necessary condition. Journal of Machine Learning Research , 18(168):1–56, 2018. URL 
+
+https://jmlr.org/papers/v18/16-119.html .58

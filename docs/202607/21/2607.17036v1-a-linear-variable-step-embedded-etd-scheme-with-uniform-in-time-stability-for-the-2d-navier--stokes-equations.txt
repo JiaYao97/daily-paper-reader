@@ -1,0 +1,1194 @@
+Title: A Linear Variable-Step Embedded ETD Scheme with Uniform-in-Time Stability for the 2D Navier–Stokes Equations
+
+URL Source: https://arxiv.org/pdf/2607.17036v1
+
+Published Time: Tue, 21 Jul 2026 00:53:58 GMT
+
+Number of Pages: 22
+
+Markdown Content:
+# A Linear Variable-Step Embedded ETD Scheme with Uniform-in-Time Stability for the 2D Navier–Stokes Equations 
+
+Haifeng Wang 1 | Xiaoming Wang 1 | Min Zhang 2,1        
+
+> 1School of Mathematical Sciences, Eastern Institute of Technology, Zhejiang, Ningbo, China |2School of Mathematical Sciences, Shanghai Jiao Tong University, Shanghai, China |
+> Correspondence: Xiaoming Wang (wxm@eitech.edu.cn)
+> Received: Revised: Accepted: Keywords: incompressible Navier-Stokes equation | exponential time-differencing (ETD) | mean reverting scalar auxiliary variable (mr-SAV) | multistep scheme (MS) | long time stability | second-order accuracy | variable step | time-adaptive scheme
+
+ABSTRACT 
+
+We propose a linear variable-step exponential time-differencing method for the incompressible Navier–Stokes equations in vorticity–streamfunction formulation on a two-dimensional periodic box. The method consists of a second-order scheme and an embedded first-order variant, yielding a natural mechanism for adaptive time stepping and a posteriori error control. Each time step requires only uniquely solvable linear problems: two heat equation solves, efficiently handled by Fourier methods in the periodic setting, and one linear scalar auxiliary-variable equation, evaluated via Laplace transform and Talbot’s numerical inverse transform. The construction combines the ETD framework, a mean-reverting scalar auxiliary variable (mr-SAV), and second-order extrapolation of the nonlinear term. The mean-reverting correction enables long-time stability while preserving full linearity, distinguishing the method from related mr-SAV schemes that require nonlinear algebraic solves. We prove unconditional long-time stability: for uniformly bounded L2 forcing, the discrete vor-ticity remains bounded in L∞(0 , ∞; L2) for all Reynolds numbers and time-step sizes. Numerical experiments demonstrate second-order accuracy, long-time stability, and effective adaptive error control. 
+
+1 Introduction 
+
+The incompressible Navier–Stokes equations (NSE) are a central model in fluid dynamics and continue to serve as a fundamental testbed for the design and analysis of time-marching methods for nonlinear dissipative PDEs. In this work, we consider the two-dimensional NSE in vorticity–streamfunction formulation on a periodic box, 
+
+ωt + u · ∇ ω = ν∆ω + f, 
+
+∆ψ = ω, u = ∇⊥ψ := ( ∂y ψ, −∂xψ), (1) supplemented with periodic boundary conditions and the usual zero-mean conditions on the vorticity ω, streamfunc-tion ψ, velocity u, and forcing f . Here ν > 0 is the kinematic viscosity. For long-time simulation, a numerical method should capture not only short-time accuracy but also the dissipative structure of the underlying dynamics. When the forcing is uniformly bounded in time, the continuous NSE admits a uniform-in-time bound in the natural energy/enstrophy space; this property lies behind the existence of absorbing sets, attractors, and long-time statistical states, and is therefore indispensable in the numerical approximation of asymptotic dynamics and time-averaged observables [5, 10, 18, 19]. A time discretization that fails to inherit such control may produce spurious growth or distorted long-time statistics even when it performs satisfactorily over moderate time intervals. At the same time, practical long-time computations strongly benefit from time adaptivity. Solutions of the NSE often alternate between relatively smooth epochs and episodes of rapid variation, so fixed-step methods can be unnecessarily expensive. This makes variable-step and, more generally, variable-order/variable-step strategies attractive from a computational point of view. For fluid problems, adaptive multistep and embedded methods of variable-step or 
+
+> 1 of 22 arXiv:2607.17036v1 [math.NA] 19 Jul 2026
+
+variable-step/variable-order (VOVS/VSVO) type have been studied, for instance, by DeCaria and collaborators and by Layton and collaborators; see, e.g., [15, 6, 7]. These works demonstrate the practical value of adaptive low-complexity time integrators for incompressible flow, especially in conjunction with IMEX or BDF-type frameworks. The construction of adaptive methods that are both efficient and provably stable for the NSE remains challenging, however. Fully implicit schemes enjoy strong stability properties but typically require nonlinear solves or the repeated solution of nontrivial linear systems at each step. IMEX and linearly implicit methods reduce this cost by treating the nonlinearity explicitly, but their long-time stability theory under variable step sizes is much more delicate. Exponential time-differencing (ETD) methods are particularly attractive in periodic settings, where the linear viscous part can be handled very efficiently in Fourier space. They have been widely used for stiff semilinear problems and have also been explored for fluid equations; nevertheless, rigorous long-time stability results for higher-order ETD discretizations of the forced NSE remain scarce. A recent line of work has shown that scalar auxiliary variable ideas can be adapted beyond gradient flows to help stabilize time-marching methods for the NSE [13, 23, 16]. Moreover, mean-reverting scalar auxiliary variable (mr-SAV) formulations introduce an additional scalar variable designed to encode a dissipative correction compatible with the forced long-time dynamics. In our earlier work [21], we combined this idea with ETD to construct a variable-step embedded framework with favorable long-time stability properties. That approach, however, involves the solution of a nonlinear algebraic equation for the scalar auxiliary variable at each time step. While this nonlinear solve is scalar and can be carried out efficiently, it is still desirable—both conceptually and computationally—to develop a fully linear alternative. The purpose of the present paper is to provide such a scheme. We develop a linear variable-step embedded ETD method for the two-dimensional NSE in vorticity–streamfunction form. The method consists of a second-order scheme together with an embedded first-order companion, thereby providing a natural mechanism for adaptive time stepping and a posteriori error estimation. The key design combines ETD for the viscous part, explicit multistep treatment of the nonlinear advection, and a new mr-SAV formulation arranged so that each time step requires only linear subproblems. More precisely, in the periodic setting the update reduces to the evaluation of two time-dependent heat equations, together with a linear equation for the scalar auxiliary variable, which is treated through Laplace transform and Talbot’s algorithm for numerical inverse Laplace transform. Thus, in contrast to [21], the present method avoids any nonlinear algebraic solve at the time-discrete level. Our main analytical result shows that this simplification does not come at the expense of long-time stability. Roughly speaking, we prove that if the external forcing is uniformly bounded in L2, then the discrete vorticity generated by the second-order scheme remains uniformly bounded in L∞(0 , ∞; L2), for arbitrary Reynolds numbers and without any restriction on the time-step sizes. A precise theorem statement is given in Section 4. This establishes a long-time stability property for a variable-step ETD scheme of genuinely higher order in the presence of nontrivial forcing. In addition to the main embedded ETD method, we also report a preliminary variable-step/variable-order (VSVO) experiment based on combining the adaptive framework with a second-order variable-step BDF2 discretization for the NSE. This VSVO variant is included as a secondary computational exploration rather than a main theoretical contribution. The numerical tests indicate that this alternative adaptive strategy can also be used successfully in some regimes. The contributions of this paper can be summarized as follows. 
+
+• We construct a new fully linear and uniquely solvable embedded first–second order variable-step ETD scheme for the forced two-dimensional NSE in vorticity–streamfunction formulation. 
+
+• We show that the second-order member of the pair is long-time stable in the sense of a uniform-in-time L2 bound for the discrete vorticity, under uniformly bounded forcing, for arbitrary Reynolds numbers and arbitrary step sizes. 
+
+• We design the method so that only linear subproblems are solved at each time step, thereby distinguishing the present approach from our earlier ETD–mr-SAV scheme in [21], which requires a nonlinear algebraic solve for the auxiliary variable. 
+
+• We demonstrate through numerical experiments that the embedded pair provides effective adaptive error control and captures the expected second-order temporal accuracy and long-time stability. 
+
+• We also test a VSVO strategy, providing an additional adaptive option of possible independent interest. The paper is organized as follows. In Section 2, we introduce the functional setting and the mr-SAV reformulation. Section 3 presents the linear embedded ETD scheme and its implementation. Section 4 contains the long-time stability analysis and the statement of the main theorem. Section 5 reports numerical experiments on accuracy, adaptivity, and long-time behavior, including the auxiliary VSVO tests. Concluding remarks are given in Section 6.  
+
+> 2 of 22 ,
+
+2 Preliminaries and the extended system with mean-reverting SAV reformulation 
+
+In this section, we introduce a continuous extended system for the incompressible Navier–Stokes equations based on a mean-reverting scalar auxiliary variable. When the auxiliary variable is initialized at its equilibrium value, the extended system reduces exactly to the original NSE. This reformulation will serve as the starting point for the numerical developments in the next section. Throughout the paper, we denote by ⟨· , ·⟩ the duality pairing between 
+
+˙H1per and H−1per induced by the L2 inner product, and by ∥ · ∥ the norm in L2(Ω) .We first rewrite the Navier–Stokes equations (1) in the form 
+
+∂ω ∂t + νLω + B(ω, ω ) = f, 
+
+∆ψ = ω, u = ∇⊥ψ := ( ∂y ψ, −∂xψ),
+
+(2) where 
+
+Lω = −∆ω, B(ω, ω ) = ∇⊥(∆ −1ω) · ∇ ω = u · ∇ ω. 
+
+In the vorticity–streamfunction formulation, the velocity field is automatically divergence free. Accordingly, we work in the mean-zero periodic Sobolev spaces 
+
+H =
+
+n
+
+ω ∈ ˙H0per (Ω) : 
+
+Z
+
+> Ω
+
+ω dx = 0 
+
+o
+
+, V =
+
+n
+
+ω ∈ ˙H1per (Ω) : 
+
+Z
+
+> Ω
+
+ω dx = 0 
+
+o
+
+.
+
+The present analysis is carried out in the vorticity–streamfunction setting, which is particularly convenient for periodic domains and for the enstrophy-based estimates used below. Analogous ideas can also be formulated for the primitive-variable NSE, although some of the sharper estimates available here rely on the special structure of the vorticity equation. For this reason, we restrict attention to (2) throughout the paper. To prepare for the construction of long-time stable time discretizations, we introduce a scalar auxiliary variable q(t)
+
+and consider the extended system 
+
+∂ω ∂t + νLω + q B (ω, ω ) = f, (3a) 
+
+dq dt + γq = ⟨B(ω, ω ), ω ⟩ + γ. (3b) Here γ ≥ 0 is a user-specified mean-reverting parameter. A basic observation is that q = 1 is the equilibrium value of the scalar auxiliary variable. Indeed, if q(0) = 1 , then by the enstrophy conservation property of the nonlinear advection term, 
+
+⟨B(ω, ω ), ω ⟩ = 0 ,
+
+equation (3b) yields 
+
+dq dt + γ(q − 1) = 0 ,
+
+and hence 
+
+q(t) ≡ 1 for all t ≥ 0.
+
+In this case, (3) reduces exactly to the original system (2). Thus, the extended formulation is consistent with the NSE at the continuous level. More generally, for arbitrary initial data q(0) = q0, one has 
+
+|q(t) − 1| ≤ | q0 − 1|e−γt + 1 − e−γt 
+
+γ ⟨B(ω, ω ), ω ⟩ L∞(0 ,t )
+
+for γ > 0. In particular, the damping term drives q(t) toward its equilibrium value 1, with deviations controlled by the nonlinear inner product and the mean-reverting parameter γ. At the continuous level, the identity 
+
+⟨B(ω, ω ), ω ⟩ = 0 
+
+implies that q(t) relaxes exactly to 1. This mean-reverting mechanism is the key structural feature of the reformulation. The role of q(t) is to facilitate stable treatments of the nonlinear advection term while preserving consistency with the original NSE. In particular, although the quantity ⟨B(ω, ω ), ω ⟩ vanishes at the continuous level, its discrete counterpart need not do so exactly. The parameter γ > 0 introduces a restoring mechanism that suppresses the 
+
+> 3 of 22
+
+accumulation of such deviations over long times by driving the auxiliary variable back toward 1. This feature is essential for the long-time stability mechanism exploited later in the paper. When γ = 0 , system (3) reduces to the continuous counterpart of a standard SAV/ZEC-type reformulation; see, for example, [23, 24, 25, 17]. In the present work, however, we focus on the case γ > 0, where the dissipative mean-reverting term provides the additional control needed for robust long-time behavior. For this reason, following [12, 4, 21], we refer to (3) as the mean-reverting scalar auxiliary variable (mr-SAV) extended system. We conclude this section by emphasizing one point relevant to the present paper. In our earlier ETD–mr-SAV work [21], the stabilization mechanism was coupled with a nonlinear correction to the vorticity field. By contrast, the reformulation introduced here will be used in the next section to derive a different fully linear and uniquely solvable time-discrete treatment, while retaining the same continuous mean-reverting structure. 
+
+3 Exponential time difference mr-SAV schemes 
+
+Building upon the mr-SAV extended systems presented in (3), we proceed to develop two exponential time difference (ETD) time stepping schemes for numerical solution. Given an arbitrary terminal time T and a set of non-overlapping time nodes 0 = t0 < t 1 < · · · < t N = T with the kth time step size τk = tk − tk−1, we specify that the time partition here can be non-uniform. Let Ψn denote the numerical approximation of Ψ( t) at the time tn, and abbreviate Ψ( tn + 12 τ ) as Ψn+ 12 . We further introduce the extrapolation formula for Ψ( tn + 12 τ ), given by ˜Ψn+ 12 = τn+1 +2 τn 
+
+> 2τn
+
+Ψn − τn+1  
+
+> 2τn
+
+Ψn−1.
+
+3.1 A second-order ETD mr-SAV multistep (ETD-mr-SAV-MS2-L) scheme 
+
+In order to obtain a second-order accuracy approximation ωn+1 and qn+1 , we approximate the nonlinear terms and external force terms in Eq. (3) with a second-order midpoint extrapolations. For t ∈ (tn, t n+1 ], the resulting approximation system is given by 
+
+∂ω ∂t + νLω + q(t)B(˜ ωn+ 12 , ˜ωn+ 12 ) = f n+ 12 , (4a) 
+
+dq dt + γq = ⟨B(˜ ωn+ 12 , ˜ωn+ 12 ), ω ⟩ + γ. (4b) The nonlinear term could also be approximated by ˜Bn+ 12 := τn+1 +2 τn 
+
+> 2τn
+
+B(ωn, ω n) − τn+1  
+
+> 2τn
+
+B(ωn−1, ω n−1).By the variation of constants formula, equation (4a) implies that 
+
+ω(tn + τ ) = φ0(τ ν L)ωn + τ φ 1(τ ν L)f n+ 12 −
+
+Z τ
+
+> 0
+
+e−(τ −s)νLq(s + tn)B(˜ ωn+ 12 , ˜ωn+ 12 )ds, (5) where τ := t − tn, and the functions φ0(·) and φ1(·) are defined as 
+
+φ0(z) = e −z , φ1(z) = 1 − e−z
+
+z . (6) We recover the following classical ETD-MS2 scheme [26] 
+
+ω(tn + τ ) = φ0(τ ν L)ωn + τ φ 1(τ ν L)f n+ 12 − τ φ 1(τ ν L)B(˜ ωn+ 12 , ˜ωn+ 12 ), (7) if we impose q(t) ≡ 1 in (5). Next, we substitute this expression for ω(t) into (4b) and deduce 
+
+dq (τ + tn)
+
+dτ + γq (τ + tn) + ⟨B(˜ ωn+ 12 , ˜ωn+ 12 ),
+
+Z τ
+
+> 0
+
+e−(τ −s)νLq(s + tn)B(˜ ωn+ 12 , ˜ωn+ 12 )ds ⟩
+
+=⟨B(˜ ωn+ 12 , ˜ωn+ 12 ), φ 0(τ ν L)ωn + τ φ 1(τ ν L)f n+ 12 ⟩ + γ. 
+
+(8) This linear differential-integral equation of convolution type with L generating a C0-semigroup on L2 is uniquely solvable [2], provided B(˜ ωn+ 12 , ˜ωn+ 12 ) ∈ L2. Moreover, q is analytic in t if f n+ 12 is Gevrey class regular [2, 5]. Since the integral in (8) is in the form of a convolution, it can be solved via the Laplace transformation. We thus derive  
+
+> 4 of 22 ,
+
+the following expression for the Laplace transform of q, denoted ˆq(z):
+
+(z + γ + ⟨B(˜ ωn+ 12 , ˜ωn+ 12 ), (z + νL)−1B(˜ ωn+ 12 , ˜ωn+ 12 )⟩)ˆ q(z)=q(tn) + 1
+
+z γ + ⟨(z + νL)−1B(˜ ωn+ 12 , ˜ωn+ 12 ), ω n + f n+ 12
+
+z ⟩.
+
+(9) We can express ˆq, the Laplace transform of q, concisely as: 
+
+ˆq(z) = 1Γ( z)
+
+h
+
+q(tn) + γz + G(z)
+
+i
+
+, (10) where the functions are explicitly defined as: 
+
+Γ( z) = z + γ + ⟨B(˜ ωn+ 12 , ˜ωn+ 12 ), (z + νL)−1B(˜ ωn+ 12 , ˜ωn+ 12 )⟩,
+
+G(z) = ⟨(z + νL)−1B(˜ ωn+ 12 , ˜ωn+ 12 ), ω n + f n+ 12
+
+z ⟩.
+
+(11) Notice that when B(˜ ωn+ 12 , ˜ωn+ 12 ) ∈ L2, the singularities of ˆq are contained in a band around the negative real-axis. Hence, we can resort to Talbot’s algorithm to recover q for a few t values within the interval (tn, t n+1 ] so that the integral in (5) can be approximated up to machine precision with a quadrature rule using the values of q at these points assuming that the time-step is not big, say τ ≤ 10 −2. The Talbot’s algorithm converges exponentially, and hence only a handful points are needed for the error in computing the q values to reach machine precision for a well-chosen contour and points [20]. Ten points are untilized in our computation. Subsequently, the solution ωn+1 at the next time step can be computed from equation (5) to machine precision essentially. We also point out that the computation of ˆq(z) for different z values uses the same nonlinear term B(˜ ωn+ 12 , ˜ωn+ 12 ). Therefore, only two FFT are required to compute the ˆq values. Furthermore, the computation of q(t) for different values of t uses the same 
+
+ˆq(z). Henceforth, the overhead of computing q(t) for different t beyond the first one is very small. The scheme proposed herein is referred to as the second-order ETD mr-SAV multistep (ETD-mr-SAV-MS2-L) 
+
+scheme, where the suffix L emphasizes the role of Laplace transform, and to distinguish from a similar second-order ETD-mr-SAV-MS2 scheme proposed in a recent work [21] where the scalar auxiliary variable solves a nonlinear algebraic equation. We next comment on the computational complexity of the three schemes. The ETD-MS2, ETD-mr-SAV-MS2-L, and ETD-mr-SAV-MS2 schemes all require the evaluation of the same explicitly treated nonlinear term. In a Fourier pseudo-spectral implementation, this step has computational complexity of order O(N log N ), where N denotes the total number of spatial degrees of freedom. The main additional cost of the ETD-mr-SAV-MS2-L scheme comes from the use of the Laplace-transform represen-tation and its numerical inversion. In particular, the Talbot-type quadrature used for the inverse Laplace transform requires a number of diagonal matrix-vector multiplications, as well as the corresponding vector inner products. Each such diagonal matrix-vector multiplication or inner product has cost O(N ), which is asymptotically lower than the 
+
+O(N log N ) cost of evaluating the nonlinear term. However, the numerical inversion typically involves on the order of two dozen such operations. Consequently, although these are lower-order operations from the asymptotic view-point, their cumulative contribution is not negligible for moderate values of N , as confirmed by the numerical results reported below. Thus, compared with ETD-MS2 and ETD-mr-SAV-MS2, the ETD-mr-SAV-MS2-L scheme has a larger computa-tional prefactor. This additional cost is the price paid for its stronger structural property: among the three schemes considered here, only ETD-mr-SAV-MS2-L simultaneously guarantees linearity, unique solvability for all parameter values, and uniform-in-time stability. 
+
+3.2 Adaptive time-step ETD mr-SAV multistep scheme 
+
+We now present an embedded adaptive time-stepping algorithm based on the long-time stable variable-step second-order scheme (4). This embedded adaptive scheme enables automatic error control without significant computational overhead while maintaining long-time stability. See [9, 8] for some historical notes on the development of embedded pairs, and [6] for a recent interesting 1–2 pair for the 2D Navier-Stokes equations (without the L∞(0 , ∞; L2) bound). First, in the implementation of the ETD-mr-SAV-ms2 scheme, we employ the k-points Gauss Lobatto quadrature rule to approximate the integral term arising in the solution of Equation (5). Accordingly, equation (5) is solved using 
+
+> 5 of 22
+
+the formulation 
+
+ωn+1 =φ0(τn+1 νL)ωn + τn+1 φ1(τn+1 νL)f n+ 12
+
+− τn+1 
+
+> k
+
+X
+
+> i=1
+
+mie−(τn+1 −si)νLq(si + tn)B(˜ ωn+ 12 , ˜ωn+ 12 ), (12) where si is the quadrature points and mi is the corresponding weights. To ensure that the solution formula achieves machine precision while maintaining computational efficiency, the 6-point Gauss–Lobatto quadrature rule is employed in the subsequent numerical experiments. Following the classical SAV technique, the above second-order exponential time-differencing mean-reverting SAV two-step (ETD-mr-SAV-MS2-L) scheme can be solved efficiently. The procedure is as follows: 1. Calculate the auxiliary variable q(tn + s) via Talbot’s algorithm: 
+
+qi = q(tn + si). (13) 2. Calculate the intermediate variables: 
+
+vn+1 1 = φ0(τn+1 νL)ωn + τn+1 φ1(τn+1 νL)f n+ 12 ,vn+1 2,i = τn+1 e−(τn+1 −si)νLqiB(˜ ωn+ 12 , ˜ωn+ 12 ), i = 1 , . . . , k. (14) 3. Obtain ωn+1 from 
+
+ωn+1 = vn+1 1 −
+
+> k
+
+X
+
+> i=1
+
+mivn+1 2,i . (15) In all these calculations, we pre-compute B(˜ ωn+ 12 , ˜ωn+ 12 ) so that the nonlinear term (and the associated FFT) are evaluated only once. Next, when employing an adaptive algorithm, the local error must be evaluated using a first-order accurate numer-ical scheme, for which a first-order one-level ETD-mr-SAV scheme can be utilized. To avoid incurring additional computational overhead, we adopt the embedded strategy to construct the first-order scheme. To formulate a first-order embedded numerical scheme, we apply the left rectangular quadrature rule to solve equation (5), yielding the following embedded first-order scheme 
+
+ωn+1 (1) =φ0(τn+1 νL)ωn + τn+1 φ1(τn+1 νL)f n+ 12 − τn+1 q(tn+1 )B(˜ ωn+ 12 , ˜ωn+ 12 ) (16) It is straightforward to verify that ωn+1 (1) attains only first-order accuracy. This scheme is solved in the same manner as (5) and uses the same intermediate variables that arise in (12), incurring no additional computational cost. Combining the first- and second-order ETD-mr-SAV schemes above, we construct an embedded adaptive algorithm. Following [11], the adaptive strategy is summarized in Algorithm 1 with the time-step update factor function 
+
+Adp (eω , e q , ρ, s ) = ρ
+
+
+
+min 
+
+ tol 
+
+eω
+
+, tol 
+
+eq
+
+ 1
+
+> s
+
+. (17) Here, ρ denotes a safety factor, and tol represents the prescribed/desired tolerances for the vorticity variable ω and the scalar auxiliary variable q, respectively. These parameters depend on the specific problem under consideration. We refer to this adaptive time-stepping method as the ETD-mr-SAV-MS12-L scheme. 
+
+3.3 Adaptive VSVO ETD mr-SAV scheme 
+
+In this section, we propose an adaptive variable-stepsize, variable-order (VSVO) time-stepping scheme based on the variable-step methods presented earlier. This scheme enables the automatic adjustment of both the temporal order and step size depending on the local truncation error. Following the work of [15, 6], we combine the embedded first- and second-order ETD-mr-SAV schemes detailed above together with a variable-step BDF2 scheme to come up with our VSVO strategy outlined in Algorithm 2 .Here, we adopt the same parameter selection as [6]. The aforementioned algorithm contains estimates of the local error within Step 4. Specifically, EST 1 provides an estimate of the local error associated with the first-order approximation 
+
+ωn+1 (1) . For the second-order error estimator EST 2, it is derived by substituting the solution obtained from the  
+
+> 6 of 22 ,
+
+Algorithm 1 ETD-mr-SAV-MS12-L scheme 
+
+Given: ωn, ω n−1, qn, τn+1 .Step 1. Compute qi, i = 1 , . . . , k , via the Talbot’s algorithm. Step 2. Compute ωn+1 1 , ωn+1 2,i , i = 1 , . . . , k , via (14) .Step 3. Compute the second-order approximation ωn+1 (2) and the first-order approximation ωn+1 (1) via (15) and (16) ,respectively. Step 4. Compute en+1  
+
+> ω
+
+= ∥ωn+1 (2) −ωn+1 (1) ∥∥ωn+1 (2) ∥ and en+1  
+
+> q
+
+= |q(tn+1 ) − 1|.if max {en+1  
+
+> ω
+
+, e n+1  
+
+> q
+
+} ≤ tol then Step 5. Set τn+2 ← max {τmin , min {Adp (en+1  
+
+> ω
+
+, e n+1  
+
+> q
+
+, ρ, 2) τn+1 , τmax }} , ωn+1 = ωn+1 (2) and qn+1 = q(tn+1 ).else Step 6. Reject ωn+1 (2) , τ n+1 . Reset τn+1 ← max {τmin , min {Adp (en+1  
+
+> ω
+
+, e n+1  
+
+> q
+
+, ρ, 2) τn+1 , τmax }} .Step 7. Go to Step 1. end if 
+
+ETD-mr-SAV-MS2-L scheme into the residual of the variable-stepsize BDF2 formulation, as given by RES BDF2 (ωn+1 (2) ) = (1 + 2 rn+1 )ωn+1 (2) − (1 + rn+1 )2ωn + r2
+
+n+1 ωn−1
+
+(1 + rn+1 )τn
+
++ νLωn+1 (2) + B(ωn+1 (2) , ω n+1 (2) ) − f n+1 ,
+
+where rn+1 = τn+1 /τ n represents the reciprocal stepsize ratio. The differentiation and nonlinear term can be calculated efficiently in the Fourier space with the aid of FFT. Alternatively, we could also estimate EST 2 via a third-order interpolation formula [6], expressed as RES Interp (ωn+1 (2) ) = ωn+1 (2) − (1 + rn+1 ) 1 + rn(1 + rn+1 )
+
+1 + rn
+
+ωn + rn+1 
+
+ 1 + rn(1 + rn+1 )ωn−1
+
+− r2
+
+nrn+1 (1 + rn+1 )1 + rn
+
+ωn−2.
+
+This modification is also highly efficient, but converts the scheme into a three-step method, thereby increasing its memory complexity. We will use the BDF2 approach in this work. 
+
+Algorithm 2 VSVO scheme 
+
+Given: ωn, ω n−1, qn, τn+1 .Step 1. Compute qi, i = 1 , · · · , k via the Talbot’s algorithm. Step 2. Compute ωn+1 1 , ωn+1 2,i (i = 1 , · · · , k ) via (14) .Step 3. Compute the second-order approximation ωn+1 (2) and the first-order approximation ωn+1 (1) via (15) and (16) ,respectively. Step 4. Compute the local-in-time errors in ωn+1 (1) and ωn+1 (2) using the following definitions: EST 1 = ωn+1 (2) − ωn+1 (1) , EST 2 = RES BDF2 (ωn+1 (2) )
+
+Step 5. Compute en+1  
+
+> ω, 1
+
+= ∥EST 1∥∥ωn+1 (2) ∥ , en+1  
+
+> ω, 2
+
+= ∥EST 2∥∥ωn+1 (2) ∥ , and en+1  
+
+> q
+
+= |qk − 1|.if en+1  
+
+> q
+
+≤ tol and min {∥ en+1  
+
+> ω, 1
+
+∥, ∥en+1  
+
+> ω, 2
+
+∥} ≤ tol then Step 6. Compute 
+
+τ (1)  
+
+> n+2
+
+= Adp (en+1  
+
+> ω, 1
+
+, e n+1  
+
+> q
+
+, 0.9, 2) τn+1 , τ (2)  
+
+> n+2
+
+= Adp (en+1  
+
+> ω, 2
+
+, e n+1  
+
+> q
+
+, 0.9, 3) τn+1 
+
+set 
+
+i = arg max 
+
+> i={1,2}
+
+τ (i)
+
+> n+2
+
+, τn+2 = max {τmin , min {τ (i)
+
+> n+2
+
+, τ max }} , ωn+1 = ωn+1 (i) , qn+1 = q(tn+1 )
+
+else Step 7. Set 
+
+τ (1)  
+
+> n+1
+
+= Adp (en+1  
+
+> ω, 1
+
+, e n+1  
+
+> q
+
+, 0.7, 2) τn+1 , τ (2)  
+
+> n+1
+
+= Adp (en+1  
+
+> ω, 2
+
+, e n+1  
+
+> q
+
+, 0.7, 3) τn+1 
+
+Set 
+
+i = arg max 
+
+> i={1,2}
+
+τ (i)
+
+> n+1
+
+, τn+1 = max {τmin , min {τ (i)
+
+> n+1
+
+, τ max }} 
+
+Step 8. Go to Step 1. end if 
+
+7 of 22 4 Long-time stability of the ETD-mr-SAV schemes 
+
+The purpose of this section is to derive a uniform-in-time enstrophy bound for the ETD-mr-SAV schemes proposed in the previous section. More precisely, we establish L∞(0 , ∞; L2) stability, together with a corresponding cumulative dissipation estimate, under uniformly bounded forcing. We first recall several elementary properties of the exponential-related functions introduced in (6). 
+
+Lemma 1. The functions φi defined in (6) satisfy: (1) φi(z) is decreasing for i = 0 , 1.(2) zφ 1(z) + φ0(z) = 1 .(3) 0 ≤ φ0(z) ≤ 1, 0 ≤ φ1(z) ≤ 1, and 1 + z 
+
+> 2
+
+≤ (φ1(z)) −1 ≤ 1 + z, ∀z ≥ 0.(4) (φ1(z)) −1 ≥ z, ∀z ∈ R+.
+
+Using the Fourier representation, let λk denote the eigenvalue of the Stokes operator L associated with the Fourier mode ˆhkeik·x. Then, for any h ∈ V and τ ≥ 0,
+
+φ1(τ ν L)h = ( τ ν L)−1 I − e−τ ν Lh = X
+
+> k∈Z2\{ 0}
+
+1 − e−τ νλ k
+
+τ νλ k
+
+ˆhkeik·x,
+
+(φ1(τ ν L)) −1h =  I − e−τ ν L−1(τ ν L)h = X
+
+> k∈Z2\{ 0}
+
+τ νλ k
+
+1 − e−τ νλ k
+
+ˆhkeik·x.
+
+(18) It follows that (φ1(τ ν L)) −1 is positive definite and commutes with L. Moreover, for any h, g ∈ V ,
+
+⟨L h, g ⟩ = ⟨L 1/2h, L1/2g⟩, ⟨φ1(τ ν L)h, g ⟩ = ⟨(φ1(τ ν L)) 1/2h, (φ1(τ ν L)) 1/2g⟩, (19) where L1/2 and (φ1(τ ν L)) 1/2 are defined spectrally. In particular, 
+
+L1/2h = X
+
+> k∈Z2\{ 0}
+
+λ1/2 
+
+> k
+
+ˆhkeik·x, (φ1(τ ν L)) 1/2h = X
+
+> k∈Z2\{ 0}
+
+ 1 − e−τ νλ k
+
+τ νλ k
+
+1/2
+
+ˆhkeik·x. (20) We also recall the Poincaré inequality 
+
+∥h∥ ≤ 1
+
+√λ1
+
+∥L 1/2h∥, ∀h ∈ V, (21) where λ1 > 0 is the smallest eigenvalue of L.Combining the spectral representation (20) with Lemma 1, we obtain the following operator inequalities. 
+
+Lemma 2. For any h ∈ V and τ ≥ 0, the following estimates hold: 
+
+∥h∥2 = τ ν ∥(φ1(τ ν L)) 1/2L1/2h∥2 + ∥(φ0(τ ν L)) 1/2h∥2, (22) 
+
+∥(φ1(τ ν L)) 1/2h∥2 ≤ ∥ h∥2, (23) 
+
+∥h∥2 + τ ν 
+
+2 ∥L 1/2h∥2 ≤ ∥ (φ1(τ ν L)) −1/2h∥2 ≤ ∥ h∥2 + τ ν ∥L 1/2h∥2, (24) 
+
+and 
+
+∥(φ1(τ ν L)) −1/2h∥2 ≥ τ ν ∥L 1/2h∥2. (25) 
+
+4.1 Long-time stability for the ETD-mr-SAV-MS2 scheme 
+
+We now derive an L∞(0 , ∞; L2) bound for the ETD-mr-SAV-MS2 scheme (4). 
+
+Theorem 1. Assume the initial data (ωi, q i) ∈ V × R for i = 0 , 1, and the forcing term f ∈ L∞(0 , ∞; H). The ETD-mr-SAV-MS2-L scheme (4) is uniquely solvable with ωn ∈ V ∀n ≥ 1, and B(˜ ωn+ 12 , ˜ωn+ 12 ) ∈ L2. Moreover, it is long-time stable in the sense that 
+
+∥ωn+1 ∥2 + |qn+1 |2 ≤ e−θ Pni=1 τi+1  ∥ω1∥2 + |q1|2 + 1
+
+θ
+
+ 1
+
+λ1ν ∥f ∥2 
+
+> L∞(0 ,∞;H)
+
++ γ
+
+
+
+, (26)  
+
+> 8 of 22 ,
+
+where 
+
+θ := min {νλ 1, γ } > 0.
+
+In addition, for any 1 ≤ n ≤ N − 1, the following cumulative dissipation estimate holds: 
+
+∥ωn+1 ∥2 + |qn+1 |2 +
+
+> n
+
+X
+
+> k=1
+
+Z tk+1 
+
+> tk
+
+
+
+ν∥L 1/2ω(t)∥2 + γ|q(t)|2
+
+
+
+dt ≤ ∥ ω1∥2 + |q1|2 + 1
+
+λ1ν ∥f ∥2  
+
+> L2(0 ,T ;H)
+
++ γT, (27) 
+
+where T = Pn+1  
+
+> i=1
+
+τi.Proof. We first work on a single time interval t ∈ (tn, t n+1 ] and then iterate the resulting estimate. Since ωn, ω n−1 ∈ V , we have B(˜ ωn+ 12 , ˜ωn+ 12 ) ∈ L2. Hence, the scalar auxiliary variable q(t) determined by the differential-integral equation (8) of convolution type is uniquely solvable since L = −∆ generates a C0-semigroup on 
+
+˙L2 = H [2]. Henceforth, the vorticity equation (4a) is uniquely solvable with the solution at tn+1 belonging to V ∩ ˙H2
+
+> per
+
+for all t ∈ (tn, t n+1 ]. Consequently, we deduce that ωn ∈ V ∀n ≥ 1. This completes the unique solvability proof. For the long-time stability, we take the inner product of (4a) with ω(t) in H, and add it to the product of (4b) with 
+
+q(t). Using the cancellation of the coupled terms (by design), we obtain 
+
+12
+
+ddt ∥ω∥2 + ν∥L 1/2ω∥2 + 12
+
+ddt |q(t)|2 + γ|q(t)|2 = ⟨f n+ 12 , ω ⟩ + γq (t). (28) By the Cauchy–Schwarz inequality and the Poincaré inequality (21), 
+
+ddt 
+
+ ∥ω∥2 + |q|2 + ν∥L 1/2ω∥2 + γ|q|2 ≤ 1
+
+λ1ν ∥f n+ 12 ∥2 + γ. (29) Applying again (21) to bound ν∥L 1/2ω∥2 from below by νλ 1∥ω∥2, and setting 
+
+θ = min {νλ 1, γ } > 0, (30) we obtain ddt 
+
+
+
+eθt  ∥ω∥2 + |q|2
+
+≤ eθt 
+
+ 1
+
+λ1ν ∥f n+ 12 ∥2 + γ
+
+
+
+. (31) Integrating (31) over (tn, t n+1 ] yields 
+
+∥ωn+1 ∥2 + |qn+1 |2 ≤ e−θτ n+1  ∥ωn∥2 + |qn|2 + 1 − e−θτ n+1 
+
+θ
+
+ 1
+
+λ1ν ∥f n+ 12 ∥2 + γ
+
+
+
+. (32) Iterating the above inequality gives (26). For (27), we integrate (29) over (tk, t k+1 ] and sum from k = 1 to n to obtain 
+
+∥ωn+1 ∥2 + |qn+1 |2 +
+
+> n
+
+X
+
+> k=1
+
+Z tk+1 
+
+> tk
+
+
+
+ν∥L 1/2ω(t)∥2 + γ|q(t)|2
+
+
+
+dt 
+
+≤∥ ω1∥2 + |q1|2 +
+
+> n
+
+X
+
+> k=1
+
+Z tk+1 
+
+> tk
+
+ 1
+
+λ1ν ∥f k+ 12 ∥2 + γ
+
+
+
+dt, 
+
+(33) which implies (27). 
+
+Remark 1. We also observe that the solution can be more regular provided f is more regular. Indeed, (4a) and elliptic regularity imply ωn+1 ∈ ˙Hm+1  
+
+> per
+
+provided ωn, ω n−1 ∈ ˙Hmper , f n+ 12 ∈ ˙Hm−1 
+
+> per
+
+. This further implies that q ∈ Cm([ tn, t n+1 ]) 
+
+and analytic on (tn, t n+1 ) by (8) [2]. In our computation, we will choose analytic initial data and external forcing. Hence the smoothness of our numerical solution is guaranteed. 
+
+5 Numerical experiments 
+
+In this section, we report results of several numerical experiments that illustrate the temporal accuracy, long-time stability, and practical performance of the proposed second-order scheme, including its usefulness as a building block for two time-adaptive strategies, a variable-step approach, and a variable-step-variable-order approach. In particular, we verify the expected temporal convergence order under variable time stepping (in the spirit of [3]), 
+
+> 9 of 22
+
+demonstrate the ability of the adaptive strategy to adjust time-step sizes according to the speed of temporal evolution while maintaining a prescribed error tolerance, and test long-time stability in a Kolmogorov forcing setting. For the Kolmogorov flow, we further provide a comparative study of different schemes in terms of long-time boundedness and statistical consistency of key physical quantities. All simulations are performed for the two-dimensional NSE on a 2π periodic box. A Fourier spectral method is used for spatial discretization. Since solutions to the NSE are analytic in space under spatially analytic forcing [5], the spatial discretization error is negligible compared with the temporal discretization error due to the spectral accuracy of the Fourier method. 
+
+5.1 Convergence test 
+
+Here we test the rate of convergence of the ETD-mr-SAV-MS2-L scheme using both fixed and variable time-steps. We also compare its performance against the ETD-mr-SAV-MS2 scheme [21], the BDF2-mr-SAV scheme [12], and the classical ETD-MS2 scheme (7). In addition, we invesitgate the effective of the mean-reversion parameter γ.
+
+Example 1 (Accuracy test) . In this example, we consider the periodic two-dimensional Navier–Stokes equations on 
+
+Ω = (0 , 2π)2. We set the viscosity ν = 10 −3, the mean-reverting parameter γ = 1000 , and two different terminal times T = 0 .1, 1. The external force is set to be 
+
+f (x, y, t ) = cos( x).
+
+The initial vorticity is prescribed by a smooth trigonometric field containing multiple spatial modes, 
+
+ω0(x, y ) = 
+
+> 10
+
+X
+
+> k,m =1
+
+1(k2 + m2)3/2 cos( kx ) cos( my ). (34) The initial value of the auxiliary variable is set to q0 = 1 . A Fourier spectral method with 256 modes in each spatial direction is used for spatial discretization. Since the solution and the forcing are smooth and periodic, the spatial discretization error is expected to be negligible compared with the temporal discretization error. A reference solution is generated by the ETDRK4 scheme [14] with the uniform time step τref = 0 .1 × 2−10 .We first consider the fixed-step case. The time step is set to τ = 0 .1 × 2−k, with the tested values listed in Tables 1and 2 for the two terminal times. Additional time steps sizes are considered in the regime when the classical ETD-MS2 scheme numerically blows up at T = 1 in order to better understand the performance of the scheme. We compare the classical ETD-MS2 scheme, the BDF2-mr-SAV scheme, the ETD-mr-SAV-MS2 scheme, and the proposed ETD-mr-SAV-MS2-L scheme. The errors are measured at the final time T = 0 .1 and T = 1 using the discrete L2 error of the vorticity, and the CPU time is also reported in order to compare accuracy and efficiency. 
+
+T A B L E 1 | Vorticity L2 errors, observed convergence rates, and CPU times for the tested schemes at T = 0 .1 under fixed time stepping. Here τ denotes the uniform time-step size.                                                                                                                                                                                                                                                                                                                                                          
+
+> τETD-MS2 BDF2-mr-SAV ETD-mr-SAV-MS2 ETD-mr-SAV-MS2-L Error Order CPU (s) Error Order CPU (s) Error Order CPU (s) Error Order CPU (s)
+> 0.1×2−22.332 ×10 −6–0.20 3.097 ×10 −6–0.14 2.332 ×10 −6–0.18 1.573 ×10 −6–0.28
+> 0.1×2−36.713 ×10 −71.80 0.29 9.939 ×10 −71.64 0.18 6.713 ×10 −71.80 0.29 5.797 ×10 −71.44 0.43
+> 0.1×2−3.25.064 ×10 −72.03 0.34 7.596 ×10 −71.94 0.20 5.064 ×10 −72.03 0.34 4.461 ×10 −71.89 0.50
+> 0.1×2−3.34.446 ×10 −71.88 0.34 6.726 ×10 −71.76 0.20 4.446 ×10 −71.88 0.34 3.957 ×10 −71.73 0.50
+> 0.1×2−3.43.846 ×10 −72.09 0.36 5.855 ×10 −72.00 0.21 3.846 ×10 −72.09 0.37 3.449 ×10 −71.98 0.53
+> 0.1×2−3.53.400 ×10 −71.78 0.39 5.181 ×10 −71.76 0.22 3.400 ×10 −71.78 0.39 3.078 ×10 −71.64 0.57
+> 0.1×2−3.63.021 ×10 −71.71 0.41 4.608 ×10 −71.69 0.23 3.021 ×10 −71.71 0.42 2.759 ×10 −71.58 0.61
+> 0.1×2−3.82.323 ×10 −71.89 0.46 3.573 ×10 −71.84 0.28 2.323 ×10 −71.89 0.45 2.150 ×10 −71.80 0.65
+> 0.1×2−41.791 ×10 −71.88 0.52 2.765 ×10 −71.85 0.29 1.791 ×10 −71.88 0.51 1.676 ×10 −71.80 0.80
+> 0.1×2−54.622 ×10 −81.95 0.90 7.268 ×10 −81.93 0.46 4.622 ×10 −81.95 0.91 4.476 ×10 −81.91 1.41
+> 0.1×2−61.174 ×10 −81.98 1.73 1.862 ×10 −81.96 0.85 1.174 ×10 −81.98 1.78 1.155 ×10 −81.95 2.46
+> 0.1×2−72.958 ×10 −91.99 3.30 4.713 ×10 −91.98 1.50 2.958 ×10 −91.99 3.47 2.932 ×10 −91.98 4.78
+> 0.1×2−87.424 ×10 −10 1.99 6.50 1.185 ×10 −91.99 3.25 7.424 ×10 −10 1.99 6.86 7.369 ×10 −10 1.99 9.49
+> 0.1×2−91.860 ×10 −10 2.00 13.06 2.972 ×10 −10 2.00 5.95 1.860 ×10 −10 2.00 13.34 1.829 ×10 −10 2.01 18.83
+> 0.1×2−10 4.654 ×10 −11 2.00 26.40 7.442 ×10 −11 2.00 12.13 4.654 ×10 −11 2.00 26.75 4.388 ×10 −11 2.06 40.82
+
+We have the following observations. (i) All the tested second-order schemes recover the expected second-order con-vergence in time after the coarse-step pre-asymptotic regime. (ii) Schemes reach second-order accuracy at larger  
+
+> 10 of 22 ,
+
+T A B L E 2 | Vorticity L2 errors, observed convergence rates, and CPU times for the tested schemes at T = 1 under fixed time stepping. Here τ denotes the uniform time-step size. ETD-MS2 BDF2-mr-SAV ETD-mr-SAV-MS2 ETD-mr-SAV-MS2-L                                                                                                                                                                                                                                                                                                                                           
+
+> τError Order CPU (s) Error Order CPU (s) Error Order CPU (s) Error Order CPU (s)
+> 0.1×2−2NaN –1.21 1.400 ×10 −2–0.70 3.068 ×10 −3–1.14 3.148 ×10 −2–1.83
+> 0.1×2−3NaN –2.22 1.536 ×10 −2pre-asymp 1.33 3.127 ×10 −3pre-asymp 2.29 3.041 ×10 −2pre-asymp 3.37
+> 0.1×2−3.2NaN –2.52 1.418 ×10 −2pre-asymp 1.58 3.114 ×10 −3pre-asymp 2.73 2.103 ×10 −2pre-asymp 4.06
+> 0.1×2−3.3NaN –2.74 1.438 ×10 −2pre-asymp 1.65 3.235 ×10 −3pre-asymp 2.83 2.063 ×10 −2pre-asymp 4.36
+> 0.1×2−3.4NaN –2.93 1.416 ×10 −2pre-asymp 1.61 3.200 ×10 −3pre-asymp 3.14 2.036 ×10 −2pre-asymp 4.58
+> 0.1×2−3.5NaN –3.13 1.408 ×10 −2pre-asymp 1.87 2.886 ×10 −3pre-asymp 3.37 1.979 ×10 −2pre-asymp 5.38
+> 0.1×2−3.63.453 ×10 3–3.24 1.402 ×10 −2pre-asymp 1.87 2.917 ×10 −3pre-asymp 3.64 1.985 ×10 −2pre-asymp 5.54
+> 0.1×2−3.81.641 ×10 −3pre-asymp 3.11 1.038 ×10 −2pre-asymp 2.43 2.408 ×10 −3pre-asymp 3.98 2.764 ×10 −3pre-asymp 5.71
+> 0.1×2−44.491 ×10 −6pre-asymp 3.80 4.480 ×10 −5pre-asymp 2.75 4.491 ×10 −6pre-asymp 4.41 4.475 ×10 −6pre-asymp 6.76
+> 0.1×2−51.121 ×10 −62.00 4.49 1.789 ×10 −6pre-asymp 5.44 1.121 ×10 −62.00 6.20 1.118 ×10 −62.00 8.05
+> 0.1×2−62.803 ×10 −72.00 9.21 4.480 ×10 −72.00 10.55 2.803 ×10 −72.00 14.39 2.799 ×10 −72.00 15.66
+> 0.1×2−77.013 ×10 −82.00 18.30 1.121 ×10 −72.00 21.16 7.013 ×10 −82.00 27.14 7.008 ×10 −82.00 31.23
+> 0.1×2−81.754 ×10 −82.00 35.76 2.806 ×10 −82.00 41.83 1.754 ×10 −82.00 52.66 1.752 ×10 −82.00 62.68
+> 0.1×2−94.386 ×10 −92.00 74.76 7.017 ×10 −92.00 86.28 4.386 ×10 −92.00 90.05 4.356 ×10 −92.01 125.14
+> 0.1×2−10 1.097 ×10 −92.00 166.69 1.755 ×10 −92.00 168.78 1.097 ×10 −92.00 177.25 1.064 ×10 −92.03 256.84
+
+time-step sizes at T = 0 .1 vs T = 1 . This suggests that the computation with larger terminal time might be more challenging. (iii) The classical ETD-MS2 scheme blows up numerically at T = 1 for relatively large step sizes (0.1 × 2−2 ≥ τ ≥ 0.1 × 2−3.5). This is consistent with the lack of theoretical unconditional stability of the scheme. (iv) All the mr-SAV-based schemes produce numerical results with error of the order of 10 −2 or smaller for the same relatively large steps sizes reported in (iii). This highlights the performance advantage of the mr-SAV-based schemes. (v) The classical ETD-MS2 scheme has essentially reached the theoretical 2nd-order convergence for steps sizes τ = 0 .1 × 2−3.2, 0.1 × 2−3.4. Moreover, the relative error generated by the scheme at T = 0 .1 is on the order of 
+
+10 −7 or smaller for the time step sizes tested. This is in sharp contrast to the numerical blow-up at T = 1 for the same step sizes. Hence, even if a scheme produces a small error at a fixed terminal time and achieves the designed order of accuracy, its performance at later time could be problematic in the absence of theoretical long time stabil-ity guarantee. (vi) The mean-reverting schemes produce errors of the same order as the ETD-MS2 scheme at small time steps. Hence the mean-reverting SAV is able to stabilize the scheme without sacrifying the accuracy. (vii) The ETD-mr-SAV schemes and the BDF2-mr-SAV scheme produce errors of the same order although the prefactors are smaller for the ETD schemes at small time steps. This is consistent with the intuition that the BDF2 scheme may be more diffusive than the ETD schemes. (viii) The CPU times are higher for the ETD-mr-SAV-MS2-L scheme due to the additional matrix-vector multiplications and inner products associated with the direct and inverse Laplace transform of the scalar auxiliary variable. Additional discussion about the computational complexities and related pros and cons can be found at the end of section 3.1. Next, we examine the variable-step case. Starting from a uniform partition with N time steps, we perturb each time step by a random relative amplitude of 15% and subtract the mean perturbation so that the resulting time-step sequence still reaches the final time T = 1 . The total number of time steps is chosen as N = 10 × 2k, k = 4 , 5, . . . , 10 .The variable-step convergence results for the ETD-mr-SAV-MS2-L scheme are reported in Table 3. The observed rates remain close to two throughout the refinement sequence. This confirms that the proposed ETD-mr-SAV-MS2-L method preserves its second-order temporal accuracy under moderately perturbed time-step sequences, demonstrating the robustness of the method with respect to variable time stepping. 
+
+T A B L E 3 | Vorticity L2 errors and observed convergence rates computed by ETD-mr-SAV-MS2-L at T = 1 under a 15% perturbed variable-step sequence. Here N denotes the total number of time steps. 
+
+N 24 × 10 25 × 10 26 × 10 27 × 10 28 × 10 29 × 10 210 × 10 
+
+Error 4.500e-6 1.130e-6 2.850e-7 7.090e-8 1.770e-8 4.420e-9 1.080e-9 Rate – 1.99 1.99 2.01 2.00 2.00 2.03 
+
+We now demonstrate that the mean-reverting mechanism is not only theoretically important to our uniform-in-time bound, it can also enhance the performance by suppressing numerical drifts. 
+
+Example 2. [Mean-reversion parameter effect] In this example, we test the effect of the mean-reversion parameter 
+
+γ. When γ = 0 , we recover the so-called ZEC scheme [25] or the standard SAV scheme for NSE equations [17]. Notice that a positive mean-reversion parameter γ is not only crucial to the uniform-in-time stability, it also enhances the computational result in this numerical experiment. We consider the vorticity–streamfunction equation on the periodic 
+
+11 of 22 domain Ω = (0 , 2π)2 with viscosity ν = 1 /40 . The external forcing is chosen as f = 4 cos(4 y), corresponding to a Kolmogorov-type forcing. In order to test the effect of the mean-reverting mechanism away from a simple steady profile, the initial data are generated from the smooth isotropic perturbation streamfunction 
+
+ψ0(x, y ) = 14
+
+> 10
+
+X
+
+> k,m =1
+
+1(k2 + m2)3/2
+
+ cos( kx ) + sin( kx )  cos( my ) + sin( my ).
+
+The spatial discretization uses a 256 × 256 Fourier grid. We compare the same second-order ETD-mr-SAV-MS2-L scheme with four mean-reverting parameters, γ = 1000 , 100 , 10 , 0, under the time step τ = 10 −3. A reference solution is computed by the ETDRK4 scheme with the finer time step τref = 5 × 10 −4.Figure 1 presents the relative L2 error of the vorticity and the evolution of enstrophy for different choices of γ. Table 4 reports the corresponding relative errors at selected time instants. The comparison shows a clear stabilizing effect of the mean-reverting correction. When γ is large, the numerical trajectory remains close to the ETDRK4 reference solution over the observed time interval. As γ is reduced, this restoring effect becomes weaker, and the vorticity error increases accordingly. The case γ = 0 , which removes the mean-reverting correction, gives the largest deviation (more than 38% at t = 20 ) from the reference solution, while the intermediate choices γ = 100 and γ = 10 provide a gradual transition between the strongly mean-reverting and non-mean-reverting regimes. The enstrophy diagnostics give a more nuanced message. Notice that the zero mean-reverting computation also tracks the reference enstrophy accurately in this test (relative error less than 0.5% at t = 20 ). Hence, the enstrophy error is not necessarily proportional to the full vorticity error. In particular, a computation may preserve an integral quantity such as enstrophy relatively well while still accumulating significant relative error in the vorticity field. Thus, enstrophy-related quantities are useful supplementary stability diagnostics, but they should not be used as standalone error indicators for adaptive time-stepping. Overall, these results support the role of the mean-reverting term as a practical stabilizing mechanism, not merely as a technical device in the theoretical analysis. 0 2 4 6 8 10 12 14 16 18 20 
+
+t
+
+10 −8
+
+10 −6
+
+10 −4
+
+10 −2
+
+10 0
+
+> Relative  L2 error
+
+(a) 
+
+0 2 4 6 8 10 12 14 16 18 20 
+
+t
+
+0
+
+200 
+
+400 
+
+600 
+
+> Enstrophy
+
+(b)                                                                                                                                         
+
+> γ= 1000 γ= 100 γ= 10 γ= 0 ETDRK4 reference
+> F I G U R E 1 |Effect of the mean-reverting correction on the forced periodic vorticity problem. (a) Relative L2error of the vorticity with respect to the ETDRK4 reference solution. (b) Enstrophy evolution for the reference solution and ETD-mr-SAV-MS2-L computations with γ= 1000 ,100 ,10 ,0.
+> T A B L E 4|Comparison of relative vorticity errors eωand enstrophy errors eEat selected times under different mean-reverting parameters. All errors are measured relative to the ETDRK4 reference solution.
+> tγ= 1000 γ= 100 γ= 10 γ= 0
+> eωeEeωeEeωeEeωeE
+> 55.06 ×10 −55.36 ×10 −51.22 ×10 −41.93 ×10 −55.85 ×10 −42.70 ×10 −44.92 ×10 −31.87 ×10 −3
+> 10 1.12 ×10 −41.40 ×10 −51.38 ×10 −41.48 ×10 −51.86 ×10 −41.41 ×10 −51.40 ×10 −21.58 ×10 −3
+> 15 3.49 ×10 −49.20 ×10 −64.88 ×10 −42.32 ×10 −52.15 ×10 −32.75 ×10 −44.38 ×10 −23.44 ×10 −3
+> 20 3.19 ×10 −31.99 ×10 −44.41 ×10 −32.58 ×10 −58.43 ×10 −32.02 ×10 −33.88 ×10 −14.86 ×10 −3
+> 12 of 22 ,
+
+5.2 Long-time stability 
+
+Example 3. [long time stability] In this example, we simulate the Kolmogorov flow to compare the long-time per-formance of different schemes. We consider the two-dimensional periodic NSE on (0 , 2π)2 in vorticity–streamfunction form (2), with external forcing 
+
+f (x, y ; t) = m cos( my ), (35) following [1]. The corresponding steady-state solution (the basic Kolmogorov flow) is given by the streamfunction 
+
+ψ(x, y ) = − 1 
+
+> νm 3
+
+cos( my ).We first investigate the long-time stability of the Kolmogorov forcing with m = 2 , ν = 1 /20 , and γ = 1000 . The initial streamfunction is taken as a perturbation of the steady state presented above, given by 
+
+ψ0(x, y ) = − 1
+
+νm 3 cos( my ) + 0 .001 cos( mx ) cos( my ).
+
+Figure 2 presents the evolution of the L2 norm of vorticity computed up to the final time T = 1000 using the ETD-mr-SAV-MS2-L scheme with uniform time steps τ = 0 .01 , 0.005 , 0.0025 . Over the full simulation interval, the L2
+
+norm remains uniformly bounded, which is consistent with the theoretical stability results established in Section 3. When the time-step is not small, say τ = 0 .01 , the long-time statistics of the palinstrophy (one-half of the L2 norm of the gradient of the vorticity) seems far-off from the behavior for smaller time-steps although it is uniformly bounded in time. 0 200 400 600 800 1000      
+
+> t
+> 10 15 20 25 30 35 40 45
+> L2 norm of vorticity
+> 0200 400 600 800 1000
+> t
+> 020 40 60 80 100 120 140
+> H1 norm of vorticity
+
+τ = 0 .01 τ = 0 .005 τ = 0 .0025          
+
+> F I G U R E 2|Evolution of the vorticity L2norm computed by the ETD-mr-SAV-MS2-L and ETD-mr-SAV-MS12-L schemes for
+> ν= 1 /20 and m= 2 .
+
+We next simulate the Kolmogorov flow with parameters m = 4 , ν = 1 /40 and γ = 1000 . The initial streamfunction is taken as a perturbation of the steady state presented above, 
+
+ψ0(x, y ) = − 1
+
+νm 3 cos( my ) + 0 .001 cos( mx ) cos( my ). (36) The final time is set to T = 10000 . We employ a fixed time step τ = 5 × 10 −4 and adopt the ETD-mr-SAV-MS2-L scheme and the ETD-mr-SAV-MS2 scheme proposed in [21] for comparison. The time evolution of enstrophy (one-half of the L2 norm of the vorticity squred) and palinstrophy (one-half of the 
+
+L2 norm of the gradient of the vorticity squared), calculated by the ETD-mr-SAV-MS2-L method and the ETD-mr-SAV-MS2 method, are displayed in Figure 3 and Figure 4, respectively. Although individual trajectories diverge over long time, they remain uniformly bounded for all time, which further illustrates long-time stability. The separation of trajectories over long times is likely due to the intrinsic instability of the dynamics (e.g., positive Lyapunov exponents).           
+
+> 13 of 22 02000 4000 6000 8000 10000 t10 12 14 16 18 20 22 24 26
+> L2 norm of vorticity
+> 02000 4000 6000 8000 10000 t40 50 60 70 80 90 100 110 120
+> H1 norm of vorticity
+
+F I G U R E 3 | Enstrophy (one-half of the L2 norm of the vorticity squared) and palinstrophy (one-half of the L2 norm of the gradient of the vorticity squared) as functions of time, computed using ETD-mr-SAV-MS2-L scheme with ν = 1 /40 , m = 4 , and τ = 5 × 10 −4.0 2000 4000 6000 8000 10000 t10 12 14 16 18 20 22 24 26      
+
+> L2 norm of vorticity
+> 02000 4000 6000 8000 10000 t40 50 60 70 80 90 100 110 120
+> H1 norm of vorticity
+
+F I G U R E 4 | Enstrophy (one-half of the L2 norm of the vorticity squared) and palinstrophy (one-half of the L2 norm of the gradient of the vorticity squared) as function of time, computed using ETD-mr-SAV-MS2 scheme with ν = 1 /40 , m = 4 , and τ = 5 × 10 −4.
+
+To assess long-time statistical consistency, we consider the probability density function (PDF) of the enstrophy and compute the total variation distance between the enstrophy distributions obtained from different schemes using the same uniform temporal sampling. The PDFs are nearly indistinguishable (Figure 5), and the total variation distances are small (Table 5). These observations provide evidence that these two schemes produce statistically consistent long-term behavior and are able to capture long-term statistics of the 2D NSE irrespective of the separation of trajectories [10, 18, 22]. The fat tail in PDF is consistent with the observed bursting and intermittent behavior. 
+
+5.3 Adaptive Strategies 
+
+In this section, we examine the performance of the proposed adaptive time-step method and the VSVO method separately.          
+
+> 14 of 22 ,5.07.510 .012 .515 .017 .520 .022 .525 .00.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 Density
+
+Density distribution of ‖ω‖                                  
+
+> ETD-mr-SAV-MS2-L ETD-mr-SAV-MS2 F I G U R E 5 |Probability density functions of enstrophy obtained by ETD-mr-SAV-MS2-L, ETD-mr-SAV-MS2 for ν= 1 /40 ,m= 4 ,and τ= 5 ×10 −4.
+> T A B L E 5|Total variation distance between enstrophy distributions obtained by ETD-mr-SAV-MS2-L and ETD-mr-SAV-MS2 for
+> ν= 1 /40 ,m= 4 , and τ= 5 ×10 −4.
+> L2Norm of Vorticity Total Variation Distance Relative L1Error
+> ∥ω∥<17 .50.0199218 4.243069%
+> ∥ω∥ ≥ 17 .50.0038525 12 .647748%
+> −∞ ≤ ∥ ω∥ ≤ ∞ 0.0237743 4.755107%
+
+5.3.1 Adaptive Time-Step Method Test 
+
+To facilitate a fair comparison with the fixed-step-size scheme, we adopt in this numerical experiment the identical external force and parameter configurations as those used in Example 3. We first investigate the stability performance of the adaptive time-step ETD-mr-SAV-MS12-L scheme under Kolmogorov forcing with m = 2 , ν = 1 /20 , and 
+
+γ = 1000 , where the adaptive parameters are set as 
+
+ρ = 0 .9, tol ω = tol q = 10 −4, τmin = 1 × 10 −5, τmax = 1 × 10 −2. (37) The initial stream function is set to be the same perturbation of the steady state as in Example 3, given by 
+
+ψ0(x, y ) = − 1
+
+νm 3 cos( my ) + 0 .001 cos( mx ) cos( my ).
+
+Figure 6 shows the evolution of the L2-norm and H1-norm of the vorticity up to the final time T = 1000 , com-puted using the adaptive ETD-mr-SAV-MS12-L scheme and the ETD-mr-SAV-MS2-L scheme with a uniform time step τ = 0 .0025 . It is observed that, in comparison with the fixed time-step scheme, the adaptive algorithm can equally guarantee the uniform boundedness of the L2-norm. This demonstrates that the theoretical stability results established in Section 3 remain valid for the case of variable time steps. To assess the short-time performance, we adopt the parameter settings from the first Kolmogorov test with m = 2 
+
+and ν = 1 /20 , and choose the initial data as the flow profile at a random time between 20 and 60 from that simulation so that the trajectory starts near the attractor. Figure 7 illustrates the time step size and the corresponding errors (computed via the ETD-mr-SAV-MS12 scheme) over the time interval t ∈ [0 , 50] , both presented as functions of time. Specifically, Figures 7 (a), (b), and (c) display the adaptive time step size, along with the absolute error in the scalar           
+
+> 15 of 22 0200 400 600 800 1000
+> t
+> 10 15 20 25 30 35 40 45
+> L2 norm of vorticity
+> 0200 400 600 800 1000
+> t
+> 020 40 60 80 100 120 140
+> H1 norm of vorticity
+
+τ = 0 .0025 τ = Ada. steps F I G U R E 6 | Evolution of the vorticity L2 norm computed by the ETD-mr-SAV-MS2-L and ETD-mr-SAV-MS12-L schemes for     
+
+> ν= 1 /20 and m= 2 .
+
+auxiliary variable and the relative L2 errors of vorticity, which are used to control the time step. It can be observed that the adaptive algorithm efficiently adjusts the time step to ensure the errors remain below the prescribed tolerances. To further characterize the actual evolution of errors, the ETDRK4 scheme with a finer time step is employed to produce a reference solution. The relative L2-errors (using the reference solution as the numerical truth) are presented in Figure 7 (d). Even at the final simulation time t = 50 , these errors remain well-below 10 −3 despite the accumulation of local errors; this demonstrates the effectiveness of the embedded adaptive pair ETD-mr-SAV-MS12-L scheme. Next, we adopt the parameter settings from the second Kolmogorov test in Example 3, i.e., m = 4 and ν = 1 /40 ,together with the same initial streamfunction and spatial discretization configuration, to examine the very long time (up to T = 10 4) performance of the adaptive time-stepping scheme. The time evolution of the enstrophy and palinstrophy, computed using the ETD-mr-SAV-MS12-L method up to 
+
+T = 10000 , is displayed in Figure (8). It is observed that the trajectories remain uniformly bounded over long-time simulation, which further demonstrates the long-time stability of the proposed schemes. We also considered the probability density function (PDF) of the enstrophy and calculated the total variation distance between the enstrophy distributions obtained from the fixed time-step ETD-mr-SAV-MS2 scheme with τ = 5 × 10 −4 using the same uniform time sampling. As shown in Figure 9, the PDFs obtained using the adaptive step-size and fixed step-size strategies are consistent. It can also be found in Table 6 that the total variation distance is small. This indicates that in long-term simulations, the adaptive strategy shows statistical consistency with the fixed step-size, demonstrating the effectiveness of the adaptive method.                      
+
+> T A B L E 6|Total variation distance between enstrophy distributions obtained by ETD-mr-SAV-MS2-L, ETD-mr-SAV-MS12-L for
+> ν= 1 /40 and m= 4 .
+> L2Norm of Vorticity Total Variation Distance Relative L1Error
+> ∥ω∥<17 .50.0156132 3.325381%
+> ∥ω∥ ≥ 17 .50.0029722 9.835980%
+> −∞ ≤ ∥ ω∥ ≤ ∞ 0.0185854 3.718358%
+
+Furthermore, we provide additional evidence of the advantages of adaptive time stepping, as illustrated in Figures 10. Specifically, Figure 10 (a), (b), and (c) shows that the adaptive scheme automatically selects smaller time steps when bursting events occur (corresponding to spikes in the enstrophy), improving temporal resolution during rapid transients. In addition, to illustrate the correlation between the time step size and the enstrophy, we calculated their       
+
+> 16 of 22 ,010 20 30 40 50
+
+t
+
+> 10 −5
+> 10 −4
+> 10 −3
+> 10 −2
+> Step sizes
+
+(a)      
+
+> 010 20 30 40 50
+
+t
+
+> 10 −16
+> 10 −14
+> 10 −12
+> 10 −10
+> 10 −8
+> 10 −6
+> 10 −4
+> 10 −2
+> |q − 1|
+
+(b)      
+
+> 010 20 30 40 50
+
+t
+
+> 10 −16
+> 10 −14
+> 10 −12
+> 10 −10
+> 10 −8
+> 10 −6
+> 10 −4
+> 10 −2
+> Relative  L2 error of Vorticity
+
+(c)      
+
+> 010 20 30 40 50
+
+t
+
+> 10 −10
+> 10 −8
+> 10 −6
+> 10 −4
+> 10 −2
+> Reference relative  L2 error of Vorticity
+
+(d) F I G U R E 7 | (a) Adaptive time step sizes as a function of time. (b) Absolute value of the auxiliary varialbe as a function of time. (c) Relative L2 error of vorticity computed in the ETD-mr-SAV-MS12-L scheme and (d) Reference relative L2 error computed via the ETD-mr-SAV-MS12-L scheme and ETDRK4 scheme. 
+
+correlation coefficient (PCC). The mathematical expression of PCC is given by 
+
+P CC (x, y ) = 
+
+P(x − mx)( y − my )
+
+pP (x − mx)2 P(y − my )2 .
+
+where mx, my are the mean values of x and y, respectively. The computed PCC value is -0.8123, suggesting a strong negative correlation. Specifically, as the enstrophy increases, the time step size decreases accordingly, this property is clearly reflected in Figure 10 (c). Figure 10 (d) further quantifies efficiency: the total number of time steps required by the adaptive algorithm is approximately one-sixth of that required by the fixed-step simulation. This demonstrates that the adaptive strategy achieves a favorable balance between accuracy and computational cost. 
+
+5.3.2 VSVO Method Test 
+
+Here we assess the performance of the adaptive VSVO method on a problem with multiple time scales, and demon-strate the superiority of the adaptive VSVO strategy in this case. We follow the classical stepsize-order control strategy described in [15, 6, 7]. 
+
+Example 4. In this experiment, we adopt the vorticity–streamfunction formulation (2) on the periodic domain 
+
+(0 , 2π)2. The external forcing, related to the classical Taylor-Green vortex problem, is multi-scale in time, and takes the form 
+
+f (x, y, t ) = −(2 νF (t) + F ′(t)) cos( x) cos( y) (38)           
+
+> 17 of 22 02000 4000 6000 8000 10000 t10 12 14 16 18 20 22 24 26
+> L2 norm of vorticity
+> 02000 4000 6000 8000 10000 t40 50 60 70 80 90 100 110 120
+> H1 norm of vorticity
+
+F I G U R E 8 | Enstrophy ( L2 norm of vorticity) and palinstrophy ( H1 norm of vorticity) as function of time, computed using ETD-mr-SAV-MS12-L scheme with ν = 1 /40 and m = 4 .5.0 7.5 10 .0 12 .5 15 .0 17 .5 20 .0 22 .5 25 .00.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 Density 
+
+Density distribution of ‖ω‖
+
+ETD-mr-SAV-MS2-L ETD-mr-SAV-MS12-L 
+
+F I G U R E 9 | Probability density functions of enstrophy obtained by ETD-mr-SAV-MS2-L, ETD-mr-SAV-MS12-L for ν = 1 /40 and 
+
+m = 4 .
+
+where F (t) is chosen as the classical square-wave function in the form 
+
+F (t) = − tanh 
+
+
+
+100 sin 
+
+ π
+
+5
+
+
+
+t + 52
+
+ 
+
++ 2 . (39) The corresponding exact solution is given by 
+
+ω(x, y ; t) = −2F (t) cos( x) cos( y) (40) which also exhibits the slow–fast temporal behavior characteristic of the forcing term.       
+
+> 18 of 22 ,02000 4000 6000 8000 10000
+
+t
+
+> 10 −4
+> 10 −3
+> 10 −2
+> Step sizes
+
+(a)      
+
+> 02000 4000 6000 8000 10000
+
+t
+
+> 10
+> 12
+> 14
+> 16
+> 18
+> 20
+> 22
+> 24
+> 26
+> L2 norm of vorticity
+
+(b)           
+
+> 10 −3
+> 6×10 −42×10 −33×10 −3
+> 4×10 −3
+
+Step sizes 
+
+> 12
+> 14
+> 16
+> 18
+> 20
+> 22
+> 24
+> L2 norm of vorticity
+
+(c)       
+
+> PCC = −0.8123
+> 02000 4000 6000 8000 10000
+
+t
+
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 1.25
+> 1.50
+> 1.75
+> 2.00
+> Number of steps
+> ×10 7
+
+(d)      
+
+> Const. steps slope = 2000 Ada. steps slope = 328.2769 F I G U R E 10 |(a) Adaptive time step sizes as a function of time. (b) Enstrophy ( L2norm of vorticity) as a function of time. (c) Correlation between step sizes and enstrophy ( L2norm of vorticity) (PCC = −0.8123 ). (d) Number of steps over time for constant steps and adaptive steps.
+
+In the numerical simulation, we set ν = 0 .05 and γ = 1000 , and employ 256 Fourier modes for spatial discretizations. The VSVO scheme is adopted in the simulation, with its parameters specified as tol = 10 −4, τmin = 10 −5, τmax = 2 × 10 −2. (41) For comparison, we also implement the ETD-mr-SAV-MS2-L scheme with a constant time step τ = 10 −2.Figure 11 displays the L2 norm of vorticity and the L2 error of vorticity as functions of time. Meanwhile, the adaptive time steps and adaptive order selections are presented in Figure 12. The results demonstrate that the two numerical strategies yield nearly identical evolutions for the L2 norm of vorticity. However, the fixed-step ETD-mr-SAV-MS2-L would incur an error of the order of 10 −1 near the sharp temporal transition of the solution while the VSVO method maintains an error of the order of 10 −7 or less for all time. This demonstrates the superior performance of the VSVO strategy in capturing the transition behaviors. 
+
+6 Conclusion 
+
+We have developed a linear, uniquely solvable, variable-step embedded exponential time-differencing (ETD) scheme for the incompressible Navier–Stokes equations in vorticity–streamfunction formulation on a two-dimensional periodic domain. The method consists of a second-order scheme together with an embedded first-order companion, providing a natural mechanism for adaptive time stepping and a posteriori error control. The scheme is long-time stable in the         
+
+> 19 of 22 0510 15 20 t510 15 20 25 30 35 40 45
+> L2 norm of vorticity
+> 0510 15 20 t10 −19
+> 10 −16
+> 10 −13
+> 10 −10
+> 10 −7
+> 10 −4
+> 10 −1
+> L2 error
+
+Exact ‖ω‖ VSVO ETD-mr-SAV-MS2-L F I G U R E 11 | Evolution of the L2 norm of the vorticity and the L2 error computed by the VSVO method and the ETD-mr-SAV-MS2-L scheme with constant stepsizes, respectively. 0 5 10 15 20 
+
+t    
+
+> 0.0025 0.0050 0.0075 0.0100 0.0125 0.0150 0.0175 0.0200 Step size 0510 15 20 t1.01.21.41.61.82.0Order
+
+VSVO ETD-mr-SAV-MS2-L   
+
+> F I G U R E 12 |Adaptive stepsizes and order selection for the VSVO scheme.
+
+sense that the discrete vorticity admits a uniform-in-time bound in L∞(0 , ∞; L2), independently of the time-step sizes and for arbitrary Reynolds numbers, provided that the external forcing is uniformly bounded in time in L2. The construction combines the ETD framework with a mean-reverting scalar auxiliary variable (mr-SAV) formulation, whose mean-reverting mechanism is essential for recovering the dissipative structure needed for long-time stability. A key feature of the present method is that each time step involves only linear subproblems. More precisely, in the periodic setting the update reduces to the evaluation of two time-dependent heat equations together with a linear equation for the scalar auxiliary variable. This fully linear structure distinguishes the present approach from earlier ETD–mr-SAV formulations that require the solution of a nonlinear algebraic equation at each step, while still retaining the desirable long-time stability property. The numerical results confirm the predicted second-order temporal accuracy, the uniform-in-time stability of the method, and the effectiveness of the embedded adaptive strategy in adjusting the time-step size to the evolving dynamics. We have also included preliminary numerical tests of a variable-order/variable-step (VOVS/VSVO) approach based on a variable-step BDF2 discretization for the Navier–Stokes equations. Although this direction is not the main focus  
+
+> 20 of 22 ,
+
+of the present paper, the results suggest that it may provide another viable adaptive strategy for simulations that involve rapid temporal transition. Several natural directions remain for future work. On the analytical side, it would be important to establish a rigorous convergence analysis for the proposed linear embedded ETD scheme, including error estimates under variable time stepping, and to investigate the convergence of long-time statistical quantities generated by the numerical dynamics. On the algorithmic side, an interesting next step is the development of higher-order embedded pairs or triplets that simultaneously retain uniform-in-time bounds, variable-step capability, and low per-step complexity. Such schemes would provide a broader framework for testing and refining adaptive strategies, including variable-order/variable-step approaches. Other directions include extending the methodology beyond the periodic setting, and applying the linear ETD–mr-SAV framework to more complex dissipative fluid models, such as the Boussinesq equations and coupled multiphase flow systems. 
+
+ACKNOWLEDGMENT 
+
+The second author acknowledges helpful conversation with Professors Wenbin Chen, Qiang Du, and Jie Shen. 
+
+DECLARATIONS 
+
+Funding This work was supported in part by NSFC12271237. 
+
+Conflict of interest The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. 
+
+Data availability statement The data and codes generated during the current study are available from the corresponding author upon reasonable request. 
+
+References 
+
+1. D. Armbruster, B. Nicolaenko, N. Smaoui, and P. Chossat: Symmetries and dynamics for 2-D Navier–Stokes flow, Physica D: Nonlinear Phenomena , 95(1996), 81–93. 2. H. Brunner: Volterra Integral Equations: An Introduction to Theory and Applications , volume 30 of Cambridge Monographs on Applied and Computational Mathematics , Cambridge University Press, Cambridge, 2017. 3. W. Chen, X. Wang, Y. Yan, and Z. Zhang: A second order BDF numerical scheme with variable steps for the Cahn–Hilliard equation, SIAM Journal on Numerical Analysis , 57(2019), 495–525. 4. J. Coleman, D. Han, and X. Wang: An efficient scheme for approximating long-time dynamics of a class of non-linear models, Communications in Information and Systems , 25(2025), 273–299. 5. P. Constantin and C. Foiaş: Navier-stokes equations , University of Chicago press, 1988. 6. V. DeCaria and M. Schneier: An embedded variable step IMEX scheme for the incompressible Navier–Stokes equations, 
+
+Computer Methods in Applied Mechanics and Engineering , 376(2021), 113661. 7. V. DeCaria, A. Guzel, W. Layton, and Y. Li: A variable stepsize, variable order family of low complexity, SIAM Journal on Scientific Computing , 43(2021), A2130–A2160. 8. J. R. Dormand and P. J. Prince: A family of embedded Runge–Kutta formulae, Journal of Computational and Applied Mathematics , 6(1980), 19–26. 9. E. Fehlberg: Low-order classical Runge–Kutta formulas with stepsize control and their application to some heat transfer problems, NASA Technical Report TR R-315, NASA, 1969. 10. C. Foias, O. Manley, R. Rosa, and R. Temam: Navier-Stokes equations and turbulence , volume 83, Cambridge University Press, 2001. 11. E. Hairer, G. Wanner, and S. P. Nørsett: Solving ordinary differential equations I: Nonstiff problems , Springer, 1993. 12. D. Han and X. Wang: A highly efficient second-order accurate long-time dynamics preserving scheme for some geophysical fluid models, arXiv preprint arXiv:2510.05360 , 2025. 13. F. Huang and J. Shen: A new class of implicit–explicit BDFk SAV schemes for general dissipative systems and their error analysis, Computer Methods in Applied Mechanics and Engineering , 392(2022), 114718. 14. A. K. Kassam and L. N. Trefethen: Fourth-order time-stepping for stiff PDEs, SIAM Journal on Scientific Computing ,26(2005), 1214–1233. 15. S. Li, L. Ju, and H. Si: Adaptive exponential time integration of the Navier-Stokes equations, In AIAA Scitech 2020 Forum , page 2033, 2020. 16. X. Li and J. Shen: On a SAV-MAC scheme for the Cahn–Hilliard–Navier–Stokes phase-field model and its error analysis for the corresponding Cahn–Hilliard–Stokes case, Mathematical Models and Methods in Applied Sciences , 30(2020), 2263– 2297. 17. X. Li, J. Shen, and Z. Liu: New SAV-pressure correction methods for the Navier-Stokes equations: stability and error analysis, Mathematics of Computation , 91(2022), 141–167. 
+
+> 21 of 22
+
+18. A. Majda and X. Wang: Nonlinear dynamics and statistical theories for basic geophysical flows , Cambridge University Press, 2006. 19. R. Temam: Infinite-dimensional dynamical systems in mechanics and physics , volume 68, Springer Science & Business Media, 2012. 20. L. N. Trefethen, J. A. C. Weideman, and T. Schmelzer: Talbot quadratures and rational approximations, BIT Numerical Mathematic , 46(2006), 653–670. 21. H. Wang, X. Wang, and M. Zhang: Unconditionally long-time stable variable-step second-order exponential time-differencing schemes for the incompressible nse, arXiv preprint arXiv:2602.10268 , 2026. 22. X. Wang: An efficient second order in time scheme for approximating long time statistical properties of the two dimensional Navier–Stokes equations, Numerische Mathematik , 121(2012), 753–779. 23. X. Yang: A new efficient fully-decoupled and second-order time-accurate scheme for Cahn–Hilliard phase-field model of three-phase incompressible flow, Computer methods in applied mechanics and engineering , 376(2021), 113589. 24. X. Yang: A novel fully-decoupled, second-order and energy stable numerical scheme of the conserved Allen–Cahn type flow-coupled binary surfactant model, Computer Methods in Applied Mechanics and Engineering , 373(2021), 113502. 25. G. D. Zhang, X. He, and X. Yang: A unified framework of the SAV-ZEC method for a mass-conserved Allen–Cahn type two-phase ferrofluid flow model, SIAM Journal on Scientific Computing , 46(2024), B77–B106. 26. L. Zhang. Un schéma de semi-discrétisation en temps pour des systèmes différentiels discrétisés en espace par la méthode de Fourier: résolution numérique des équations de Navier-Stokes stationnaires par la méthode multigrille . PhD thesis, Paris 11, 1987.
