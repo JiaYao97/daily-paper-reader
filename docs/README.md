@@ -6,61 +6,89 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-21
-- 运行时间：2026-07-21 21:51:03 UTC
+- 最新运行日期：2026-07-28
+- 运行时间：2026-07-28 21:54:37 UTC
 - 运行状态：成功
-- 本次总论文数：13
-- 精读区：8
-- 速读区：5
+- 本次总论文数：23
+- 精读区：9
+- 速读区：14
 
 ### 今日简报（AI）
-今日精读9.0高分论文，聚焦传感器布局优化与2D Navier-Stokes方程数值方法。  
-最值得关注：弱凸优化解决传感器布局问题，以及均匀时间稳定的线性变步长ETD格式。  
-建议后续深入理解弱凸优化理论及其与深度学习的结合方向。
-- 详情：[/202607/21/README](/202607/21/README)
+今日共处理23篇论文，精读2篇高分研究，速读3篇重要进展。最值得关注的是Adaptive Mamba神经算子与湍流通道流相空间概率分布两项9分工作，分别代表新型神经网络架构和流场重建前沿。建议优先精读这两篇，再通过速读文章拓展压缩空气动力学、图神经网络等交叉领域认知。
+- 详情：[/202607/28/README](/202607/28/README)
 
 ### 精读区论文标签
-1. [Global solutions for the sensors placement problem via weakly convex optimization](/202607/21/2607.15821v1-global-solutions-for-the-sensors-placement-problem-via-weakly-convex-optimization)  
+1. [Adaptive Mamba Neural Operators](/202607/28/2607.18043v1-adaptive-mamba-neural-operators)  
    标签：评分：9.0/10、query:flow-pred
-   evidence：用于翼型压力重构的传感器放置
-2. [A Linear Variable-Step Embedded ETD Scheme with Uniform-in-Time Stability for the 2D Navier--Stokes Equations](/202607/21/2607.17036v1-a-linear-variable-step-embedded-etd-scheme-with-uniform-in-time-stability-for-the-2d-navier--stokes-equations)  
+   evidence：用于任意几何上PDE求解的神经算子
+2. [A machine-learned probability distribution in the phase space of turbulent channel flow for synthetic turbulence and flow reconstruction](/202607/28/2607.18058v1-a-machine-learned-probability-distribution-in-the-phase-space-of-turbulent-channel-flow-for-synthetic-turbulence-and-flow-reconstruction)  
    标签：评分：9.0/10、query:flow-pred
-   evidence：用于纳维-斯托克斯方程的数值格式，支持流场预测
-3. [A machine-learned probability distribution in the phase space of turbulent channel flow for synthetic turbulence and flow reconstruction](/202607/21/2607.18058v1-a-machine-learned-probability-distribution-in-the-phase-space-of-turbulent-channel-flow-for-synthetic-turbulence-and-flow-reconstruction)  
+   evidence：机器学习分布用于湍流重建
+3. [Learning Population-Level Dynamics through a Latent Fokker--Planck Model and Discrepancy Transport Maps](/202607/28/2607.21921v1-learning-population-level-dynamics-through-a-latent-fokker--planck-model-and-discrepancy-transport-maps)  
+   标签：评分：9.0/10、query:pc-latent
+   evidence：潜在随机动力学与物理约束传输图
+4. [Latent PDE mapping for efficient physics-informed learning across geometries with limited data](/202607/28/2607.22215v1-latent-pde-mapping-for-efficient-physics-informed-learning-across-geometries-with-limited-data)  
+   标签：评分：9.0/10、query:pc-latent
+   evidence：潜在PDE映射：有限数据下跨几何的物理信息学习，明确使用带PDE约束的潜在空间
+5. [Physics-Guided Generative AI for Property-Targeted 3D Porous Media Design](/202607/28/2607.24274v1-physics-guided-generative-ai-for-property-targeted-3d-porous-media-design)  
+   标签：评分：9.0/10、query:pc-latent
+   evidence：物理引导的变分自编码器和潜扩散模型用于目标属性设计
+6. [Physics Transformer: Tailoring Transformer for General PDE Prediction](/202607/28/2607.24513v1-physics-transformer-tailoring-transformer-for-general-pde-prediction)  
    标签：评分：9.0/10、query:flow-pred
-   evidence：机器学习湍流概率分布用于流场重构
-4. [DRIFT: Direct Reduced Fourier Transforms for Distributed Spectral Neural Operators](/202607/21/2607.14394v1-drift-direct-reduced-fourier-transforms-for-distributed-spectral-neural-operators)  
+   evidence：Transformer用于PDE预测，直接相关于流体动力学的神经算子
+7. [FlashPDE: A Drop-In Fused Triton Operator Library for Neural PDE Solvers](/202607/28/2607.18020v2-flashpde-a-drop-in-fused-triton-operator-library-for-neural-pde-solvers)  
    标签：评分：8.0/10、query:flow-pred
-   evidence：傅里叶神经算子的分布式计算
-5. [Multi-Granularity Conformal Prediction for Reliable Neural-Operator Automotive Aerodynamic Surrogates](/202607/21/2607.17297v1-multi-granularity-conformal-prediction-for-reliable-neural-operator-automotive-aerodynamic-surrogates)  
+   evidence：高效的神经PDE求解器库，与流体动力学神经算子密切相关
+8. [Optimal Sensor Placement via Graph-constrained Flow Matching](/202607/28/2607.19831v1-optimal-sensor-placement-via-graph-constrained-flow-matching)  
    标签：评分：8.0/10、query:flow-pred
-   evidence：神经算子用于流体动力学；空气动力学代理的共形预测
-6. [Differentiable Hybrid Neural-CFD Modelling of Wall-Bounded Turbulence: Coupled Learning of Subgrid-Scale and Wall Closures](/202607/21/2607.17357v1-differentiable-hybrid-neural-cfd-modelling-of-wall-bounded-turbulence-coupled-learning-of-subgrid-scale-and-wall-closures)  
+   evidence：通过流匹配优化传感器布置以实现连续信号重建
+9. [A formal log(Re)-cost framework for the engineering turbulence problem](/202607/28/2607.20199v1-a-formal-logre-cost-framework-for-the-engineering-turbulence-problem)  
    标签：评分：8.0/10、query:flow-pred
-   evidence：流体动力学的神经算子
-7. [FlashPDE: A Drop-in Fused Triton Operator Library for Neural PDE Solvers](/202607/21/2607.18020v1-flashpde-a-drop-in-fused-triton-operator-library-for-neural-pde-solvers)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：用于神经PDE求解器的即插即用融合算子库，支持流体动力学（纳维-斯托克斯）的可微算子。
-8. [Physics-Guided Spectral Parametric Reduced-Order Modeling for Transient Prediction of Controlled Dynamical Systems](/202607/21/2607.18133v1-physics-guided-spectral-parametric-reduced-order-modeling-for-transient-prediction-of-controlled-dynamical-systems)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：物理引导的降阶建模，适用于流场预测
+   evidence：物理约束的数据驱动湍流预测框架
 
 ### 速读区论文标签
-1. [Solver-in-the-loop training of deep learning closures for large-eddy simulation of turbulent premixed jet flames](/202607/21/2607.17376v1-solver-in-the-loop-training-of-deep-learning-closures-for-large-eddy-simulation-of-turbulent-premixed-jet-flames)  
+1. [Information Transport and Observability in Compressible Aerodynamics](/202607/28/2607.20177v1-information-transport-and-observability-in-compressible-aerodynamics)  
    标签：评分：8.0/10、query:flow-pred
-   evidence：大涡模拟中基于深度学习且结合求解器在环训练的闭合模型
-2. [STKAN: Kolmogorov-Arnold Networks for Spatio-Temporal Forecasting](/202607/21/2607.13108v1-stkan-kolmogorov-arnold-networks-for-spatio-temporal-forecasting)  
+   evidence：可压缩空气动力学中基于稀疏压力测量的可观测性指标，辅助流场重构
+2. [Label-Free Finite-Volume-Residual Training of Attention Graph Neural Networks for Coupled Thermo-Fluid Fields](/202607/28/2607.20321v2-label-free-finite-volume-residual-training-of-attention-graph-neural-networks-for-coupled-thermo-fluid-fields)  
+   标签：评分：8.0/10、query:flow-pred
+   evidence：无标签有限体积残差训练热流场预测
+3. [PG-KINN: A Physics-Informed Petrov-Galerkin Kolmogorov-Arnold Network for Solving Forward and Inverse PDEs](/202607/28/2607.20378v1-pg-kinn-a-physics-informed-petrov-galerkin-kolmogorov-arnold-network-for-solving-forward-and-inverse-pdes)  
+   标签：评分：8.0/10、query:flow-pred
+   evidence：物理信息KAN用于求解正反PDE问题
+4. [A physics-assisted deep neural network-based closure framework for velocity gradient dynamics in compressible flows with vibrational non-equilibrium](/202607/28/2607.21152v1-a-physics-assisted-deep-neural-network-based-closure-framework-for-velocity-gradient-dynamics-in-compressible-flows-with-vibrational-non-equilibrium)  
+   标签：评分：8.0/10、query:flow-pred
+   evidence：可压缩湍流中速度梯度动力学的物理辅助深度神经网络
+5. [Longitudinal Random Forests for Sparse and Irregular Response Trajectories](/202607/28/2607.21817v1-longitudinal-random-forests-for-sparse-and-irregular-response-trajectories)  
+   标签：评分：8.0/10、query:small-reg
+   evidence：用于稀疏不规则轨迹回归的纵向随机森林
+6. [Weak-to-Strong Learning in Decision Making](/202607/28/2607.18467v1-weak-to-strong-learning-in-decision-making)  
+   标签：评分：7.0/10、query:small-reg
+   evidence：利用有限标注数据和大量未标注数据的弱到强学习
+7. [RAMP: Recognition parametrisation by Amortised Message Passing](/202607/28/2607.18883v1-ramp-recognition-parametrisation-by-amortised-message-passing)  
+   标签：评分：7.0/10、query:pc-latent
+   evidence：用于潜变量模型的摊销消息传递
+8. [Instance Hardness-Based Relevance for Imbalanced Regression](/202607/28/2607.20173v1-instance-hardness-based-relevance-for-imbalanced-regression)  
+   标签：评分：7.0/10、query:small-reg
+   evidence：基于实例硬度的不平衡回归相关性方法
+9. [Label-Free Finite-Volume-Residual Training of Attention Graph Neural Networks for Coupled Thermo-Fluid Fields](/202607/28/2607.20321v1-label-free-finite-volume-residual-training-of-attention-graph-neural-networks-for-coupled-thermo-fluid-fields)  
    标签：评分：7.0/10、query:flow-pred
-   evidence：Kolmogorov-Arnold网络用于时空预测，可迁移至流场预测
-3. [Novel Adaptive Methods for Hyperbolic Conservation Laws Based on New Quasi-Linear Seventh- and Ninth-Order Schemes](/202607/21/2607.16918v1-novel-adaptive-methods-for-hyperbolic-conservation-laws-based-on-new-quasi-linear-seventh--and-ninth-order-schemes)  
-   标签：评分：7.0/10、query:flow-pred
-   evidence：欧拉方程的自适应高阶格式
-4. [A Statistical Formulation Gap for Nonlinear Multiscale Physics-Informed Learning](/202607/21/2607.15702v1-a-statistical-formulation-gap-for-nonlinear-multiscale-physics-informed-learning)  
-   标签：评分：6.0/10、query:pc-latent
-   evidence：多尺度方程物理知情学习的公式化差距
-5. [Honest Physical-Support Inference after Latent Dictionary Learning: Collision Singularities and Minimax Resolution](/202607/21/2607.16813v1-honest-physical-support-inference-after-latent-dictionary-learning-collision-singularities-and-minimax-resolution)  
-   标签：评分：6.0/10、query:pc-latent
-   evidence：潜在字典学习与物理支撑推断
+   evidence：无标签有限体积残差训练注意力图神经网络用于耦合热流场预测
+10. [Searching the Space of Feed-Forward Neural-Network Weight-Update Rules with Fixed Depth Symbolic Regression](/202607/28/2607.21855v1-searching-the-space-of-feed-forward-neural-network-weight-update-rules-with-fixed-depth-symbolic-regression)  
+   标签：评分：7.0/10、query:small-reg
+   evidence：使用符号回归发现神经网络权重更新规则，在小回归基准上优于标准优化器
+11. [FlashPDE: A Drop-In Fused Triton Operator Library for Neural PDE Solvers](/202607/28/2607.18020v3-flashpde-a-drop-in-fused-triton-operator-library-for-neural-pde-solvers)  
+   标签：评分：6.0/10、query:flow-pred
+   evidence：用于神经PDE求解器的融合算子库，加速流场预测
+12. [SGN: A Similarity-based Generative Network for Data Generation under Distribution Shift](/202607/28/2607.18072v1-sgn-a-similarity-based-generative-network-for-data-generation-under-distribution-shift)  
+   标签：评分：6.0/10、query:small-reg
+   evidence：面向分布偏移下小目标集的数据增强生成网络
+13. [Variational Bayesian Sparse Negative Binomial Regression](/202607/28/2607.18741v1-variational-bayesian-sparse-negative-binomial-regression)  
+   标签：评分：6.0/10、query:small-reg
+   evidence：变分贝叶斯稀疏负二项回归用于过离散计数数据
+14. [Variational meta-learning inference for low dimensional neural system identification](/202607/28/2607.18965v1-variational-meta-learning-inference-for-low-dimensional-neural-system-identification)  
+   标签：评分：6.0/10、query:small-reg
+   evidence：面向低数据场景的系统辨识变分元学习
 
 
 <div class="dpr-home-promo-card">

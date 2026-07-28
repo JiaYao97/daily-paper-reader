@@ -1,0 +1,9826 @@
+Title: Weak-to-Strong Learning in Decision Making
+
+URL Source: https://arxiv.org/pdf/2607.18467v1
+
+Published Time: Wed, 22 Jul 2026 00:17:29 GMT
+
+Number of Pages: 59
+
+Markdown Content:
+# Weak-to-Strong Learning in Decision Making 
+
+Jingwei Ji 
+
+> Management Science and Engineering, Stanford University, jingwei.ji@stanford.edu
+
+Renyuan Xu 
+
+> Management Science and Engineering, Stanford University, renyuanxu@stanford.edu
+
+Many operational decisions rely on predictive models that estimate uncertain outcomes conditional on observable contexts. Training such models, however, often faces a fundamental data asymmetry: labeled outcomes are scarce or costly to obtain, while contextual covariates are abundant. Motivated by this data asymmetry, we develop a decision-aware weak-to-strong (W2S) framework that leverages both labeled and unlabeled data to improve contextual stochastic optimization. Specifically, we first train a weak model using limited labeled data and then use it to generate predicted outcome distributions on unlabeled contexts. These distributions provide soft supervision for training a strong model. We establish a non-asymptotic upper bound on the excess decision risk of W2S and a complementary lower bound for a strong-only benchmark. Their comparison yields explicit sufficient conditions under which W2S improves downstream decision performance. The key quantity is the correlation dimension between the weak and strong feature representations: when it is small, abundant unlabeled data reduce the effect of teacher errors along non-overlapping directions. A synthetic newsvendor experiment and a comment moderation experiment based on real-world data provide empirical evidence consistent with the theory. 
+
+Key words : weak-to-strong; contextual stochastic optimization 
+
+## 1. Introduction 
+
+Many operational decisions rely on predictive models that estimate uncertain outcomes condi-tional on observable contexts. Examples include inventory planning and newsvendor problems with contextual demand forecasts (Ban and Rudin 2019, Chang et al. 2025, Chen et al. 2021); dynamic pricing, revenue management, online retail pricing, and joint pricing-inventory learning with demand prediction (Cohen et al. 2020, Javanmard et al. 2024, Ferreira et al. 2016, Chen et al. 2026, 2022); routing with travel-time estimation (Guo et al. 2023); and portfolio allocation with return-distribution modeling (Gu et al. 2020). Related formulations also appear in data-driven robust optimization and offline policy learning (Wang et al. 2016, Zhou et al. 2023); see Bastani et al. (2022) for an overview of machine learning in operations management. These settings can be unified as instances of contextual stochastic optimization .When predictions are used as input to operational decisions, a growing literature recognizes that model training should account for the optimization problems in which those predictions will be used. The key insight is simple: predictive accuracy alone does not guarantee decision quality. 
+
+> 1arXiv:2607.18467v1 [cs.LG] 20 Jul 2026 2
+
+Errors that are small under standard statistical losses can induce large downstream cost if they distort decision-critical directions. This observation has motivated decision-aware (Elmachtoub and Grigas 2022) and integrated learning frameworks (Qi et al. 2025) that explicitly align predictive training with operational objectives. In this work, we adopt the integrated conditional estimation-optimization (ICEO) framework proposed by Qi et al. (2025). Yet an increasingly common practical challenge lies outside the standard formulation, which assumes sufficiently many labeled outcomes. In many applications, labeled outcomes are scarce and/or costly while contextual covariates are abundant. At the same time, practitioners often have access to multiple models or feature representations of different strengths. For example, they may have access to a smaller model that can be reliably trained on limited labeled data and a larger model that is more expressive but requires more compute to train. This raises a natural question which we aim to answer rigorously: 
+
+Can we leverage a weak model trained on limited labeled data to guide the training of a stronger model using abundant unlabeled data, thereby improving downstream decision performance in contextual stochastic optimization? 
+
+We answer this question through a weak-to-strong learning framework tailored to downstream decision making problems. The weak model is first adapted using the labeled data and then used to produce predicted outcome distributions on unlabeled contexts. These predicted distributions serve as soft supervision for training the strong model. The resulting strong model induces a plug-in decision policy, and its performance is evaluated by downstream decision risk rather than prediction loss. We focus on a label-scarce regime in which the weak model contains useful task-relevant signal after adaptation, while the stronger model is expressive but difficult to train reliably from the limited labeled data alone. In this regime, abundant unlabeled contexts create an opportunity for knowledge transfer: the weak model can provide task-specific supervision across many contexts, and the strong model can use this supervision to learn a better decision policy. Such regimes arise in modern decision-making applications where decision-relevant outcomes are costly, delayed, censored, or observed only under historical policies, including personalized pricing and recommen-dation, medical treatment decisions, vehicle routing, and inventory control (Shi et al. 2016, Zhan et al. 2023, Cao 2025, Keyvanshokooh et al. 2025, Serrano et al. 2026). Similar weak-to-strong procedures have been shown to let a strong model outperform its weak supervisor in prediction settings, including classification and language modeling (Burns et al. 2024, Dong et al. 2025). Whether this phenomenon can be translated into downstream decision making, where performance is measured by decision risk rather than prediction loss, remains open. 3
+
+1.1. Our contribution 
+
+We summarize our contributions as follows: 1. W2S formulation in decision making. Existing W2S theory has largely focused on pre-dictive objectives such as classification and regression (Burns et al. 2024, Dong et al. 2025, Lang et al. 2024, Charikar et al. 2024), leaving open whether and when W2S can improve 
+
+decision making problems. We extend the W2S paradigm to downstream decision making by formulating weak-to-strong transfer within contextual stochastic optimization. In our formula-tion, the weak model does not merely provide pseudo-labels for prediction; instead, it produces pseudo-distributions over uncertain outcomes on unlabeled contexts, which are then used to train a stronger model whose value is measured by the decision risk of its induced plug-in policy. This provides a decision-theoretic modeling framework for studying when weak supervision can improve operational decisions, and lays the groundwork for extending W2S analysis to richer decision settings such as sequential decision making and reinforcement learning. 2. Algorithm and its theoretical understanding. Building on this formulation, we develop and analyze a decision-aware W2S training algorithm. We prove a non-asymptotic upper bound on the excess decision risk of the induced W2S policy in Theorem 1. By comparing this bound with a strong-only benchmark trained directly on labeled data, we obtain an explicit certifi-cate in Corollary 1 for when W2S improves downstream decision performance. The comparison reveals a key structural mechanism: W2S is most beneficial when the weak and strong repre-sentations have limited overlap, so that errors made by the weak teacher are less likely to align systematically with the directions used by the strong model. In this case, abundant unlabeled contexts can dilute teacher errors rather than simply transfer them to the strong model. 3. Empirical evidence. We complement the theory with two empirical studies. We first use a controlled synthetic experiment to test whether the regimes predicted by the theory are observed in simulation. We then evaluate W2S on a real-world comment moderation task, where predic-tions guide automatic and human-review moderation decisions. In both studies, the qualitative patterns are consistent with the theory: W2S delivers its largest gains when labeled data are scarce and unlabeled contexts are plentiful, and these benefits shrink as labels accumulate. This data asymmetry is pervasive in Operations Research: contextual information is often avail-able at scale, while reliable outcome labels are scarce, delayed, or shaped by historical decisions, as in inventory and pricing with realized demand or routing with travel-time uncertainty (Ban and Rudin 2019, Cohen et al. 2020, Guo et al. 2023). The weak-to-strong framework developed in this paper provides a first step toward exploiting this asymmetry for downstream decision making. It uses scarce labeled outcomes to extract task-specific signal from a weak decision-aware model and transfers this signal across abundant unlabeled contexts to adapt a stronger model, suggesting a promising route for broader label-limited decision problems. 4
+
+1.2. Relevant literature 
+
+Our work advances the frontier of several lines of research. 
+
+Contextual optimization. There has been a surge of interest in contextual stochastic optimization in the operations research community in recent years. This line of work studies how predictive models and optimization methods can be combined to improve decision-making under uncertainty. The survey paper (Sadana et al. 2025) provides a comprehensive review of the literature on this topic, and classifies the existing works into three broad categories: decision rule optimization (Donti et al. 2017, Zhang and Gao 2017, Ban and Rudin 2019, Bertsimas and Koduri 2022, Huber et al. 2019), sequential learning and optimization (Deng and Sen 2022, Wang et al. 2026) and integrated learning and optimization (Elmachtoub and Grigas 2022, Qi et al. 2025, Loke et al. 2020). Our work falls within the third category. Elmachtoub and Grigas (2022) introduce the SPO/SPO+ framework and formalize the idea that predictive accuracy alone may be poorly aligned with downstream decision quality. El Balghiti et al. (2019) complement this line by establishing out-of-sample guarantees for decision-aware learning, while Elmachtoub et al. (2020) develop interpretable decision trees trained directly for optimization performance. More recently, Elmachtoub et al. (2023) compare estimate-then-optimize, integrated-estimation-optimization, and sample average approximation, helping clarify the relative strengths of these paradigms. Among these works, Qi et al. (2025) is closest to ours. They propose the integrated conditional estimation-optimization framework, which learns the conditional distribution of the uncertain outcome and evaluates it through the downstream decision risk of the induced plug-in policy. They show that this framework enjoys strong statistical guarantees. Our paper builds on this perspective and studies how a weak-to-strong training pipeline can be incorporated when labeled data are scarce but unlabeled contexts are abundant. Interested readers can also refer to the survey papers Qi and Shen (2022) and Sadana et al. (2025). 
+
+Weak-to-strong generalization. Burns et al. (2024) first formalize weak-to-strong generalization as the empirical phenomenon that a strong pre-trained model, finetuned on labels produced by a much weaker model, can outperform its weak supervisor across tasks (NLP benchmarks, chess puzzles, and reward modeling). Lang et al. (2025) show that a debate stage, where strong models generate competing answers and a weak supervisor selects between them, improves pseudo-label quality. Interestingly, Goel et al. (2025) find that as models become more capable they make increasingly correlated mistakes, which can reduce the benefits of W2S training and pose risks for AI oversight because similar models have less complementary knowledge to transfer. There is also a line of works focusing on theoretical understanding of W2S generalization. Our work adopts the perspective of Dong et al. (2025) and Liu et al. (2026). They propose a discrepancy-based framework to analyze the W2S generalization phenomenon. They find that W2S gains arise 5
+
+from variance reduction in low-dimensional finetuning. When teacher and student rely on different feature directions, the teacher’s errors appear as noise to the student and can be averaged out with many pseudo-labels. Hence, moderate discrepancy can improve W2S. A relevant intuition is also provided in Charikar et al. (2024), where they prove that the gain of W2S comes from the misfit between the weak and the strong model, i.e., the erroneous knowledge of the strong model is not inherited from the weak model. Other theoretical explanations include Lang et al. (2024), who focuses more on a geometry perspective. They show that under an expansion condition (Cai et al. 2021) on the data graph, any student classifier that agrees with a large set of teacher mistakes must also disagree on many neighboring points (collateral mistakes), making it impossible to maintain low error while preserving those mistakes. We note that the W2S generalization is also closely related to broader paradigms of learning from imperfect supervision, such as weakly supervised learning (Zhang et al. 2025), semi-supervised learning (Yang et al. 2022), self-training (Wei et al. 2021), etc. Semi-supervised learning (SSL) uses unlabeled samples to improve learning when labels are scarce. Classical approaches include co-training, graph-based label propagation, and entropy minimization (Blum and Mitchell 1998, Zhu et al. 2003, Grandvalet and Bengio 2004); modern deep SSL develops pseudo-labeling, self-training, and consistency regularization (Lee 2013, Wei et al. 2021, Sohn et al. 2020, Yang et al. 2022). Related work also studies weak supervision, prompt-based or weakly supervised labeling, robustness gains from unlabeled data, and sample-complexity limits (Zhang et al. 2025, Chen et al. 2025, Ben-David et al. 2008, Carmon et al. 2019, Wegel et al. 2025), with teacher-student transfer surveyed in the knowledge-distillation literature (Yang et al. 2025). Unlike these prediction-oriented methods, our W2S framework uses a weak model’s pseudo-distributions over outcomes to train a stronger representation and evaluates the induced policy through downstream contextual stochastic optimization risk. For broader background on teacher-student transfer mechanisms that overlap with W2S, we refer readers to a survey on knowledge distillation for LLMs (Yang et al. 2025). 
+
+Organization. In Section 2, we introduce the problem setting and the W2S framework. Section 3 presents the main W2S decision-risk upper bound and its proof. Section 4 develops the bench-mark and teacher-side estimates needed to interpret the main theorem, and uses them in a W2S performance case study. Section 5 presents numerical experiments on synthetic and text-based operational data to validate our theoretical findings. 
+
+Notation. We use ≲ to denote inequality up to a universal constant factor, independent of any problem parameters. For a positive integer m, let [ m] def 
+
+= {1, . . . , m }. For a vector a, we use either ak or [ a]k to denote its k-th entry. For a symmetric matrix A, we write A ⪰ 0 if A is positive semidefinite. Expectation subscripts indicate the source of randomness; for example, Ex [·]denotes expectation with respect to x. For any vector η ∈ RK , we write softmax( η) ∈ ∆(Ξ) with 
+
+kth coordinate softmax k(η) = exp( ηk )   
+
+> PKj=1 exp( ηj)
+
+, k ∈ [K].6
+
+## 2. The Setting 
+
+In Section 2.1, we first overview our decision making problem at a high level. Then in Section 2.2, we explain in detail our W2S training framework. 
+
+2.1. Problem Setup 
+
+Contextual Stochastic Optimization. We consider a convex contextual stochastic optimization framework, which arises in many operations research applications. The feasible region for the decision variable w is a convex set A ⊆ Rd. The form of the cost function c(·, ξ ) : A → R is fixed and known to the decision maker; while c also depends on a random parameter ξ ∈ Ξ. In this work, we consider the case where the random parameter ξ has finite discrete support, namely, Ξ = {z1, · · · , z K }. The realized outcome ξ is not known at the time of decision-making. However, we assume that the decision-maker has access to a context vector x ∈ X ⊆ Rdx at the time of decision-making, and the goal is to make a decision w based on this context. We denote by D the joint distribution of ( x, ξ ), and by Dx the marginal distribution of x. To emphasize when x denotes a random variable, rather than its realization, we write x in the subscript of the expectation operator. Formally, the decision maker’s goal is, when given a context vector x, to solve the contextual stochastic optimization problem: min  
+
+> w∈A
+
+Eξ [c(w, ξ ) | x] , (1) where the expectation is taken with respect to the conditional distribution of ξ given x. Hence, a policy π : X → A is a function that maps each context to a decision. 
+
+The labeled and unlabeled datasets. Since the conditional distribution of ξ given x is unknown, it must be learned from data. We consider a setting in which two datasets are available: one labeled data set ˜ B =
+
+n
+
+˜xi, ˜ξi
+
+oni=1 
+
+of size n, and one unlabeled dataset B = {xj }Nj=1 of size N . We assume N
+
+is much larger than n, as is common in practice. The labeled dataset ˜ B is generated i.i.d. according to the ground-truth joint distribution D, while the unlabeled dataset B is generated i.i.d. according to the ground-truth marginal distribution Dx of contexts, and hence B is independent of ˜ B.
+
+The two feature mappings. A central question, then, is how to leverage the large unlabeled dataset to improve decision quality. Inspired by Dong et al. (2025), we consider two (pre-trained) features that process the same context in different ways. Concretely, let us fix a common feature dimension dϕ. We consider two feature mappings (a.k.a. models) from the context space to this common feature space: a strong one ϕs : X → Rdϕ and a weak one ϕw : X → Rdϕ . Given a parameter matrix Θ ∈ Rdϕ×K , these feature mappings can induce two parametric conditional models P sΘ, P wΘ :
+
+X → ∆(Ξ), obtained by applying a softmax to the logits Θ ⊤ϕs(x) and Θ ⊤ϕw(x), respectively, where ∆(Ξ) is the set of all probability distributions over Ξ. In our framework, the strong feature mapping 7
+
+ϕs(·) is required to be more expressive in the sense that it can reproduce any representation induced by the weak feature mapping ϕw(·). We will make it precise in Section 3.1. In practice, the two feature mappings can arise from different pre-trained models available to the decision maker. By pre-training , we mean training a feature mapping ϕ on a generic objective before adapting it to a downstream task (e.g., language models trained on large text corpora using next-token prediction). For example, a smaller model trained with limited resources and a larger model trained with more data, compute, or capacity may process the same context but encode different information. In our framework, we abstract these pre-trained representations as fixed feature mappings ϕw and ϕs, and study how the downstream W2S procedure uses limited labeled data and abundant unlabeled contexts to adapt them for decision-making. We now introduce the notion of correlation dimension , which turns out to be a key quantity that characterizes the W2S phenomenon in our setting. We denote Σ wdef 
+
+= Ex∼D x [ϕw(x)ϕw(x)⊤] and Σsdef 
+
+= Ex∼D x [ϕs(x)ϕs(x)⊤]. 
+
+Definition 1 (intrinsic and correlation dimensions). We let ds = rank(Σ s) and dw =rank(Σ w) be the intrinsic dimensions of the strong and weak feature mappings, respectively. Con-sider spectral decompositions Σ s = VsΛsV ⊤ 
+
+> s
+
+∈ Rdϕ×dϕ and Σ w = VwΛwV ⊤ 
+
+> w
+
+∈ Rdϕ×dϕ , where Λ s ∈
+
+Rds×ds and Λ w ∈ Rdw×dw are diagonal matrices with positive eigenvalues in non-increasing order; while Vs ∈ Rdϕ×ds and Vw ∈ Rdϕ×dw consist of the corresponding orthonormal eigenvectors. We denote Σ − 12 
+
+> s
+
+= VsΛ− 12 
+
+> s
+
+V ⊤ 
+
+> s
+
+and Σ − 12 
+
+> w
+
+= VwΛ− 12 
+
+> w
+
+V ⊤ 
+
+> w
+
+. Let 
+
+ds∧wdef 
+
+= Σ− 12 
+
+> s
+
+Ex∼D x
+
+ϕs(x)ϕw(x)⊤ Σ− 12
+
+> w
+> 2
+> F
+
+(2) be the correlation dimension between ϕs and ϕw such that 0 ⩽ ds∧w ⩽ min {ds, d w}.The correlation dimension measures the alignment between the strong and weak features. Intu-itively, a larger correlation dimension indicates that the two features share more common informa-tion. The fact that 0 ⩽ ds∧w ⩽ min {ds, d w} is proved in Lemma 6 in the Appendix. 
+
+Decision-making pipeline. To study the decision-making pipeline induced by these feature-based models, we next specify how a conditional model over outcomes generates a decision. For any conditional model P : X → ∆(Ξ), we denote by ˜ w : ∆(Ξ) → A the oracle policy (i.e., plug-in policy) that selects the optimal action for each given context x
+
+˜w(P (x)) ∈ arg min 
+
+> w∈A
+
+Eξ∼P (x)[c(w, ξ ) | x]. (3) For notational convenience, when P is a conditional model, we also write ˜w(P | x) for ˜w(P (x)), where P (x) = P (· | x) ∈ ∆(Ξ). Such a decision pipeline is studied, for example, in Qi et al. (2025), where the induced empirical risk minimization (ERM) training is shown to enjoy favorable statis-tical guarantees in terms of decision risk. 8
+
+Performance measure. Given a policy π : X → A , we define its expected decision risk to be 
+
+R(π) = Ex,ξ ∼D [c(π(x), ξ )] . (4) Here, Ex,ξ ∼D [·] denotes the expectation with respect to ( x, ξ ) ∼ D . The benchmark decision risk is the optimal decision risk achieved by the oracle policy induced by the ground-truth conditional distribution P ∗:
+
+R∗ = Ex,ξ ∼D [c( ˜ w(P ∗(x)) , ξ )] , (5) where P ∗(x) ∈ ∆(Ξ) denotes the ground-truth conditional distribution of ξ given x. It is shown in Qi et al. (2025) that the ground-truth conditional distribution P ∗ is the distribution that yields the lowest value for expression (5). 
+
+2.2. The W2S Framework 
+
+In the previous section, we have introduced the two feature mappings ϕs(·) and ϕw(·), acquired from pre-training. However, they are not yet specialized to the downstream decision problem. Next, we will explain how W2S pipeline can be used to adapt these two representations for the downstream decision problem. At a high level, the W2S framework first trains a weak model P w 
+
+> bΘw
+
+on the labeled dataset ˜B,and then uses its predicted outcome distributions as supervision to train a strong model P s
+
+> bΘw2s
+
+on the unlabeled dataset B. The resulting strong model then induces a plug-in decision policy 
+
+x 7 → ˜w
+
+
+
+P s
+
+> bΘw2s
+
+(x)
+
+
+
+.
+
+Weak model. Within our W2S framework, a weak model P wΘ : X → ∆(Ξ) is used to generate pseudo-distributions for the unlabeled data. We do not impose a specific (post-)training procedure for this weak model, except that it must be constructed solely from the labeled dataset ˜B and based on the weak feature map ϕw(·). We assume that its estimation error for the ground-truth model parameter is controlled in mean squared error, in a sense to be specified precisely below. One natural way to obtain such a weak model is via maximum likelihood estimation (MLE). 
+
+W2S model. Given a weak model P w 
+
+> bΘw
+
+trained on the labeled dataset ˜B, the W2S framework trains the strong model by solving the following optimization problem: 
+
+bΘw2s ∈ arg min   
+
+> Θ∈Rdϕ×K,∥Θ∥F≤B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+Eξ∼P w   
+
+> bΘw (·| xj)
+
+[c ( ˜ w (P sΘ(xj )) , ξ )] , (6) where B > 0 is some constant. Here, P w 
+
+> bΘw
+
+(· | xj ) denotes the conditional distribution over ξ given 
+
+xj , induced by the weak model. Thus, rather than providing only a scalar prediction, the weak model quantifies the likelihood of each possible outcome in a given context. This conditional distri-bution serves as a teacher signal for the strong model. The strong model then leverages this “soft” 9
+
+information to learn a decision rule that performs well across the outcomes deemed plausible by the teacher, thereby extracting supervision from unlabeled contexts. We let 
+
+bπw2s (x) def 
+
+= ˜ w
+
+
+
+P s 
+
+> bΘw2s
+
+(x)
+
+
+
+(7) be the policy induced by the W2S training framework. We measure its generalization error via the expected decision risk over both ˜ B and B. Namely, 
+
+E ˜B,B [R(bπw2s ) − R∗] . (8) Here, the expectation is taken with respect to the randomness from both the labeled data set ˜B
+
+and the unlabeled data set B.
+
+Strong model. A natural benchmark is to train the strong model directly on the labeled sample ˜B, as empirical scaling laws motivate using stronger pre-trained models when sufficient data and compute are available (Kaplan et al. 2020, Hoffmann et al. 2022, Hernandez et al. 2021). For the downstream decision-making problem, we can train the strong model by directly minimizing the empirical decision risk on the labeled data: 
+
+bΘs ∈ arg min 
+
+> Θ∈Rdϕ×K
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+c
+
+
+
+˜w (P sΘ (˜ xi)) , ˜ξi
+
+
+
+. (9) Let bπs(x) := ˜ w
+
+
+
+P s 
+
+> bΘs
+
+(x)
+
+
+
+be the policy induced by the strong model trained on labeled data only. We measure its generalization error via the expected decision risk over ˜ B only. Namely, 
+
+E ˜B [R(bπs) − R∗] . (10) 
+
+Metric for W2S performance. We use the outperforming ratio (OPR) to compare the expected excess decision risk of the strong model and the W2S model: OPR = E ˜B [R(bπs) − R∗]
+
+E ˜B,B [R(bπw2s ) − R∗] . (11) A higher OPR implies better performance of the W2S model compared to the strong model: bπw2s 
+
+outperforms bπs when OPR > 1. 
+
+## 3. Analysis of the W2S Framework 
+
+This section presents the main theoretical result of the paper: a non-asymptotic upper bound on the expected decision risk of the W2S framework. We first state the structural assumptions and then prove the bound by decomposing the W2S risk into imitation, generalization, teacher-estimation, and approximation terms. 10 
+
+3.1. Blanket assumptions 
+
+Underlying problem structure We use P ∗(· | x) to denote the ground-truth conditional distri-bution of ξ given x. Throughout this work, we make the following assumption on realizability. 
+
+Assumption 1 (realizability) . There exists a measurable logit mapping η∗ : X → RK such that 
+
+P ∗(ξ = zk | x) = exp ( η∗ 
+
+> k
+
+(x)) 
+
+PKj=1 exp  η∗ 
+
+> j
+
+(x) , k = 1 , . . . , K. (12) 
+
+In particular, the ground-truth conditional probabilities are represented by finite softmax logits, and we assume E
+
+h
+
+∥η∗(x)∥42
+
+i
+
+< ∞. Moreover, without loss of generality, we assume that η∗(x) is centered, i.e., η∗(x)⊤1 = 0 for all x ∈ X .
+
+Based on the realizability assumption, we hence consider a particular parametric model for the conditional distributions. Given a feature mapping ϕ : X → Rdϕ , we let Θ ∈ Rdϕ×K be the model parameter, and define the conditional model PΘ to be 
+
+PΘ(ξ = zk | x) = exp ([ ηΘ(x)] k)
+
+PKk′=1 exp ([ ηΘ(x)] k′ ) , for k = 1 , . . . , K. (13) with linear feature mapping ηΘ(x) = Θ ⊤ϕ(x) ∈ RK . Note that linear feature mapping is commonly used in literature and it represents a broad class of models (Jacot et al. 2018, Woodworth et al. 2020, Aouad et al. 2025). Moreover, we make the following assumption on the cost function. 
+
+Assumption 2 (cost function) . 1. For any action a ∈ A , and outcome zk ∈ Ξ, the cost func-tion c(a, z k) is μ-strongly convex and L-smooth in the first argument, i.e., 
+
+μI ⪯ ∇ 2
+
+> a
+
+c (a, z k) ⪯ LI. 
+
+2. Let W = conv { ˜w(p) : p ∈ ∆(Ξ) } be the convex hull of all plug-in decisions. The gradients of the scenario costs are uniformly bounded on W: for all a ∈ W and k ∈ [K],
+
+∥∇ ac(a, z k)∥2 ≤ G. 
+
+In particular, since W is convex, for all w, w ′ ∈ W and k ∈ [K],
+
+|c(w, z k) − c(w′, z k)| ≤ G ∥w − w′∥2 .
+
+While the strong convexity assumption makes the analysis cleaner and more tractable, it is not essential regarding the outperforming phenomenon of W2S. It can be relaxed to convexity with some additional technical efforts, at the cost of slightly worse rates. Moreover, in Section 5, we show 11 
+
+numerically that W2S outperforms the strong model even when the cost function is not strongly convex. We consider the feasible region to be the whole space, i.e., A = Rd. This assumption is not essential regarding the outperforming phenomenon of W2S. It can be relaxed to a bounded convex set with some additional technical efforts. 
+
+The two models. Recall that we are given two feature mappings, a strong one ϕs : X → Rdϕ and a weak one ϕw : X → Rdϕ with different model capacities. We can define the approximation error 
+
+for the strong and weak feature model, respectively. Namely, we define 
+
+ρs = min   
+
+> Θ∈Rdϕ×K,Θ1=0
+
+Ex∼D x
+
+h
+
+Θ⊤ϕs(x) − η∗(x) 22
+
+i
+
+, (14) with Θ ∗ 
+
+> s
+
+being a minimizer. Similarly, we define 
+
+ρw = min   
+
+> Θ∈Rdϕ×K,Θ1=0
+
+Ex∼D x
+
+h
+
+Θ⊤ϕw(x) − η∗(x) 22
+
+i
+
+, (15) with Θ ∗ 
+
+> w
+
+being a minimizer. We introduce some notation for the two models. For a parameter Θ, we denote the logits of the two feature mappings by ηsΘ(x) = Θ ⊤ϕs(x) ∈ RK and ηwΘ(x) = Θ ⊤ϕw(x) ∈ RK . In addition, we denote P sΘ(· | x) def 
+
+= softmax (Θ ⊤ϕs(x)) (and P wΘ (· | x)) to be the conditional model obtained by composing softmax with ηsΘ(x) (and ηwΘ(x)), in the same way as in (13). We denote HB
+
+> def
+
+=
+
+Θ ∈ Rdϕ×K , ∥Θ∥F ≤ B .
+
+We then quantify how well the strong feature class can reproduce the logits induced by the learned weak model. Specifically, given a weak model estimator bΘw, we define the weak-to-strong logit approximation error to be 
+
+ρs→w
+
+ bΘw
+
+ def 
+
+= inf 
+
+> Θ∈H B
+
+Ex Θ⊤ϕs(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+. (16) Namely, it measures the extent to which the strong feature representation can emulate the weak model at the logit level. As we will see in Theorem 1, we need the strong model to be more expressive than the weak model in the sense that ρs→w
+
+ bΘw
+
+
+
+is small. To facilitate the analysis, we consider the following least-squares formulation to train the strong model based on the pseudo-labels (more precisely, pseudo-distributions over outcomes) generated by the weak model: 
+
+bΘls ∈ arg min 
+
+> Θ∈Rdϕ×K
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+Θ⊤ϕs(xj ) − bΘ⊤ 
+
+> w
+
+ϕw(xj ) 22
+
+. (17) 
+
+Assumption 3. The least-squares estimate bΘls is bounded in Frobenius norm, i.e., bΘls F
+
+≤ B
+
+almost surely. 12 
+
+Assumption 3 is made merely for technical convenience. It allows us to place the least-squares estimator bΘls in the bounded class HB , which simplifies the empirical process arguments used in the proof. The assumption is not central to the weak-to-strong effect itself, and could be relaxed with additional technical efforts. For example, we can show that bΘls is bounded with high probability when the features are subgaussian. Moreover, we need the following assumption on the feature mappings, which controls the tail behavior of the features. 
+
+Assumption 4 (subgaussian features) . Let ϕ(x) = [ ϕs(x); ϕw(x)] ∈ R2dϕ be the concatenation of ϕs(x) and ϕw(x), with covariance matrix Σϕ. There exists a constant c > 0 such that for any 
+
+u ∈ R2dϕ , we have 
+
+Ex
+
+exp  u⊤ϕ(x) ≤ exp 
+
+ 12 c2u⊤Σϕu
+
+
+
+. (18) This notion of subgaussianity is commonly used when it comes to covariance estimation. See, for example, Theorem 4.7.1 and Theorem 9.2.4 in (Vershynin 2018), as well as Lobo et al. (2024). The zero-mean assumption (implied by (18)) is merely for technical convenience, as we can always center the features without loss of generality. 
+
+3.2. W2S decision-risk upper bound 
+
+Now we are ready to present the main result of our work, which is a non-asymptotic upper bound on the expected decision risk of the W2S framework. 
+
+Theorem 1. Under Assumptions 1, 2, 3, 4, whenever N ≳ ds, we have 
+
+E ˜B,B [R(bπw2s ) − R∗]
+
+≲
+
+ L2KG 2
+
+μ3 + LKG 2
+
+μ2
+
+
+
+· E ˜B
+
+h
+
+ρs→w
+
+ bΘw
+
+i 
+
++ (BwΘ )2
+
+√N
+
+
+
+Ex ∥ϕw(x)∥42
+
+1/2
+
++ B2
+
+√N
+
+
+
+Ex ∥ϕs(x)∥42
+
+ 12
+
++ BB wΘ
+
+√N
+
+
+
+Ex
+
+h
+
+∥ϕs(x)∥22 ∥ϕw(x)∥22
+
+i 1/2
+
+!
+
++ LKG 2
+
+μ2 · 1
+
+√N
+
+
+
+Ex
+
+h
+
+∥η∗(x)∥42
+
+i 12
+
++ Bptr (Σ s) 1
+
+√N + B
+
+√N
+
+
+
+Ex
+
+h
+
+∥η∗(x)∥42
+
+i 14 
+
+Ex
+
+h
+
+∥ϕs(x)∥42
+
+i 14
+
++λmax (Λ w) E ˜B
+
+bΘw − Θ∗
+
+> w
+> 2
+> F
+
+  
+
+ds∧w + 1
+
+N ds (dw − ds∧w)
+
+
+
++ ρw + ρs
+
+!
+
++ LC unif 
+
+μ
+
+1
+
+√N . (19) We recall that N is the number of unlabeled samples, K is the support size of the outcome variable 
+
+ξ, and μ, L, G are the curvature and gradient parameters from Assumption 2. The quantity B is the F-norm bound on the least squares fit, and ds∧w is the correlation dimension between the strong and weak features. Here Cunif def 
+
+= max k∈[K] |c ( ˜ w (softmax(0)) , z k)|.To interpret the upper bound, it is useful to decompose the bound into four parts: 13 
+
+1. Imitation approximation error: Eimit def 
+
+=
+
+ L2KG 2 
+
+> μ3
+
++ LKG 2
+
+> μ2
+
+
+
+· E ˜B
+
+h
+
+ρs→w
+
+ bΘw
+
+i 
+
+. It measures how well the strong feature class can reproduce the logits induced by the weak model. 2. Unlabeled-sample statistical error: Let EN denote the following unlabeled-sample statistical-error term: 
+
+EN
+
+> def
+
+=
+
+ L2KG 2
+
+μ3 + LKG 2
+
+μ2
+
+ "
+
+(BwΘ )2
+
+√N
+
+
+
+Ex ∥ϕw(x)∥42
+
+1/2
+
++ B2
+
+√N
+
+
+
+Ex ∥ϕs(x)∥42
+
+ 12
+
++ BB wΘ
+
+√N
+
+
+
+Ex
+
+h
+
+∥ϕs(x)∥22 ∥ϕw(x)∥22
+
+i 1/2
+
+#
+
++ LKG 2
+
+μ2
+
+"
+
+1
+
+√N
+
+
+
+Ex
+
+h
+
+∥η∗(x)∥42
+
+i 12
+
++ Bptr (Σ s) 1
+
+√N
+
++ B
+
+√N
+
+
+
+Ex
+
+h
+
+∥η∗(x)∥42
+
+i 14 
+
+Ex
+
+h
+
+∥ϕs(x)∥42
+
+i 14
+
+#
+
++ LC unif 
+
+μ√N .
+
+This term captures the finite-sample fluctuation from replacing population expectations over 
+
+x with empirical averages over the unlabeled sample B; for fixed problem parameters, it decays at the rate N −1/2. It comes from generalization error with respect to the unlabeled data. We denote CN = EN
+
+√N = O (1). 3. Weak-to-strong term: Eteacher def 
+
+= LKG 2 
+
+> μ2
+
+λmax (Λ w) E ˜B
+
+bΘw − Θ∗
+
+> w
+> 2
+> F
+
+  ds∧w + 1 
+
+> N
+
+ds (dw − ds∧w). It captures how the weak teacher’s error propagates to the final W2S decision risk. The persistent component is governed by the overlap dimension ds∧w, whose contribution is not reduced by W2S training. A smaller overlap dimension can reduce the error inherited from the weak teacher and thereby create room for the student to outperform the teacher. Intuitively, when ways of thinking of the teacher and the student are more different, from the student’s perspective the teacher’s mistakes behave more like random noise than like a systematic bias. The remain-ing component 1 
+
+> N
+
+ds (dw − ds∧w) quantifies the residual contribution from the non-overlapping directions, and vanishes when the unlabeled sample size N is sufficiently large. 4. Model misspecification error: Eapprox def 
+
+= LKG 2 
+
+> μ2
+
+· (ρw + ρs). It measures the approximation error of the strong and weak feature class, respectively. Unlike the unlabeled-sample statistical error, this term does not vanish with larger N unless the feature classes themselves are enriched. 
+
+Remark 1 (No free lunch). At first glance, when Eimit = Eapprox = 0, the bound may seem to suggest that, if ds∧w = 0, increasing N can wash out the weak-teacher estimation error 
+
+E ˜B
+
+bΘw − Θ∗
+
+> w
+> 2
+> F
+
+
+
+and drive the W2S error arbitrarily low. This is not the case; the formal state-ment and proof are given in Appendix B.11. 
+
+3.3. Proof of Theorem 1 
+
+This section is devoted to the proof of Theorem 1. Proofs of the supporting technical lemmas are deferred to the appendix. 14 
+
+To start off the analysis, we first present a useful result, which is a consequence of the strong convexity and smoothness of the cost function. 
+
+Lemma 1. Under Part (1) of Assumption 2, consider two conditional distributions P, P ′ : X → 
+
+∆(Ξ) . For any x, we have 
+
+μ
+
+2 ∥ ˜w(P ′ | x) − ˜w(P | x)∥22 ≤ Eξ∼P (·| x) [c ( ˜ w (P ′ | x) , ξ ) − c ( ˜ w (P | x) , ξ )] ≤ L
+
+2 ∥ ˜w(P ′ | x) − ˜w(P | x)∥22 .
+
+(20) The proof appears in Appendix B.1. Moreover, the following observation is also useful for the analysis. 
+
+Lemma 2. Under Assumption 2, given two logits η, η ′ : X → RK , let P, P ′ be the corresponding softmax distributions, namely Pη (· | x) = softmax( η(x)) and Pη′ (· | x) = softmax( η′(x)) . For any given x ∈ X , we have 
+
+∥ ˜w(Pη | x) − ˜w(Pη′ | x)∥2 ≤ G√K
+
+2μ ∥η(x) − η′(x)∥2 . (21) The proof appears in Appendix B.2. Consider a policy π = ˜ w ◦ P , where P : X → ∆(Ξ) is some conditional model. In view of Lemma 1, we conclude that 
+
+R(π) − R∗ = Ex
+
+Eξ|x [c( ˜ w(P | x), ξ ) − c( ˜ w(P ∗ | x), ξ )]  (22) = Ex
+
+" KX
+
+> k=1
+
+P ∗(ξ = zk | x) [ c( ˜ w(P | x), z k) − c( ˜ w(P ∗ | x), z k)] 
+
+#
+
+≤ L
+
+2 Ex
+
+h
+
+∥ ˜w(P | x) − ˜w(P ∗ | x)∥22
+
+i
+
+. (23) Therefore, to control E ˜B,B [R(bπw2s ) − R∗], it suffices to upper bound 
+
+E ˜B,B
+
+
+
+Ex
+
+
+
+˜w
+
+
+
+P s
+
+> bΘw2s
+
+| x
+
+
+
+− ˜w (P ∗ | x) 22
+
+ 
+
+. To this end, we recall that bΘls , defined in (17), is obtained by the multivariate least-squares procedure trained using the strong model based on the pseudo-labels generated by the weak model. We proceed to use bΘls as an intermediate quantity for the analysis. Hence, we consider the following decomposition 
+
+Ex
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘw2s
+
+| x
+
+
+
+− ˜w (P ∗ | x) 22
+
+
+
+≤ 2Ex
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘw2s
+
+| x
+
+
+
+− ˜w
+
+
+
+P s 
+
+> bΘls
+
+| x
+
+ 22
+
+
+
++ 2 Ex
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘls
+
+| x
+
+
+
+− ˜w (P ∗ | x) 22
+
+
+
+. (24) In what follows, we bound the two terms on the right-hand side separately. 15 
+
+Step 1: the first term in (24) . Let us focus on the first term 
+
+Ex
+
+
+
+˜w
+
+
+
+P s
+
+> bΘw2s
+
+| x
+
+
+
+− ˜w
+
+
+
+P s
+
+> bΘls
+
+| x
+
+ 22
+
+
+
+. Inside the norm is the difference between the actions recommended by two different training procedures (cf. (6) and (17)), both of which are based upon a given empirical weak teacher P w 
+
+> bΘw
+
+. It turns out that this quantity can be controlled as the number of unlabeled samples N increases, at a rate enjoyed by standard generalization bounds for empirical risk minimization. The remainder of this step is devoted to proving the following bound. 
+
+EB, ˜B
+
+
+
+Ex
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘw2s
+
+| x
+
+
+
+− ˜w
+
+
+
+P s 
+
+> bΘls
+
+| x
+
+ 22
+
+ 
+
+≤
+
+ 12
+
+LKG 2
+
+μ3 + 12
+
+KG 2
+
+μ2
+
+
+
+· E ˜B
+
+
+
+inf 
+
+> Θ∈H B
+
+Ex Θ⊤ϕs(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+
+
++ 2 ( BwΘ )2
+
+√N
+
+q
+
+Ex ∥ϕw(x)∥42 + 8B2
+
+√N
+
+
+
+Ex ∥ϕs(x)∥42
+
+ 12
+
++ 16 BB wΘ
+
+√N
+
+r
+
+Ex
+
+h
+
+∥ϕs(x)∥22 ∥ϕw(x)∥22
+
+i!
+
++16 √2 KG 2Bptr (Σ s)
+
+μ2
+
+1
+
+√N + 8Cunif 
+
+μ
+
+1
+
+√N . (25) First, using the fact that ∥a + b∥22 ≤ 2 ∥a∥22 + 2 ∥b∥22, we have 
+
+EB, ˜B
+
+
+
+Ex
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘw2s
+
+| x
+
+
+
+− ˜w
+
+
+
+P s 
+
+> bΘls
+
+| x
+
+ 22
+
+ 
+
+≤ 2EB, ˜B
+
+
+
+Ex
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘw2s
+
+| x
+
+
+
+− ˜w
+
+
+
+P w 
+
+> bΘw
+
+| x
+
+ 22
+
+ 
+
++ 2 EB, ˜B
+
+
+
+Ex
+
+
+
+˜w
+
+
+
+P w 
+
+> bΘw
+
+| x
+
+
+
+− ˜w
+
+
+
+P s 
+
+> bΘls
+
+| x
+
+ 22
+
+ 
+
+.(26) It turns out that first term in (26) can be controlled by logits difference between the least-squares strong model and the weak model, proved in Lemma 7 in Appendix B.3. Namely, we have 
+
+EB, ˜B
+
+
+
+Ex
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘw2s
+
+| x
+
+
+
+− ˜w
+
+
+
+P w 
+
+> bΘw
+
+| x
+
+ 22
+
+ 
+
+≤ 14
+
+LKG 2
+
+μ3 E ˜B,B
+
+
+
+Ex
+
+
+
+ηs 
+
+> bΘls
+
+(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+ 
+
++ 8 √2 KG 2Bptr (Σ s)
+
+μ2
+
+1
+
+√N + 4Cunif 
+
+μ
+
+1
+
+√N . (27) Building on (26) and (27), and invoking Lemma 2, we have 
+
+E ˜B,B
+
+
+
+Ex
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘw2s
+
+| x
+
+
+
+− ˜w
+
+
+
+P s 
+
+> bΘls
+
+| x
+
+ 22
+
+ 
+
+≤ 12
+
+LKG 2
+
+μ3 E ˜B,B
+
+
+
+Ex
+
+
+
+ηs 
+
+> bΘls
+
+(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+ 
+
++ 16 √2 KG 2Bptr (Σ s)
+
+μ2
+
+1
+
+√N + 8Cunif 
+
+μ
+
+1
+
+√N
+
++2 EB, ˜B
+
+
+
+Ex
+
+
+
+˜w
+
+
+
+P w 
+
+> bΘw
+
+| x
+
+
+
+− ˜w
+
+
+
+P s 
+
+> bΘls
+
+| x
+
+ 22
+
+ 
+
+≤
+
+ 12
+
+LKG 2
+
+μ3 + 12
+
+KG 2
+
+μ2
+
+
+
+E ˜B,B
+
+
+
+Ex
+
+
+
+ηs 
+
+> bΘls
+
+(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+ 
+
++ 16 √2 KG 2Bptr (Σ s)
+
+μ2
+
+1
+
+√N + 8Cunif 
+
+μ
+
+1
+
+√N .(28) Now, it suffices to upper bound the quantity E ˜B,B
+
+
+
+Ex
+
+
+
+ηs
+
+> bΘls
+
+(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+ 
+
+.16 
+
+Given ηw 
+
+> bΘw
+
+(x), we can write 
+
+Ex
+
+
+
+ηs 
+
+> bΘls
+
+(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+
+
+= inf 
+
+> Θ∈H B
+
+Ex
+
+
+
+Θ⊤ϕs(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+
+
++ Ex
+
+
+
+ηs 
+
+> bΘls
+
+(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+
+
+− inf 
+
+> Θ∈H B
+
+Ex
+
+
+
+Θ⊤ϕs(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+
+
+.(29) To proceed, let us consider the population and the empirical multivariate least-squares objectives: 
+
+Lls (Θ) def 
+
+= Ex
+
+
+
+Θ⊤ϕs(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+
+
+and bLls (Θ) def 
+
+= 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+Θ⊤ϕs(xj ) − ηw 
+
+> bΘw
+
+(xj ) 22
+
+.
+
+Recalling ηs
+
+> bΘls
+
+(x) = ( bΘls )⊤ϕs(x), we see that our goal is exactly to upper bound 
+
+E ˜B,B
+
+
+
+Ex
+
+
+
+ηs
+
+> bΘls
+
+(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+ 
+
+= EB, ˜B
+
+h
+
+Lls ( bΘls )
+
+i
+
+.Let Θ ∗ ∈ argmin Θ∈H B Lls (Θ) be any population minimizer. Because bΘls minimizes bLls , we have 
+
+bLls 
+
+ bΘls 
+
+
+
+≤ bLls (Θ ∗) . In addition, since we assume that bΘls ∈ H B almost surely, we can write 
+
+Lls 
+
+ bΘls 
+
+
+
+− Lls (Θ ∗) = 
+
+
+
+Lls 
+
+ bΘls 
+
+
+
+− bLls 
+
+ bΘls 
+
+ 
+
++
+
+bLls 
+
+ bΘls 
+
+
+
+− bLls (Θ ∗)
+
+
+
++
+
+bLls (Θ ∗) − Lls (Θ ∗)
+
+
+
+≤ sup 
+
+> Θ∈H B
+
+Lls (Θ) − bLls (Θ) + 0 + sup 
+
+> Θ∈H B
+
+Lls (Θ) − bLls (Θ) 
+
+= 2 sup 
+
+> Θ∈H B
+
+Lls (Θ) − bLls (Θ) .
+
+Taking conditional expectations on both sides yields that 
+
+EB| ˜B
+
+h
+
+Lls 
+
+ bΘls 
+
+i 
+
+≤ inf 
+
+> Θ∈H B
+
+Lls (Θ) + 2 EB| ˜B
+
+
+
+sup 
+
+> Θ∈H B
+
+Lls (Θ) − bLls (Θ) 
+
+
+
+. (30) To proceed, we need the following lemma, which is a generalization bound for multivariate regres-sion with squared loss. 
+
+Lemma 3. Conditioned on the labeled dataset ˜B, we have 
+
+EB| ˜B
+
+h
+
+sup Θ∈H B Lls (Θ) − bLls (Θ) 
+
+i
+
+≤ (BwΘ )2
+
+√N
+
+
+
+Ex ∥ϕw(x)∥42
+
+1/2
+
++ 4B2
+
+√N
+
+
+
+Ex ∥ϕs(x)∥42
+
+1/2
+
++ 8BB wΘ
+
+√N
+
+
+
+Ex
+
+h
+
+∥ϕw(x)∥22 ∥ϕs(x)∥22
+
+i 1/2
+
+. (31) The proof is deferred to Appendix B.8. Invoking Lemma 3 and taking expectation over ˜ B on both sides of (30), we have 
+
+E ˜B,B
+
+
+
+Ex ηs 
+
+> bΘls
+
+(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+
+
+≤ E ˜B
+
+
+
+inf 
+
+> Θ∈H B
+
+Ex Θ⊤ϕs(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+
+
++ 2 ( BwΘ )2
+
+√N
+
+q
+
+Ex ∥ϕw(x)∥42 + 8B2
+
+√N
+
+q
+
+Ex ∥ϕs(x)∥42 + 16 BB wΘ
+
+√N
+
+r
+
+Ex
+
+h
+
+∥ϕs(x)∥22 ∥ϕw(x)∥22
+
+i
+
+. (32) Step 1 now is complete. 17 
+
+Step 2: the second term in (24) . Now, let us turn attention to the term 
+
+E ˜B,B
+
+
+
+Ex
+
+
+
+˜w
+
+
+
+P s
+
+> bΘls
+
+| x
+
+
+
+− ˜w (P ∗ | x) 22
+
+ 
+
+. We proceed to show that whenever N ≳ ds, we have 
+
+E ˜B,B
+
+
+
+Ex
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘls
+
+| x
+
+
+
+− ˜w (P ∗ | x) 22
+
+ 
+
+≲ G2Kμ2
+
+
+
+λmax (Λ w) E ˜B
+
+bΘw − Θ∗
+
+> w
+> 2
+> F
+
+  
+
+ds∧w + 1
+
+N ds (dw − ds∧w)
+
+
+
++ ρw + ρs
+
+
+
++ 1
+
+√NG2Kμ2
+
+
+
+E
+
+h
+
+∥η∗(x)∥42
+
+i 12
+
++ B2
+
+
+
+E
+
+h
+
+∥ϕs(x)∥42
+
+i 12
+
++ B
+
+
+
+E
+
+h
+
+∥η∗(x)∥42
+
+i 14 
+
+E
+
+h
+
+∥ϕs(x)∥42
+
+i 14
+
+
+
+.(33) To proceed, invoking Lemma 2 yields that 
+
+Ex
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘls
+
+| x
+
+
+
+− ˜w (P ∗ | x) 22
+
+
+
+≤ G2K
+
+4μ2 Ex
+
+
+
+ηs 
+
+> bΘls
+
+(x) − η∗(x) 22
+
+
+
+. (34) Let us consider the population and the empirical least-squares objectives: 
+
+L(Θ) def 
+
+= Ex
+
+h
+
+Θ⊤ϕs(x) − η∗(x) 22
+
+i
+
+and bL(Θ) def 
+
+= 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+Θ⊤ϕs(xj ) − η∗(xj ) 22 . (35) Recall ηs
+
+> bΘls
+
+(x) = bΘ⊤ 
+
+> ls
+
+ϕs(x) ∈ RK . Hence, we have 
+
+Ex
+
+
+
+ηs 
+
+> bΘls
+
+(x) − η∗(x) 22
+
+
+
+≤ 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+ηs 
+
+> bΘls
+
+(xj ) − η∗(xj ) 22
+
++ sup 
+
+> Θ∈H B
+
+L(Θ) − bL(Θ) . (36) For the latter term, following the same reasoning as in the proof of Lemma 3 with g(x) = η∗(x)yields that 
+
+E ˜B,B
+
+h
+
+sup Θ∈H B L(Θ) − bL(Θ) 
+
+i
+
+≤ 1√N
+
+
+
+E
+
+h
+
+∥η∗(x)∥42
+
+i 12
+
++ 4 B2
+
+
+
+E
+
+h
+
+∥ϕs(x)∥42
+
+i 12
+
++ 8 B
+
+
+
+E
+
+h
+
+∥η∗(x)∥42
+
+i 14 
+
+E
+
+h
+
+∥ϕs(x)∥42
+
+i 14
+
+
+
+. (37) Hence, it remains to control the first term in (36). To this end, we need to introduce some notation. For the labeled data set ˜B =
+
+n
+
+˜xi, ˜ξi
+
+oni=1 
+
+,we define the feature matrices ˜Φw, ˜Φs ∈ Rn×dϕ with [ ˜Φw]i, : = ϕw(˜ xi)⊤ and [ ˜Φs]i, : = ϕs(˜ xi)⊤. For the unlabeled data set B = {xj }Nj=1 , we define the feature matrices Φ w, Φs ∈ RN ×dϕ with [Φ w]j, : =
+
+ϕw(xj )⊤ and [Φ s]j, : = ϕs(xj )⊤.We denote η∗(X) ∈ RN ×K as the matrix whose j-th row is η∗(xj )⊤. Denote Ps = Φ sΦ† 
+
+> s
+
+, where †
+
+represents the Moore-Penrose pseudo-inverse. We denote ηs
+
+> bΘls
+
+(X) ∈ RN ×K as the matrix whose j-th row is ηs
+
+> bΘls
+
+(xj ). Then we can write PNj=1 ηs
+
+> bΘls
+
+(xj ) − η∗(xj ) 22
+
+= ηs
+
+> bΘls
+
+(X) − η∗(X) 2
+
+> F
+
+. Recalling the definition of bΘls in (17), we have ηs
+
+> bΘls
+
+(X) = Φ s bΘls = Φ sΦ† 
+
+> s
+
+ηw 
+
+> bΘw
+
+(X) = PsΦw bΘw. Denote the residual matrices by Rw(X) = η∗(X) − ΦwΘ∗ 
+
+> w
+
+∈ RN ×K and Rs(X) = η∗(X) − ΦsΘ∗ 
+
+> s
+
+∈ RN ×K , where we recall that Θ ∗ 
+
+> w
+
+and Θ ∗ 
+
+> s
+
+are defined in (14) and (15). Then, clearly we have EB
+
+h
+
+∥Rw(X)∥2
+
+> F
+
+i
+
+= N ρ w.18 
+
+Similarly, we have EB
+
+h
+
+∥Rs(X)∥2
+
+> F
+
+i
+
+= N ρ s. By adding and subtracting terms, we can write the decomposition 
+
+ηs 
+
+> bΘls
+
+(X) − η∗(X) = Ps
+
+
+
+Φw bΘw − η∗(X)
+
+
+
+− (I − Ps)η∗(X)= Ps
+
+
+
+Φw bΘw − ΦwΘ∗ 
+
+> w
+
++ Φ wΘ∗ 
+
+> w
+
+− η∗(X)
+
+
+
+− (I − Ps) (Φ sΘ∗ 
+
+> s
+
++ Rs(X)) = PsΦw
+
+ bΘw − Θ∗
+
+> w
+
+
+
+− PsRw(X) − (I − Ps)Rs(X). (38) Since Ps is an orthogonal projection, we have 
+
+EB
+
+h
+
+∥PsRw(X)∥2
+
+> F
+
+i
+
+≤ EB
+
+h
+
+∥Rw(X)∥2
+
+> F
+
+i
+
+= N ρ w,
+
+EB
+
+h
+
+∥(I − Ps)Rs(X)∥2
+
+> F
+
+i
+
+≤ EB
+
+h
+
+∥Rs(X)∥2
+
+> F
+
+i
+
+= N ρ s. (39) Combining (38) and (39), we have 
+
+EB, ˜B
+
+
+
+ηs 
+
+> bΘls
+
+(X) − η∗(X) 2
+
+> F
+
+
+
+≤ 3EB, ˜B
+
+
+
+PsΦw
+
+ bΘw − Θ∗
+
+> w
+
+ 2
+
+> F
+
+
+
++ 3 EB
+
+h
+
+∥PsRw(X)∥2
+
+> F
+
+i
+
++ 3 EB
+
+h
+
+∥(I − Ps)Rs(X)∥2
+
+> F
+
+i
+
+≤ 3EB, ˜B
+
+
+
+PsΦw
+
+ bΘw − Θ∗
+
+> w
+
+ 2
+
+> F
+
+
+
++ 3 N ρ w + 3 N ρ s. (40) We proceed to upper bound the first term in (40). Let ∆ = bΘw − Θ∗ 
+
+> w
+
+∈ Rdϕ×K . Recall the spectral decomposition Σ w = VwΛwV ⊤ 
+
+> w
+
+and Σ s = VsΛsV ⊤ 
+
+> s
+
+. We define γs(x) = Λ − 12 
+
+> s
+
+V ⊤ 
+
+> s
+
+ϕs(x) ∈ Rds and γw(x) = Λ− 12 
+
+> w
+
+V ⊤ 
+
+> w
+
+ϕw(x) ∈ Rdw . One can verify that γs(x) and γw(x) are random vectors with zero mean and identity covariance. Indeed, for instance, E [γs(x)γs(x)⊤] = E
+
+h
+
+Λ− 12 
+
+> s
+
+V ⊤ 
+
+> s
+
+ϕs(x)ϕs(x)⊤VsΛ− 12
+
+> s
+
+i
+
+=Λ− 12 
+
+> s
+
+V ⊤ 
+
+> s
+
+VsΛsV ⊤ 
+
+> s
+
+VsΛ− 12 
+
+> s
+
+= Ids . We define the whitened design matrices to be Γs = Φ sVsΛ− 12 
+
+> s
+
+∈ RN ×ds , Γw = Φ wVwΛ− 12 
+
+> w
+
+∈ RN ×dw .
+
+Hence, row i of Γ s is exactly γs (xi)⊤, and row i of Γ w is γw (xi)⊤. This way, we have the exact expression Φ w = Γ wΛ 12 
+
+> w
+
+V ⊤ 
+
+> w
+
+and Φ s = Γ sΛ 12 
+
+> s
+
+V ⊤ 
+
+> s
+
+. In addition, we denote ∆ w = Λ 12 
+
+> w
+
+V ⊤ 
+
+> w
+
+∆. Therefore, we can write 
+
+PsΦw
+
+ bΘw − Θ∗
+
+> w
+
+
+
+= PsΦw∆ = PsΓwΛ 12 
+
+> w
+
+V ⊤ 
+
+> w
+
+∆ = PsΓw∆w. (41) Using the fact ∥AB ∥2 
+
+> F
+
+= tr ( B⊤A⊤AB ) and Ps is an orthogonal projection matrix, we further have 
+
+PsΦw
+
+ bΘw − Θ∗
+
+> w
+
+ 2
+
+> F
+
+= ∥PsΓw∆w∥2 
+
+> F
+
+= tr  ∆⊤ 
+
+> w
+
+Γ⊤ 
+
+> w
+
+P ⊤ 
+
+> s
+
+PsΓw∆w
+
+ = tr  ∆⊤ 
+
+> w
+
+Γ⊤ 
+
+> w
+
+PsΓw∆w
+
+ = tr  Γ⊤ 
+
+> w
+
+PsΓw∆w∆⊤
+
+> w
+
+ .
+
+(42) Next, we make the following derivation: 
+
+E ˜B,B
+
+h
+
+∥PsΦw∆∥2
+
+> F
+
+i19 
+
+> (a)
+
+= E ˜B,B
+
+tr  Γ⊤ 
+
+> w
+
+PsΓw∆w∆⊤
+
+> w
+
+ 
+
+= EB
+
+E ˜B|B 
+
+tr  Γ⊤ 
+
+> w
+
+PsΓw∆w∆⊤
+
+> w
+
+ | B  
+
+> (b)
+
+= EB
+
+tr  Γ⊤ 
+
+> w
+
+PsΓwE ˜B|B 
+
+∆w∆⊤ 
+
+> w
+
+| B  
+
+> (c)
+
+= EB
+
+h
+
+tr 
+
+
+
+Γ⊤ 
+
+> w
+
+PsΓwE ˜B|B 
+
+h
+
+Λ 12 
+
+> w
+
+V ⊤ 
+
+> w
+
+∆∆ ⊤VwΛ 12 
+
+> w
+
+| B 
+
+ii 
+
+> (d)
+
+= EB
+
+h
+
+tr 
+
+
+
+Γ⊤ 
+
+> w
+
+PsΓwΛ 12 
+
+> w
+
+V ⊤ 
+
+> w
+
+E ˜B|B 
+
+∆∆ ⊤ | B  VwΛ 12
+
+> w
+
+i 
+
+> (e)
+
+= EB
+
+h
+
+tr 
+
+
+
+Γ⊤ 
+
+> w
+
+PsΓwΛ 12 
+
+> w
+
+V ⊤ 
+
+> w
+
+E ˜B
+
+∆∆ ⊤ VwΛ 12
+
+> w
+
+i 
+
+> (f)
+
+= EB
+
+h
+
+tr 
+
+
+
+VwΛ 12 
+
+> w
+
+Γ⊤ 
+
+> w
+
+PsΓwΛ 12 
+
+> w
+
+V ⊤ 
+
+> w
+
+E ˜B
+
+∆∆ ⊤i 
+
+> (g)
+
+≤ EB
+
+h
+
+tr 
+
+
+
+VwΛ 12 
+
+> w
+
+Γ⊤ 
+
+> w
+
+PsΓwΛ 12 
+
+> w
+
+V ⊤
+
+> w
+
+
+
+λmax 
+
+ E ˜B
+
+∆∆ ⊤ i
+
+> (h)
+
+= EB
+
+tr  Γ⊤ 
+
+> w
+
+PsΓwΛw
+
+ λmax 
+
+ E ˜B
+
+∆∆ ⊤ 
+
+> (i)
+
+≤ EB
+
+tr  Γ⊤ 
+
+> w
+
+PsΓw
+
+ λmax (Λ w) λmax 
+
+ E ˜B
+
+∆∆ ⊤ 
+
+= EB
+
+tr  Γ⊤ 
+
+> w
+
+PsΓw
+
+ λmax (Λ w) λmax 
+
+ E ˜B
+
+∆∆ ⊤ . (43) Equation (a) simply follows from (42). Equation (b) holds due to the linearity property of trace. Equation (c) is by the definition of ∆ w. Equation (d) holds since both Λ 12 
+
+> w
+
+and Vw are deterministic matrices. Equation (e) is due to the fact that B and ˜B are independent. Equation (f) follows from the cyclic property of trace. The inequality (g) and (i) follow from the fact that for psd matrices A, B , we have tr( AB ) ≤ λmax (A) tr( B). Equation (h) is due to tr 
+
+
+
+VwΛ 12 
+
+> w
+
+Γ⊤ 
+
+> w
+
+PsΓwΛ 12 
+
+> w
+
+V ⊤
+
+> w
+
+
+
+=tr 
+
+
+
+Γ⊤ 
+
+> w
+
+PsΓwΛ 12 
+
+> w
+
+V ⊤ 
+
+> w
+
+VwΛ 12
+
+> w
+
+
+
+= tr (Γ ⊤ 
+
+> w
+
+PsΓwΛw), which follows from the cyclic property of trace and the fact that Vw is an orthogonal matrix. In what follows, we proceed to upper bound (43). We proceed in two steps. 
+
+• First, we deal with the quantity EB [tr (Γ ⊤ 
+
+> w
+
+PsΓw)]. To this end, we need some more notation. We denote M def 
+
+= E [γs(x)γw(x)⊤] = Σ − 12 
+
+> s
+
+E [ϕs(x)ϕw(x)⊤] Σ − 12 
+
+> w
+
+∈ Rds×dw . We note that ds∧w = ∥M ∥2 
+
+> F
+
+.We define ε(x) def 
+
+= γw(x) − M ⊤γs(x) ∈ Rdw . Hence, we can write Γ w = Γ sM + E, where the i-th row of the matrix E is ε(xi)⊤. We observe the following immediate properties of ε(x): 
+
+E γsε⊤ = E γsγ⊤
+
+> w
+
+ − E γsγ⊤
+
+> s
+
+ M = M − Ids M = 0 , (44) and 
+
+E εε ⊤ = E
+
+h γw − M ⊤γs
+
+   γw − M ⊤γs
+
+⊤i
+
+= E
+
+h
+
+γwγ⊤ 
+
+> w
+
+− γw
+
+ γ⊤ 
+
+> s
+
+M  −  M ⊤γs
+
+ γ⊤ 
+
+> w
+
++  M ⊤γs
+
+   M ⊤γs
+
+⊤i
+
+= Idw − M ⊤M. (45) Moreover, we have the following useful bounds on the fourth moments of γs(x), ε(x) and ϕs(x). 
+
+Lemma 4. Under Assumption 4, we have the following facts: 20 
+
+— E
+
+h
+
+∥γs(x)∥42
+
+i
+
+≲ d2s
+
+— E
+
+h
+
+∥ε(x)∥42
+
+i
+
+≲ (dw − ds∧w)2
+
+— E
+
+h
+
+∥ϕs(x)∥42
+
+i
+
+≲ (tr (Σ s)) 2
+
+To handle the quantity EB [tr (Γ ⊤ 
+
+> w
+
+PsΓw)], we need the following lemma. 
+
+Lemma 5. Under Assumption 4, there exist constants c, C > 0 depending on the sub-gaussian norm of ϕs(x) and ϕw(x), such that whenever N ≥ Cd s, we have 
+
+EB
+
+tr  Γ⊤ 
+
+> w
+
+PsΓw
+
+ ≤ N d s∧w + Cd s (dw − ds∧w) + Cd s (dw − ds∧w) N exp ( −cN ) . (46) The proof is deferred to Appendix B.6. 
+
+• To control the quantity λmax (E ˜B [∆∆ ⊤]) in (43), we simply note that 
+
+λmax 
+
+ E ˜B
+
+∆∆ ⊤ ≤ tr  E ˜B
+
+∆∆ ⊤ = E ˜B
+
+tr  ∆∆ ⊤ = E ˜B
+
+h
+
+∥∆∥2
+
+> F
+
+i
+
+= E ˜B
+
+bΘw − Θ∗
+
+> w
+> 2
+> F
+
+
+
+,
+
+where the inequalities follow from the fact that E ˜B [∆∆ ⊤] is a psd matrix. When combining (43) with Lemma 5, we absorb the exponentially small remainder in Lemma 5 into the term ds (dw − ds∧w) under N ≳ ds. The proof of (33) is complete by combining all the pieces together. 
+
+## 4. Benchmark Bounds and W2S Performance 
+
+The main upper bound becomes most informative when it is compared with a direct strong-only benchmark and paired with a concrete control of the weak teacher. This section develops those auxiliary bounds and then combines them in a case study in Section 4.3 that identifies sufficient conditions under which W2S improves over direct strong-model training. 
+
+4.1. Strong-only lower bound 
+
+We recall the setup of training the strong model. We train the strong model by directly minimizing the empirical decision risk on the labeled data: bΘs ∈ arg min Θ∈Rdϕ×K , Θ1=0 1
+
+> n
+
+Pni=1 c
+
+
+
+˜w (P sΘ | ˜xi) , ˜ξi
+
+
+
+.
+
+We assume that such a minimizer exists almost surely. In this subsection, we study how to lower bound E ˜B [R(bπs) − R∗] . To this end, we first introduce some notation. Define the single-sample gradient vector 
+
+φ def 
+
+= vec 
+
+
+
+∇Θc
+
+
+
+˜w
+
+
+
+P sΘ∗ 
+
+> s
+
+(x)
+
+
+
+, ξ 
+
+ 
+
+∈ RdϕK
+
+with ( x, ξ ) ∼ D . We denote Σ φ
+
+> def
+
+= Var( φ) ∈ RdϕK×dϕK .
+
+Theorem 2. In addition to Assumption 1 and 2, suppose the following assumptions hold: 21 
+
+1. Assume that there exists γ > 0 such that for all x ∈ X , we have almost surely 
+
+˜w
+
+
+
+P s 
+
+> bΘs
+
+(x)
+
+
+
+− ˜w (P ∗(x)) ≥ γ P s 
+
+> bΘs
+
+(x) − P ∗(x) . (47) 
+
+Moreover, we assume that there exists Bη > 0 such that 
+
+bΘ⊤ 
+
+> s
+
+ϕs(x) ∞
+
+≤ Bη , ∥η∗(x)∥∞ ≤ Bη . (48) 2. There exists LH > 0 such that, almost surely over ˜B,
+
+−LH IdϕK ⪯ ∇ 2Θ
+
+"
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+c
+
+
+
+˜w (P sΘ(˜ xi)) , ˜ξi
+
+#
+
+⪯ LH IdϕK (49) 
+
+for any Θ on the line segment connecting Θ∗ 
+
+> s
+
+and bΘs, where ∇2Θ is viewed as an operator on 
+
+vec(Θ) ∈ RdϕK .Under the above assumptions, for excess decision risk of the strong model, we have 
+
+E ˜B [R(bπs) − R∗] ≳ μγ 2 e−4Bη
+
+K2
+
+
+
+ρs + λmin (Λ s) tr (Σ φ)
+
+L2
+
+> H
+
+1
+
+n
+
+
+
+. (50) This theorem shows that the excess decision risk of the strong-only benchmark admits two unavoidable sources of error. The first is the approximation term ρs, which reflects the representa-tional mismatch between the ground-truth logit map and the strong feature class. The second term is the estimation error term, which scales as λmin (Λ s) tr (Σφ) 
+
+> L2
+> H
+> 1
+> n
+
+. We stress that this is an algorithm-specific lower bound for our strong-only benchmark training procedure. The proof of Theorem 2 is relatively standard, and is deferred to Appendix C.1. The W2S upper bound also depends on the estimation quality of the weak teacher through the term E ˜B
+
+bΘw − Θ∗
+
+> w
+> 2
+> F
+
+
+
+. The next subsection gives a concrete control of this term under maximum likelihood training. 
+
+4.2. Weak-model upper bound 
+
+For the sake of completeness and concreteness, this subsection gives a maximum likelihood esti-mator as an example of a weak teacher training procedure and quantifies its performance. But the general W2S framework is not confined to this specific weak teacher training procedure. We define CB = Θ ∈ Rdϕ×K | Θ1 = 0 , ∥Θ∥F ≤ BΘ as the constrained parameter space for some 
+
+BΘ > 0. We consider the following maximum likelihood estimator based on the weak features: 
+
+bΘw = arg min 
+
+> Θ∈C B
+
+− 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ln 
+
+
+
+pwΘ
+
+ ˜ξi | ˜xi
+
+ 
+
+, (51) where we denote pwΘ
+
+ ˜ξi | ˜xi
+
+
+
+to be the likelihood of observing ˜ξi given input ˜ xi under the weak feature model parameterized by Θ. Let μwdef 
+
+= e−2BΘBϕ 
+
+> K
+
+λmin (Σ w). 22 
+
+Assumption 5 (identifiability of Θ∗
+
+> w
+
+). The ground-truth weak model parameter Θ∗ 
+
+> w
+
+is iden-tifiable in the sense that ρw = 0 and the minimizer Θ∗ 
+
+> w
+
+is unique. Moreover, we assume that Θ∗ 
+
+> w
+
+is attained in the interior of CB , i.e., ∥Θ∗
+
+> w
+
+∥F < B Θ.
+
+Assumption 6 (bounded weak features) . There exists a constant Bϕ > 0 such that for all 
+
+x ∈ X , we have ∥ϕw(x)∥2 ≤ Bϕ.
+
+Theorem 3. Under Assumption 1, Assumption 5 and Assumption 6, the MLE estimator bΘw
+
+defined in (51) enjoys that 
+
+E ˜B
+
+bΘw − Θ∗
+
+> w
+> 2
+> F
+
+
+
+≤ 4
+
+μ2w
+
+tr (Σ w)
+
+n + 4 B2Θdw exp 
+
+
+
+− nλ min (Σ w)8B2
+
+> ϕ
+
+
+
+, (52) The proof of this theorem is deferred to Appendix C.2. 
+
+4.3. When does W2S outperform? 
+
+We now turn the earlier bounds into a sufficient condition under which W2S improves over direct strong-model training. Combining the W2S upper bound in Theorem 1 with the strong-only lower bound in Theorem 2, it suffices, up to universal constants, that 
+
+Eimit + EN + Eteacher + Eapprox ≲ μγ 2 e−4Bη
+
+K2
+
+
+
+ρs + λmin (Λ s) tr (Σ φ)
+
+L2 
+
+> H
+
+n
+
+
+
+. (53) The left-hand side collects the costs paid by W2S: imitation, unlabeled-sample fluctuation, teacher estimation, and model misspecification. The right-hand side is the strong model’s approximation and labeled-sample statistical error. Thus, the comparison asks whether the weak teacher and the unlabeled sample can offset the label scarcity faced by direct strong-model training. We next plug the weak-model estimate from Theorem 3 into the weak-to-strong term Eteacher 
+
+defined after Theorem 1. To obtain a transparent sufficient condition, we work in the large-n regime made explicit in Corollary 1. Also define Ctdef 
+
+= 4LKG 2 
+
+> μ2μ2w
+
+λmax (Λ w) tr (Σ w) . Then Eteacher is bounded by 
+
+Eteacher ≲ Ct
+
+n
+
+
+
+ds∧w + ds (dw − ds∧w)
+
+N
+
+
+
+. (54) In the decomposition following Theorem 1, all terms in the unlabeled-sample statistical error EN
+
+scale as N −1/2. The imitation term Eimit , which contains E ˜B
+
+h
+
+ρs→w
+
+ bΘw
+
+i 
+
+, is also independent of 
+
+N .Define the residual margin as 
+
+Mn
+
+> def
+
+= μγ 2 e−4Bη
+
+K2
+
+
+
+ρs + λmin (Λ s) tr (Σ φ)
+
+L2 
+
+> H
+
+n
+
+
+
+− E imit − E approx − Ctds∧w
+
+n .
+
+With this definition, the condition (53) can be written as 
+
+CN
+
+√N + Ctds (dw − ds∧w)
+
+nN ≲ Mn, (55) which leads to the following observation. 23 
+
+Corollary 1 (A sufficient condition for W2S outperformance) . Suppose the assump-tions of Theorems 1, 2, and 3 hold. Assume the following three conditions hold. (i) The labeled sample size n is large enough that the exponentially small term in Theorem 3 is dominated by its 1/n term: B2Θdw exp 
+
+
+
+− nλ min (Σ w)8B2
+
+> ϕ
+
+
+
+≲ tr(Σ w) 
+
+> μ2wn
+
+.
+
+(ii) The imitation error Eimit , the model-approximation error Eapprox , and the overlap cost 
+
+Ctds∧w/n are small enough relative to the strong-only benchmark term to leave a positive margin: 
+
+Eimit + Eapprox + Ctds∧w
+
+n < μγ 2 e−4Bη
+
+K2
+
+
+
+ρs + λmin (Λ s) tr (Σ φ)
+
+L2 
+
+> H
+
+n
+
+
+
+. (56) 
+
+Equivalently, Mn > 0.(iii) The unlabeled sample size N is large enough: 
+
+N ≳ max 
+
+ds, CN + pC2 
+
+> N
+
++ 4 MnCtds (dw − ds∧w) /n 
+
+2Mn
+
+!2 . (57) 
+
+Under these conditions, the previous bounds certify, up to universal constants, that 
+
+E ˜B,B [R(bπw2s ) − R∗] ≤ E ˜B [R(bπs) − R∗] . (58) Therefore, W2S can outperform if the N -independent costs Eimit , Eapprox , and Ctds∧w/n are small enough to leave a positive residual margin Mn > 0. This condition combines three requirements: the strong student must be able to imitate the weak teacher accurately, the two feature classes must have small approximation error, and the overlap dimension ds∧w must be sufficiently small relative to the labeled sample size n. In practice, this is a mild condition that is commonly satisfied. Intuitively, a smaller overlap dimension means that the ways in which the teacher and student think are different enough, so the teacher’s mistakes are more likely to be averaged out rather than directly inherited. In (55), once Mn > 0, the finite-N terms CN /√N and Ctds (dw − ds∧w) /(nN )decrease as N grows; with fixed problem-dependent constants, (57) scales qualitatively as N ≳
+
+max {ds, n 2}.
+
+## 5. Numerical Experiments 
+
+In this section, we present numerical experiments to validate our theoretical findings. In Section 5.1, we evaluate the empirical performance of W2S in a contextual newsvendor problem, where the data-generating process can be precisely controlled to isolate and validate the theoretical mechanisms identified in the previous sections. Furthermore, Section 5.2 evaluates W2S on a real-world comment moderation dataset to test whether the predicted gains persist in a more realistic operational setting. 24 
+
+5.1. Synthetic Experiments 
+
+We consider a synthetic contextual single-item newsvendor problem. 
+
+Setup. We take a finite discrete support Ξ = {z1, · · · , z K } ⊆ R where z1 < z 2 < · · · < z K , and interpret ξ ∈ Ξ as the random demand for a product. The decision is an order quantity w ∈ R before the demand ξ is realized. We use the standard newsvendor cost function c(w, ξ ) = cu(ξ − w)+ +
+
+co(w − ξ)+, where cu > 0 is the underage cost, co > 0 is the overage cost, and ( a)+ = max {a, 0}.We note that such a cost function is neither strongly convex nor smooth in w, and hence does not satisfy Assumption 2. It is well-known that the optimal order quantity given the context vector x
+
+and the demand distribution P (· | x) is given by the quantile function: ˜w (P | x) = inf 
+
+
+
+z ∈ R : Pr ξ∼P (·| x) [ξ ≤ z] ≥ cu
+
+cu + co
+
+
+
+. (59) One can verify that ˜ w (P | x) ∈ Ξ. We work with a context vector x sampled from N (0 , I dx ). We consider the strong and weak feature models ϕs(x) = V ⊤ 
+
+> s
+
+x and ϕw(x) = V ⊤ 
+
+> w
+
+x, where Vs ∈ Rdx×dϕ and 
+
+Vw ∈ Rdx×dϕ are fixed matrices with orthonormal columns. We explicitly construct Vs and Vw such that E [ϕs(x)ϕw(x)⊤] = E [V ⊤ 
+
+> s
+
+xx ⊤Vw] = V ⊤ 
+
+> s
+
+Vw =
+
+ Ir 00 0 
+
+
+
+. First, we need 0 ≤ r ≤ min {ds, d w}, dϕ ≥
+
+max {ds, d w} and dx ≥ ds + dw − r. We choose an orthonormal basis Q = [ q1, . . . , q dx ] ∈ Rdx×dx . Then we set Us = [ q1, . . . , q r , q r+1 , . . . , q ds ] ∈ Rdx×ds and Uw = q1, . . . , q r , q ds+1 , . . . , q ds+( dw −r)
+
+ ∈ Rdx×dw .This way, we have U ⊤ 
+
+> s
+
+Uw =
+
+ Ir 00 0 
+
+
+
+. To construct Vs and Vw, it suffices to pad zeroes: Vs =
+
+h
+
+Us, 0dx×(dϕ−ds)
+
+i
+
+, V w =
+
+h
+
+Uw, 0dx×(dϕ−dw )
+
+i
+
+. Hence, we have E [ϕs(x)ϕs(x)⊤] = V ⊤ 
+
+> s
+
+Vs =
+
+ Ids 00 0
+
+
+
+, and similarly for Σ w. One can easily verify that ds∧w = Σ− 12 
+
+> s
+
+E [ϕs(x)ϕw(x)⊤] Σ − 12
+
+> w
+> 2
+> F
+
+= ∥V ⊤ 
+
+> s
+
+Vw∥2 
+
+> F
+
+= r.We make the ground-truth environment realizable by the strong model (hence there is no approx-imation error for the strong model, i.e., ρs = 0), by defining the ground-truth logits to be linear in the strong features: η∗(x) = Θ ⊤∗ ϕs(x) ∈ RK and P ∗ (ξ = zk | x) = softmax k (η∗(x)). As noted in Qi et al. (2025), the W2S training objective 
+
+bΘw2s ∈ arg min    
+
+> Θ∈Rdϕ×K,∥Θ∥F≤B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+Eξ∼P w   
+
+> bΘw (·| xj)
+
+[c ( ˜ w (P sΘ | xj ) , ξ j )] is in general neither convex nor differentiable, which is also the case even in this synthetic newsven-dor problem. Indeed, the objective function is piecewise constant with respect to Θ because the optimal order quantity ˜w (P sΘ | xj ) only changes when the quantile of the distribution P sΘ(· | xj )crosses one of the demand values in Ξ. To this end, we work with a smoothed surrogate optimal action function instead of the exact optimal action function in (59). To be specific, the induced 25 
+
+conditional pmf on Ξ by the strong model is given by P sΘ(ξ = zk | x) = exp (Θ⊤   
+
+> kV⊤
+> sx
+
+) 
+
+> PKj=1 exp
+
+(Θ⊤   
+
+> jV⊤
+> sx
+
+) . For β > 0, define aβ
+
+> Θ,k
+
+(x) = −β
+
+Pkℓ=1 P sΘ(ξ = zℓ | x) − cu
+
+> cu+co
+
+2
+
+. We then use 
+
+bwβ (P sΘ | x) = 
+
+> K
+
+X
+
+> k=1
+
+softmax k
+
+ aβ
+
+> Θ
+
+(x) zk (60) as the surrogate of ˜ w (P sΘ | x), where β controls the sharpness of the approximation. Moreover, we use τ log  1 + et/τ  to approximate ( t)+ for some small smoothing parameter τ > 0. With all these in hand, we use a first-order method to approximately solve for bΘw2s . Again following the spirit of Qi et al. (2025), in the numerical implementation reported below, we use the following regularized version of the surrogate objective: 
+
+bΘw2s ∈ arg min 
+
+> Θ∈Rdϕ×K
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+Eξ∼P w   
+
+> bΘw (·| xj)
+
+[c ( bwβ (P sΘ | xj ) , ξ )] + λw2s Θ − Θ0s 
+
+> 2
+> F
+
+, (61) where Θ 0s denotes the initial strong-model parameter used to initialize W2S and λw2s = 5 × 10 −4. We note that we only use the smoothed surrogate objective for numerical optimization; the evaluation of decision risk is still based on the original newsvendor cost function without smoothing. 
+
+Results. We can make a few observations on Figure 1. 1. W2S provides the largest gains when labeled data are scarce, especially under low overlap. In the top-left panel ( ds∧w = 1 , fixed N = 3000), the OPR starts well above 1 and then decreases toward 1 as n grows. This suggests that when the strong model is data-limited, leveraging abundant unlabeled data through the weak teacher can materially reduce excess decision risk compared to training the strong model on labeled data alone. 2. The benefit of W2S diminishes as overlap increases. Comparing ds∧w = 1 vs ds∧w = 4, the curves are systematically closer to 1 when ds∧w = 4. In the top-right panel, OPR is only slightly above (or near) 1 for small n and drifts below (or around) 1 as n increases. Namely, when the weak and strong representations share more directions, the extra information conveyed by the weak teacher is less distinctive, so W2S yields only modest improvement. 3. More unlabeled data improves W2S up to a plateau, with stronger effects at low overlap. For example, in the bottom-left panel ( ds∧w = 1 , fixed n = 100), OPR increases as N grows and then levels off, indicating that additional unlabeled samples help W2S learn a better policy until the benefit saturates. In Figure 2, we further examine the effect of the overlap dimension ds∧w on the OPR, fixing 
+
+n = 500 and N = 500. We observe that the OPR decreases as ds∧w increases, confirming that W2S is most beneficial when the weak and strong feature representations share little subspace. When 26 
+
+(a) OPR vs. labeled size n with fixed unla-beled size N = 3000 and overlap ds∧w = 1. 
+
+(b) OPR vs. labeled size n with fixed unla-beled size N = 3000 and overlap ds∧w = 4. 
+
+(c) OPR vs. unlabeled size N with fixed labeled size n = 100 and overlap ds∧w = 1. 
+
+(d) OPR vs. unlabeled size N with fixed labeled size n = 100 and overlap ds∧w = 4. 
+
+Figure 1 Sensitivity of the optimization performance ratio (OPR) to labeled and unlabeled sample sizes and to the overlap dimension. OPR is defined as OPR := ExcessRisk(Strong Benchmark) ExcessRisk(W2S) = E ˜B [R(bπs)−R∗]   
+
+> E˜B,B[R(bπw2s )−R∗]
+
+, where excess risk is measured relative to the oracle using the ground-truth conditional distribution. Each plotted value is the ratio of mean excess risks across 60 independent trials; error bars show approximate 95% normal confidence bands computed as 1.96 times a bootstrap standard error for this ratio-of-means estimator. Parameters used for the experiment: dx = 80 , Ξ = {0, 0.5, 1, · · · , 10 }, d s = 10 , d w = 48 , c o = 1 , c u = 3 , β = 35 , τ = 0 .5.
+
+ds∧w is small, W2S can leverage information from directions that are inaccessible to the strong model alone, leading to significant reductions in excess decision risk. Figure 3 presents an exhaustive grid sweep of the OPR over labeled and unlabeled sample sizes at fixed overlap ds∧w = 2. It reinforces the earlier observations that W2S excels when labeled data are limited and unlabeled data are abundant, e.g., for the region n ≤ 300, we see the largest gains. At moderate labeled sizes n ≈ 500, the improvement is smaller but still visible. The solid contour marks the boundary OPR = 1, indicating that beyond roughly n ∼ 10 3 the advantage of W2S becomes marginal. 27 
+
+Figure 2 Effect of the strong–weak feature overlap on the OPR. We fix the labeled and unlabeled sample sizes to n = 500 and N = 500 , and vary the overlap dimension ds∧w. The large OPR at small ds∧w indicates that W2S substantially reduces excess decision risk when the weak and strong representations share little (or no) subspace, whereas the curve approaching OPR ≈ 1 for larger ds∧w indicates that the benefit of W2S diminishes as the two feature spaces become more aligned. 
+
+Figure 3 Grid sweep of the OPR over labeled and unlabeled sample sizes. Each cell reports log(OPR) , where OPR is computed as the ratio of mean excess risks across 60 independent trials, at overlap ds∧w = 2 . Darker (more positive) values indicate OPR > 1, i.e., W2S achieves lower excess decision risk than the strong-only baseline; lighter (more negative) values indicate OPR < 1. The overlaid contour highlights the level set OPR = 1 ,separating the two regimes. 28 
+
+5.2. Comment Moderation Experiments 
+
+In this section, we evaluate W2S on a more realistic comment moderation task, a canonical appli-cation in AI-assisted service systems (Lee et al. 2024). Different from the synthetic experiment, this experiment does not enforce any of the assumptions used in the theory. 
+
+Background. An online platform receives a stream of comments: most are harmless, some are toxic, and a small fraction are severely toxic (Borkan et al. 2019, Kumar et al. 2021, Siegelmann et al. 2024). The operational task is therefore to select, for each comment, one of several moderation actions: approve it, remove it, or route it to a designated review queue. These queues represent different levels of human attention and urgency, ranging from standard review and delayed holding to priority review. More broadly, this routing structure reflects the human-in-the-loop design of modern AI agent systems, in which automated agents handle routine cases while ambiguous or high-risk cases are escalated to human reviewers with different priority levels. The central tradeoff is between the harm caused by exposing users to severely toxic content and the friction created by incorrectly removing harmless content. Accordingly, the value of a predictor is determined not only by its classification accuracy but also by the downstream cost of the moderation action it induces. This setting naturally gives rise to a labeled–unlabeled data split: raw comments are abundant in platform traffic, whereas reliable toxicity-severity labels require costly expert judgments. 
+
+Setup. We use the Jigsaw Unintended Bias/Civil Comments corpus, which contains online com-ments with crowd-sourced toxicity and identity annotations (Borkan et al. 2019, Jigsaw 2019). The context x is the comment text. The raw data reports a toxicity score for each comment, which we discretize into three severity classes Ξ = {0, 1, 2} using thresholds 0 .5 and 0 .8: non-toxic, toxic, and severely toxic. The feasible action set is  
+
+> A
+
+= {allow , remove , standard review , hold review , priority review }.
+
+Here, allow means that the comment is automatically approved and remains visible on the platform. 
+
+Remove means that the comment is automatically suppressed without human review. Standard review sends the comment to a regular human-review queue while the comment remains visible during the review process. Hold review also sends the comment to human review, but the comment is held off the platform until the review is completed. Priority review is a faster human-review route for comments that may be more urgent; it has higher review cost but shorter delay. These actions trade off different types of operational cost: exposure cost from leaving harmful comments visible, user-friction cost from suppressing benign comments, reviewer cost, and delay cost from human review. The original data set is highly imbalanced, with approximately 14% toxic comments and only 2.6% severely toxic comments. To address this imbalance, we augment the data by prompting 29 
+
+Claude Sonnet, using real severe-toxicity comments as style anchors, to generate additional plausi-ble CivilComments-style comments. In the augmented data set, the severely toxic class is increased to about 10% of the total comments. Then, we further partition the augmented comment data into separate splits for (1) task pre-training, (2) downstream W2S training with labeled and unlabeled samples, and (3) held-out evaluation. Putting in the notation of Section 2, the random outcome is the severity class ξ ∈ Ξ, and the action is the moderation route a ∈ A . We encode the cost of assigning route a to a comment with severity ξ by a route-severity cost matrix C, so that c(a, ξ ) = Ca,ξ . The exact entries of C
+
+are reported in Appendix D; they are chosen to reflect the operational tradeoffs described above. Given a conditional model P : X → ∆(Ξ), the induced plug-in route follows the decision rule used throughout the paper: ˜ w(P (x)) ∈ arg min a∈A 
+
+P 
+
+> ξ∈Ξ
+
+Ca,ξ P (ξ | x). We refer to this as the hard-route 
+
+decision. 
+
+Pre-training. To obtain the two feature maps ϕw and ϕs, we start from two generic language-model backbones with different capacities: a compact two-layer BERT encoder for the weak model and a DistilBERT encoder for the strong model (Devlin et al. 2019, Sanh et al. 2019). To map each encoder representation to the three severity classes, we attach a newly initialized classification head to each model and task pre-train the resulting models end-to-end on labeled comments from the pre-training split using cross-entropy loss; sample-size and optimizer-level details are reported in Appendix D. To align the experiment with the weak-to-strong regime (Burns et al. 2024), we restrict the task-specific pretraining compute allocated to the larger DistilBERT model to prevent it from already dominating the smaller model before weak supervision. 
+
+Training protocol. To validate the theoretical findings in Section 4, we compare W2S with the strong-only baseline across a range of labeled and unlabeled sample sizes. For each experimental setting, we draw a labeled sample ˜ B and an unlabeled sample B uniformly without replacement from their respective pools. The strong-only benchmark is initialized from the strong pre-trained model and trained on ˜B using the supervised decision-aware objective in (9), with the optimal action oracle ˜ w replaced by a differentiable soft-route surrogate to enable gradient-based optimization, in the same spirit as (60). We emphasize here that in evaluation, we still use the hard-route decision. It is optimized using AdamW with weight decay. For W2S, we initialize the weak teacher from the weak pre-trained model and fine-tune it on ˜ B by cross-entropy. We then implement the W2S training in the same way as in (61). It is optimized with AdamW with a cosine learning-rate scheduler. 
+
+Results. Since we do not have access to the ground-truth distribution for computing the OPR in (11), we compute the empirical OPR using the held-out split of the data set. Figure 4 shows how the labeled and unlabeled sample sizes affect the OPR in this experiment. We observe that, 30 
+
+(a) OPR vs. labeled size n. (b) OPR vs. unlabeled size N .     
+
+> Figure 4 Panels (a)–(b) plot empirical OPR across 30 trials with 1.96 bootstrap standard-error bars.
+
+consistent with the qualitative implication of Corollary 1, W2S does not improve over the strong-only baseline when the unlabeled sample size N is small, but achieves OPR above one once N is greater than 600. Another finding consistent with the synthetic experiment is that the advantage of W2S is most pronounced when the labeled sample size n is small, and the gain narrows as n
+
+increases. 
+
+## 6. Concluding Remarks 
+
+This paper takes a first step toward understanding weak-to-strong learning as a decision-making problem. In the contextual stochastic optimization setting, we show that weak supervision can improve downstream decision performance when labeled data are scarce and unlabeled contexts are abundant, with the overlap between weak and strong representations determining how much teacher error is inherited rather than averaged out. The numerical experiments support this mechanism in both controlled simulations and a comment moderation routing task. A natural next step is to move beyond one-shot decisions to sequential decision making, including reinforcement learning and online control. In such settings, weak supervision may affect not only the final decision rule, but also exploration, state distribution shift, and the accumulation of decision errors over time. 31 
+
+Appendix A: Omitted Proofs in Section 2 
+
+Lemma 6. We always have 0 ⩽ ds∧w ⩽ min {ds, d w}.
+
+Proof: We define γs(x) = Λ − 12 
+
+> s
+
+V ⊤ 
+
+> s
+
+ϕs(x) and γw(x) = Λ − 12 
+
+> w
+
+V ⊤ 
+
+> w
+
+ϕw(x). One can verify that they are zero-mean random vectors with identity covariance matrix. Then by definition M def 
+
+= E [γs(x)γw(x)⊤] = 
+
+E
+
+h
+
+Λ− 12 
+
+> s
+
+V ⊤ 
+
+> s
+
+ϕs(x)ϕw(x)⊤VwΛ− 12
+
+> w
+
+i
+
+= Λ − 12 
+
+> s
+
+V ⊤ 
+
+> s
+
+E [ϕs(x)ϕw(x)⊤] VwΛ− 12 
+
+> w
+
+.We next show that ∥M ∥2 ≤ 1. First of all, by definition of the 2-norm and by invoking Cauchy-Schwarz inequality, we have ∥M ∥2 = sup ∥v∥2=1 ∥M v ∥2 = sup ∥u∥2=∥v∥2=1 |u⊤M v |. For any vectors u ∈ Rds and v ∈ Rdw ,we have 
+
+u⊤M v = u⊤E γsγ⊤
+
+> w
+
+ v = E u⊤γsγ⊤ 
+
+> w
+
+v .
+
+By Cauchy-Schwarz inequality, we have |E [u⊤γsγ⊤ 
+
+> w
+
+v]| ≤ 
+
+r
+
+E
+
+h
+
+(u⊤γs)2ir
+
+E
+
+h
+
+(γ⊤ 
+
+> w
+
+v)2i
+
+. Because both γs and 
+
+γw are isotropic, we have 
+
+r
+
+E
+
+h
+
+(u⊤γs)2i
+
+= ∥u∥2 and 
+
+r
+
+E
+
+h
+
+(γ⊤ 
+
+> w
+
+v)2i
+
+= ∥v∥2. Hence, we conclude that ∥M ∥2 =sup ∥u∥2=∥v∥2=1 E [u⊤γsγ⊤ 
+
+> w
+
+v] ≤ 1. Now, we proceed to upper bound the overlap dimension. We have 
+
+ds∧w = Σ− 12 
+
+> s
+
+E ϕs(x)ϕw(x)⊤ Σ− 12
+
+> w
+> 2
+> F
+
+= VsΛ− 12 
+
+> s
+
+V ⊤ 
+
+> s
+
+E ϕs(x)ϕw(x)⊤ VwΛ− 12 
+
+> w
+
+V ⊤
+
+> w
+> 2
+> F
+
+(62) = VsM V ⊤
+
+> w
+> 2
+> F
+
+= tr  VsM V ⊤ 
+
+> w
+
+VwM ⊤V ⊤
+
+> s
+
+ (63) = tr  M M ⊤V ⊤ 
+
+> s
+
+Vs
+
+
+
+= tr  M M ⊤ . (64) Equation (62) follows from the definition of Σ − 12 
+
+> s
+
+and Σ − 12 
+
+> w
+
+. Equation (63) is due to the fact that ∥A∥2 
+
+> F
+
+=tr ( AA ⊤) for any matrix A. The last equation follows from the fact that V ⊤ 
+
+> s
+
+Vs = I.Finally, we note that tr ( M M ⊤) = ∥M ∥2 
+
+> F
+
+= Pmin {ds,d w } 
+
+> i=1
+
+σ2 
+
+> i
+
+, where σi is the i-th singular value of M . Because 
+
+∥M ∥2 ≤ 1, we have σi ≤ 1 for all i. Hence, the proof is complete. □
+
+Appendix B: Omitted Proofs in Section 3 
+
+B.1. Proof of Lemma 1 
+
+Proof: First of all, since c is μ-strongly convex and L-smooth in its first argument, we have 
+
+μ
+
+2 ∥a′ − a∥22 ≤ c(a′, z ) − c(a, z ) − ⟨∇ ac(a, z ), a ′ − a⟩ ≤ L
+
+2 ∥a′ − a∥22 (65) for every z ∈ Ξ and a, a ′ ∈ A . Multiplying by (65) by P (ξ = zk | x) and summing over k = 1 , 2, . . . , K , we have 
+
+μ
+
+2 ∥a′ − a∥22 ≤
+
+> K
+
+X
+
+> k=1
+
+P (ξ = zk | x) [ c (a′, z k ) − c (a, z k ) − ⟨∇ ac (a, z k ) , a ′ − a⟩] ≤ L
+
+2 ∥a′ − a∥22 . (66) The middle term can be written as 
+
+> K
+
+X
+
+> k=1
+
+P (ξ = zk | x) [ c (a′, z k ) − c (a, z k )] −
+
+* K
+
+X
+
+> k=1
+
+P (ξ = zk | x) ∇ac (a, z k ) , a ′ − a
+
++32 = Eξ∼P (·| x) [c (a′, ξ ) − c (a, ξ )] −
+
+* KX
+
+> k=1
+
+P (ξ = zk | x) ∇ac (a, z k ) , a ′ − a
+
++
+
+.
+
+Taking a′ = ˜ w(P ′ | x) and a = ˜ w(P | x), we have 
+
+μ
+
+2 ∥ ˜w(P ′ | x) − ˜w(P | x)∥22
+
+≤ Eξ∼P (·| x) [c ( ˜ w (P ′ | x) , ξ ) − c ( ˜ w (P | x) , ξ )] 
+
+−
+
+* K
+
+X
+
+> k=1
+
+P (ξ = zk | x)∇w c( ˜ w (P | x) , z k ), ˜w (P ′ | x) − ˜w (P | x)
+
++
+
+≤ L
+
+2 ∥ ˜w(P ′ | x) − ˜w(P | x)∥22 . (67) To conclude the proof, we recall the definition of ˜w(P | x), which is given by ˜w(P | x) = argmin w∈A 
+
+PKk=1 P (ξ = zk | x)c(w, z k ). The first-order optimality condition implies that 
+
+> K
+
+X
+
+> k=1
+
+P (ξ = zk | x)∇w c( ˜ w(P | x), z k ) = 0 . (68) 
+
+□
+
+B.2. Proof of Lemma 2 
+
+Proof: Fix x ∈ X . For brevity, write w = ˜ w(Pη | x), w′ = ˜ w(Pη′ | x), pk = Pη (ξ = zk | x), and p′ 
+
+> k
+
+= Pη′ (ξ =
+
+zk | x). Since w and w′ minimize their respective probability-weighted costs over the convex set A, the variational inequalities give 
+
+* KX
+
+> k=1
+
+pk ∇w c(w, z k ), w ′ − w
+
++
+
+≥ 0 and 
+
+* KX
+
+> k=1
+
+p′ 
+
+> k
+
+∇w c(w′, z k ), w − w′
+
++
+
+≥ 0. (69) By the μ-strong convexity of each c(·, z k ) and (69), 
+
+> K
+
+X
+
+> k=1
+
+pk [c(w′, z k ) − c(w, z k )] ≥
+
+* KX
+
+> k=1
+
+pk ∇w c(w, z k ), w ′ − w
+
++
+
++ μ
+
+2 ∥w′ − w∥22
+
+≥ μ
+
+2 ∥w′ − w∥22 . (70) Similarly, by the μ-strong convexity of each c(·, z k ) and (69), 
+
+> K
+
+X
+
+> k=1
+
+p′ 
+
+> k
+
+[c(w, z k ) − c(w′, z k )] ≥
+
+* K
+
+X
+
+> k=1
+
+p′ 
+
+> k
+
+∇w c(w′, z k ), w − w′
+
++
+
++ μ
+
+2 ∥w′ − w∥22
+
+≥ μ
+
+2 ∥w′ − w∥22 . (71) Adding (70) and (71), and using Part (2) of Assumption 2, we obtain 
+
+μ ∥w′ − w∥22 ≤
+
+> K
+
+X
+
+> k=1
+
+(pk − p′ 
+
+> k
+
+) [ c(w′, z k ) − c(w, z k )] 
+
+≤
+
+> K
+
+X
+
+> k=1
+
+|pk − p′ 
+
+> k
+
+| | c(w′, z k ) − c(w, z k )|≤ G ∥Pη (· | x) − Pη′ (· | x)∥1 ∥w′ − w∥2 . (72) If w = w′, the first desired inequality is immediate. Otherwise, dividing (72) by μ ∥w′ − w∥2 gives 
+
+∥w′ − w∥2 ≤ Gμ ∥Pη (· | x) − Pη′ (· | x)∥1 . (73) 33 By Cauchy–Schwarz and the fact that the softmax map is 1 /2-Lipschitz from ℓ2 to ℓ2 (Nair 2025), 
+
+∥Pη (· | x) − Pη′ (· | x)∥1 ≤ √K ∥Pη (· | x) − Pη′ (· | x)∥2 (74) 
+
+≤√K
+
+2 ∥η(x) − η′(x)∥2 . (75) Combining (73) and (75) proves the result. □
+
+B.3. Statement and proof of Lemma 7 
+
+Lemma 7. We have 
+
+EB, ˜B
+
+
+
+Ex
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘw2s
+
+| x
+
+
+
+− ˜w
+
+
+
+P w 
+
+> bΘw
+
+| x
+
+ 22
+
+ 
+
+≤ 14
+
+LKG 2
+
+μ3 E ˜B,B
+
+
+
+Ex
+
+
+
+ηs
+
+> bΘls
+
+(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+ 
+
++ 8 √2 KG 2Bptr (Σ s)
+
+μ2
+
+1
+
+√N + 4Cunif 
+
+μ
+
+1
+
+√N . (76) 
+
+Proof: To proceed, we define the following population and empirical estimated costs associated with the W2S procedure: 
+
+LbΘw
+
+> w2s
+
+(Θ) def 
+
+= ExEξ∼P w 
+
+> bΘw
+> (·| x)
+
+[c ( ˜ w (P sΘ | x) , ξ )] , (77) and 
+
+bLbΘw
+
+> w2s
+
+(Θ) def 
+
+= 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+Eξ∼P w  
+
+> bΘw
+> (·| xj)
+
+[c ( ˜ w (P sΘ | xj ) , ξ )] . (78) Let Θw2s ∈ arg min 
+
+> Θ∈H B
+
+LbΘw
+
+> w2s
+
+(Θ) denote a population minimizer of the W2S objective. Conditioned on the labeled data ˜B used to train the weak teacher bΘw, we first note that by Lemma 1, we have 
+
+EB| ˜B
+
+ μ
+
+2 Ex
+
+
+
+˜w(P s 
+
+> bΘw2s
+
+| x) − ˜w(P w 
+
+> bΘw
+
+| x) 22
+
+
+
+| ˜B
+
+
+
+≤ EB| ˜B
+
+h
+
+Ex
+
+h
+
+Eξ∼P w
+
+> bΘw
+> (·| x)
+
+h
+
+c
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘw2s
+
+| x
+
+
+
+, ξ 
+
+
+
+− c
+
+
+
+˜w
+
+
+
+P w 
+
+> bΘw
+
+| x
+
+
+
+, ξ 
+
+ii 
+
+| ˜B
+
+i
+
+(79) = EB| ˜B
+
+h
+
+LbΘw
+
+> w2s
+
+ bΘw2s 
+
+
+
+− Ex
+
+h
+
+Eξ∼P w
+
+> bΘw
+> (·| x)
+
+h
+
+c
+
+
+
+˜w
+
+
+
+P w 
+
+> bΘw
+
+| x
+
+
+
+, ξ 
+
+ii 
+
+| ˜B
+
+i
+
+. (80) Moreover, in view of Lemma 8, we can upper bound the quantity LbΘw
+
+> w2s
+
+ bΘw2s 
+
+
+
+− L bΘw 
+
+> w2s
+
+(Θ w2s ). Using the uniform absolute-deviation bound in Lemma 8, we obtain 
+
+EB| ˜B
+
+h
+
+LbΘw
+
+> w2s
+
+ bΘw2s 
+
+
+
+− L bΘw 
+
+> w2s
+
+(Θ w2s )
+
+i
+
+= EB| ˜B
+
+h
+
+LbΘw
+
+> w2s
+
+ bΘw2s 
+
+
+
+− bLbΘw
+
+> w2s
+
+ bΘw2s 
+
+
+
++ bLbΘw
+
+> w2s
+
+ bΘw2s 
+
+
+
+− bLbΘw 
+
+> w2s
+
+(Θ w2s ) + bLbΘw 
+
+> w2s
+
+(Θ w2s ) − L bΘw 
+
+> w2s
+
+(Θ w2s )
+
+i
+
+≤ 2EB| ˜B
+
+
+
+sup 
+
+> Θ∈H B
+
+LbΘw 
+
+> w2s
+
+(Θ) − bLbΘw 
+
+> w2s
+
+(Θ) 
+
+
+
+≤ 2
+
+s
+
+V0( bΘw)
+
+N + 4 √2 G2KB μ
+
+1
+
+√N
+
+ptr (Σ s)
+
+≤ 2Cunif 
+
+√N + 4 √2 G2KB μ
+
+1
+
+√N
+
+ptr (Σ s). (81) Here, the first inequality uses the empirical optimality of bΘw2s , and the final inequality uses V0( bΘw) ≤ C2unif .34 On the other hand, in view of the optimality of Θ w2s with respect to the population objective LbΘw
+
+> w2s
+
+(·), we have 
+
+EB| ˜B
+
+h
+
+LbΘw 
+
+> w2s
+
+(Θ w2s ) − Ex
+
+h
+
+Eξ∼P w
+
+> bΘw
+> (·| x)
+
+h
+
+c
+
+
+
+˜w
+
+
+
+P w 
+
+> bΘw
+
+| x
+
+
+
+, ξ 
+
+ii 
+
+| ˜B
+
+i
+
+≤ EB| ˜B
+
+h
+
+LbΘw
+
+> w2s
+
+ bΘls 
+
+
+
+− Ex
+
+h
+
+Eξ∼P w
+
+> bΘw
+> (·| x)
+
+h
+
+c
+
+
+
+˜w
+
+
+
+P w 
+
+> bΘw
+
+| x
+
+
+
+, ξ 
+
+ii 
+
+| ˜B
+
+i
+
+(82) 
+
+≤ EB| ˜B
+
+ L
+
+2 Ex
+
+
+
+˜w(P s
+
+> bΘls
+
+| x) − ˜w(P w 
+
+> bΘw
+
+| x) 22
+
+
+
+| ˜B
+
+
+
+(83) where (83) again follows from Lemma 1. Combining all above and invoking Lemma 2, we get 
+
+EB| ˜B
+
+
+
+Ex
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘw2s
+
+| x
+
+
+
+− ˜w
+
+
+
+P w 
+
+> bΘw
+
+| x
+
+ 22
+
+
+
+| ˜B
+
+
+
+≤ 14
+
+LKG 2
+
+μ3 EB| ˜B
+
+
+
+Ex
+
+
+
+ηs
+
+> bΘls
+
+(x) − ηw 
+
+> bΘw
+
+(x) 22
+
+
+
+| ˜B
+
+
+
++ 8 √2 KG 2Bptr (Σ s)
+
+μ2
+
+1
+
+√N + 4Cunif 
+
+μ
+
+1
+
+√N . (84) Finally, taking expectation over ˜B on both sides concludes the proof. 
+
+□
+
+B.4. Statement and proof of Lemma 8 
+
+Lemma 8. Define Cunif def 
+
+= max k∈[K] |c ( ˜ w (softmax(0)) , z k )| . For any fixed bΘw, we have 
+
+EB| ˜B
+
+
+
+sup 
+
+> Θ∈H B
+
+LbΘw 
+
+> w2s
+
+(Θ) − bLbΘw 
+
+> w2s
+
+(Θ) 
+
+
+
+≤ Cunif 
+
+√N + 2 √2 G2KB μ
+
+1
+
+√N
+
+ptr (Σ s). (85) 
+
+Proof: For brevity, we let ϕ(x) = ϕs(x) be the strong feature mapping. Given the weak teacher P w
+
+> bΘw
+
+,denote Qk (x) = P w
+
+> bΘw
+
+(ξ = zk | x). Given Θ, the function gΘ : X → R defined by 
+
+gΘ(x) def 
+
+=
+
+> K
+
+X
+
+> k=1
+
+Qk (x)c   ˜w  softmax  Θ⊤ϕ(x) , z k
+
+
+
+= Eξ∼P w
+
+> bΘw
+> (·| x)
+
+c   ˜w  softmax  Θ⊤ϕ(x) , ξ  
+
+is G2√K 
+
+> 2μ
+
+∥ϕ(x)∥2-Lipschitz with respect to Θ. Indeed, for any Θ , Θ′, denote w = ˜ w (softmax (Θ ⊤ϕ(x))), w′ =˜w (softmax ((Θ ′)⊤ϕ(x))). Then we have 
+
+|gΘ(x) − gΘ′ (x)| =
+
+> K
+
+X
+
+> k=1
+
+Qk (x) ( c(w, z k ) − c(w′, z k )) 
+
+≤
+
+> K
+
+X
+
+> k=1
+
+Qk (x) |c(w, z k ) − c(w′, z k )|≤ G
+
+> K
+
+X
+
+> k=1
+
+Qk (x) ∥w − w′∥2 (86) 
+
+≤ G2√K
+
+2μ (Θ − Θ′)⊤ ϕ(x) 2
+
+(87) 
+
+≤ G2√K
+
+2μ ∥ϕ(x)∥2 ∥Θ − Θ′∥2 . (88) Inequality (86) follows since ∥∇ w c(w, z )∥2 ≤ G, and Inequality (87) is due to Lemma 2. 35 By definition, we have LbΘw 
+
+> w2s
+
+(Θ) − bLbΘw 
+
+> w2s
+
+(Θ) = Ex [gΘ(x)] − 1
+
+> N
+
+PNj=1 gΘ(xj ). For the proof, define 
+
+g0(x) def 
+
+= gΘ=0 (x) = 
+
+> K
+
+X
+
+> k=1
+
+P w 
+
+> bΘw
+
+(ξ = zk | x)c( ˜ w(softmax(0)) , z k ), V0def 
+
+= Var x (g0(x)) ,
+
+and set hΘ(x) = gΘ(x) − g0(x). Then 
+
+EB| ˜B
+
+"
+
+sup 
+
+> Θ∈H B
+
+Ex [gΘ(x)] − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+gΘ(xj )
+
+#
+
+≤ EB| ˜B
+
+"
+
+Ex [g0(x)] − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+g0(xj )
+
+#
+
++ EB| ˜B
+
+"
+
+sup 
+
+> Θ∈H B
+
+Ex [hΘ(x)] − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+hΘ(xj )
+
+#
+
+≤
+
+r V0
+
+N + EB| ˜B
+
+"
+
+sup 
+
+> Θ∈H B
+
+Ex [hΘ(x)] − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+hΘ(xj )
+
+#
+
+. (89) The second inequality follows from Cauchy’s inequality, since 
+
+EB| ˜B
+
+"
+
+Ex [g0(x)] − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+g0(xj )
+
+#
+
+≤
+
+vuuutEB| ˜B
+
+ Ex [g0(x)] − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+g0(xj )
+
+!2 =
+
+r V0
+
+N .
+
+By the standard symmetrization inequality (Wainwright 2019, Chapter 4), applied to the centered class 
+
+{hΘ : Θ ∈ H B }, we have 
+
+EB| ˜B
+
+"
+
+sup 
+
+> Θ∈H B
+
+Ex [hΘ(x)] − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+hΘ (xj )
+
+#
+
+≤ 2EB,σ | ˜B
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+σj hΘ (xj )
+
+#
+
+. (90) The class {hΘ : Θ ∈ H B } contains the zero function, because h0 ≡ 0. Thus 
+
+EB,σ | ˜B
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+σj hΘ (xj )
+
+#
+
+≤ 2EB,σ | ˜B
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+σj hΘ (xj )
+
+#
+
+. (91) For each fixed xj , the inner map u 7 → PKk=1 Qk (xj )c( ˜ w(softmax( u)) , z k ) − g0(xj ) is G2√K 
+
+> 2μ
+
+-Lipschitz in u and vanishes at u = 0. By virtue of the vector contraction inequality (Lemma 15), we conclude that 
+
+EB,σ | ˜B
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+σj hΘ (xj )
+
+#
+
+≤ √2 G2√K
+
+2μ EB,σ | ˜B
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+> K
+
+X
+
+> k=1
+
+σj,k 
+
+Θ⊤ϕ(xj )
+
+> k
+
+#
+
+≤ √2 G2√K
+
+2μB√K
+
+√N
+
+ptr ( E [ϕ(x)ϕ(x)⊤]) , (92) where the second inequality follows from Lemma 9. Combining (89), (90), (91), and (92) gives 
+
+EB| ˜B
+
+
+
+sup 
+
+> Θ∈H B
+
+LbΘw 
+
+> w2s
+
+(Θ) − bLbΘw 
+
+> w2s
+
+(Θ) 
+
+
+
+≤
+
+r V0
+
+N + 2 √2 G2KB μ
+
+r tr (Σ s)
+
+N . (93) Since Qk (x) ≥ 0, PKk=1 Qk (x) = 1, and |c( ˜ w(softmax(0)) , z k )| ≤ Cunif for every k,
+
+|g0(x)| ≤ 
+
+> K
+
+X
+
+> k=1
+
+Qk (x)Cunif = Cunif .
+
+Therefore V0 = Var x (g0(x)) ≤ Ex [g0(x)2] ≤ C2unif . Substituting V0 ≤ C2unif into (93) yields the claimed inequal-ity. 
+
+□36 
+
+B.5. Proof of Lemma 4 
+
+Proof: 
+
+• We note that γs(x) is a linear map of ϕ(x) = 
+
+ ϕs(x)
+
+ϕw(x)
+
+
+
+, with γs = Bsϕ, where Bs =  Λ−1/2s V ⊤ 
+
+> s
+
+0 . Hence, for any u ∈ Rds , we have 
+
+E
+
+h
+
+eu⊤γs(x)
+
+i
+
+= E
+
+h
+
+e(B⊤ 
+
+> su
+
+)⊤ϕ
+
+i
+
+≤ exp 
+
+ 12 c2u⊤  BsΣϕB⊤
+
+> s
+
+ u
+
+
+
+. (94) But BsΣϕB⊤ 
+
+> s
+
+= Cov ( γs) and we know that Cov ( γs) = Ids . Lemma 10 then implies that E
+
+h
+
+∥γs(x)∥42
+
+i
+
+≲
+
+(tr ( Ids )) 2 = d2 
+
+> s
+
+.
+
+• We note that ε(x) is a linear map of ϕ(x). To be precise, we have ε = γw − M ⊤γs =
+
+h 
+
+0 Λ− 12 
+
+> w
+
+V ⊤
+
+> w
+
+i
+
+− M ⊤  Λ−1/2s V ⊤ 
+
+> s
+
+0 
+
+ϕ def 
+
+= Bεϕ. Hence, for any u ∈ Rdw , we have 
+
+E
+
+h
+
+eu⊤ε
+
+i
+
+= E
+
+h
+
+eu⊤Bεϕ
+
+i
+
+= E
+
+h
+
+e(B⊤ 
+
+> εu
+
+)⊤ϕ
+
+i
+
+≤ exp 
+
+ 12 c2u⊤  BεΣϕB⊤
+
+> ε
+
+ u
+
+
+
+. (95) We notice that BεΣϕB⊤ 
+
+> ε
+
+= Cov( ε) = Idw − M ⊤M ⪯ Idw , which implies that E
+
+h
+
+∥ε(x)∥42
+
+i
+
+≲
+
+
+
+dw − ∥ M ∥2
+
+> F
+
+2
+
+.
+
+• We note that ϕs(x) is a linear map of ϕ(x), with ϕs = Bϕs ϕ, where Bϕs =  Ids 0 . Following the same argument as above suffices. 
+
+□
+
+B.6. Proof of Lemma 5 
+
+Proof: To start off the analysis, by algebraic calculations, we obtain that tr  Γ⊤
+
+> w
+
+PsΓw
+
+ = tr  Γ⊤
+
+> w
+
+P ⊤ 
+
+> s
+
+PsΓw
+
+
+
+= ∥PsΓw∥2 
+
+> F
+
+(96) = ∥PsΓsM + PsE∥2
+
+> F
+
+≤ 2 ∥ΓsM ∥2 
+
+> F
+
++ 2 ∥PsE∥2 
+
+> F
+
+. (97) Equation (96) holds since Ps is an orthogonal projection matrix. The last inequality follows from the fact that ∥A + B∥2 
+
+> F
+
+≤ 2 ∥A∥2 
+
+> F
+
++ 2 ∥B∥2 
+
+> F
+
+for any matrices A, B of the same dimension, and the fact that Ps is an orthogonal projection matrix, which implies ∥PsA∥F ≤ ∥ A∥F for any matrix A.For the first term in (97), taking expectation over B yields that 
+
+E
+
+h
+
+∥ΓsM ∥2
+
+> F
+
+i
+
+= E tr  M ⊤Γ⊤ 
+
+> s
+
+ΓsM  = tr  M ⊤E Γ⊤ 
+
+> s
+
+Γs
+
+ M  = N tr  M ⊤M  (98) where the last step follows from the fact that E [Γ ⊤ 
+
+> s
+
+Γs] = PNj=1 E [γs(xj )γs(xj )⊤] = N I ds .To deal with the second term in (97), we need to handle the randomness of Ps. To this end, we define the good event to be 
+
+G =
+
+
+
+Γ⊤ 
+
+> s
+
+Γs ⪰ N
+
+4 Ids
+
+
+
+. (99) The good event G ensures that the matrix Γ ⊤ 
+
+> s
+
+Γs is invertible. It also happens with high probability. To be precise, there exist constants cNG , C NG > 0 depending on the sub-gaussian norm of ϕs(x), such that whenever 
+
+N ≥ CNG ds, we have 
+
+Pr 
+
+h
+
+G∁
+
+i
+
+≤ 2 exp ( −cNG N ) . (100) 37 To see this, recall that the i-th row of Γ s is γs(xi)⊤. Since x1, . . . , x N are i.i.d., the rows of Γ s are i.i.d. sub-Gaussian random vectors. Moreover, their second-moment matrix is 
+
+E γs(xi)γs(xi)⊤ = Λ −1/2s V ⊤ 
+
+> s
+
+ΣsVsΛ−1/2s = Ids .
+
+Therefore, the rows of Γ s are isotropic. By applying Theorem 5.39 in Vershynin (2010) (cf. Lemma 16) to the matrix Γ ⊤ 
+
+> s
+
+Γs, we know that there exist absolute constants cNG , C′ 
+
+> NG
+
+depending on the sub-gaussian norm of the rows of Γ s such that for any t > 0, with probability at least 1 − 2 exp( −cNG t2), we have 
+
+1
+
+N Γ⊤ 
+
+> s
+
+Γs − Ids
+
+> 2
+
+≤ max  δ, δ 2 , δ = C′
+
+> NG
+
+r ds
+
+N + t
+
+√N . (101) This implies that if max ( δ, δ 2) ≤ 34 , then 1
+
+N Γ⊤ 
+
+> s
+
+Γs ⪰ 14 Ids (102) holds, which means the event G happens. In order to ensure max ( δ, δ 2) ≤ 34 , it suffices to let δ ≤ 34 . This can be achieved by choosing t = √N / 4 and N ≥ 4C′
+
+> NG
+
+ds. The proof of (100) is now complete. Under event G, the matrix Γ ⊤ 
+
+> s
+
+Γs is invertible and hence we have 
+
+∥PsE∥2 
+
+> F
+
+= tr  E⊤P ⊤ 
+
+> s
+
+PsE = tr 
+
+
+
+E⊤Γs
+
+ Γ⊤ 
+
+> s
+
+Γs
+
+−1 Γ⊤ 
+
+> s
+
+E
+
+
+
+≤ 4
+
+N Γ⊤ 
+
+> s
+
+E 2 
+
+> F
+
+. (103) For the case when the event G does not happen, we have 
+
+E
+
+h
+
+∥PsE∥2 
+
+> F
+
+1
+
+h
+
+G∁
+
+ii 
+
+≤ E
+
+h
+
+∥E∥2 
+
+> F
+
+1
+
+h
+
+G∁
+
+ii 
+
+≤
+
+r
+
+E
+
+h
+
+∥E∥4
+
+> F
+
+i
+
+Pr G∁. (104) The first inequality follows from the fact that ∥PsA∥F ≤ ∥ A∥F for any matrix A as Ps is a projection matrix, and the second inequality is by Cauchy-Schwarz inequality. Combining (103) and (104), we obtain that 
+
+EB
+
+h
+
+∥PsE∥2
+
+> F
+
+i
+
+= EB
+
+h
+
+∥PsE∥2 
+
+> F
+
+1 [G]
+
+i
+
++ EB
+
+h
+
+∥PsE∥2 
+
+> F
+
+1
+
+h
+
+G∁
+
+ii 
+
+≤ 4
+
+N EB
+
+h
+
+Γ⊤ 
+
+> s
+
+E 2
+
+> F
+
+i
+
++
+
+r
+
+EB
+
+h
+
+∥E∥4
+
+> F
+
+i
+
+Pr G∁. (105) We proceed to control the two terms in (105) respectively. 1. For the first term, by algebraic calculations, we have 
+
+Γ⊤ 
+
+> s
+
+E 2 
+
+> F
+
+=
+
+> N
+
+X
+
+> j=1
+
+γs(xj )ε(xj )⊤
+
+> 2
+> F
+
+=
+
+> N
+
+X
+
+> i=1
+> N
+
+X
+
+> j=1
+
+γs(xi)⊤γs(xj )ε(xj )⊤ε(xi). (106) For terms in the sum with i̸ = j, taking expectation, we have 
+
+E γs(xi)⊤γs(xj )ε(xj )⊤ε(xi)
+
+= E
+
+" dsX
+
+> a=1
+
+[γs(xi)] a[γs(xj )] adwX
+
+> b=1
+
+[ε(xj )] b[ε(xi)] b
+
+#
+
+=
+
+> ds
+
+X
+
+> a=1
+> dw
+
+X
+
+> b=1
+
+E [[ γs(xi)] a[ε(xi)] b] E [[ γs(xj )] a[ε(xj )] b] (107) =
+
+> ds
+
+X
+
+> a=1
+> dw
+
+X
+
+> b=1
+
+(E [[ γs(x)] a[ε(x)] b]) 2 (108) = E γsε⊤ 2
+
+> F
+
+38 = 0 . (109) Equation (107) holds since xi and xj are independent for i̸ = j. Equation (108) is due to the fact that 
+
+xi and xj are identically distributed for any i, j ∈ [N ]. The last step follows from (44). Therefore, we conclude that 
+
+E
+
+h
+
+Γ⊤ 
+
+> s
+
+E 2
+
+> F
+
+i
+
+=
+
+> N
+
+X
+
+> i=1
+
+E γs(xi)⊤γs(xi)ε(xi)⊤ε(xi) = N E
+
+h
+
+∥γs(x)∥22 ∥ε(x)∥22
+
+i
+
+. (110) After applying Cauchy-Schwarz inequality, E
+
+h
+
+∥γs(x)∥22 ∥ε(x)∥22
+
+i
+
+≤
+
+r
+
+E
+
+h
+
+∥γs(x)∥42
+
+ir
+
+E
+
+h
+
+∥ε(x)∥42
+
+i
+
+, we can further use Lemma 4. 2. For the second term in (105), we observe that since ∥E∥2 
+
+> F
+
+= PNi=1 ∥ε(xi)∥22, it follows that ∥E∥4 
+
+> F
+
+=
+
+PNi=1 ∥ε(xi)∥22
+
+2
+
+= PNi=1 ∥ε(xi)∥42 + 2 P 
+
+> i<j
+
+∥ε(xi)∥22 ∥ε(xj )∥22. Hence, taking expectation yields that 
+
+E
+
+h
+
+∥E∥4
+
+> F
+
+i
+
+= N E
+
+h
+
+∥ε(x)∥42
+
+i
+
++ 2 N (N − 1) 
+
+
+
+E
+
+h
+
+∥ε(x)∥22
+
+i 2
+
+. (111) Furthermore, we can calculate E
+
+h
+
+∥ε(x)∥22
+
+i
+
+as follows 
+
+E
+
+h
+
+∥ε(x)∥22
+
+i
+
+= tr  E ε(x)ε(x)⊤ = tr  Idw − M ⊤M  = dw − ds∧w. (112) Then, it suffices to note that the event G∁ happens with probability at most 2 exp ( −cNG N ) as shown in (100). Now, combining (98) and (105) yields that 
+
+EB
+
+tr  Γ⊤
+
+> w
+
+PsΓw
+
+ 
+
+≤ 4N tr  M ⊤M  + 2
+
+N N
+
+r
+
+E
+
+h
+
+∥γs(x)∥42
+
+ir
+
+E
+
+h
+
+∥ε(x)∥42
+
+i
+
++2 
+
+r
+
+N E
+
+h
+
+∥ε(x)∥42
+
+i
+
++ 2 N (N − 1) 
+
+
+
+E
+
+h
+
+∥ε(x)∥22
+
+i 2p2 exp( −cNG N ) (113) 
+
+≲ N d s∧w + ds (dw − ds∧w) + N d s (dw − ds∧w) exp 
+
+
+
+− 12 cNG N
+
+
+
+, (114) where we use Lemma 4 to conclude Inequality (113). 
+
+□
+
+B.7. Statement and proof of Lemma 9 
+
+Lemma 9. Given a set X , let ϕ : X → Rd. Let HB = {Θ ∈ Rd×K : ∥Θ∥F ≤ B} for some constant B > 0.Consider the vector-valued function class F = {Θ⊤ϕ(x) : Θ ∈ H B }. Let B = {xj }Nj=1 be N i.i.d. samples from 
+
+Dx. Then we have 
+
+EB,σ
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+> K
+
+X
+
+> k=1
+
+σj,k [Θ ⊤ϕ(xj )] k
+
+#
+
+≤ B√K
+
+√N
+
+ptr ( EDx [ϕ(x)ϕ(x)⊤]) . (115) 39 
+
+Proof: Recalling the algebraic fact that ⟨A, uv ⊤⟩F = tr ( A⊤uv ⊤) for any matrix A and vectors u, v , we have N
+
+X
+
+> j=1
+> K
+
+X
+
+> k=1
+
+σj,k [Θ ⊤ϕ(xj )] k =
+
+> N
+
+X
+
+> j=1
+> K
+
+X
+
+> k=1
+
+σj,k e⊤ 
+
+> k
+
+Θ⊤ϕ(xj ) = 
+
+> N
+
+X
+
+> j=1
+
+ϕ(xj )⊤Θσj =
+
+> N
+
+X
+
+> j=1
+
+Θ, ϕ (xj )σ⊤  
+
+> jF
+
+.
+
+Hence, we can rewrite the empirical Rademacher complexity of F as 
+
+bℜN (F | B ) = Eσ
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+Θ, ϕ (xj )σ⊤ 
+
+> jF
+
+#
+
+(116) = 1
+
+N Eσ
+
+ sup 
+
+> Θ∈H B
+
+*
+
+Θ,
+
+> N
+
+X
+
+> j=1
+
+ϕ(xj )σ⊤
+
+> j
+
++
+
+> F
+
+
+
+= BN Eσ
+
+
+
+> N
+
+X
+
+> j=1
+
+ϕ(xj )σ⊤
+
+> j
+> F
+
+ . (117) Indeed, the last equality is due to the following fact. Let ( H, ⟨· , ·⟩ ) be a real inner-product space with induced norm ∥h∥ = p⟨h, h ⟩. Let a ∈ H and B ≥ 0. Then we have sup ∥h∥≤ B ⟨h, a ⟩ = B∥a∥. Next, by Jensen’s inequality, we have 
+
+Eσ
+
+
+
+> N
+
+X
+
+> j=1
+
+ϕ(xj )σ⊤
+
+> j
+> F
+
+ ≤
+
+Eσ
+
+
+
+> N
+
+X
+
+> j=1
+
+ϕ(xj )σ⊤
+
+> j
+> 2
+> F
+
+
+
+> 12
+
+=
+
+> N
+
+X
+
+> j=1
+
+∥ϕ(xj )∥22 Eσ
+
+h
+
+∥σj ∥22
+
+i! 12
+
+(118) =
+
+> N
+
+X
+
+> j=1
+
+∥ϕ(xj )∥22 K
+
+! 12
+
+. (119) Specifically, Equation 118 is due to the following calculation: 
+
+Eσ
+
+
+
+> N
+
+X
+
+> j=1
+
+ϕ(xj )σ⊤
+
+> j
+> 2
+> F
+
+ =
+
+> d
+
+X
+
+> a=1
+> K
+
+X
+
+> k=1
+> N
+
+X
+
+> i=1
+> N
+
+X
+
+> j=1
+
+Eσ [ϕ(xj )aσj,k ϕ(xi)aσi,k ] = 
+
+> N
+
+X
+
+> j=1
+> K
+
+X
+
+> k=1
+> d
+
+X
+
+> a=1
+
+ϕ(xj )2 
+
+> a
+
+= K
+
+> N
+
+X
+
+> j=1
+
+∥ϕ(xj )∥22 .
+
+Equation 119 is due to the independence of Rademacher random variables σj,k across different j and k, and the fact that Eσ
+
+h
+
+∥σj ∥22
+
+i
+
+= PKk=1 E σ2
+
+> j,k
+
+ = K.Therefore, combining (117) and (119), we have 
+
+bℜN (F | B ) ≤ BN
+
+> N
+
+X
+
+> j=1
+
+∥ϕ(xj )∥22 K
+
+! 12
+
+. (120) Invoking Jensen’s inequality, we have 
+
+EB
+
+
+
+> N
+
+X
+
+> j=1
+
+∥ϕ(xj )∥22
+
+! 12
+
+ ≤
+
+vuutEB
+
+" NX
+
+> j=1
+
+∥ϕ(xj )∥22
+
+#
+
+= pN tr ( EDx [ϕ(x)ϕ(x)⊤]) . (121) Taking expectation over B on both sides of (120) concludes the proof. 
+
+□40 
+
+B.8. Proof of Lemma 3 
+
+Proof: Conditioned on the labeled data ˜B, the teacher logit map x 7 → ηw
+
+> bΘw
+
+(x) is fixed. For notational simplicity, in this proof, we denote ϕ(x) = ϕs(x), g(x) = ηw
+
+> bΘw
+
+(x), L(Θ) = Lls (Θ), bLN (Θ) = bLls (Θ), 
+
+ℓ(x, Θ) = Θ⊤ϕ(x) − g(x) 22 , ℓ0(x) = ℓ(x, 0) = ∥g(x)∥22 ,
+
+and ¯ℓ(x, Θ) = ℓ(x, Θ) − ℓ0(x). Thus ¯ℓ(x, Θ) = Θ⊤ϕ(x) 22 − 2g(x)⊤Θ⊤ϕ(x).
+
+All expectations in this proof are conditioned on ˜B.The decomposition below follows directly from the identity ℓ(x, Θ) = ℓ0(x) + ¯ℓ(x, Θ). Indeed, using L(Θ) = 
+
+Ex [ℓ(x, Θ)] and bLN (Θ) = N −1 PNj=1 ℓ(xj , Θ), subtracting the empirical average from the population average yields, for every Θ ∈ H B ,
+
+L(Θ) − bLN (Θ) = Ex
+
+ℓ0(x) + ¯ℓ(x, Θ)  − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+ ℓ0(xj ) + ¯ℓ(xj , Θ) 
+
+= Ex [ℓ0(x)] − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+ℓ0(xj )
+
+!
+
++ Ex
+
+¯ℓ(x, Θ)  − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+¯ℓ(xj , Θ) 
+
+!
+
+. (122) Therefore 
+
+EB
+
+
+
+sup 
+
+> Θ∈H B
+
+L(Θ) − bLN (Θ) 
+
+
+
+≤ EB
+
+"
+
+Ex [ℓ0(x)] − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+ℓ0(xj )
+
+#
+
++ EB
+
+"
+
+sup 
+
+> Θ∈H B
+
+Ex
+
+¯ℓ(x, Θ)  − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+¯ℓ(xj , Θ) 
+
+#
+
+. (123) The baseline term is bounded by Cauchy-Schwarz as 
+
+EB
+
+"
+
+Ex [ℓ0(x)] − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+ℓ0(xj )
+
+#
+
+≤
+
+r Var x(ℓ0(x)) 
+
+N ≤ 1
+
+√N
+
+
+
+Ex
+
+h
+
+∥g(x)∥42
+
+i 1/2
+
+. (124) Applying the standard symmetrization inequality to the function class x 7 → ¯ℓ(x, Θ) : Θ ∈ H B gives 
+
+EB
+
+"
+
+sup 
+
+> Θ∈H B
+
+Ex
+
+¯ℓ(x, Θ)  − 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+¯ℓ(xj , Θ) 
+
+#
+
+≤ 2EB,σ 
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+σj ¯ℓ(xj , Θ) 
+
+#
+
+. (125) Since ¯ℓ(x, 0) ≡ 0, the function class x 7 → ¯ℓ(x, Θ) : Θ ∈ H B contains the zero function. Hence, using the symmetry of the Rademacher variables, 
+
+EB,σ 
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+σj ¯ℓ(xj , Θ) 
+
+#
+
+≤ 2EB,σ 
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+σj ¯ℓ(xj , Θ) 
+
+#
+
+. (126) Moreover, expanding ¯ℓ gives 
+
+EB,σ 
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+σj ¯ℓ(xj , Θ) 
+
+#
+
+≤ Eσ, B
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+σj Θ⊤ϕ(xj ) 22
+
+#
+
++ 2 Eσ, B
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+σj g(xj )⊤Θ⊤ϕ(xj )
+
+#
+
+. (127) 41 For the first term in (127), keeping the normalization from (127), we have 
+
+Eσ, B
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+σj Θ⊤ϕ(xj ) 22
+
+#
+
+= 1
+
+N Eσ, B
+
+"
+
+sup 
+
+> Θ∈H B
+
+tr Θ⊤
+
+> N
+
+X
+
+> j=1
+
+σj ϕ(xj )ϕ(xj )⊤
+
+!
+
+Θ
+
+!# 
+
+≤ 1
+
+N Eσ, B
+
+ sup 
+
+> Θ∈H B
+
+∥Θ∥2
+
+> F
+> N
+
+X
+
+> j=1
+
+σj ϕ(xj )ϕ(xj )⊤
+
+> F
+
+ (128) = B2
+
+N Eσ, B
+
+
+
+> N
+
+X
+
+> j=1
+
+σj ϕ(xj )ϕ(xj )⊤
+
+> F
+
+
+
+≤ B2
+
+N
+
+vuuutEσ, B
+
+
+
+> N
+
+X
+
+> j=1
+
+σj ϕ(xj )ϕ(xj )⊤
+
+> 2
+> F
+
+ (129) = B2
+
+N
+
+vuutEB
+
+" N
+
+X
+
+> j=1
+
+∥ϕ(xj )ϕ(xj )⊤∥2
+
+> F
+
+#
+
+(130) = B2
+
+√N
+
+
+
+Ex∼D x
+
+h
+
+∥ϕ(x)∥42
+
+i 12
+
+. (131) To arrive at (128), we recall the fact that for any symmetric matrix A compatible with matrix Θ, tr (Θ ⊤AΘ) ≤∥A∥2 ∥Θ∥2 
+
+> F
+
+≤ ∥ A∥F ∥Θ∥2 
+
+> F
+
+. Inequality (129) holds due to Cauchy-Schwarz inequality. Equality (130) follows from the zero-mean property and the independence of Rademacher variables σj across different j.For the second term in (127), the Frobenius identity g(xj )⊤Θ⊤ϕ(xj ) = ⟨Θ, ϕ (xj )g(xj )⊤⟩F gives the nor-malized bound 
+
+Eσ, B
+
+"
+
+sup 
+
+> Θ∈H B
+
+1
+
+N
+
+> N
+
+X
+
+> j=1
+
+σj g(xj )⊤Θ⊤ϕ(xj )
+
+#
+
+= 1
+
+N Eσ, B
+
+ sup 
+
+> Θ∈H B
+
+*
+
+Θ,
+
+> N
+
+X
+
+> j=1
+
+σj ϕ(xj )g(xj )⊤
+
++
+
+> F
+
+ (132) 
+
+≤ BN Eσ, B
+
+
+
+> N
+
+X
+
+> j=1
+
+σj ϕ(xj )g(xj )⊤
+
+> F
+
+
+
+≤ BN EB
+
+vuuutEσ
+
+
+
+> N
+
+X
+
+> j=1
+
+σj ϕ(xj )g(xj )⊤
+
+> 2
+> F
+
+| B 
+
+
+
+= BN EB
+
+vuut N
+
+X
+
+> j=1
+
+∥ϕ(xj )g(xj )⊤∥2
+
+> F
+
+ (133) = BN EB
+
+vuut NX
+
+> j=1
+
+∥g(xj )∥22 ∥ϕ(xj )∥22
+
+ (134) 
+
+≤ B
+
+√N
+
+
+
+Ex
+
+h
+
+∥g(x)∥22 ∥ϕ(x)∥22
+
+i 12
+
+(135) 
+
+≤ B
+
+√N
+
+
+
+E
+
+h
+
+∥g(x)∥42
+
+i 14 
+
+E
+
+h
+
+∥ϕ(x)∥42
+
+i 14
+
+. (136) In (133), the cross terms vanish by the independence and zero-mean property of the Rademacher variables. Equality (134) uses ∥uv ⊤∥F = ∥u∥2 ∥v∥2, and (135) follows from Cauchy-Schwarz inequality. 42 The first term in (123) is bounded by (124). For the second term in (123), the symmetrization step and the one-sided reduction reduce the problem to the two Rademacher terms in (127): the quadratic term is bounded by (131), and the bilinear term is bounded by (135). Therefore 
+
+EB
+
+
+
+sup 
+
+> Θ∈H B
+
+L(Θ) − bLN (Θ) 
+
+
+
+≤ 1
+
+√N
+
+
+
+Ex
+
+h
+
+∥g(x)∥42
+
+i 1/2
+
++ 4B2
+
+√N
+
+
+
+Ex
+
+h
+
+∥ϕ(x)∥42
+
+i 1/2
+
++ 8B
+
+√N
+
+
+
+Ex
+
+h
+
+∥g(x)∥22 ∥ϕ(x)∥22
+
+i 1/2
+
+.
+
+(137) Finally, under the boundedness condition bΘw F
+
+≤ BwΘ a.s., for every x,
+
+ηw 
+
+> bΘw
+
+(x) 2
+
+= bΘ⊤
+
+> w
+
+ϕw(x) 2
+
+≤ BwΘ ∥ϕw(x)∥2 .
+
+Hence, with g(x) = ηw
+
+> bΘw
+
+(x) and ϕ(x) = ϕs(x), the two terms involving g in (137) satisfy 
+
+
+
+Ex ∥g(x)∥42
+
+1/2
+
+≤ (BwΘ )2 
+
+Ex ∥ϕw(x)∥42
+
+1/2
+
+,
+
+
+
+Ex ∥g(x)∥22 ∥ϕs(x)∥22
+
+1/2
+
+≤ BwΘ
+
+
+
+Ex ∥ϕw(x)∥22 ∥ϕs(x)∥22
+
+1/2
+
+.
+
+Substituting these two inequalities into (137) proves Lemma 3. 
+
+□
+
+B.9. Statement and proof of Lemma 10 
+
+Lemma 10. Let X ∈ Rd be mean-zero with covariance Σ = Cov( X) ⪰ 0. Assume there exists c > 0 such that for all u ∈ Rd,
+
+E exp  u⊤X ≤ exp 
+
+ 12 c2u⊤Σu
+
+
+
+. (138) 
+
+Then 
+
+E∥X∥42 ≤ 16 c4(tr (Σ)) 2.
+
+Proof: We start from the following algebraic identity 
+
+∥X∥42 =
+
+> d
+
+X
+
+> i=1
+
+X2
+
+> i
+
+!2
+
+=
+
+> d
+
+X
+
+> i=1
+> d
+
+X
+
+> j=1
+
+X2 
+
+> i
+
+X2 
+
+> j
+
+.
+
+Taking expectation on both sides and applying Cauchy-Schwarz inequality, we have 
+
+E
+
+h
+
+∥X∥42
+
+i
+
+=
+
+> d
+
+X
+
+> i=1
+> d
+
+X
+
+> j=1
+
+E X2 
+
+> i
+
+X2
+
+> j
+
+ ≤
+
+> d
+
+X
+
+> i=1
+> d
+
+X
+
+> j=1
+
+q
+
+E [X4 
+
+> i
+
+] E X4
+
+> j
+
+ =
+
+> d
+
+X
+
+> i=1
+
+q
+
+E [X4 
+
+> i
+
+]
+
+!2
+
+. (139) It suffices to upper bound E [X4 
+
+> i
+
+] for each i ∈ [d]. To this end, we recall the following well-known tail moment identity for any non-negative random variable Z: for any p > 0, we have 
+
+E [Zp] = p
+
+Z ∞
+
+> 0
+
+sp−1Pr [Z > s ] ds. 
+
+Applying the above identity to Z = |Xi| and p = 4, we have 
+
+E X4
+
+> i
+
+ = 4 
+
+Z ∞
+
+> 0
+
+s3Pr [|Xi| > s ] ds. (140) To proceed, we use the Chernoff method. We take u = te i in (138), where ei is the i-th standard basis vector in Rd and t > 0 is a free parameter to be determined later. Then 
+
+E etX i
+
+ ≤ exp 
+
+ 12 c2t2Σii 
+
+
+
+.43 For any t > 0 and s ≥ 0, we have 
+
+Pr [Xi ≥ s] = Pr etX i ≥ ets  ≤ e−ts E etX i
+
+ ≤ exp 
+
+ 12 c2t2Σii − ts 
+
+
+
+,
+
+where the first inequality is by Markov’s inequality. Taking t = sc2Σii , we have Pr [Xi ≥ s] ≤ exp 
+
+
+
+− s2
+
+> 2c2Σii
+
+
+
+.
+
+Hence, we conclude that 
+
+Pr [|Xi| ≥ s] ≤ 2 exp 
+
+
+
+− s2
+
+2c2Σii 
+
+
+
+. (141) Therefore, combining (139), (140) and (141) yields that 
+
+E
+
+h
+
+∥X∥42
+
+i
+
+≤
+
+> d
+
+X
+
+> i=1
+
+q
+
+E [X4 
+
+> i
+
+]
+
+!2
+
+= 4 
+
+> d
+
+X
+
+> i=1
+
+sZ ∞
+
+> 0
+
+s3Pr [|Xi| > s ] ds 
+
+!2
+
+≤ 4
+
+> d
+
+X
+
+> i=1
+
+sZ ∞
+
+> 0
+
+s32 exp 
+
+
+
+− s2
+
+2c2Σii 
+
+
+
+ds 
+
+!2
+
+= 4 
+
+> d
+
+X
+
+> i=1
+
+2c2Σii 
+
+!2
+
+(142) = 16 c4(tr (Σ)) 2, (143) where (142) follows from the fact that R ∞ 
+
+> 0
+
+s3 exp 
+
+
+
+− s2
+
+> a
+
+
+
+ds = 12 a2 for a > 0. 
+
+□
+
+B.10. Statement and proof of Lemma 11 
+
+Lemma 11. Let A ⪰ 0 be symmetric, Π an orthogonal projection matrix, and C ⪰ 0 symmetric such that 
+
+C = Π CΠ. Assume that A − αΠ ⪰ 0 for some α > 0. Then we have 
+
+tr ( ACA ) ≥ α2 tr ( C) . (144) 
+
+Proof: We denote H = A − αΠ ⪰ 0. We can write 
+
+ACA = ( αΠ + H) C (αΠ + H)= α2ΠCΠ + α (Π CH + HC Π) + HCH. 
+
+Since C = Π CΠ and Π is an orthogonal projection, we have Π C = C and CΠ = C. Therefore, 
+
+ACA = α2C + α (CH + HC ) + HCH. (145) Taking trace on both sides, we have tr ( ACA ) = α2 tr ( C) + 2 α tr ( CH ) + tr ( HCH ) .
+
+Since H ⪰ 0 and C ⪰ 0, we have tr ( HC ) = tr 
+
+
+
+C 12 HC 12
+
+
+
+≥ 0 and tr ( HCH ) = tr 
+
+
+
+C 12 H2C 12
+
+
+
+≥ 0. Hence, we have tr ( ACA ) ≥ α2 tr ( C), which concludes the proof. 
+
+□44 
+
+B.11. A no-free-lunch bound for zero overlap 
+
+The following lemma shows that, under exact realizability, the overlap dimension cannot be arbitrarily small. 
+
+Lemma 12. When ρs = ρw = 0 , we have 
+
+ds∧w ≥ 1
+
+λmax (Σ w)
+
+Σ 12 
+
+> s
+
+Θ∗
+
+> s
+> 2
+> F
+
+∥Θ∗
+
+> w
+
+∥2
+
+> F
+
+. (146) 
+
+Proof: Since ρs = ρw = 0, we have η∗(x) = (Θ ∗ 
+
+> s
+
+)⊤ ϕs(x) = (Θ ∗
+
+> w
+
+)⊤ ϕw(x) almost surely with respect to x.We denote E [ϕsϕ⊤
+
+> w
+
+] = Σ sw . Hence, we can compute E [ϕs(η∗)⊤] in two ways: 
+
+E ϕs(η∗)⊤ = E ϕsϕ⊤
+
+> s
+
+ Θ∗ 
+
+> s
+
+= Σ sΘ∗ 
+
+> s
+
+and E ϕs(η∗)⊤ = E ϕsϕ⊤
+
+> w
+
+ Θ∗ 
+
+> w
+
+= Σ sw Θ∗
+
+> w
+
+.
+
+Hence, we have Σ sΘ∗ 
+
+> s
+
+= Σ sw Θ∗
+
+> w
+
+. Left multiplying both sides by Σ − 12 
+
+> s
+
+, we have Σ 12 
+
+> s
+
+Θ∗ 
+
+> s
+
+= Σ − 12 
+
+> s
+
+Σsw Θ∗
+
+> w
+
+. Denote Πw = VwV ⊤ 
+
+> w
+
+. Since ϕw(x) = Π wϕw(x) almost surely, replacing Θ ∗ 
+
+> w
+
+by Π wΘ∗ 
+
+> w
+
+leaves the weak logits unchanged, so we can assume without loss of generality that Θ ∗ 
+
+> w
+
+= Π wΘ∗
+
+> w
+
+. Then we have Σ 12 
+
+> s
+
+Θ∗ 
+
+> s
+
+= Σ − 12 
+
+> s
+
+Σsw ΠwΘ∗
+
+> w
+
+. Denote 
+
+B = Σ − 12 
+
+> s
+
+Σsw Πw. Then the fact that Frobenius norm admits submultiplicativity implies that 
+
+Σ 12 
+
+> s
+
+Θ∗ 
+
+> sF
+
+≤ ∥ B∥F ∥Θ∗
+
+> w
+
+∥F . (147) On the other hand, we can compute the overlap dimension ds∧w as follows: 
+
+ds∧w = Σ− 12 
+
+> s
+
+Σsw Σ− 12
+
+> w
+> 2
+> F
+
+= Σ− 12 
+
+> s
+
+Σsw ΠwΣ− 12
+
+> w
+> 2
+> F
+
+= BΣ− 12
+
+> w
+> 2
+> F
+
+= tr 
+
+
+
+Σ− 12 
+
+> w
+
+B⊤BΣ− 12
+
+> w
+
+
+
+, (148) where the second equality follows from the fact that ΠwΣ− 12 
+
+> w
+
+= VwV ⊤ 
+
+> w
+
+VwΛ− 12 
+
+> w
+
+V ⊤ 
+
+> w
+
+= VwΛ− 12 
+
+> w
+
+V ⊤ 
+
+> w
+
+= Σ − 12 
+
+> w
+
+,
+
+by simply noting that V ⊤ 
+
+> w
+
+Vw = Idw . Next, we can verify that Σ − 12 
+
+> w
+
+⪰ 1√λmax (Σ w ) Πw. Indeed, by writing Σ − 12 
+
+> w
+
+−
+
+> 1
+
+√λmax (Σ w ) Πw = VwΛ− 12 
+
+> w
+
+V ⊤ 
+
+> w
+
+− 1√λmax (Σ w ) VwV ⊤ 
+
+> w
+
+= Vw
+
+
+
+Λ− 12 
+
+> w
+
+− 1√λmax (Σ w ) Idw
+
+
+
+V ⊤ 
+
+> w
+
+, we can verify that Λ − 12 
+
+> w
+
+−
+
+> 1
+
+√λmax (Σ w ) Idw is a diagonal matrix with non-negative entries, and hence is positive semidefinite. Therefore, invoking Lemma 11 on (148), we have 
+
+ds∧w ≥ 1
+
+λmax (Σ w) ∥B∥2 
+
+> F
+
+≥ 1
+
+λmax (Σ w)
+
+Σ 12 
+
+> s
+
+Θ∗
+
+> s
+> 2
+> F
+
+∥Θ∗
+
+> w
+
+∥2
+
+> F
+
+. (149) The last inequality follows from (147). □
+
+Appendix C: Omitted Proofs in Section 4 
+
+C.1. Proof of Theorem 2 
+
+Proof: Step 1: lower bound the decision risk by Ω
+
+
+
+ρs + λmin (Λ s) ∥∆θ∥22
+
+
+
+. By Lemma 1, we have for any x,
+
+Eξ∼P ∗(·| x)
+
+h
+
+c
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘs
+
+| x
+
+
+
+, ξ 
+
+
+
+− c ( ˜ w (P ∗ | x) , ξ )
+
+i
+
+≥ μ
+
+2 ˜w
+
+
+
+P s 
+
+> bΘs
+
+| x
+
+
+
+− ˜w (P ∗ | x) 22
+
+. (150) We claim that under Assumption (1), we have 
+
+˜w
+
+
+
+P s 
+
+> bΘs
+
+| x
+
+
+
+− ˜w (P ∗ | x) 2
+
+≥ γ e−2Bη
+
+K ηs 
+
+> bΘs
+
+(x) − η∗(x) 2
+
+. (151) 45 To see this, for brevity, for any logit vector η ∈ RK , we denote 
+
+s(η)k
+
+> def
+
+= eηk
+
+PKj=1 eηj
+
+for k ∈ [K]to be the kth coordinate of the softmax function evaluated at η. If ∥η∥∞ ≤ Bη , then for any k, s(η)k =  
+
+> eηk
+> P
+> jeηj
+
+≥ e−Bη  
+
+> Ke Bη
+
+= e−2Bη  
+
+> K
+
+. If ∥η0∥∞ ≤ Bη and ∥η1∥∞ ≤ Bη , then the entire segment η(t) = (1 − t)η0 + tη 1 also satisfies ∥η(t)∥∞ ≤ Bη for t ∈ [0 , 1], hence min t∈[0 ,1] min k∈[K] s(η(t)) k ≥ e−2Bη  
+
+> K
+
+. Then (48) implies that min 
+
+> t∈[0 ,1]
+
+min 
+
+> k∈[K]
+
+s(η∗(x) + t  ηbΘs (x) − η∗(x))k ≥ e−2Bη
+
+K . (152) To proceed, we invoke the following lemma. 
+
+Lemma 13. Given η0, η 1 ∈ RK satisfying 1⊤η0 = 0 and 1⊤η1 = 0 . Along the segment η(t) = (1 − t)η0 + tη 1
+
+for t ∈ [0 , 1] , the induced probability distributions satisfy 
+
+min 
+
+> k∈[K]
+
+s (η(t)) k ≥ α, ∀t ∈ [0 , 1] (153) 
+
+for some constant α > 0. Then we have 
+
+∥s(η1) − s(η0)∥2 ≥ α ∥η1 − η0∥2 . (154) 
+
+Proof: Let v = η1 − η0, so 1⊤v = 0. Define p(t) = s(η(t)). By the fundamental theorem of calculus, we have 
+
+s(η1) − s(η0) = 
+
+Z 10
+
+ddt s(η(t)) dt =
+
+Z 10
+
+J(η(t)) v dt, (155) where J(η) = Diag( p) − pp ⊤ is the Jacobian matrix of the softmax function at η.Recall Π = IK − 1 
+
+> K
+
+11 ⊤ is the projection onto the subspace orthogonal to 1. Next, we claim that for every 
+
+t ∈ [0 , 1], 
+
+J(η(t)) ⪰ αΠ. (156) Suppose the claim holds for now. This immediately implies that M def 
+
+= R 10 J(η(t)) dt ⪰ αΠ. Since v⊤1 = 0, we have Π v = v. Hence, v⊤Πv = v⊤v = ∥v∥22. Then M ⪰ αΠ implies that v⊤M v ≥ αv ⊤Πv = α ∥v∥22. By Cauchy-Schwarz inequality, we have 
+
+∥M v ∥2 ≥ v⊤M v 
+
+∥v∥2
+
+≥ α ∥v∥2 . (157) Noting that s(η1) − s(η0) = M v , the claim then follows. Now, we return to prove (156). In fact, for any arbitrary x ∈ RK , we decompose it as x = Π x + 1 
+
+> K
+
+(1⊤x)1.Then, we notice that 
+
+x⊤J (η(t)) x = (Π x + 1
+
+K (1⊤x)1)⊤J (η(t)) (Π x + 1
+
+K (1⊤x)1) = (Π x)⊤J (η(t)) (Π x). (158) The last step holds since J(η(t)) 1 = diag( p)1 − pp ⊤1 = p − p = 0. Let m def 
+
+= min k∈[K] s (η(t)) k ≥ α. Using Lemma 14 and the fact that 1⊤Πx = 0, we have 
+
+x⊤J (η(t)) x = (Π x)⊤J (η(t)) (Π x) ≥ m ∥Πx∥22 ≥ αx ⊤Πx, (159) which is exactly (156). 46 
+
+□
+
+In view of Lemma 13 and the condition given in (47), the proof of (151) is now complete. Combining (150) and (151) yields that 
+
+Eξ∼P ∗(·| x)
+
+h
+
+c
+
+
+
+˜w
+
+
+
+P s 
+
+> bΘs
+
+| x
+
+
+
+, ξ 
+
+
+
+− c ( ˜ w (P ∗ | x) , ξ )
+
+i
+
+≥ 12 μ
+
+
+
+γ e−2Bη
+
+K
+
+2
+
+ηs 
+
+> bΘs
+
+(x) − η∗(x) 22
+
+. (160) Next, we proceed to show that 
+
+E ˜B,x 
+
+
+
+ηs 
+
+> bΘs
+
+(x) − η∗(x) 22
+
+
+
+≥ ρs + E ˜B,x 
+
+"  bΘs − Θ∗
+
+> s
+
+⊤
+
+ϕs(x)
+
+> 22
+
+#
+
+. (161) Indeed, we note that 
+
+ηs 
+
+> bΘs
+
+(x) − η∗(x) 22
+
+=
+
+ bΘs − Θ∗
+
+> s
+
+⊤
+
+ϕs(x)
+
+> 22
+
++ (Θ ∗ 
+
+> s
+
+)⊤ϕs(x) − η∗(x) 22
+
++2 
+
+ bΘs − Θ∗
+
+> s
+
+⊤
+
+ϕs(x), (Θ ∗ 
+
+> s
+
+)⊤ϕs(x) − η∗(x)
+
+
+
+. (162) For the cross term, taking expectation over x and ˜B , we further have 
+
+E ˜B
+
+
+
+Ex| ˜B
+
+  bΘs − Θ∗
+
+> s
+
+⊤
+
+ϕs(x), (Θ ∗ 
+
+> s
+
+)⊤ϕs(x) − η∗(x)
+
+
+
+| ˜B
+
+ 
+
+= E ˜B
+
+h
+
+Ex| ˜B
+
+hD bΘs − Θ∗ 
+
+> s
+
+, ϕ s(x)  (Θ ∗ 
+
+> s
+
+)⊤ϕs(x) − η∗(x)⊤E
+
+> F
+
+| ˜B
+
+ii 
+
+= E ˜B
+
+hD bΘs − Θ∗ 
+
+> s
+
+, Ex| ˜B
+
+h
+
+ϕs(x)  (Θ ∗ 
+
+> s
+
+)⊤ϕs(x) − η∗(x)⊤
+
+| ˜B
+
+iE 
+
+> F
+
+i
+
+= E ˜B
+
+hD bΘs − Θ∗ 
+
+> s
+
+, Ex
+
+h
+
+ϕs(x)  (Θ ∗ 
+
+> s
+
+)⊤ϕs(x) − η∗(x)⊤iE 
+
+> F
+
+i
+
+.
+
+Now we recall that Θ ∗ 
+
+> s
+
+is defined as the minimizer of Θ∗ 
+
+> s
+
+= arg min  
+
+> Θ∈Rdϕ×K,Θ1=0
+
+L(Θ) , (163) where L(Θ) = Ex
+
+h
+
+∥Θ⊤ϕs(x) − η∗(x)∥22
+
+i
+
+is a convex function of Θ. We denote C = {Θ ∈ Rdϕ×K : Θ 1 = 0 }. By the first-order optimality condition of convex optimization, we have 
+
+⟨∇ L(Θ ∗ 
+
+> s
+
+), Θ − Θ∗ 
+
+> s
+
+⟩F ≥ 0, ∀ Θ ∈ C . (164) By noting that 
+
+∇L(Θ) = 2 Ex
+
+h
+
+ϕs(x)  Θ⊤ϕs(x) − η∗(x)⊤i
+
+,
+
+we have thus proved (161). Denote ∆Θ = bΘs − Θ∗ 
+
+> s
+
+∈ Rdϕ×K and ∆ θ = vec 
+
+ bΘs − Θ∗
+
+> s
+
+
+
+∈ RdϕK .We note that by the cyclic property and linearity property of trace, we have 
+
+E
+
+h
+
+∆Θ ⊤ϕs(x) 22 | ˜B
+
+i
+
+= Ex
+
+h
+
+ϕs(x)⊤∆Θ∆Θ ⊤ϕs(x) | ˜B
+
+i
+
+= Ex
+
+h
+
+tr  ϕs(x)⊤∆Θ∆Θ ⊤ϕs(x) | ˜B
+
+i
+
+= Ex
+
+h
+
+tr  ∆Θ∆Θ ⊤ϕs(x)ϕs(x)⊤ | ˜B
+
+i
+
+= tr 
+
+
+
+∆Θ∆Θ ⊤Ex
+
+h
+
+ϕs(x)ϕs(x)⊤ | ˜B
+
+i 
+
+= tr  ∆Θ∆Θ ⊤Σs
+
+ . (165) 47 The last equation holds since x is sampled independent of ˜B. Recall that for any compatible matrices A, B, X ,we have tr ( AXBX ⊤) = vec( X)⊤ (B⊤ ⊗ A) vec( X). Taking X = ∆Θ, A = Σ s, B = IK , we have 
+
+E
+
+h
+
+∆Θ ⊤ϕs(x) 22 | ˜B
+
+i
+
+= ∆ θ⊤ (IK ⊗ Σs) ∆ θ
+
+= ∆ θ⊤ (IK ⊗ Vs) ( IK ⊗ Λs)  IK ⊗ V ⊤
+
+> s
+
+ ∆θ (166) =
+
+
+
+IK ⊗ Λ 12
+
+> s
+
+  IK ⊗ V ⊤
+
+> s
+
+ ∆θ 22
+
+(167) 
+
+≥ λmin (Λ s)  IK ⊗ V ⊤
+
+> s
+
+ ∆θ 22
+
+= λmin (Λ s)∆ θ⊤  IK ⊗ VsV ⊤
+
+> s
+
+ ∆θ. (168) Equation (166) follows from the property of Kronecker product that ( A ⊗ B)( C ⊗ D) = ( AC ) ⊗ (BD ) valid for shape-compatible matrices A, B, C, D . Equation (167) is due to the simple fact that  IK ⊗ Λ1/2s
+
+⊤
+
+=
+
+IK ⊗  Λ1/2s
+
+⊤
+
+. For the inequality, we note that the eigenvalues of IK ⊗ Λ1/2s are given by λj (IK ) · λi(Λ 1/2s ) = 
+
+λi(Λ 1/2s ) for i = 1 , 2, . . . , d s and j = 1 , 2, . . . , K . Hence, the minimum eigenvalue of Λ 1/2s ⊗ IK is equal to 
+
+λmin (Λ 1/2s ) = pλmin (Λ s). It remains to relate the projected quadratic form in (168) to ∥∆θ∥22. Since Σ s = E[ϕs(x)ϕs(x)⊤] = VsΛsV ⊤ 
+
+> s
+
+,
+
+E  I − VsV ⊤
+
+> s
+
+ ϕs(x) 22 = tr    I − VsV ⊤
+
+> s
+
+ E ϕs(x)ϕs(x)⊤ 
+
+= tr    I − VsV ⊤
+
+> s
+
+ VsΛsV ⊤
+
+> s
+
+ = 0 ,
+
+where ( I − VsV ⊤ 
+
+> s
+
+) Vs = 0. Since the left-hand side is nonnegative, ϕs(x) = VsV ⊤ 
+
+> s
+
+ϕs(x) almost surely. Hence, for any Θ, ( VsV ⊤ 
+
+> s
+
+Θ) ⊤ ϕs(x) = Θ ⊤VsV ⊤ 
+
+> s
+
+ϕs(x) = Θ ⊤ϕs(x) almost surely. Moreover, for any Θ ∈ C , ( VsV ⊤ 
+
+> s
+
+Θ) 1 =
+
+VsV ⊤ 
+
+> s
+
+(Θ 1) = 0. Therefore, it is without loss of generality to assume that Θ ∗ 
+
+> s
+
+= VsV ⊤ 
+
+> s
+
+Θ∗ 
+
+> s
+
+and bΘs = VsV ⊤ 
+
+> s
+
+bΘs.Subtracting the two projected identities and using the algebraic identity vec( ABC ) = ( C⊤ ⊗ A) vec( B), we have ∆Θ = bΘs − Θ∗ 
+
+> s
+
+= VsV ⊤ 
+
+> s
+
+∆Θ , ∆θ = vec  VsV ⊤ 
+
+> s
+
+∆Θ  =  IK ⊗ VsV ⊤
+
+> s
+
+ ∆θ. 
+
+Hence, ∆θ⊤ (IK ⊗ VsV ⊤ 
+
+> s
+
+) ∆ θ = ∆ θ⊤∆θ = ∥∆θ∥22 . We hence have shown that E
+
+h
+
+∥∆Θ ⊤ϕs(x)∥22 | ˜B
+
+i
+
+≥
+
+λmin (Λ s) ∥∆θ∥22.
+
+Step 2: lower bound ∥∆θ∥2.
+
+Let 
+
+Fn(Θ) def 
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+c
+
+
+
+˜w (P sΘ(˜ xi)) , ˜ξi
+
+
+
+.
+
+Let Π = IK − 1 
+
+> K
+
+11 ⊤ ∈ RK×K be the projection matrix to the subspace {v ∈ RK : v⊤1 = 0 }. We denote Θ( t) def 
+
+= Θ ∗ 
+
+> s
+
++ t
+
+ bΘs − Θ∗
+
+> s
+
+
+
+∈ Rdϕ×K for t ∈ [0 , 1]. Since bΘs = arg min Θ∈C Fn(Θ), the KKT conditions imply that there exists a multiplier ν ∈ Rdϕ such that 
+
+∇ΘFn
+
+ bΘs
+
+
+
++ ν1⊤ = 0 , and bΘs1 = 0 . (169) Right-multiplying the above condition by Π and using the fact that 1⊤Π = 0, we have 
+
+∇ΘFn
+
+ bΘs
+
+
+
+Π = 0 . (170) 48 Applying the fundamental theorem of calculus to g (Θ ( t)) def 
+
+= vec( ∇ΘFn(Θ( t))Π), we have 
+
+g
+
+ bΘs
+
+
+
+− g (Θ ∗ 
+
+> s
+
+) = 
+
+Z 10
+
+ddt g (Θ ( t)) dt =
+
+Z 10
+
+ Π ⊗ Idϕ
+
+ ∇2ΘFn (Θ ( t)) ∆ θdt. (171) We denote Hn
+
+> def
+
+= R 10
+
+ Π ⊗ Idϕ
+
+ ∇2ΘFn (Θ ( t)) dt ∈ RdϕK×dϕK and φn
+
+> def
+
+= g (Θ ∗ 
+
+> s
+
+) = vec ( ∇ΘFn (Θ ∗ 
+
+> s
+
+) Π). Equa-tion (170) and (171) hence imply that 0 − φn = Hn∆θ. (172) By Assumption (49), we have 
+
+∥Hn∥2 ≤
+
+Z 10
+
+ Π ⊗ Idϕ
+
+ ∇2ΘFn (Θ ( t)) 2 dt ≤
+
+Z 10
+
+ Π ⊗ Idϕ
+
+ 
+
+> 2
+
+∇2ΘFn (Θ ( t)) 2 dt ≤ LH . (173) The last inequality follows because ∥Π ⊗ I∥2 = ∥Π∥2 = 1. Hence, we obtain 
+
+∥φn∥2 = ∥Hn∆θ∥2 ≤ ∥ Hn∥2 ∥∆θ∥2 ≤ LH ∥∆θ∥2 . (174) Continuing from (168) and taking expectation with respect to ˜B, we have 
+
+E
+
+h
+
+∆Θ ⊤ϕs(x) 22
+
+i
+
+= E ˜B
+
+h
+
+E
+
+h
+
+∆Θ ⊤ϕs(x) 22 | ˜B
+
+ii 
+
+≥ λmin (Λ s)
+
+L2
+
+> H
+
+E ˜B
+
+h
+
+∥φn∥22
+
+i
+
+. (175) 
+
+Step 3: combine everything. 
+
+First, we claim that 
+
+∇Θc
+
+
+
+˜w
+
+
+
+P sΘ∗ 
+
+> s
+
+(x)
+
+
+
+, ξ 
+
+
+
+Π = ∇Θc
+
+
+
+˜w
+
+
+
+P sΘ∗ 
+
+> s
+
+(x)
+
+
+
+, ξ 
+
+
+
+. (176) To see this, we first note that ∇Θc
+
+
+
+˜w
+
+
+
+P sΘ∗ 
+
+> s
+
+(x)
+
+
+
+, ξ 
+
+
+
+Π = ∇Θc
+
+
+
+˜w
+
+
+
+P sΘ∗ 
+
+> s
+
+(x)
+
+
+
+, ξ 
+
+  IK − 1 
+
+> K
+
+11 ⊤ . Hence, it suf-fices to show that ∇Θc
+
+
+
+˜w
+
+
+
+P sΘ∗ 
+
+> s
+
+(x)
+
+
+
+, ξ 
+
+
+
+1 = 0 .
+
+Given any u ∈ Rdϕ , we let U = u1⊤ ∈ Rdϕ×K . Define the scalar function of one variable t by ψ(t) def 
+
+=
+
+c
+
+
+
+˜w
+
+
+
+P sΘ∗  
+
+> s+tU
+
+(x)
+
+
+
+, ξ 
+
+
+
+. Then for every t,
+
+ Θ∗ 
+
+> s
+
++ tu 1⊤⊤
+
+ϕ(x) = Θ ∗⊤  
+
+> s
+
+ϕ(x) + t1u⊤ϕ(x)so the logits are shifted by the same constant tu ⊤ϕ(x) across all classes. Since softmax is invariant to such shifts, we have P sΘ∗  
+
+> s+tU
+
+(x) = P sΘ∗ 
+
+> s
+
+(x). Therefore, ψ(t) is a constant function in t. So we have ψ′(0) = 0. By the chain rule, one can verify that 0 = ψ′(0) = 
+
+D
+
+∇Θc
+
+
+
+˜w
+
+
+
+P sΘ∗ 
+
+> s
+
+(x)
+
+
+
+, ξ 
+
+
+
+, U 
+
+E
+
+> F
+
+=
+
+D
+
+∇Θc
+
+
+
+˜w
+
+
+
+P sΘ∗ 
+
+> s
+
+(x)
+
+
+
+, ξ 
+
+
+
+1, u 
+
+E
+
+.
+
+Since u is arbitrary, it follows that 
+
+∇Θc
+
+
+
+˜w
+
+
+
+P sΘ∗ 
+
+> s
+
+(x)
+
+
+
+, ξ 
+
+
+
+1 = 0 .
+
+Hence, we have proved (176). Now, we proceed to lower bound E ˜B
+
+h
+
+∥φn∥22
+
+i
+
+. Recalling the definition φn
+
+> def
+
+=vec 
+
+
+
+∇Θ 1
+
+> n
+
+Pni=1 c
+
+
+
+˜w (P sΘ(˜ xi)) , ˜ξi
+
+
+
+Π
+
+
+
+, we have 
+
+E ˜B
+
+h
+
+∥φn∥22
+
+i
+
+= tr (Var ˜B (φn)) + ∥E ˜B [φn]∥22
+
+≥ tr (Var ˜B (φn)) 49 = 1
+
+n tr 
+
+
+
+Var ˜B
+
+
+
+vec 
+
+
+
+∇Θc
+
+
+
+˜w
+
+
+
+P sΘ∗ 
+
+> s
+
+(˜ xi)
+
+
+
+, ˜ξi
+
+
+
+Π
+
+ 
+
+= 1
+
+n tr 
+
+
+
+Var ˜B
+
+
+
+vec 
+
+
+
+∇Θc
+
+
+
+˜w
+
+
+
+P sΘ∗ 
+
+> s
+
+(˜ xi)
+
+
+
+, ˜ξi
+
+ 
+
+(177) = 1
+
+n tr (Σ φ) . (178) The first equality follows from the fact that for any psd matrix M and random vector Z, we have E [Z⊤M Z ] = tr( M Var( Z)) + E[Z]⊤M E[Z] ≥ tr( M Var( Z)). Equation (177) follows from (176). 
+
+□
+
+C.2. Proof of Theorem 3 
+
+Proof: We denote P wΘ (x) = softmax (Θ ⊤ϕw(x)) ∈ RK and pwΘ to be the corresponding probability mass function. We let 
+
+ℓ
+
+
+
+Θ; ˜ xi, ˜ξi
+
+ def 
+
+= − ln pwΘ
+
+ ˜ξi | ˜xi
+
+
+
+= −ηwΘ,˜ξi (˜ xi) + ln 
+
+> K
+
+X
+
+> k=1
+
+eηwΘ,k (˜ xi)
+
+!
+
+. (179) With slight abuse of notation, we denote θ = vec(Θ) ∈ RdϕK to be the vectorized version of Θ. We also write 
+
+eCB
+
+> def
+
+= {vec (Θ) : Θ ∈ C B } , eC def 
+
+= vec (∆) : ∆ ∈ Rdϕ×K , ∆1 = 0 .
+
+In this proof, we denote F (Θ) = E
+
+h
+
+ℓ
+
+
+
+Θ; ˜ xi, ˜ξi
+
+i 
+
+and bFn(Θ) = 1
+
+> n
+
+Pni=1 ℓ
+
+
+
+Θ; ˜ xi, ˜ξi
+
+
+
+. We recall that Θ ∗ 
+
+> w
+
+is the minimizer of (15). Under Assumption 5, Θ ∗ 
+
+> w
+
+is also the minimizer of arg min Θ∈C B F (Θ), by noting that arg min 
+
+> Θ∈C B
+
+F (Θ) = arg min 
+
+> Θ∈C B
+
+E
+
+h
+
+− ln pwΘ
+
+ ˜ξi | ˜xi
+
+i 
+
+= arg min 
+
+> Θ∈C B
+
+E
+
+h
+
+KL 
+
+
+
+P ∗( ˜ξi | ˜xi) || P wΘ ( ˜ξi | ˜xi)
+
+i 
+
+. (180) Assumption 5 also implies Σ w is nonsingular. Suppose instead that v̸ = 0 and v⊤Σwv = 0; since Σ w =
+
+E [ϕw(x)ϕw(x)⊤], this gives v⊤ϕw(x) = 0 almost surely. Choose a̸ = 0 with a⊤1 = 0, possible since K ≥ 2. Then va ⊤1 = 0, so the centering constraint in CB is preserved, and ( va ⊤)⊤ ϕw(x) = a v ⊤ϕw(x) = 0 almost surely. Hence Θ ∗ 
+
+> w
+
++ ϵva ⊤ leaves Θ ⊤ϕw(x) unchanged and induces the same conditional model as Θ ∗
+
+> w
+
+. Since Θ∗ 
+
+> w
+
+is interior, Θ ∗ 
+
+> w
+
++ ϵva ⊤ ∈ C B for all sufficiently small ϵ̸ = 0, giving a distinct point with the same value of 
+
+F and contradicting uniqueness; hence λmin (Σ w) > 0 and dw = dϕ.Under the assumption that ∥Θ∗
+
+> w
+
+∥F < B Θ, there exists ν ∈ Rdϕ such that the KKT conditions hold: 
+
+∇ΘF (Θ ∗
+
+> w
+
+) + ν1⊤ = 0 , and Θ∗
+
+> w
+
+1 = 0 . (181) Hence, right multiplying 1 on both sides yields ∇ΘF (Θ ∗
+
+> w
+
+)1 + ν1⊤1 = ∇ΘF (Θ ∗
+
+> w
+
+)1 + νK = 0. One can show that ∇Θℓ
+
+
+
+Θ; ˜ xi, ˜ξi
+
+
+
+= ϕw(˜ xi)  softmax (Θ ⊤ϕw(˜ xi)) − e˜ξi
+
+⊤
+
+. Hence, ∇ΘF (Θ ∗
+
+> w
+
+)1 = E
+
+h
+
+∇Θℓ
+
+
+
+Θ∗
+
+> w
+
+; ˜ xi, ˜ξi
+
+
+
+1
+
+i
+
+= 0. Therefore, it has to be that ν = 0 in the KKT condition (181). Hence, the KKT condition (181) reduces to 
+
+∇ΘF (Θ ∗
+
+> w
+
+) = 0 , and Θ∗
+
+> w
+
+1 = 0 . (182) Recalling the formula vec ( uv ⊤) = v ⊗ u, we get ∇θ ℓ
+
+
+
+θ; ˜ xi, ˜ξi
+
+ def 
+
+= vec 
+
+
+
+∇Θℓ
+
+
+
+Θ; ˜ xi, ˜ξi
+
+ 
+
+=
+
+ softmax (Θ ⊤ϕw(˜ xi)) − e˜ξi
+
+ ⊗ ϕw(˜ xi). Denote J(p) = Diag( p) − pp ⊤ ∈ RK×K for probability vector p ∈ ∆K .One can verify that the Hessian in vector θ is given by 
+
+∇2 
+
+> θ
+
+ℓ
+
+
+
+θ; ˜ xi, ˜ξi
+
+
+
+= J (pwΘ(˜ xi)) ⊗  ϕw(˜ xi)ϕw(˜ xi)⊤ . (183) 50 We denote θ∗ = vec(Θ ∗
+
+> w
+
+) and bθ = vec( bΘw). We let δ = bθ − θ∗ and ∆ = bΘw − Θ∗
+
+> w
+
+. By convexity of the objective bFn and the feasible region eCB , the optimality of bΘw implies that 
+
+
+
+θ − bθ
+
+⊤
+
+∇θ bFn(bθ) ≥ 0, ∀ θ ∈ eCB .
+
+In particular, taking θ = θ∗ ∈ eCB , we have 
+
+δ⊤∇θ bFn(bθ) ≤ 0. (184) By the fundamental theorem of calculus, we have 
+
+∇θ bFn(bθ) − ∇ θ bFn(θ∗) = 
+
+Z 10
+
+∇2 
+
+> θ
+
+bFn(θ∗ + tδ )dt · δ. (185) For brevity, we denote Hn = R 10 ∇2 
+
+> θ
+
+bFn(θ∗ + tδ )dt .Combining (184) and (185), we have 
+
+δ⊤Hnδ + δ⊤∇θ bFn(θ∗) = δ⊤∇θ bFn(bθ) ≤ 0. (186) Let the good event G be defined as 
+
+G =
+
+
+
+inf  
+
+> θ∈eCB
+
+inf  
+
+> u∈eC,∥u∥2=1
+
+u⊤∇2 
+
+> θ
+
+bFn(θ)u ≥ 12 μw
+
+
+
+. (187) On the good event G, we have δ⊤Hnδ ≥ 12 μw ∥δ∥22, which in turn implies that 12 μw ∥δ∥22 ≤ − δ⊤∇θ bFn(θ∗) ≤∥δ∥2 ∇θ bFn(θ∗) 2
+
+and hence 
+
+∥δ∥22 ≤ 4
+
+μ2w
+
+∇θ bFn(θ∗) 22
+
+. (188) Therefore, by conditioning on the good event G, we conclude that 
+
+E
+
+h
+
+∥δ∥22
+
+i
+
+= E
+
+h
+
+∥δ∥22 1 [G] + ∥δ∥22 1
+
+h
+
+G∁
+
+ii 
+
+≤ 4
+
+μ2w
+
+E
+
+
+
+∇θ bFn(θ∗) 22
+
+1 [G]
+
+
+
++ E
+
+h
+
+∥δ∥22 1
+
+h
+
+G∁
+
+ii 
+
+(189) 
+
+≤ 4
+
+μ2w
+
+E
+
+
+
+∇θ bFn(θ∗) 22
+
+
+
++ 4 B2ΘPr 
+
+h
+
+G∁
+
+i
+
+. (190) Inequality (189) follows from (188). Inequality (190) follows from the fact that both bΘw and Θ ∗ 
+
+> w
+
+lie in CB .To control E
+
+
+
+∇θ bFn(θ∗) 22
+
+
+
+, we observe that 
+
+E
+
+
+
+∇θ bFn(θ∗) 22
+
+
+
+= E
+
+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∇θ ℓ
+
+
+
+θ∗; ˜ xi, ˜ξi
+
+ 22
+
+
+
+= 1
+
+n2
+
+> n
+
+X
+
+> i=1
+
+E
+
+
+
+∇θ ℓ
+
+
+
+θ∗; ˜ xi, ˜ξi
+
+ 22
+
+
+
++ 2
+
+n2 E
+
+"X
+
+> i<j
+
+D
+
+∇θ ℓ
+
+
+
+θ∗; ˜ xi, ˜ξi
+
+
+
+, ∇θ ℓ
+
+
+
+θ∗; ˜ xj , ˜ξj
+
+E #
+
+= 1
+
+n2
+
+> n
+
+X
+
+> i=1
+
+E
+
+
+
+∇θ ℓ
+
+
+
+θ∗; ˜ xi, ˜ξi
+
+ 22
+
+
+
+, (191) where the last equality follows from the independence of the samples and the fact that E
+
+h
+
+∇θ ℓ
+
+
+
+θ∗; ˜ xi, ˜ξi
+
+i 
+
+=
+
+∇θ F (θ∗) = 0 by (182). Now, using the algebraic identity ∥a ⊗ b∥2 = ∥a∥2 ∥b∥2, we have 
+
+E
+
+
+
+∇θ ℓ
+
+
+
+θ∗; ˜ xi, ˜ξi
+
+ 22
+
+
+
+= E
+
+ 
+
+softmax 
+
+
+
+(Θ ∗
+
+> w
+
+)⊤ ϕw(˜ xi)
+
+
+
+− e˜ξi
+
+
+
+⊗ ϕw(˜ xi) 22
+
+51 = E
+
+
+
+softmax 
+
+
+
+(Θ ∗
+
+> w
+
+)⊤ ϕw(˜ xi)
+
+
+
+− e˜ξi
+
+> 22
+
+∥ϕw(˜ xi)∥22
+
+
+
+. (192) To proceed, for brevity, we denote p def 
+
+= softmax 
+
+
+
+(Θ ∗
+
+> w
+
+)⊤ ϕw(˜ xi)
+
+
+
+∈ RK and pk to be its kth coordinate. We denote e˜ξ to be the one-hot encoding in RK with 1 in the ˜ξ-th coordinate and 0 elsewhere. We note that conditional on ˜ xi,
+
+E
+
+h
+
+p − e˜ξi 
+
+> 22
+
+| ˜xi
+
+i
+
+=
+
+> K
+
+X
+
+> k=1
+
+pk ∥p − ek ∥22 =
+
+> K
+
+X
+
+> k=1
+
+pk
+
+ ∥p∥22 + 1 − 2pk
+
+ = 1 − ∥ p∥22 ≤ 1, (193) and hence 
+
+E
+
+
+
+∇θ ℓ
+
+
+
+θ∗; ˜ xi, ˜ξi
+
+ 22
+
+
+
+= E
+
+h
+
+∥ϕw(˜ xi)∥22 E
+
+h
+
+p − e˜ξi 
+
+> 22
+
+| ˜xi
+
+ii 
+
+≤ E
+
+h
+
+∥ϕw(˜ xi)∥22
+
+i
+
+= tr (Σ w) . (194) It remains to bound Pr G∁ in (190). To this end, we introduce the notation bΣn
+
+> def
+
+= 1
+
+> n
+
+Pni=1 ϕw(˜ xi)ϕw(˜ xi)⊤.We proceed to show that whenever λmin 
+
+bΣn
+
+
+
+≥ 12 λmin (Σ w), then for any θ ∈ eCB and every δ ∈ eC,
+
+δ⊤∇2 
+
+> θ
+
+bFn(θ)δ (*) 
+
+≥ e−2BΘBϕ
+
+K λmin 
+
+bΣn
+
+
+
+∥δ∥22 ≥ 12
+
+e−2BΘBϕ
+
+K λmin (Σ w) ∥δ∥22 , (195) which implies that the good event G holds. A standard matrix Chernoff lower tail bound ensures that for 
+
+ε ∈ (0 , 1), 
+
+Pr 
+
+h
+
+λmin 
+
+bΣn
+
+
+
+≤ (1 − ε)λmin (Σ w)
+
+i
+
+≤ dw exp 
+
+
+
+− nλ min (Σ w) ε2
+
+2B2
+
+> ϕ
+
+
+
+. (196) Taking ε = 12 yields that 
+
+Pr 
+
+h
+
+G∁
+
+i
+
+≤ dw exp 
+
+
+
+− nλ min (Σ w)8B2
+
+> ϕ
+
+
+
+. (197) Now, we turn to prove the inequality marked as (*) above in (195). For any δ ∈ eC,
+
+δ⊤∇2 
+
+> θ
+
+bFn(θ)δ = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+δ⊤∇2 
+
+> θ
+
+ℓ
+
+
+
+θ; ˜ xi, ˜ξi
+
+
+
+δ
+
+> (a)
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+δ⊤  J (pwΘ(˜ xi)) ⊗  ϕw(˜ xi)ϕw(˜ xi)⊤ δ
+
+> (b)
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+tr  ϕw(˜ xi)ϕw(˜ xi)⊤∆J (pwΘ(˜ xi)) ∆ ⊤
+
+> (c)
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ ∆⊤ϕw(˜ xi)⊤
+
+J (pwΘ(˜ xi))  ∆⊤ϕw(˜ xi)
+
+> (d)
+
+≥ e−2BΘBϕ
+
+K
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∆⊤ϕw(˜ xi) 22 . (198) In Equation (a), we plug in the expression of the Hessian (183). Equation (b) follows from the algebraic identity vec( X)⊤(A ⊗ B) vec( X) = tr ( X⊤BXA ) for compatible matrices A, B, X . Equation (c) is due to the cyclic property of trace. To conclude Inequality (d), we need the following Lemma. 
+
+Lemma 14. Let p ∈ ∆K = u ∈ RK : uk ≥ 0, PKk=1 uk = 1 . Let m = min k∈[K] pk . We define J(p) = diag( p) − pp ⊤ ∈ RK×K . Then for every u ∈ RK satisfying 1⊤u = 0 , we have 
+
+u⊤J(p)u ≥ m ∥u∥22 . (199) 52 
+
+Proof: Denote q = p − m1 ∈ RK , so qk ≥ 0 and PKk=1 qk = 1 − Km . For any u with 1⊤u = 0, we have 
+
+p⊤u = ( m1 + q)⊤u = q⊤u. Then 
+
+u⊤  diag ( p) − pp ⊤ u =
+
+> K
+
+X
+
+> k=1
+
+pk u2 
+
+> k
+
+− (p⊤u)2
+
+= m
+
+> K
+
+X
+
+> k=1
+
+u2 
+
+> k
+
++
+
+> K
+
+X
+
+> k=1
+
+qk u2 
+
+> k
+
+− (q⊤u)2
+
+≥ m ∥u∥22 +
+
+> K
+
+X
+
+> k=1
+
+qk u2 
+
+> k
+
+− (1 − Km )
+
+> K
+
+X
+
+> k=1
+
+qk u2 
+
+> k
+
+(200) = m ∥u∥22 + Km 
+
+> K
+
+X
+
+> k=1
+
+qk u2
+
+> k
+
+≥ m ∥u∥22 . (201) Inequality (200) follows from the Cauchy-Schwarz inequality. 
+
+□
+
+We note that given ∥Θ∥F ≤ BΘ and ∥ϕw(x)∥2 ≤ Bϕ, it is straightforward to verify that for every x ∈ X ,min 
+
+> k∈[K]
+
+P wΘ (ξ = zk | x) ≥ e−2BΘBϕ
+
+K , (202) as P wΘ (ξ = zk | x) = ee⊤    
+
+> kΘ⊤ϕw ( x)
+> PKj=1 ee⊤
+> jΘ⊤ϕw ( x)
+
+≥ e−BΘBϕ 
+
+> Ke BΘBϕ
+
+. Moreover, by noting that (∆ ⊤ϕw(˜ xi)) ⊤ 1 = ϕw(˜ xi)⊤∆1 = 0, Lemma 14 implies that Inequality (d) holds. Then, continuing from (198), by cyclic and linear properties of trace, we have 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∆⊤ϕw(˜ xi) 22 = tr ∆⊤ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ϕw(˜ xi)ϕw(˜ xi)⊤
+
+!
+
+∆
+
+!
+
+≥ λmin 
+
+bΣn
+
+
+
+∥∆∥2 
+
+> F
+
+= λmin 
+
+bΣn
+
+
+
+∥δ∥22 ,
+
+where the inequality follows from the fact that for any real symmetric matrix M , tr ( X⊤M X ) ≥
+
+λmin (M ) ∥X∥2 
+
+> F
+
+for any compatible matrix X.The proof is now complete. 
+
+□
+
+Appendix D: Additional Details for Section 5.2 
+
+Pre-training The task pre-training stage uses 2000 labeled comments sampled from the pre-training split of the augmented comment moderation data. The weak model is trained by cross-entropy for 500 optimizer steps with batch size 32, learning rate 5 · 10 −5, and weight decay 0 .01. The strong model is trained by cross-entropy for 100 optimizer steps with batch size 32, learning rate 2 · 10 −5, and weight decay 0 .01. In both cases, all encoder parameters and classifier-head parameters are trainable. The resulting weak model initializes the downstream weak-teacher runs, and the resulting strong model initializes the downstream strong-only and W2S runs. 
+
+Cost matrix The route-severity cost matrix used in the comment moderation experiment is 
+
+ξ = 0 ξ = 1 ξ = 2 allow 0.000 1 .000 3.000 remove 2.050 1 .050 3.050 standard review 0 .300 2 .700 11 .573 hold review 2.400 0 .800 3.218 priority review 2.850 0 .967 1.706 53 where ξ = 0 , 1, 2 denote non-toxic, toxic, and severely toxic comments, respectively. The entries combine exposure cost, delay cost, human-review cost, user-friction cost from suppressing benign comments, and penalties for automatic toxic removals. For example, when ξ = 2, the matrix assigns cost 3 .000 to automatic approval, 3 .050 to automatic removal, and 1 .706 to priority review. This reflects the following modeling choice: automatic approval leaves harmful content visible, while automatic removal avoids exposure but is penalized for making an enforcement decision without human review. Priority review is cheapest in this column because it handles the severe comment quickly while still using human review. The W2S framework does not rely on this particular numerical specification; other applications or moderation policies can be represented by replacing this matrix with the appropriate route-severity cost matrix.  
+
+> Figure 5 The heatmap reports the log-scaled empirical hard-route OPR over the labeled and unlabeled sample-size grid; the contour marks empirical hard-route OPR equal to one.
+
+54 
+
+Appendix E: Standard Facts 
+
+Lemma 15 (Corollary 4 in (Maurer 2016)) . Let X be any set, and fix samples x1, · · · , x n ∈ X . Denote 
+
+ℓ2 the real Hilbert space of square-summable sequences equipped with the norm ∥u∥2 := 
+
+P 
+
+> k≥1
+
+u2
+
+> k
+
+1/2
+
+. For any function class F mapping X to ℓ2, we write f (x) = ( fk (x)) k≥1. Let F be any class of functions f :
+
+X → ℓ2. Let hi : ℓ2 → R for i = 1 , . . . , n be L-Lipschitz with respect to ∥ · ∥ 2, i.e. |hi(u) − hi(v)| ≤ L∥u − v∥2
+
+for all u, v ∈ ℓ2, and all i. Let ε = ( εi)ni=1 be independent Rademacher random variables (each takes values in {− 1, +1 } with probability 1/2) , and let ε′ = ( εik )i=1 ,...,n ;k≥1 be an independent doubly indexed family of Rademacher variables. Then 
+
+Eε
+
+"
+
+sup  
+
+> f∈F
+> n
+
+X
+
+> i=1
+
+εihi (f (xi)) 
+
+#
+
+≤ √2LEε′
+
+"
+
+sup  
+
+> f∈F
+> n
+
+X
+
+> i=1
+
+X
+
+> k≥1
+
+εik fk (xi)
+
+#
+
+. (203) 
+
+Lemma 16 (Theorem 5.39 in Vershynin (2010)) . Assume that A is an N × n real matrix whose rows 
+
+Ai are independent sub-gaussian random vectors in Rn with second moment matrix Σ = E [AiA⊤ 
+
+> i
+
+]. Then for every t ≥ 0, the following inequality holds with probability at least 1 − 2 exp( −ct 2):
+
+1
+
+N A⊤A − Σ
+
+> 2
+
+≤ max  δ, δ 2 , where δ = C
+
+r nN + t
+
+√N . (204) 
+
+Here C and c are constants that depend only on the sub-gaussian norm of the rows Ai.
+
+## References 
+
+Ali Aouad, Aymane El Gadarri, and Vivek F Farias. The sign estimator: Llm alignment in the face of choice heterogeneity. arXiv preprint arXiv:2510.23965v2 , 2025. Gah-Yi Ban and Cynthia Rudin. The big data newsvendor: Practical insights from machine learning. Oper-ations Research , 67(1):90–108, 2019. Hamsa Bastani, Dennis J. Zhang, and Heng Zhang. Applied machine learning in operations management. In Innovative Technology at the Interface of Finance and Operations , pages 189–222. Springer, 2022. doi: 10.1007/978-3-030-75729-8 7. Shai Ben-David, Tyler Lu, and D´ avid P´ al. Does unlabeled data provably help? worst-case analysis of the sample complexity of semi-supervised learning. In COLT , pages 33–44, 2008. Dimitris Bertsimas and Nihal Koduri. Data-driven optimization: A reproducing kernel hilbert space approach. Operations Research , 70(1):454–471, 2022. Avrim Blum and Tom Mitchell. Combining labeled and unlabeled data with co-training. In Proceedings of the Eleventh Annual Conference on Computational Learning Theory , pages 92–100, 1998. Daniel Borkan, Lucas Dixon, Jeffrey Sorensen, Nithum Thain, and Lucy Vasserman. Nuanced metrics for measuring unintended bias with real data for text classification. In Companion Proceedings of The 2019 World Wide Web Conference , pages 491–500, 2019. Collin Burns, Pavel Izmailov, Jan Hendrik Kirchner, Bowen Baker, Leo Gao, Leopold Aschenbrenner, Yining Chen, Adrien Ecoffet, Manas Joglekar, Jan Leike, et al. Weak-to-strong generalization: eliciting strong capabilities with weak supervision. In Proceedings of the 41st International Conference on Machine Learning , pages 4971–5012, 2024. 55 Tianle Cai, Ruiqi Gao, Jason Lee, and Qi Lei. A theory of label propagation for subpopulation shift. In 
+
+International Conference on Machine Learning , pages 1170–1182. PMLR, 2021. Junyu Cao. Collaborative learning and decision making on pricing and recommendation: A simple framework for planning. Management Science , 2025. doi: 10.1287/mnsc.2023.00320. Articles in advance. Yair Carmon, Aditi Raghunathan, Ludwig Schmidt, John C Duchi, and Percy S Liang. Unlabeled data improves adversarial robustness. Advances in neural information processing systems , 32, 2019. Jinyuan Chang, Lin Yang, Yichen Zhang, and Wenxin Zhou. Feature-rich, data-private: A sparse learning framework for the high-dimensional newsvendor. Available at SSRN 5606310 , 2025. doi: 10.2139/ssrn. 5606310. Moses Charikar, Chirag Pabbaraju, and Kirankumar Shiragur. Quantifying the gain in weak-to-strong generalization. Advances in neural information processing systems , 37:126474–126499, 2024. Banghao Chen, Zhaofeng Zhang, Nicolas Langren´ e, and Shengxin Zhu. Unleashing the potential of prompt engineering for large language models. Patterns , 6(6), 2025. Boxiao Chen, Xiuli Chao, and Cong Shi. Nonparametric learning algorithms for joint pricing and inventory control with lost sales and censored demand. Mathematics of Operations Research , 46(2):726–756, 2021. doi: 10.1287/moor.2020.1084. Boxiao Chen, David Simchi-Levi, Yining Wang, and Yuan Zhou. Dynamic pricing and inventory control with fixed ordering cost and incomplete demand information. Management Science , 68(8):5684–5703, 2022. doi: 10.1287/mnsc.2021.4171. Xi Chen, David Simchi-Levi, and Yining Wang. Utility fairness in contextual dynamic pricing with demand learning. Management Science , 72(3):2619–2633, 2026. doi: 10.1287/mnsc.2023.03956. Maxime C Cohen, Ilan Lobel, and Renato Paes Leme. Feature-based dynamic pricing. Management Science ,66(11):4921–4943, 2020. Yunxiao Deng and Suvrajeet Sen. Predictive stochastic programming. Computational Management Science ,19(1):65–98, 2022. Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of deep bidirec-tional transformers for language understanding. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies ,pages 4171–4186. Association for Computational Linguistics, 2019. doi: 10.18653/v1/N19-1423. Yijun Dong, Yicheng Li, Yunai Li, Jason D Lee, and Qi Lei. Discrepancies are virtue: Weak-to-strong generalization through lens of intrinsic dimension. In Proceedings of the 42nd International Conference on Machine Learning , volume 267 of Proceedings of Machine Learning Research , pages 14079–14113. PMLR, 2025. arXiv:2502.05075v6. Priya Donti, Brandon Amos, and J Zico Kolter. Task-based end-to-end model learning in stochastic opti-mization. Advances in neural information processing systems , 30, 2017. 56 Othman El Balghiti, Adam N Elmachtoub, Paul Grigas, and Ambuj Tewari. Generalization bounds in the predict-then-optimize framework. Advances in neural information processing systems , 32, 2019. Adam N Elmachtoub and Paul Grigas. Smart “predict, then optimize”. Management Science , 68(1):9–26, 2022. Adam N Elmachtoub, Jason Cheuk Nam Liang, and Ryan McNellis. Decision trees for decision-making under the predict-then-optimize framework. In International conference on machine learning , pages 2858–2867. PMLR, 2020. Adam N Elmachtoub, Henry Lam, Haofeng Zhang, and Yunfan Zhao. Estimate-then-optimize versus integrated-estimation-optimization versus sample average approximation: a stochastic dominance per-spective. arXiv preprint arXiv:2304.06833v4 , 2023. Kris Johnson Ferreira, Bin Hong Alex Lee, and David Simchi-Levi. Analytics for an online retailer: Demand forecasting and price optimization. Manufacturing & Service Operations Management , 18(1):69–88, 2016. doi: 10.1287/msom.2015.0561. Shashwat Goel, Joschka Struber, Ilze Amanda Auzina, Karuna K Chandra, Ponnurangam Kumaraguru, Douwe Kiela, Ameya Prabhu, Matthias Bethge, and Jonas Geiping. Great models think alike and this undermines ai oversight. arXiv preprint arXiv:2502.04313v2 , 2025. Yves Grandvalet and Yoshua Bengio. Semi-supervised learning by entropy minimization. In Advances in Neural Information Processing Systems , volume 17, 2004. Shihao Gu, Bryan Kelly, and Dacheng Xiu. Empirical asset pricing via machine learning. The Review of Financial Studies , 33(5):2223–2273, 2020. Zhen Guo, Bin Yu, Wenxuan Shan, and Baozhen Yao. Data-driven robust optimization for contextual vehicle rebalancing in on-demand ride services under demand uncertainty. Transportation Research Part C: Emerging Technologies , 154:104244, 2023. Danny Hernandez, Jared Kaplan, Tom Henighan, and Sam McCandlish. Scaling laws for transfer. arXiv preprint arXiv:2102.01293 , 2021. Jordan Hoffmann, Sebastian Borgeaud, Arthur Mensch, Elena Buchatskaya, Trevor Cai, Eliza Rutherford, Diego de Las Casas, Lisa Anne Hendricks, Johannes Welbl, Aidan Clark, et al. Training compute-optimal large language models. In Advances in Neural Information Processing Systems , volume 35, pages 30016–30030, 2022. doi: 10.52202/068431-2176. Jakob Huber, Sebastian M¨ uller, Moritz Fleischmann, and Heiner Stuckenschmidt. A data-driven newsvendor problem: From data to decision. European Journal of Operational Research , 278(3):904–915, 2019. Arthur Jacot, Franck Gabriel, and Cl´ ement Hongler. Neural tangent kernel: Convergence and generalization in neural networks. Advances in neural information processing systems , 31, 2018. Adel Javanmard, Jingwei Ji, and Renyuan Xu. Multi-task dynamic pricing in credit market with contextual information. arXiv preprint arXiv:2410.14839v4 , 2024. 57 Jigsaw. Jigsaw Unintended Bias in Toxicity Classification. Kaggle competition data page, 2019. URL https://www.kaggle.com/c/jigsaw-unintended-bias-in-toxicity-classification/data .Accessed June 24, 2026. Jared Kaplan, Sam McCandlish, Tom Henighan, Tom B Brown, Benjamin Chess, Rewon Child, Scott Gray, Alec Radford, Jeffrey Wu, and Dario Amodei. Scaling laws for neural language models. arXiv preprint arXiv:2001.08361 , 2020. Esmaeil Keyvanshokooh, Mohammad Zhalechian, Cong Shi, Mark P. Van Oyen, and Pooyan Kazemian. Contextual learning with online convex optimization: Theory and application to medical decision-making. Management Science , 71(12):10442–10464, 2025. doi: 10.1287/mnsc.2019.03211. Deepak Kumar, Patrick Gage Kelley, Sunny Consolvo, Joshua Mason, Elie Bursztein, Zakir Durumeric, Kurt Thomas, and Michael Bailey. Designing toxic content classification for a diversity of perspectives. In Seventeenth Symposium on Usable Privacy and Security (SOUPS 2021) , pages 299–318. USENIX Association, August 2021. ISBN 978-1-939133-25-0. URL https://www.usenix.org/conference/ soups2021/presentation/kumar .Hao Lang, Fei Huang, and Yongbin Li. Debate helps weak-to-strong generalization. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 39, pages 27410–27418, 2025. Hunter Lang, David Sontag, and Aravindan Vijayaraghavan. Theoretical analysis of weak-to-strong gener-alization. Advances in neural information processing systems , 37:46837–46880, 2024. Dong-Hyun Lee. Pseudo-label: The simple and efficient semi-supervised learning method for deep neural networks. In ICML Workshop on Challenges in Representation Learning , 2013. Jiung Lee, Hongseok Namkoong, and Yibo Zeng. Design and scheduling of an ai-based queueing system. 
+
+arXiv preprint arXiv:2406.06855v3 , 2024. Chenruo Liu, Yijun Dong, and Qi Lei. Does weak-to-strong generalization happen under spurious cor-relations? In The Fourteenth International Conference on Learning Representations , 2026. URL 
+
+https://openreview.net/forum?id=5hfa2itwGz . arXiv:2509.24005v2. Elita Lobo, Justin Payan, Cyrus Cousins, and Yair Zick. Fair and welfare-efficient constrained multi-matchings under uncertainty. Advances in Neural Information Processing Systems , 37:74579–74616, 2024. Gar Goei Loke, Qinshen Tang, Yangge Xiao, and Xun Zhang. Decision-driven regularization: A blended model for learning and optimization. Available at SSRN 3623006 , 2020. doi: 10.2139/ssrn.3623006. Andreas Maurer. A vector-contraction inequality for rademacher complexities. In International Conference on Algorithmic Learning Theory , pages 3–17. Springer, 2016. Pravin Nair. Softmax is 1 /2-lipschitz: A tight bound across all ell p norms. arXiv preprint arXiv:2510.23012 ,2025. 58 Meng Qi and Zuo-Jun Shen. Integrating prediction/estimation and optimization with applications in oper-ations management. In Tutorials in operations research: emerging and impactful topics in operations ,pages 36–58. INFORMS, 2022. Meng Qi, Paul Grigas, and Zuo-Jun Shen. Integrated conditional estimation-optimization. Operations Research , 74(3):1604–1625, 2025. doi: 10.1287/opre.2023.0427. Utsav Sadana, Abhilash Chenreddy, Erick Delage, Alexandre Forel, Emma Frejinger, and Thibaut Vidal. A survey of contextual optimization methods for decision-making under uncertainty. European Journal of Operational Research , 320(2):271–289, 2025. Victor Sanh, Lysandre Debut, Julien Chaumond, and Thomas Wolf. DistilBERT, a distilled version of BERT: Smaller, faster, cheaper and lighter. In Proceedings of the 5th Workshop on Energy Efficient Machine Learning and Cognitive Computing at NeurIPS 2019 , 2019. URL https://arxiv.org/abs/ 1910.01108 .Breno Serrano, Alexandre M. Florio, Stefan Minner, Maximilian Schiffer, and Thibaut Vidal. Contextual stochastic vehicle routing with time windows. INFORMS Journal on Computing , 2026. doi: 10.1287/ ijoc.2025.1189. Articles in advance. Cong Shi, Weidong Chen, and Izak Duenyas. Technical note–nonparametric data-driven algorithms for multiproduct inventory systems with censored demand. Operations Research , 64(2):362–370, 2016. doi: 10.1287/opre.2015.1474. Roy Siegelmann, Ninareh Mehrabi, Palash Goyal, Prasoon Goyal, Lisa Bauer, Jwala Dhamala, Aram Gal-styan, Rahul Gupta, and Reza Ghanadan. MICo: Preventative detoxification of Large Language Models through inhibition control. In Findings of the Association for Computational Linguistics: NAACL 2024 , pages 1696–1703, Mexico City, Mexico, June 2024. Association for Computational Linguistics. doi: 10.18653/v1/2024.findings-naacl.110. URL https://aclanthology.org/2024.findings-naacl. 110/ .Kihyuk Sohn, David Berthelot, Chun-Liang Li, Zizhao Zhang, Nicholas Carlini, Ekin D Cubuk, Alex Kurakin, Han Zhang, and Colin Raffel. Fixmatch: Simplifying semi-supervised learning with consistency and confidence. In Advances in Neural Information Processing Systems , volume 33, pages 596–608, 2020. Roman Vershynin. Introduction to the non-asymptotic analysis of random matrices. arXiv preprint arXiv:1011.3027 , 2010. Roman Vershynin. High-dimensional probability: An introduction with applications in data science , vol-ume 47. Cambridge university press, 2018. Martin J. Wainwright. High-Dimensional Statistics: A Non-Asymptotic Viewpoint . Cambridge University Press, 2019. Yijie Wang, Prateek R Srivastava, Grani A Hanasusanto, and Chin Pang Ho. On data-driven prescriptive analytics with side information: A regularized nadaraya–watson approach. Manufacturing & Service Operations Management , 28(3):841–859, 2026. doi: 10.1287/msom.2024.0997. 59 Zizhuo Wang, Peter W. Glynn, and Yinyu Ye. Likelihood robust optimization for data-driven problems. 
+
+Computational Management Science , 13(2):241–261, 2016. doi: 10.1007/s10287-015-0240-3. Tobias Wegel, Geelon So, Junhyung Park, and Fanny Yang. On the sample complexity of semi-supervised multi-objective learning. arXiv preprint arXiv:2508.17152 , 2025. Colin Wei, Kendrick Shen, Yining Chen, and Tengyu Ma. Theoretical analysis of self-training with deep networks on unlabeled data. In International Conference on Learning Representations , 2021. Blake Woodworth, Suriya Gunasekar, Jason D Lee, Edward Moroshko, Pedro Savarese, Itay Golan, Daniel Soudry, and Nathan Srebro. Kernel and rich regimes in overparametrized models. In Conference on Learning Theory , pages 3635–3673. PMLR, 2020. Chuanpeng Yang, Yao Zhu, Wang Lu, Yidong Wang, Qian Chen, Chenlong Gao, Bingjie Yan, and Yiqiang Chen. Survey on knowledge distillation for large language models: methods, evaluation, and application. 
+
+ACM Transactions on Intelligent Systems and Technology , 16(6):1–27, 2025. Xiangli Yang, Zixing Song, Irwin King, and Zenglin Xu. A survey on deep semi-supervised learning. IEEE transactions on knowledge and data engineering , 35(9):8934–8954, 2022. Ruohan Zhan, Zhimei Ren, Susan Athey, and Zhengyuan Zhou. Policy learning with adaptively collected data. Management Science , 70(8):5270–5297, 2023. doi: 10.1287/mnsc.2023.4921. Chenyu Zhang, Ke Li, Zhaozheng Yin, and Ruwen Qin. Weakly-supervised structural component segmen-tation via scribble annotations. Computer-Aided Civil and Infrastructure Engineering , 40(5):561–578, 2025. Yanfei Zhang and Junbin Gao. Assessing the performance of deep learning algorithms for newsvendor problem. In International conference on neural information processing , pages 912–921. Springer, 2017. Zhengyuan Zhou, Susan Athey, and Stefan Wager. Offline multi-action policy learning: Generalization and optimization. Operations Research , 71(1):148–183, 2023. doi: 10.1287/opre.2022.2271. Xiaojin Zhu, Zoubin Ghahramani, and John Lafferty. Semi-supervised learning using gaussian fields and harmonic functions. In Proceedings of the 20th International Conference on Machine Learning , pages 912–919, 2003.
