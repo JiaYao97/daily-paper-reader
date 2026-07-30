@@ -1,0 +1,2708 @@
+Title: Sonic-supersonic jet flows from a straight two-dimensional nozzle with van der Waals equation of state
+
+URL Source: https://arxiv.org/pdf/2607.20203v1
+
+Published Time: Thu, 23 Jul 2026 01:00:19 GMT
+
+Number of Pages: 32
+
+Markdown Content:
+# Sonic-supersonic jet flows from a straight two-dimensional nozzle with van der Waals equation of state 
+
+Anamika Pandey a, T. Raja Sekhar a
+
+> aDepartment of Mathematics, Indian Institute of Technology Kharagpur, Kharagpur, West Bengal, India
+
+Abstract 
+
+This article concerns sonic-supersonic jet flows issuing from a two-dimensional straight nozzle described by the steady compressible Euler system under the van der Waals equation of state. The flow state is prescribed at the nozzle exit, while the surrounding medium is assumed to be either a vacuum or a static atmosphere with lower pressure. When the flow reaches the sonic state at the nozzle exit, the governing equations become degenerate hyperbolic and the resulting jet flow problem can be formulated as a degenerate free boundary problem. The analysis is further complicated by singular behavior near the endpoints of the nozzle exit. By employing char-acteristic decompositions and suitable a priori estimates, we establish the global existence of locally Lipschitz continuous sonic-supersonic jet flows expanding into a vacuum. Moreover, in the presence of a static atmosphere with pressure lower than that at the nozzle exit, we prove the local existence of sonic-supersonic jet flows near the nozzle exit. 
+
+Keywords: Free boundary; Jet flow; Compressible Euler system; Characteristic decomposition; Degenerate hyperbolic BVP; Van der Waals gas. 
+
+MSC: 35Q35; 35L45; 35L65; 35L67; 35L80 
+
+1. Introduction 
+
+Jet flows issuing from nozzles constitute a fundamental class of problems in compressible fluid dynamics and have long attracted considerable attention due to their importance in both practical applications and mathemat-ical theory. Such flows arise naturally in a wide range of engineering settings, including aerospace propulsion systems, rocket engines, jet technologies and high-speed aerodynamic devices. Depending on the pressure con-ditions inside and outside the nozzle, the exhausting gas may undergo significant acceleration and expansion, leading to the formation of intricate flow patterns involving rarefaction waves, compression waves, shock fronts, contact discontinuities and nonlinear wave interactions. In particular, when a jet expands into a surrounding medium of lower pressure or into a vacuum, the interface separating the jet from the exterior environment is generally unknown in advance and must be determined simultaneously with the flow field. Consequently, the mathematical description of nozzle jet flows naturally gives rise to free boundary problems for nonlinear systems of partial differential equations. From the analytical viewpoint, jet flows provide a rich framework for investigat-ing fundamental questions concerning the existence, uniqueness, regularity and qualitative behavior of solutions to the compressible Euler equations. The interaction of nonlinear waves, the appearance of transonic phenomena and the presence of free boundaries often generate significant mathematical difficulties, especially when the flow approaches sonic states where the governing equations may change type or become degenerate. Understand-ing these phenomena is therefore of considerable interest not only for applications in gas dynamics but also for the broader development of the theory of nonlinear hyperbolic equations and free boundary problems arising in compressible fluid flows. Among the various flow regimes arising in nozzle flows, transonic phenomena occupy a particularly impor-tant position due to the interplay between subsonic, sonic and supersonic states. Of special interest is the sonic   
+
+> ∗Corresponding author
+> Email address: trajasekhar@maths.iitkgp.ac.in (T. Raja Sekhar) arXiv:2607.20203v1 [math.AP] 22 Jul 2026
+
+transition, which occurs when the flow speed reaches the local sound speed and the governing equations undergo a fundamental change in character. In many nozzle configurations, the sonic state serves as a critical threshold separating qualitatively different flow regimes and plays a decisive role in determining the subsequent evolution of the flow. From the mathematical perspective, the presence of sonic curves introduces significant analytical difficulties because the Euler equations become degenerate at these locations, leading to the loss of strict hyper-bolicity and the breakdown of standard techniques applicable to uniformly hyperbolic systems. Moreover, sonic transitions are often accompanied by the emergence of complex wave structures, free boundaries and singular behaviors that strongly influence the global flow pattern. Consequently, the study of sonic and sonic-supersonic flows has become a central topic in the theory of compressible Euler equations, motivating extensive research on degenerate hyperbolic equations, transonic free boundary problems and the qualitative properties of solutions near sonic regions. Motivated by both its practical significance and its rich mathematical structure, the nozzle jet flow problem has been investigated extensively over the past several decades. A pioneering contribution was made by Courant and Friedrichs [1] in their classical monograph “Supersonic Flow and Shock Waves”, where a detailed descrip-tion of various jet flow patterns generated by supersonic flows exhausting from two-dimensional nozzles was presented. Since then, considerable efforts have been devoted to the rigorous mathematical analysis of nozzle jet flows under different physical assumptions and geometric configurations. In particular, Chen and Qu [2] investigated supersonic jet flow solution expanding into a lower-pressure atmosphere. They established the ex-istence of classical solutions in both the interaction region of steady rarefaction waves and the reflection region near the jet interface for sufficiently small pressure differences, while also analyzing the formation of a vacuum for larger pressure differences. Subsequently, [3] established the global existence of continuous and piecewise smooth supersonic flows in two-dimensional convex ducts by analyzing the interaction of rarefaction waves and further characterized the occurrence of vacuum. Similar ideas were later extended to relativistic Euler flows in convex ducts in [4]. More recently, Lai [5] established the existence of sonic–supersonic jet flows issuing from a 2-D nozzle. Besides the aforementioned works, compressible flows in divergent nozzle configurations have also been widely studied [6, 7, 8, 9]. Related investigations include nozzle flow problems in finitely long nozzles [10, 11, 12] and smooth supersonic flows in multi-dimensional nozzles [13, 14, 15], along with the references therein. In addition to nozzle jet flows, substantial progress has been made in the study of degenerate hyperbolic boundary value problems arising in compressible fluid dynamics. Zhang and Zheng [16] proved the local ex-istence of smooth transonic solutions for a Cauchy problem whose boundary exhibits Tricomi-type hyperbolic degeneracy, while Hu and Li [17] extended the analysis to the two-dimensional steady full Euler system. The existence of smooth transonic flows associated with Keldysh-type degenerate hyperbolic boundaries and related transonic free boundary problems has also been investigated in various settings [18], revealing the intricate math-ematical structure generated by sonic degeneracy. Beyond the works mentioned above, extensive theoretical and numerical studies have also been carried out on the compressible Euler equations and related nonlinear hyper-bolic systems in various physical and mathematical settings; see, for example, [20, 19, 21, 22, 23, 24] and the references cited therein. Although substantial progress has been made in the study of sonic-supersonic jet flows, most of the available results are established within the framework of ideal or polytropic gas laws. The analysis in these settings relies heavily on the particular structure of the pressure-density relation and the associated characteristic geometry. When a non-ideal equation of state such as the van der Waals law is considered, the nonlinear features of the governing equations become significantly more intricate, leading to substantial modifications in the characteristic structure and sonic degeneracy. As a consequence, several analytical techniques developed for the polytropic case cannot be applied directly and a new analysis is required to construct sonic-supersonic jet flow solutions in the non-ideal gas setting. In this article, we investigate sonic-supersonic jet flows issuing from a 2-D straight nozzle for compressible fluids governed by the van der Waals equation of state. The flow is assumed to attain the sonic state at the nozzle exit and subsequently expand into either a vacuum or a static atmosphere of lower pressure, see Figure 1. In contrast to the uniformly supersonic case, the presence of sonic states leads to the degeneration of the governing equations and gives rise to a degenerate hyperbolic free boundary problem. Moreover, singular behavior occurs at 2Figure 1: A representative jet-flow structure formed when a uniform flow expands into a low-pressure region; see Chapter V of [1]. 
+
+the nozzle exit points B and D located at (0 , −l) and (0 , l ), respectively, which further complicates the analysis. While substantial progress has been made in the study of sonic-supersonic jet flows for ideal and polytropic gases, extending these results to non-ideal gases presents significant mathematical challenges due to the more intricate nonlinear structure induced by the van der Waals pressure law. The objective of this work is to establish the existence of sonic-supersonic jet flow solutions in the van der Waals setting and thereby extend the existing theory beyond the classical polytropic framework. The widely studied two-dimensional steady Euler equations read [1] 
+
+∂(ρu )
+
+∂x + ∂(ρv )
+
+∂y = 0 ,∂(ρu 2 + p)
+
+∂x + ∂(ρuv )
+
+∂y = 0 ,∂(ρuv )
+
+∂x + ∂(ρv 2 + p)
+
+∂y = 0 , (x, y ) ∈ R2,
+
+(1.1) where the variables u, v represent x- and y-direction flow velocity, ρ is density and p = p(τ ) is the pressure and 
+
+τ = 1 
+
+> ρ
+
+denotes the specific volume. Although the preceding analysis is presented for the classical polytropic gas, the ideal gas law is often in-adequate for describing the behavior of real gases under high-pressure or low-temperature conditions. Such non-ideal effects arise in a wide range of engineering applications, including internal combustion engines, re-frigerators, heat pumps, turbogenerators, hot-air balloons, Organic Rankine Cycle (ORC) systems, gas storage facilities, fire extinguishers and many other practical applications [25]. The principal limitation of the polytropic gas model is that it neglects both the intermolecular attractive forces and the finite volume occupied by gas molecules. To account for these non-ideal effects, we consider a compressible fluid governed by the polytropic van der Waals equation of state [26, 27], 
+
+p(τ ) = K
+
+(τ − b)γ+1 − aτ 2 , (1.2) where τ = 1 /ρ denotes the specific volume, K > 0 is a constant related to the entropy of the gas and γ ∈ (0 , 1) .The positive constants a and b characterize the intermolecular attractive forces and the finite volume occupied by gas molecules, respectively. In the special case a = 0 , the above equation reduces to the dusty gas model, whereas a = b = 0 yields the classical polytropic ideal gas law. According to [28], the van der Waals equation of state can be classified into the following three categories, as illustrated in Figure 2. 3• p′(τ ) < 0 and p′′ (τ ) > 0.• p′(τ ) < 0 for τ ∈ (b, ∞), while p′′ (τ ) > 0 for τ ∈ (b, τ 1) ∪ (τ2, ∞) and p′(τ ) = p′′ (τ ) = 0 for 
+
+τ ∈ (τ1, τ 2).• p′(τ ) < 0 for τ ∈ (b, ∞), whereas p′′ (τ ) > 0 for τ ∈ (b, τ 1) ∪ (τ2, ∞), p′′ (τ ) < 0 for τ ∈ (τ1, τ 2) and 
+
+p′′ (τ1) = p′′ (τ2) = 0 .The van der Waals gas is known to possess regions where the pressure law loses convexity, leading to addi-tional mathematical difficulties associated with changes in the wave structure and loss of genuine nonlinearity. In the present work, we restrict our attention to a physically relevant regime in which the pressure function remains strictly convex. This assumption guarantees the hyperbolicity of the Euler system and allows the characteristic structure of the flow to be analyzed within a stable analytical framework. Moreover, many of the arguments developed in this article rely only on the monotonicity and convexity properties of the pressure law and are there-fore applicable to a broader class of convex equations of state beyond the van der Waals model; see, for example, [29, 30]. Accordingly, throughout this article, the pressure function p = p(τ ) is assumed to satisfy 
+
+p′(τ ) < 0, p ′′ (τ ) > 0, κ (τ ) > 0, m (τ ) > 0 for τ > τ 1. (1.3) For technical convenience, we further assume that κ′(τ ) > 0. This assumption is justified for sufficiently large values of τ . Indeed, introducing the dimensionless variables 
+
+Π = b2p(τ )
+
+a , ¯τ = τb ,
+
+the equation of state (1.2) can be written in the dimensionless form 
+
+Π(¯ τ ) = A′
+
+(¯ τ − 1) γ+1 − 1¯τ 2 ,
+
+where A′ = Ab 1−γ 
+
+> a
+
+, see [30]. Without loss of generality, we normalize A′ = 1 . A direct calculation then shows that 
+
+κ′(τ ) = κ(τ )2
+
+2bdd¯τ
+
+Å ¯τ Π′′ (¯ τ )Π′(¯ τ )
+
+ã
+
+and dd¯τ
+
+Å ¯τ Π′′ (¯ τ )Π′(¯ τ )
+
+ã
+
+= Hγ (¯ τ )[2(¯ τ − 1) γ+1 − (γ + 1)¯ τ 3(¯ τ − 1)] 2 ,
+
+where Hγ (¯ τ ) = ( γ + 1) 2(γ + 2)¯ τ 6 − 2¯ τ 2(¯ τ − 1) γ+2 (γ + 1)[( γ + 1) 2 ¯τ 2 + (7 γ + 5)¯ τ + 9] . Moreover, H0(¯ τ ) > 0
+
+for ¯τ > 4. By continuity of Hγ (¯ τ ) with respect to γ in a neighborhood of γ = 0 , it follows that κ′(τ ) > 0 for sufficiently large τ > 4b.     
+
+> (a) (b) (c)
+> Figure 2: Three possible configurations of the van der Waals pressure function p(τ)corresponding to different convexity properties.
+
+To analyze the degenerate hyperbolic free boundary value problem arising from sonic-supersonic jet flows, we employ the characteristic decomposition approach which was originally introduced in the study of simple wave solutions for the 2-D compressible Euler system [31], has subsequently become an effective tool in the 4investigation of multidimensional wave interactions, transonic phenomena and related free boundary problems [32, 33, 34]. By exploiting the underlying characteristic framework of the Euler system and establishing suitable a priori estimates, we are able to handle both the sonic degeneracy and the singular behavior at the endpoints of the nozzle exit. As a consequence, we establish the global existence of locally Lipschitz continuous sonic-supersonic jet solutions in the vacuum case. Furthermore, when the jet exhausts into a static atmosphere with pressure 0 ≤ pa < p 0, we prove the local existence of sonic-supersonic jet flow solutions for u0 = c0.The remainder of this article is arranged as follows: In Section 2, we reformulate the problem together with the statement of the main results and derive several characteristic identities and decompositions that play a fundamental role in the subsequent analysis. These decompositions are subsequently employed to obtain the a priori estimates required for the global analysis of jet flows expanding into a vacuum in Section 3. In Section 4, we consider the case where the surrounding medium is a static atmosphere and prove the local existence of a sonic-supersonic jet solution at the nozzle exit. The paper concludes with Section 5. 
+
+2. Preliminary analysis and problem description 
+
+2.1. Problem formation and main results 
+
+In this subsection, we formulate the sonic-supersonic jet flow problem and state the main results of this article. Consider a two-dimensional straight nozzle that is symmetric with respect to the x-axis and bounded by the walls 
+
+W± = {(x, y ) : y = ±l, x ∈ (−∞ , 0] }. (2.1) The nozzle exit is located on the y-axis. Consider a uniform flow with pressure p0, velocity (u0, 0) , density ρ0
+
+and sound speed c0 arrives at the nozzle exit, where u0 ≥ c0.We first consider the case where the nozzle is surrounded by a vacuum. Then the flow exhausts from the nozzle into the vacuum and is separated from the vacuum region by a vacuum boundary; see Figure 3a. To describe the resulting sonic-supersonic jet flow, we consider system (1.1) together with the boundary conditions 
+
+(u, v, c )|BD = ( u0, 0, c 0), c|x=φ(y), |y|>l = 0 , φ(±l) = 0 . (2.2) where x = φ(y) ( |y| > l ) denotes a vacuum boundary. The expansion of compressible jet flows into a vacuum has attracted considerable attention in both theoretical and applied fluid dynamics; see, for instance, [29, 30, 35, 36]. From a physical perspective, such configurations arise naturally in high-altitude and near-space environments, where the surrounding medium is sufficiently rar-efied that vacuum effects become significant. In the present setting, the vacuum boundary is not known a priori and must be determined as part of the solution, which leads to a free boundary problem for the Euler system. The problem of the expansion of a jet flow from a nozzle into a vacuum is of considerable basic and practical interest. The assumption that the nozzle is surrounded by a vacuum is natural if the aerospace vehicle is in the outer atmosphere or the surrounding atmosphere is very rare. We investigate (1.1)–(2.2) in the sonic case u0 = c0. Since the incoming flow is sonic, the Euler system (1.1) becomes degenerate hyperbolic at the nozzle exit. As a result, the free boundary value problem (1.1)–(2.2) is of degenerate hyperbolic type. Nevertheless, owing to the absence of compression in the jet, we establish the existence of a global solution. The corresponding result is summarized in the following theorem: 
+
+Theorem 2.1. Assume that the incoming flow is either sonic or supersonic, i.e., u0 ≥ c0 and that the pressure is governed by the van der Waals equation of state (1.2) . Then the free boundary value problem (1.1) –(2.2) admits a solution 
+
+(u, v, c ) ∈ C0,1(Σ( M0)) ∩ C0ÄΣ( M0)ä ,
+
+where 
+
+Σ( M0) = {(x, y ) | x > φ (y; M0), −∞ < y < +∞} ,
+
+with 
+
+φ(y; M0) = 
+
+®(|y| − l) cot αv, |y| ≥ l, 
+
+0, |y| < l, M0 = u0
+
+c0
+
+,
+
+5(a) Vacuum boundary; pa = 0 (b) Jet boundary; 0 < p a < p 0
+
+> Figure 3: Configurations of sonic–supersonic jet flows issuing from a 2-D straight nozzle: (a) expansion into a vacuum; (b) expansion into an atmosphere.
+
+where αv denotes the flow angle along the vacuum boundary and is given by 
+
+αv =
+
+Z ∞
+
+> τ0
+
+p−p′(τ )pu2 + v2 + τ 2p′(τ )
+
+u2 + v2 dτ. 
+
+Moreover, c remains positive in Σ( M0) and vanishes on the vacuum boundary 
+
+x = φ(y; M0), |y| > l. 
+
+We further investigate the case where the nozzle exhausts into a static atmosphere with pressure pa, satisfying 
+
+0 ≤ pa < p 0, where p0 is the pressure of the supersonic flow at the nozzle exit. The exhausting gas is separated from the surrounding atmosphere by a jet boundary, which is a contact discontinuity; see Figure 3b. Denoting the free jet boundary by BD = {(x, y ) | x = 0 , |y| < l } and x = ψ(y), |y| > l , the flow is governed by the system (1.1) together with the boundary conditions 
+
+
+
+(u(x, y ), v (x, y ), c (x, y )) = ( u0, 0, c 0), (x, y ) ∈ BD ;
+
+p(x, y ) = pa,u(x, y )
+
+v(x, y ) = ψ′(y), (x, y ) ∈ { (x, y ) : x = ψ(y), |y| > l };
+
+ψ(l) = 0 , ψ(−l) = 0 .
+
+(2.3) We are concerned with the sonic case u0 = c0. Since the flow attains the sonic state at the nozzle exit, the Euler system becomes degenerate there and (1.1)-(2.3) is transformed into a degenerate hyperbolic free boundary problem. The analysis is further complicated by the singular behavior near the endpoints of the nozzle exit, which plays an essential role in the construction of sonic-supersonic jet flow solutions. To establish the existence of sonic-supersonic jet flows exhausting into an atmosphere, we first study (1.1)-(2.3) for the supersonic case u0 > c 0. We prove the existence of local supersonic jet flow solutions near the nozzle exit and derive uniform interior C0,1 estimates away from the nozzle end points B and D. Consequently, by means of the Arzelà-Ascoli’s theorem and a standard diagonal argument, we obtain a locally Lipschitz continuous sonic-supersonic jet flow solution of the free boundary problem (1.1)-(2.3). The corresponding result is stated in the following theorem: 
+
+Theorem 2.2. Assume that u0 = c0 and that −π < θ a < 0. Then there exists a sufficiently small constant δ > 0
+
+such that the free boundary problem (1.1) –(2.3) admits a local sonic–supersonic jet flow solution 
+
+(u, v, c ) ∈ C0,1(Γ( δ)) ∩ C0ÄΓ( δ)ä ,
+
+6where 
+
+Γ( δ) = (x, y ) : ¯ψ(y) < x < ¯ψ(y) + δ, |y| < l + δ ,
+
+with 
+
+¯ψ(y) = 
+
+®ψ(y), |y| > l, 
+
+0, |y| ≤ l. 
+
+2.2. The Euler system and basic properties 
+
+Considering a smooth solution, we can rewrite the system (1.1) in the form 
+
+ uτ
+
+
+
+> x
+
++
+
+ vτ
+
+
+
+> y
+
+= 0 ,uu x + vu y + τ p x = 0 ,uv x + vv y + τ p y = 0 .
+
+(2.4) Assuming that the flow is irrotational, i.e., uy = vx, system (2.4) reduces to the following form 
+
+®(c2 − u2)ux − uv (uy + vx) + ( c2 − v2)vy = 0 ,uy − vx = 0 , (2.5) which is supplemented by Bernoulli’s law 
+
+u2 + v2
+
+2 + c2 + K(( τ − b)2 + γτ (b + γτ )) 
+
+γ(τ − b)γ+2 = const. , (2.6) where c2 = −τ 2p′(τ ) denotes the sound speed such that 
+
+p′(τ ) = −K(γ + 1) (τ − b)γ+2 + 2aτ 3 , p′′ (τ ) = K(γ + 1)( γ + 2) (τ − b)γ+3 − 6aτ 4 . (2.7) It can be verified from the derivatives p′(τ ) and p′′ (τ ) that there exists a sufficiently large τ1 > b such that for all 
+
+τ > τ 1, p′(τ ) < 0 and p′′ (τ ) > 0.The system (2.5) can be rewritten in the matrix form as 
+
+ïc2 − u2 −uv 
+
+0 −1
+
+ò ï uv
+
+ò
+
+> x
+
++
+
+ï−uv c2 − v2
+
+−1 0
+
+ò ï uv
+
+ò
+
+> y
+
+= 0 . (2.8) Eigenvalues of (2.8) are Λ± = uv ± c√u2 + v2 − c2
+
+u2 − c2 and Λ0 = vu , which implies that the system (1.1) is of mixed type: it’s subsonic for u2 + v2 < c 2, sonic for u2 + v2 = c2 and supersonic for u2 + v2 > c 2. When 
+
+u2 + v2 > c 2, the system (1.1) is hyperbolic with two families of characteristic curves defined by the integral curves C± : dy dx = Λ ± and a family of stream lines C0 : dy dx = Λ 0. In this article, we restrict our attention to supersonic and sonic-supersonic flows. We obtain the characteristic equations of (2.8) as 
+
+¯∂±u + Λ ∓ ¯∂±v = 0 , (2.9) where, ¯∂+ = cos α∂ x + sin α∂ y, ¯∂− = cos β∂ x + sin β∂ y. (2.10) Moreover, exploring (2.9) gives 
+
+¯∂0 = cos θ∂ x + sin θ∂ y, ¯∂0 = ¯∂+ + ¯∂−
+
+2 cos ω . (2.11) The wave characteristic direction is defined as the tangent direction making an acute angle ω with the flow 7Figure 4: Characteristic curves, characteristic angles and characteristic directions. 
+
+velocity vector (u, v ). A straightforward calculation shows that the C+ characteristic direction forms with the direction of the flow velocity the angle ω from (u, v ) to C+ in the counterclockwise direction and the C− char-acteristic direction forms with the direction of the flow velocity the angle ω from (u, v ) to C− in the clockwise direction; see Figure 4. Furthermore, we have 
+
+c2 = ( u2 + v2) sin 2 ω. (2.12) The angle ω is referred to as the Mach angle. Following [37], we use the concept of characteristic angle. The characteristic angle associated with the C+
+
+(C−, respectively) family is defined as the counterclockwise angle measured from the positive x-axis to the corresponding C+ (C−, respectively) characteristic direction. We denote these angles by α and β, respectively and assume that 0 ≤ α − β ≤ π. Furthermore, let θ denote the counterclockwise angle from the positive x-axis to the flow velocity vector. Then it follows that 
+
+
+
+θ = 12 (α + β), ω = 12 (α − β),u = c cos θ
+
+sin ω , v = c sin θ
+
+sin ω .
+
+(2.13) A direct computation yields 
+
+(u2 + v2) cos α cos β = u2 − c2, (u2 + v2) sin α sin β = v2 − c2. (2.14) Define u2 + v2
+
+2 + K(( γ + 1) τ − b)
+
+γ(τ − b)γ+1 − 2aτ = ˆB. (2.15) Exploiting (2.15) and last two equations of (2.4) yields 
+
+u ˆBx + v ˆBy = 0 . (2.16) Also from (2.6) we have 
+
+τx = τc2 (uu x + vv x − ˆBx), τy = τc2 (uu y + vv y − ˆBy). (2.17) Further using (2.10) we obtain 
+
+∂x =
+
+√u2 + v2
+
+2c cos ω (sin α ¯∂− − sin β ¯∂+),∂y =
+
+√u2 + v2
+
+2c cos ω (cos β ¯∂+ − cos α ¯∂−).
+
+(2.18) 8The following notations are used throughout the article: 
+
+
+
+κ(τ ) = − 2p′(τ )2p′(τ ) + τ p ′′ (τ ) = 2 − 2bτ − 4a(τ −b)γ+3  
+
+> K(γ+1) τ4
+
+γ + 2bτ + 2a(τ −b)γ+3  
+
+> K(γ+1) τ4
+
+,m(τ ) = κ(τ ) − 1
+
+κ(τ ) + 1 = 2 − γ − 4bτ − 2a(τ −b)γ+3  
+
+> K(γ+1) τ4
+
+γ + 2 + 6a(τ −b)γ+3  
+
+> K(γ+1) τ4
+
+,μ2(τ ) = 11 + κ(τ ) , Q(τ ) = m(τ ) − tan 2 ω. 
+
+(2.19) 
+
+2.3. Characteristic equations in terms of characteristic angles 
+
+In this subsection, we present the first-order characteristic decompositions for the characteristic angles. Exploring (2.13) and (2.10) we obtain 
+
+
+
+¯∂±u = cos θ
+
+sin ω ¯∂±c + c
+
+2 sin 2 ω (cos α ¯∂±β − cos β ¯∂±α),
+
+¯∂±v = sin θ
+
+sin ω ¯∂±c + c
+
+2 sin 2 ω (sin α ¯∂±β − sin β ¯∂±α).
+
+(2.20) Inserting (2.20) into (2.9) we compute 
+
+
+
+¯∂+c = c( ¯∂+α − cos 2 ω ¯∂+β)sin 2 ω ,
+
+¯∂−c = c(cos 2 ω ¯∂−α − ¯∂−β)sin 2 ω .
+
+(2.21) In addition, invoking (2.6), we obtain 
+
+®u ¯∂+u + v ¯∂+v + τ p ′(τ ) ¯∂+τ = 0 ,u ¯∂−u + v ¯∂−v + τ p ′(τ ) ¯∂−τ = 0 . (2.22) Utilizing the expression of sound speed c2 = −τ 2p′(τ ) we have 
+
+
+
+¯∂+τ = − c ¯∂+cτ (2 p′(τ ) + τ p ′′ (τ )) ,
+
+¯∂−τ = − c ¯∂−cτ (2 p′(τ ) + τ p ′′ (τ )) .
+
+(2.23) Substituting (2.20), (2.23) into (2.22) to get 
+
+Å 1sin 2 ω + κ(τ )
+
+ã
+
+¯∂+c = c cos ω( ¯∂+α − ¯∂+β)2 sin 3 ω ,
+
+Å 1sin 2 ω + κ(τ )
+
+ã
+
+¯∂−c = c cos ω( ¯∂−α − ¯∂−β)2 sin 3 ω .
+
+(2.24) Combining (2.21) and (2.24) gives ® ¯∂+α = m(τ ) cos 2 ω ¯∂+β, 
+
+¯∂−β = m(τ ) cos 2 ω ¯∂−α. (2.25) Next, employ (2.24) and (2.25) to discover 
+
+
+
+¯∂+c = −cμ 2(τ ) cot ω ¯∂+β, 
+
+¯∂−c = cμ 2(τ ) cot ω ¯∂−β, c ¯∂+α =
+
+Å 1 − κ(τ ) cos 2 ω
+
+2 cos 2 ω
+
+ã
+
+sin 2 ω ¯∂+c, c ¯∂−β =
+
+Å κ(τ ) cos 2 ω − 12 cos 2 ω
+
+ã
+
+sin 2 ω ¯∂−c. 
+
+(2.26) 9Inserting (2.26) into (2.20) we obtain 
+
+
+
+¯∂+u = κ(τ ) sin β ¯∂+c, 
+
+¯∂−u = −κ(τ ) sin α ¯∂−c, 
+
+¯∂+v = −κ(τ ) cos β ¯∂+c, 
+
+¯∂−v = κ(τ ) cos α ¯∂−c. 
+
+(2.27) 
+
+2.4. Second order characteristic decompositions 
+
+In this subsection, we derive the characteristic decomposition equations for the variable c. From (2.27), it follows that ∇u and ∇v can be controlled through estimates on ∇c. Therefore, our main objective is to obtain suitable estimates for the directional derivatives ¯∂+c and ¯∂−c.
+
+Lemma 2.3. The commutator relation between ¯∂+ and ¯∂− takes the following form [31] 
+
+¯∂− ¯∂+ − ¯∂+ ¯∂− = 1sin 2 ω
+
+ cos 2 ω ¯∂−α − ¯∂+β ¯∂+ + cos 2 ω ¯∂+β − ¯∂−α ¯∂− . (2.28) 
+
+Corollary 2.3.1. The characteristic decomposition of the variable c is 
+
+c ¯∂− ¯∂+c = ¯∂+c ¯∂+c
+
+2μ2(τ ) cos 2 ω + ¯∂+c ¯∂−c
+
+2 cos 2 ω
+
+Å 1
+
+μ2(τ ) − κ(τ ) sin 2 2ω
+
+ã
+
++ τ κ ′(τ ) ¯∂+c ¯∂−c, c ¯∂+ ¯∂−c = ¯∂−c ¯∂−c
+
+2μ2(τ ) cos 2 ω + ¯∂+c ¯∂−c
+
+2 cos 2 ω
+
+Å 1
+
+μ2(τ ) − κ(τ ) sin 2 2ω
+
+ã
+
++ τ κ ′(τ ) ¯∂+c ¯∂−c. 
+
+(2.29) 
+
+Proof. Applying the commutator identity (2.28) to the variable u, it follows that 
+
+¯∂− ¯∂+u − ¯∂+ ¯∂−u = 1sin 2 ω
+
+ cos 2 ω ¯∂−α − ¯∂+β ¯∂+u + cos 2 ω ¯∂+β − ¯∂−α ¯∂−u . (2.30) Exploiting (2.26) and (2.27) into (2.30) and using (2.28) for c we can easily derive (2.29). For any constant ν > 0 and utilizing (2.29) we can derive 
+
+
+
+c ¯∂−(c−ν ¯∂+c) = c−ν
+
+ï ¯∂+c ¯∂+c
+
+2μ2(τ ) cos 2 ω + ¯∂+c ¯∂−c
+
+2 cos 2 ω
+
+Å 1
+
+μ2(τ ) − κ(τ ) sin 2 2ω
+
+ã
+
++ ( τ κ ′(τ ) − ν) ¯∂+c ¯∂−c
+
+ò
+
+,c ¯∂+(c−ν ¯∂−c) = c−ν
+
+ï ¯∂−c ¯∂−c
+
+2μ2(τ ) cos 2 ω + ¯∂+c ¯∂−c
+
+2 cos 2 ω
+
+Å 1
+
+μ2(τ ) − κ(τ ) sin 2 2ω
+
+ã
+
++ ( τ κ ′(τ ) − ν) ¯∂+c ¯∂−c
+
+ò
+
+.
+
+(2.31) 
+
+Corollary 2.3.2. For the variable ρ, we have the following characteristic decomposition [39]: 
+
+c ¯∂+ ¯∂−ρ = sin 2 ω ¯∂−ρ + τ 4p′′ (τ )4c cos 2 ω
+
+  ¯∂−ρ ¯∂−ρ + ( f − 1) ¯∂−ρ ¯∂+ρ ,c ¯∂− ¯∂+ρ = sin 2 ω ¯∂+ρ + τ 4p′′ (τ )4c cos 2 ω
+
+  ¯∂+ρ ¯∂+ρ + ( f − 1) ¯∂−ρ ¯∂+ρ ,
+
+(2.32) 
+
+where f = 2 sin 2 ω − 8p′(τ ) cos 4 Aτ p ′′ (τ ) > 0 as p′′ (τ ) > 0, p ′(τ ) < 0.
+
+Corollary 2.3.3. The variable c satisfies the following second-order characteristic decomposition 
+
+c ¯∂−  cos ω
+
+¯∂+c
+
+
+
+= −
+
+ cos ω
+
+¯∂+c
+
+2 ï ¯∂+c ¯∂+c
+
+2μ2(τ ) cos 3 ω + ¯∂+c ¯∂−c
+
+cos ω
+
+Å 1 + κ(τ ) cos 2 2ω
+
+2 cos 2 ω + τ κ ′(τ )
+
+ã
+
++ c sin ω ¯∂+c ¯∂−ω
+
+cos 2 ω
+
+ò
+
+,c ¯∂+  cos ω
+
+¯∂−c
+
+
+
+= −
+
+ cos ω
+
+¯∂−c
+
+2 ï ¯∂−c ¯∂−c
+
+2μ2(τ ) cos 3 ω + ¯∂+c ¯∂−c
+
+cos ω
+
+Å 1 + κ(τ ) cos 2 2ω
+
+2 cos 2 ω + τ κ ′(τ )
+
+ã
+
++ c sin ω ¯∂−c ¯∂+ω
+
+cos 2 ω
+
+ò
+
+.
+
+(2.33) 10 3. Supersonic and sonic-supersonic jet flows in the vacuum case 
+
+In this section, we study the global existence of supersonic and sonic-supersonic flow solutions to the prob-lem (1.1), (2.2) for u0 ≥ c0. Besides the existence, we also establish some uniform interior estimates for the supersonic flow solutions with respect to u0 ≥ c0.
+
+3.1. Centered simple wave 
+
+Theorem 3.1. Let (u, v, c )( x, y ) = (ˆ u, ˆv, ˆc)( α) be a C+ (C−, respectively) centered simple wave solution with 
+
+y = x tan α, α < α 0. Then the principal variables (ˆ u, ˆv, ˆc)( α) satisfy the following system [1]: 
+
+
+
+cos α dˆudα + sin α dˆvdα = 0 ,
+
+ˆu2 + ˆ v2
+
+2 + K(( γ + 1)ˆ τ − b)
+
+γ(ˆ τ − b)γ+1 − 2a
+
+ˆτ = const. ,
+
+ˆu sin α − ˆv cos α = ˆ c. 
+
+(3.1) 
+
+Theorem 3.2. Assume that the incoming flow is a uniform supersonic flow given by (u, v, c ) = ( u0, 0, c 0) and 
+
+τ > b . Then there exist centered simple wave S+ (S−, respectively) consisting of straight C+ (C−, respectively) characteristic lines emanating from the nozzle endpoint B (D, respectively), which connect the uniform flow state (u, v, c ) = ( u0, 0, c 0) to the vacuum state. Moreover, the following relation holds: 
+
+
+
+ˆu(α) = c sin α + pF(ˆ τ ) + F1 cos α, 
+
+ˆv(α) = −c cos α + pF(ˆ τ ) + F1 sin α, 
+
+ˆc(α) = R αα0 μ2(ˆ τ )pF(ˆ τ ) + F1 dα + c0,
+
+(3.2) 
+
+where 
+
+F(ˆ τ ) = − Kγ(ˆ τ − b)γ+2 
+
+ (γ + 1)( γ + 2)ˆ τ 2 − 2( γ + 2) bˆτ + 2 b2 + 6a
+
+ˆτ ,
+
+F1 = u20 − c20 + Kγ(ˆ τ0 − b)γ+2 
+
+ (γ + 1)( γ + 2)ˆ τ 20 − 2( γ + 2) bˆτ0 + 2 b2 + 6a
+
+ˆτ0
+
+.
+
+(3.3) 
+
+Further, we define 
+
+αv := 
+
+Z ∞
+
+> τ0
+
+p−p′(τ )pu2 + v2 + τ 2p′(τ )
+
+u2 + v2 dτ, (3.4) 
+
+where u2 + v2 = F(ˆ τ ) + F1 + c2.
+
+Proof. Combining (2.23) and (2.26), we obtain 
+
+¯∂−α = −
+
+»u20 − 2 R ττ0 hp ′(h)dh + τ 2p′(τ )2τ p−p′(τ )¯∂−τ
+
+= −
+
+»u20 + τ 20 p′(τ0) + R ττ0 h2p′′ (h)dh 
+
+2τ p−p′(τ )¯∂−τ. 
+
+(3.5) Integrating the above identity along the C− characteristic yields 
+
+ˆα(τ ) := α(x, y ) = α0 −
+
+Z ττ0
+
+»u20 + τ 20 p′(τ0) + R ss0 h2p′′ (h)dh 
+
+2sp−p′(s) ds. (3.6) Differentiating (3.6) with respect to τ gives 
+
+dα dτ = −
+
+»u20 + τ 20 p′(τ0) + R ττ0 h2p′′ (h)dh 
+
+2τ p−p′(τ ) < 0. (3.7) 11 From (3.6)-(3.7), together with the relation c2 = −τ 2p′(τ ), it follows that τ (x, y ) = ˆ τ (α) and (u, v, c )( x, y ) = (ˆ u, ˆv, ˆc)( α). Next, applying the Bernoulli relation together with the incoming flow (u0, 0, c 0), we obtain 
+
+ˆu2 + ˆ v2
+
+2 + ˆ c2 + K((ˆ τ − b)2 + γ ˆτ (b + γ ˆτ )) 
+
+γ(ˆ τ − b)γ+2 = u20
+
+2 + c20 + K(( τ0 − b)2 + γτ 0(b + γτ 0)) 
+
+γ(τ0 − b)γ+2 . (3.8) Furthermore, using (3.8) and recalling u = √u2 + v2 cos θ, v = √u2 + v2 sin θ, we deduce 
+
+θ(τ ) := θ(x, y ) = −
+
+Z ˆττ0
+
+p−p′(τ )pu2 + v2 + ˆ τ 2p′(τ )
+
+u2 + v2 dτ + θ(τ0). (3.9) To facilitate the subsequent analysis, we decompose (ˆ u, ˆv)( α) along the orthogonal directions (cos α, sin α) and 
+
+(sin α, − cos α) as 
+
+ˆg = ˆ u cos α + ˆ v sin α, ˆc = ˆ u sin α − ˆv cos α. (3.10) Accordingly, 
+
+ˆu = ˆ g cos α + ˆ c sin α, ˆv = ˆ g sin α − ˆc cos α, (3.11) which immediately yields 
+
+ˆg2 + ˆ c2 = ˆ u2 + ˆ v2. (3.12) Differentiating (3.11) with respect to α, we find 
+
+
+
+dˆudα = dˆgdα cos α − ˆg sin α + dˆcdα sin α + ˆ c cos α, dˆvdα = dˆgdα sin α + ˆ g cos α − dˆcdα cos α + ˆ c sin α. 
+
+(3.13) Making use of (3.13) and (3.1), we obtain 
+
+dˆgdα = −ˆc. (3.14) Exploring (3.8), (3.10) and (3.13) we have 
+
+ˆg(α) = (1 + κ(τ )) dˆcdα . (3.15) Combining (3.14) with (3.15), we derive 
+
+d2ˆcdα 2 − κ′(τ )κ(τ )μ2(τ )
+
+p−p′(τ )
+
+Å dˆcdα 
+
+ã2
+
++ ˆ c = 0 . (3.16) Finally, imposing the initial conditions ˆc(α0) = c0 and ˆg(α0) = 
+
+»
+
+u20 − c20 together with (3.16), we obtain 
+
+ˆc := c(x, y ) = c0 +
+
+Z αα0
+
+μ2(ˆ τ )
+
+»
+
+F(ˆ τ ) + F1dα, (3.17) where F(τ ) and F1 are given in (3.3). It then follows from (3.15) and (3.16) that 
+
+ˆg = (1 + κ(ˆ τ ))ˆ cα =
+
+»
+
+F(ˆ τ ) + F1, (3.18) where F(τ ) and F1 are defined in (3.3). Substituting (3.17) and (3.18) into (3.11), we conclude that 
+
+u(α) = 
+
+»
+
+F(τ ) + F1 cos α + c sin α, v(α) = 
+
+»
+
+F(τ ) + F1 sin α − c cos α, 
+
+(3.19) 12 Figure 5: Configuration of a jet expanding into a vacuum from a straight two-dimensional nozzle. 
+
+where F(τ ) and F1 are given in (3.3). Consider αv = lim   
+
+> ˆτ→∞
+
+θ then 
+
+αv =
+
+Z ∞
+
+> τ0
+
+p−p′(τ )pu2 + v2 + τ 2p′(τ )
+
+u2 + v2 dτ. (3.20) A direct computation shows that the integral is absolutely convergent. Consequently, αv is a bounded quantity. This completes the proof. 
+
+3.2. Supersonic jet flow expanding into the vacuum 
+
+First, we consider the free boundary problem (1.1)–(2.2) in the supersonic regime u0 > c 0. As shown by Courant and Friedrichs [1], the jet flow consists of two simple wave regions issuing from the nozzle endpoints 
+
+B and D; see Figure 5. Since the characteristics of a centered simple wave are straight lines, every point inside the upper and lower simple wave regions can be uniquely identified by its characteristic angle. Consequently, the characteristic angle is given by 
+
+α = arctan 
+
+Å y + lx
+
+ã
+
+and α = arctan 
+
+Å l − yx
+
+ã
+
+, (3.21) in the upper and lower simple wave regions, respectively. Exploiting these geometric relations into (3.2), we obtain 
+
+(u, v, c ) = ( u+(x, y ), v +(x, y ), c +(x, y )) = (ˆ u, ˆv, ˆc)( α), αv < arctan 
+
+Å y + lx
+
+ã
+
+< α 0,
+
+(u, v, c ) = ( u−(x, y ), v −(x, y ), c −(x, y )) = (ˆ u, −ˆv, ˆc)( α), αv < arctan 
+
+Å −y + lx
+
+ã
+
+< α 0,
+
+(3.22) where α0 = arcsin 
+
+Å c0
+
+u0
+
+ã
+
+and αv is given in (3.4). The two centered simple waves intersect at the point 
+
+P = ( l cot α0, 0) .
+
+13 To describe this interaction, we introduce the forward cross-characteristic curves CP 
+
+> −
+
+and CP 
+
+> +
+
+passing through P
+
+in the simple wave regions S+ and S−, respectively. These curves serve as the initial curves for the subsequent interaction analysis. We first determine the geometric properties of CP 
+
+> ±
+
+together with the corresponding boundary data. Parame-terizing CP 
+
+> −
+
+by the characteristic angle α, we write 
+
+x = r(α) cos α, y = r(α) sin α, αv < α < α 0. (3.23) Using the simple wave solution (3.2), the Mach angle along CP 
+
+> −
+
+is given by 
+
+ω = ˆ ω(α) = arcsin 
+
+Ç ˆc(α)
+
+pˆu2(α) + ˆ v2(α)
+
+å
+
+, on CP 
+
+> −
+
+. (3.24) Since β = α − 2ˆ ω(α) and the tangent vector to CP 
+
+> −
+
+satisfies 
+
+sin β dx dα − cos β dy dα = 0 ,
+
+it follows that dr (α)
+
+dα = −r(α) cot  2ˆ ω(α). (3.25) Consequently, 
+
+r(α) > 0 for α ∈ (αv, α 0] and lim 
+
+> α→αv
+
+r(α) = ∞. (3.26) Equation (3.26) implies that the cross-characteristic curve CP 
+
+> −
+
+remains entirely inside the upper simple wave region and never intersects the vacuum boundary 
+
+CBv = {(x, y ) : ( x, y ) = ( r cos αv, −l + r sin αv), r > 0} .
+
+Hence, the solution in the region enclosed by BP , CP 
+
+> −
+
+and CBv is completely determined by the centered simple wave constructed in Theorem 3.2. Throughout the sequel, this region will be denoted by S+.By symmetry, the same conclusion holds for the lower simple wave region. In particular, the cross-characteristic curve CP 
+
+> +
+
+extends throughout the lower simple wave region without intersecting the vacuum boundary 
+
+CDv = {(x, y ) : ( x, y ) = ( r cos αv, l − r sin αv), r > 0} ,
+
+and the flow in the region bounded by DP , CP 
+
+> +
+
+and CDv is described by the centered simple wave. For conve-nience, we continue to denote this region by S−.To determine the boundary data along the cross-characteristic curve CP 
+
+> −
+
+, we evaluate the characteristic deriva-tive ¯∂−c. Since the characteristic angle satisfies 
+
+α = arctan 
+
+Å y + lx
+
+ã
+
+on CP 
+
+> −
+
+,
+
+it follows that 
+
+¯∂−c = − 2c cos ωμ 2(τ )pF(τ ) + F1
+
+√u2 + v2px2 + ( y + l)2 < 0 on CP 
+
+> −
+
+. (3.27) By symmetry, ¯∂+c < 0 on CP 
+
+> +
+
+. (3.28) Having determined the simple wave solutions in S− and S+, it remains to analyze the interaction of the two wave families beyond the cross-characteristic curves CP 
+
+> +
+
+and CP 
+
+> −
+
+. This interaction is described by the Euler system (1.1) supplemented with the boundary conditions 
+
+(u, v, c )|CP 
+
+> −
+
+= ( u+(x, y ), v +(x, y ), c +(x, y )) , (u, v, c )|CP 
+
+> +
+
+= ( u−(x, y ), v −(x, y ), c −(x, y )) . (3.29) 14 Lemma 3.3. There exists a sufficiently small constant ε > 0 such that the Goursat problem (1.1) –(3.29) admits a solution in the domain Ωε, enclosed by the cross-characteristic curves CP 
+
+> ±
+
+and the level curve c(x, y ) = c0 − ε.Moreover, the solution satisfies ¯∂±c < 0, throughout Ωε.Proof. To facilitate the proof, fix a sufficiently small η > 0, the vertical line 
+
+x = l cot α0 + η, 
+
+intersects the characteristic curves CP 
+
+> −
+
+and CP 
+
+> +
+
+at the points P− and P+, respectively; see Figure 6. Consequently, the boundary value problem (1.1)-(3.29) reduces to a Goursat problem posed on the characteristic curves ‘P P −
+
+and ‘P P +.By the classical theory of the method of characteristics (see, [38]), there is a sufficiently small η > 0 for which the Goursat problem admits a unique classical solution in the domain enclosed by the characteristic segments 
+
+‘P P −, ‘P P + and the line segment P−P+.Furthermore, combining the characteristic decompositions established in Corollary 2.3.1 with (3.27)–(3.28), we conclude that ¯∂±c < 0 in Ωε. (3.30) Define 
+
+ε = c0 − sup 
+
+> P−P+
+
+c. 
+
+Since c < c 0 inside the local interaction region, we have ε > 0. Therefore, the Goursat problem admits a classical solution in the domain Ωε, bounded by the characteristic curves CP 
+
+> ±
+
+and the level curve c = c0 − ε.This completes the proof. 
+
+Lemma 3.4. Assume that the Goursat problem (1.1) –(3.29) admits a classical solution in the domain Ωε for some ε ∈ (0 , c 0). Then the solution satisfies 
+
+H < ¯∂+cc < 0, H < ¯∂−cc < 0 in Ωε, (3.31) 
+
+where 
+
+H = inf 
+
+> CP
+> −
+
+¯∂−cc .
+
+Proof. By Lemma 3.3, the characteristic derivatives satisfy 
+
+¯∂±c < 0 in Ωε.
+
+Therefore, it remains to establish the lower bound 
+
+H < ¯∂±cc .
+
+We first observe that, in view of (3.27), (3.28) and the Bernoulli relation (2.6), 
+
+u2 + v2
+
+2 + c2 + K(( τ − b)2 + γτ (b + γτ )) 
+
+γ(τ − b)γ+2 = u20
+
+2 + c20 + K(( τ0 − b)2 + γτ 0(b + γτ 0)) 
+
+γ(τ0 − b)γ+2 . (3.32) Consequently, the quantity H is well defined and finite. Moreover, from the boundary data prescribed on CP 
+
+> +
+
+,we have ¯∂+cc > H on CP 
+
+> +
+
+.
+
+We next show that ¯∂+cc > H on CP 
+
+> −
+
+.
+
+15 Assume that ¯∂+cc ≤ H on CP 
+
+> −
+
+. Then there exists a first point H ∈ CP 
+
+> −
+
+such that 
+
+¯∂+cc > H on ‘P H, while 
+
+Å ¯∂+cc
+
+ã
+
+(H) = H.
+
+By the choice of H, it follows that 
+
+¯∂−
+
+Å ¯∂+cc
+
+ã
+
+(H) ≤ 0.
+
+On the other hand, using the first equation of (2.31) along with (2.29), we obtain 
+
+c ¯∂−
+
+Å ¯∂+cc
+
+ã
+
+= 1
+
+c
+
+Å ¯∂+c ¯∂+c
+
+2μ2(τ ) cos 2 ω + ¯∂+c ¯∂−c
+
+2 cos 2 ω
+
+Å 1
+
+μ2(τ ) − κ(τ ) sin 2 2ω
+
+ã
+
++ τ κ ′(τ ) ¯∂+c ¯∂−c − ¯∂+c ¯∂−c
+
+ã
+
+> ¯∂+cc
+
+Å 1 + κ(τ )2 cos 2 ω ¯∂+c − ¯∂−c
+
+ã
+
+> ¯∂+c ¯∂−c
+
+2c cos 2 ω (κ(τ ) + cos 2 ω) > 0 at H, 
+
+(3.33) which contradicts 
+
+¯∂−
+
+Å ¯∂+cc
+
+ã
+
+(H) ≤ 0.
+
+Hence, ¯∂+cc > H on CP 
+
+> −
+
+.
+
+By the same argument, we also obtain ¯∂−cc > H on CP 
+
+> +
+
+.
+
+Let Q be an arbitrary point in Ωε. Since the solution is constructed by the method of characteristics, the back-ward C+ (C−, respectively) characteristic passing through Q remains inside Ωε until it intersects the cross-characteristic curve CP 
+
+> −
+
+(CP 
+
+> +
+
+, respectively) at a point Q+ (Q−, respectively); see Figure 6. Denote by ΠQ the characteristic quadrilateral enclosed by the characteristic arcs ’P Q −, ’P Q +, ’Q−Q and ’Q+Q.We shall prove that the estimate (3.31) propagates throughout ΠQ. Assume that (3.31) holds in ΠQ \ { Q}.Suppose, for contradiction, that 
+
+Å ¯∂+cc
+
+ã
+
+(Q) = H,
+
+Å ¯∂−cc
+
+ã
+
+(Q) ≥ H .
+
+Then, by the assumption, 
+
+¯∂−
+
+Å ¯∂+cc
+
+ã
+
+(Q) ≤ 0.
+
+However, applying the same computation as in (3.33) yields 
+
+¯∂−
+
+Å ¯∂+cc
+
+ã
+
+(Q) > 0,
+
+which is a contradiction. Hence, Å ¯∂+cc
+
+ã
+
+(Q) > H.
+
+An analogous argument shows that Å ¯∂−cc
+
+ã
+
+(Q) > H.
+
+Since Q is arbitrary, the desired estimate follows by the method of continuity. This completes the proof. 16 Figure 6: Illustration of the local solution and the corresponding level curve of c.
+
+Lemma 3.5. The Goursat problem (1.1) –(3.29) admits a unique global classical solution in the domain 
+
+Ω = [
+
+> ε∈(0 ,c 0)
+
+Ωε.
+
+Furthermore, Ω is an infinite sectorial domain enclosed by the characteristic curves CP 
+
+> ±
+
+.Proof. Suppose that the Goursat problem (1.1)–(3.29) admits a classical solution in the domain Ωε for some 
+
+ε ∈ (0 , c 0). By Lemma 3.4 together with (2.27), the classical solution of the Goursat problem (1.1)–(3.29) satisfies 
+
+c0 − ε < c < c 0,u0 < pu2 + v2 < u20 + 2K(( γ + 1) τ0 − b)
+
+γ(τ0 − b)γ+1 − 4aτ0
+
+,
+
+|∇ c| < − H
+
+cos ω0
+
+u20 + 2K(( γ + 1) τ0 − b)
+
+γ(τ0 − b)γ+1 − 4aτ0
+
+,
+
+|∇ u| < − κ(τ0)H
+
+cos ω0
+
+u20 + 2K(( γ + 1) τ0 − b)
+
+γ(τ0 − b)γ+1 − 4aτ0
+
+,
+
+|∇ v| < − κ(τ0)H
+
+cos ω0
+
+u20 + 2K(( γ + 1) τ0 − b)
+
+γ(τ0 − b)γ+1 − 4aτ0
+
+,
+
+(3.34) throughout Ωε for some ε ∈ (0 , c 0).Moreover, Lemma 3.4 implies that ¯∂±c < 0 in Ωε,
+
+which ensures that every level curve of c is non-characteristic. Consequently, the local continuation theorem for Goursat problems (cf. [40]) can be applied to extend the classical solution beyond the level curve c = c0 − ε.Hence, there exists ε1 > ε such that the solution extends uniquely to the larger domain Ωε1 .Repeating the above continuation argument and invoking the method of continuity, we conclude that the Goursat problem (1.1)–(3.29) admits a unique global classical solution in 
+
+Ω = [
+
+> ε∈(0 ,c 0)
+
+Ωε,
+
+which is a sector-shaped domain bounded by the characteristic curves CP 
+
+> ±
+
+; see Figure 6. Next, we establish 
+
+dist( P, l ε) → +∞ as ε → c0, (3.35) 17 where lε denotes the level curve c(x, y ) = c0 − ε.For any ϵ > 0, let αϵ be determined by ˆc(αϵ) = ϵ. Then there exists a sufficiently small ϵ > 0 such that 
+
+αϵ + ( κ(τ0) − 1) ϵc0
+
+< 0,
+
+tan 2 ω = c2
+
+(u2 + v2) cos 2 ω < c2
+
+c20 cos 2 ω0
+
+< m (τ0), for c < ϵ, 
+
+(κ(τ0) − 1) ϵc0
+
+< π
+
+4 .
+
+(3.36) Let P± denote the points on the cross-characteristic curves CP 
+
+> ±
+
+satisfying 
+
+c(P±) = ϵ. 
+
+Furthermore, let CP− 
+
+> +
+
+(CP+ 
+
+> −
+
+, respectively) be the C+ (C−, respectively) characteristic curve issuing from P−
+
+(P+, respectively). Then, in view of equation (2.26) together with the second inequality in (3.36), we obtain 
+
+0 < ¯∂+α < −(κ(τ0) − 1) ¯∂+cc0
+
+, along CP− 
+
+> +
+
+. (3.37) Integrating (3.37) along the characteristic curve CP− 
+
+> +
+
+and using the first inequality in (3.36), we arrive at 
+
+α(P−) = αϵ < α < α ϵ + ( κ(τ0) − 1) ϵc0
+
+< 0, on CP− 
+
+> +
+
+. (3.38) By symmetry, the corresponding estimate β > 0 holds along CP+ 
+
+> −
+
+. Consequently, the characteristic curves CP−
+
+> +
+
+and CP+ 
+
+> −
+
+remain disjoint. For any ε > c 0 − ϵ, let J be an arbitrary point on the level curve lε. Since the characteristic curves CP−
+
+> +
+
+and CP+ 
+
+> −
+
+remain disjoint, there exists a point I ∈ lc0−ϵ such that J lies on either the CI 
+
+> +
+
+or the CI 
+
+> −
+
+characteristic issuing from I. Without loss of generality, we assume that J ∈ CI
+
+> +
+
+, where CI 
+
+> +
+
+denotes the C+ characteristic curve passing through I. By Lemma 3.4, we have 
+
+‘|IJ | > − 1
+
+H ln 
+
+Å εc0 − ϵ
+
+ã
+
+, (3.39) where ‘|IJ | denotes the arc length of the characteristic segment cIJ . Moreover, arguing as in the derivation of (3.37), the characteristic curve cIJ is convex and satisfies 
+
+0 < α (J) − α(I) < (κ(τ0) − 1) ϵc0
+
+. (3.40) Combining (3.40) with the third inequality in (3.36), we conclude that 
+
+dist( I, J ) > − 1
+
+√2H ln 
+
+Å εc0 − ϵ
+
+ã
+
+. (3.41) Consequently, 
+
+dist( P, l ε) → +∞ as ε → c0,
+
+which establishes (3.35) and completes the proof. Combining the above results we conclude that, for every fixed u0 > c 0, there exists a global piecewise smooth supersonic jet flow expanding from the nozzle into a vacuum. The proof of Theorem 2.1 in the supersonic regime is therefore completed. 18 3.3. A priori estimates 
+
+In this subsection, we derive interior C0,1 estimates for the supersonic jet flow solutions constructed in the previous subsection 3.2. These estimates play an essential role in the limiting procedure used to establish the existence of sonic-supersonic jet flow solutions. To overcome the singular behavior arising near the vacuum boundary, we employ the approach introduced in [41]. We begin by defining the following distance functions: 
+
+rD(x, y ) = dist  (x, y ), D , rB (x, y ) = dist  (x, y ), B . (3.42) For later use, we also define 
+
+Ω+ = Ω ∩ { y ≥ 0},
+
+Ω− = Ω ∩ { y ≤ 0},
+
+Σ+(M0) = Σ( M0) ∩ { y ≥ 0},
+
+Σ−(M0) = Σ( M0) ∩ { y ≤ 0}.
+
+(3.43) Furthermore, since 
+
+sin ω = c
+
+√u2 + v2 < cc0
+
+, for pu2 + v2 > c 0,
+
+there exists a constant c1 ∈ (0 , c 0], independent of u0 ≥ c0 such that 
+
+1 + κ(τ ) cos 2 2ω + 2 τ κ ′(τ ) cos 2 ω
+
+2 cos 2 ω > 1 for 0 < c < c 1. (3.44) 
+
+Lemma 3.6. For u0 > c 0, the supersonic jet flow solution of the free boundary problem (1.1) –(2.2) satisfies 
+
+¯∂+c
+
+cos ω > − 1
+
+K rD
+
+, ¯∂−c
+
+cos ω > − 1
+
+K rB
+
+in Σ( M0), (3.45) 
+
+where 
+
+K = 12c0μ2(τ0) .
+
+Proof. We establish the estimate ¯∂+c
+
+cos ω > − 1
+
+K rD
+
+in Σ( M0). (3.46) Since ¯∂+c = 0 in Σ( M0) \ (S− ∪ Ω) , it is sufficient to verify (3.46) in the region S− ∪ Ω.Furthermore, by (2.26) and the fact that ¯∂±c ≤ 0, we obtain 
+
+2c ¯∂−ω = (1 + κ(τ )) tan ω 1 − Q cos 2 ω ¯∂−c
+
+= tan ω(1 + κ(τ ) sin 2 ω) ¯∂−c < 0. (3.47) Substituting (3.47) into the first equation of (2.33), we deduce 
+
+¯∂−  cos ω
+
+¯∂+c
+
+
+
+< − 12μ2(τ )c cos ω < −K , in S− ∪ Ω. (3.48) Let A be an arbitrary point in S− ∪ Ω and let dDA denotes the C− characteristic curve joining D to A. By the construction of the simple wave, it follows that 
+
+ cos ω
+
+¯∂+c
+
+
+
+(x, y ) −→ 0, as (x, y ) → D. (3.49) Integrating the differential inequality (3.48) along the characteristic arc dDA and using (3.49), we obtain 
+
+ cos ω
+
+¯∂+c
+
+
+
+(A) > − 1
+
+K | dDA| > − 1
+
+K dist( D, A) , (3.50) where | dDA| denotes the arc length of the characteristic segment dDA. Since the point A is arbitrary, estimate (3.46) follows throughout S− ∪ Ω. The second inequality in (3.45) can be established by an analogous argument. This completes the proof. 19 Lemma 3.7. For u0 > c 0, the supersonic jet flow solution of the free boundary problem (1.1) –(2.2) satisfies 
+
+¯∂+cc > − max 
+
+ß 2
+
+κ(τ0)rD
+
+, 1
+
+Klc 1
+
+™
+
+, in Σ+(M0); ¯∂−cc > − max 
+
+ß 2
+
+κ(τ0)rB
+
+, 1
+
+Klc 1
+
+™
+
+, in Σ−(M0); ¯∂±cc > − c0
+
+c1
+
+max 
+
+ß 2
+
+κ(τ0)l , 1
+
+Klc 1
+
+™
+
+, in Σ∓(M0).
+
+(3.51) 
+
+Proof. Since the flow remains constant, namely (u, v, c ) = ( u0, 0, c 0), in the region Σ( M0) \ (S− ∪ S+ ∪ Ω) , it suffices to establish the desired estimates in S− ∪ S+ ∪ Ω.From the characteristic decomposition (2.31) for ν = 1 , we obtain 
+
+¯∂−  c
+
+¯∂+c
+
+
+
+= − 1
+
+Ä c
+
+> ¯∂+c
+
+ä2 ¯∂−
+
+Å ¯∂+cc
+
+ã
+
+= − 1
+
+c2 Ä c
+
+> ¯∂+c
+
+ä2
+
+Å ¯∂+c ¯∂+c
+
+2μ2(τ ) cos 2 ω + ¯∂+c ¯∂−c
+
+2 cos 2 ω
+
+Å 1
+
+μ2(τ ) − κ(τ ) sin 2 2ω
+
+ã
+
++ ( τ κ ′(τ ) − 1) ¯∂+c ¯∂−c
+
+ã
+
+= − 1
+
+Ä c
+
+> ¯∂+c
+
+ä2
+
+Ç κ(τ ) ¯∂+c ¯∂+c
+
+2c2 cos 2 ω + ¯∂+c ¯∂−cc2
+
+Ç κ(τ ) cos 2 2ω + 2 sin 2 ω
+
+2 cos 2 ω + τ κ ′(τ )
+
+å
+
++ ¯∂+c
+
+2c cos 2 ω
+
+Å ¯∂+cc − ¯∂−cc
+
+ãå 
+
+.
+
+(3.52) Our next objective is to prove that in S− ∪ Ω+
+
+¯∂−  c
+
+¯∂+c
+
+
+
+< − 2
+
+κ(τ0) if ¯∂+cc < − 1
+
+Klc 1
+
+. (3.53) We first consider the region where c ≥ c1. By Lemma 3.6, 
+
+¯∂−c > − 1
+
+Kl in S− ∪ Ω+. (3.54) Therefore, ¯∂−cc > − 1
+
+Klc 1
+
+, for y > 0.
+
+Hence, if ¯∂+cc < − 1
+
+Klc 1
+
+,
+
+then ¯∂+cc − ¯∂−cc < 0.
+
+Substituting this into (3.52) yields 
+
+¯∂−  c
+
+¯∂+c
+
+
+
+< − 2
+
+κ(τ0) cos 2 ω < − 2
+
+κ(τ0) .
+
+It remains to consider the region where c < c 1. In this case, combining (3.44) with (3.52), we obtain 
+
+¯∂−  c
+
+¯∂+c
+
+
+
+< − 12μ2(τ ) cos 2 ω < − 2
+
+κ(τ0) ,
+
+which establishes (3.53). Now let A be an arbitrary point in S− ∪ Ω+ and let dDA denote the C− characteristic curve joining D to A.It follows that along dDA Å ¯∂+cc
+
+ã
+
+(x, y ) −→ −∞ , as (x, y ) → D. (3.55) 20 Integrating the differential inequality (3.53) along the characteristic arc dDA and using (3.55), we arrive at 
+
+¯∂+cc > − max 
+
+ß 2
+
+κ(τ0)rB
+
+, 1
+
+Klc 1
+
+™
+
+. (3.56) Since the point A is arbitrary, estimate (3.56) holds throughout Σ+(M0). By symmetry, we also obtain 
+
+¯∂−cc > − max 
+
+ß 2
+
+κ(τ0)rD
+
+, 1
+
+Klc 1
+
+™
+
+in Σ−(M0).
+
+It remains to estimate ¯∂+cc in Σ−(M0). By the first characteristic decomposition in Corollary 2.3.1, we have 
+
+¯∂−
+
+Å ¯∂+cc
+
+ã
+
+= κ(τ )2 cos 2 ω
+
+Å ¯∂+cc
+
+ã2
+
++
+
+Ç κ(τ ) + 1 − κ(τ ) sin 2 2ω
+
+2 cos 2 ω − 1
+
+å ¯∂+cc · ¯∂−cc . (3.57) Consequently, 
+
+¯∂−
+
+Å ¯∂+cc
+
+ã
+
+> 0, c < c 1,
+
+¯∂−
+
+Å ¯∂+cc
+
+ã
+
+> − ¯∂+cc
+
+¯∂−cc , c ≥ c1.
+
+(3.58) Now let Q be an arbitrary point in Ω−. The backward C− characteristic issuing from Q intersects the x-axis at a point Q−. In view of the estimate established above, we have 
+
+Å ¯∂+cc
+
+ã
+
+(Q−) ≥ − max 
+
+ß 2
+
+lκ (τ0) , 1
+
+Klc 1
+
+™
+
+. (3.59) If c(Q−) < c 1, then the monotonicity property ¯∂−c < 0 implies that c < c 1 along the entire characteristic segment ’Q−Q. Therefore, by (3.58) 
+
+Å ¯∂+cc
+
+ã
+
+(Q) >
+
+Å ¯∂+cc
+
+ã
+
+(Q−) > − max 
+
+ß 2
+
+lκ (τ0) , 1
+
+Klc 1
+
+™
+
+.
+
+Now suppose that c(Q−) ≥ c1. If there exists a point Qn ∈ ’Q−Q satisfying c(Qn) = c1 which, in view of (3.58), gives 
+
+Å ¯∂+cc
+
+ã
+
+(Q) ≥
+
+Å ¯∂+cc
+
+ã
+
+(Qn)
+
+> c(Q−)
+
+c1
+
+Å ¯∂+cc
+
+ã
+
+(Q−)
+
+> − c0
+
+c1
+
+max 
+
+ß 2
+
+lκ (τ0) , 1
+
+Klc 1
+
+™
+
+.
+
+(3.60) If c > c 1 along the entire characteristic segment ’Q−Q, then it follows from (3.58) that 
+
+Å ¯∂+cc
+
+ã
+
+(Q) > c(Q−)
+
+c(Q)
+
+Å ¯∂+cc
+
+ã
+
+(Q−)
+
+> − c0
+
+c1
+
+max 
+
+ß 2
+
+lκ (τ0) , 1
+
+Klc 1
+
+™
+
+.
+
+(3.61) Therefore, Å ¯∂+cc
+
+ã
+
+(Q) > − c0
+
+c1
+
+max 
+
+ß 2
+
+lκ (τ0) , 1
+
+Klc 1
+
+™
+
+.
+
+Since the point Q is arbitrary in Ω−, we conclude that 
+
+¯∂+cc > − c0
+
+c1
+
+max 
+
+ß 2
+
+lκ (τ0) , 1
+
+Klc 1
+
+™
+
+in Σ−(M0).
+
+By symmetry, the corresponding estimate for ¯∂−c holds in Σ+(M0). This completes the proof. 21 3.4. Sonic-supersonic jet solution for the vacuum case 
+
+Next, we turn to the sonic case by considering the free boundary value problem (1.1)–(2.2) with u0 = c0.To construct a solution, we approximate the sonic incoming flow by a sequence of supersonic flows. For each positive integer n, let 
+
+un 
+
+> 0
+
+=
+
+Å
+
+1 + 1
+
+n
+
+ã
+
+c0, n = 1 , 2, 3, · · · . (3.62) According to the results established in Subsections 3.2 and 3.3, for each n the free boundary value problem (1.1)–(2.2) with u0 = un 
+
+> 0
+
+possesses a global supersonic jet solution 
+
+(u, v, c ) = ( un, v n, c n)( x, y ),
+
+defined in the domain Σ 1 + 1
+
+> n
+
+.
+
+Lemma 3.8. Let ∆ ⋐ Σ(1) be any compact subset. Then there exists a positive integer N∆ such that, for every 
+
+n > N ∆, the corresponding supersonic jet flow solution 
+
+(u, v, c ) = ( un, v n, c n)( x, y )
+
+satisfies 
+
+(un 
+
+> 0
+
+)2 < u 2 
+
+> n
+
++ v2 
+
+> n
+
+< ˆq 2, [( un, v n, c n)] C0,1(∆) < 2κ(τ0) M(ε), (3.63) 
+
+where 
+
+ε = dist  ∆, {B, D },
+
+ˆq = 4c20 + 2 
+
+Å K(( γ + 1) τ0 − b)
+
+γ(τ0 − b)γ+1 − 2aτ0
+
+ã
+
+,
+
+[( un, v n, c n)] C0,1(∆) = max 
+
+n
+
+[un]C0,1(∆) , [vn]C0,1(∆) , [cn]C0,1(∆) 
+
+o
+
+,
+
+M(ε) = −√2 max 
+
+ß 1
+
+Kε , 2ˆ q c 0
+
+κ(τ0)ε , ˆq
+
+Klc 1
+
+, 2ˆ q c 0
+
+κ(τ0)lc 1
+
+, 2ˆ q c 0
+
+κ(τ0)lc 21K
+
+™
+
+.
+
+Proof. Since ¯∂±cn < 0, it follows that 
+
+¯∂±cn
+
+sin ωn cos ωn
+
+> √2 min 
+
+ß ¯∂±cn
+
+cos ωn
+
+, ¯∂±cn
+
+sin ωn
+
+™
+
+= √2 min 
+
+® ¯∂±cn
+
+cos ωn
+
+,
+
+pu2 
+
+> n
+
++ v2 
+
+> n
+
+¯∂±cn
+
+cn
+
+´
+
+.
+
+(3.64) Moreover, the Bernoulli relation implies that 
+
+un 
+
+> 0
+
+<
+
+»
+
+u2 
+
+> n
+
++ v2 
+
+> n
+
+< ˆq in Σ
+
+Å
+
+1 + 1
+
+n
+
+ã
+
+.
+
+Therefore, applying Lemmas 3.6 and 3.7, we obtain 
+
+¯∂±cn
+
+sin ωn cos ωn
+
+> M(ε) in ∆. (3.65) Finally, combining (3.65) with (2.18) and (2.27) yields the estimate (3.63). The proof is completed. By Lemma 3.8, together with a standard diagonal argument, there is a bounded function 
+
+(˘ u, ˘v, ˘c) ∈ C0,1 Σ(1) 
+
+and a subsequence 
+
+{(unj , v nj , c nj )}∞ 
+
+> j=1
+
+⊂ { (un, v n, c n)}∞
+
+> n=1
+
+,
+
+such that, for every compact subset ∆ ⋐ Σ(1) ,
+
+(unj , v nj , c nj ) −→ (˘ u, ˘v, ˘c) in C0,1(∆) as j → ∞ . (3.66) 22 Lemma 3.9. The limit function (˘ u, ˘v, ˘c) obtained in (3.66) extends continuously to Σ(1) . Furthermore, 
+
+(˘ u, ˘v, ˘c) = ( c0, 0, c 0) on BD, 
+
+and 
+
+(˘ u, ˘v, ˘c) = ( uv, v v, 0) on {(x, y ) | x = φ(y), y < −l},
+
+(˘ u, ˘v, ˘c) = ( uv, −vv, 0) on {(x, y ) | x = φ(y), y > l },
+
+where uv = ˆ u(αv) and vv = ˆ v(αv), given by (3.2) .Proof. Fix ε ∈ (0 , l ) and let η > 0 be sufficiently small. Define 
+
+X (ε, η ) = {(x, y ) : x ∈ (0 , η ), |y| < l − ε} . (3.67) By Lemma 3.8, we have 
+
+[( unj , v nj , c nj )] C0,1(X (ε,η )) < 2κ(τ0) M(ε). (3.68) Consequently, 
+
+∥unj − u nj 
+
+> 0
+
+∥0; X (ε,η ) < 2κ(τ0) M(ε)η, 
+
+∥vnj ∥0; X (ε,η ) < 2κ(τ0) M(ε)η, 
+
+∥cnj − c0∥0; X (ε,η ) < 2κ(τ0) M(ε)η. 
+
+(3.69) Letting j → ∞ in (3.69) yields 
+
+∥(˘ u, ˘v, ˘c) − (c0, 0, c 0)∥0; X (ε,η ) < 6κ(τ0) M(ε)η. (3.70) Since η > 0 is arbitrary, it follows that, for every y0 ∈ (−l, l )(˘ u(x, y ), ˘v(x, y ), ˘c(x, y )) −→ (c0, 0, c 0), as (x, y ) → (0 , y 0). (3.71) For any sufficiently small ε > 0 and η > 0, define 
+
+Y(ε, η ) = {(x, y ) | φ(y; l) < x < φ (y; l) + η, y < −l − ε} . (3.72) Let (x0, y 0) ∈ Y (ε, η ). Then, for all sufficiently large j, we have 
+
+(x0, y 0) ∈ Σ
+
+Å
+
+1 + 1
+
+nj
+
+ã
+
+.
+
+Applying Lemma 3.8, we obtain 
+
+[( unj , v nj , c nj )] C0,1  
+
+> Å
+> Y(ε,η )∩Σ
+> Å
+> 1+ 1
+> nj
+> ãã
+
+< 2κ(τ0) M(ε). (3.73) Moreover, since 
+
+φ(y; l) < φ 
+
+Å
+
+y; 1 + 1
+
+nj
+
+ã
+
+, y < −l, 
+
+it follows that 
+
+unj (x0, y 0) − uv,n j < 2κ(τ0) M(ε)η, 
+
+vnj (x0, y 0) − vv,n j < 2κ(τ0) M(ε)η, 
+
+|cnj (x0, y 0)| < 2κ(τ0) M(ε)η, 
+
+(3.74) where (uv,n j , v v,n j ) denotes the vacuum state corresponding to the simple wave solution associated with u0 =
+
+unj 
+
+> 0
+
+. By letting j → ∞ , we arrive at 
+
+|(˘ u, ˘v, ˘c)|(x0, y 0) − (uv, v v, 0) | < 6κ(τ0) M(ε)η. 
+
+23 Figure 7: Configuration of the sonic–supersonic jet expanding into a vacuum: The wave pattern together with the symmetric vacuum boundaries emanating from the nozzle exit. 
+
+Consequently, 
+
+∥(˘ u, ˘v, ˘c) − (uv, v v, 0) ∥0; Y(ε,η ) < 6κ(τ0) M(ε)η. (3.75) In view of the arbitrariness of ε and η, (˘ u, ˘v, ˘c) extends continuously to the vacuum boundary 
+
+{(x, y ) : x = φ(y; 1) , y < −l},
+
+and satisfies 
+
+(˘ u, ˘v, ˘c)( φ(y; 1) , y ) = ( uv, v v, 0) , y < −l. 
+
+Using symmetry, (˘ u, ˘v, ˘c) also extends continuously to 
+
+{(x, y ) | x = φ(y; 1) , y > l },
+
+with boundary value 
+
+(˘ u, ˘v, ˘c)( φ(y; 1) , y ) = ( uv, −vv, 0) , y > l. 
+
+This concludes the proof. Combining the results established above, we conclude the existence of a Lipschitz-continuous sonic-supersonic jet solution for vacuum from the straight 2-D nozzle. The corresponding wave structure is depicted in Figure 7. The proof of Theorem 2.1 for u0 = c0 is therefore completed. 
+
+4. Sonic-supersonic jet flows from the straight 2-D nozzle into the atmosphere 
+
+This section investigates (1.1)–(2.3). Introduce 
+
+αa = {α : ˆ c(α) = ca}, (4.1) where ca denotes the sound speed corresponding to the prescribed atmospheric pressure pa. Furthermore, define 
+
+θa = αa − arcsin 
+
+Ç ca
+
+pˆu2(αa) + ˆ v2(αa)
+
+å
+
+. (4.2) Throughout the present section, we suppose that 
+
+−π < θ a < 0. (4.3) 24 4.1. Local supersonic jet flow into an atmosphere 
+
+Throughout this subsection, we assume that (4.3) holds. The uniform supersonic flow issuing from the two corners of the nozzle expands through two symmetric centered simple waves, denoted by S+ and S−, until the atmospheric pressure p = pa is attained. The resulting jet is separated from the surrounding stationary atmosphere by two free boundaries, each of which is a contact discontinuity. According to the centered simple wave solution established in Theorem 3.2, the upper simple wave S+ is described by 
+
+(u, v, c ) = ( u+(x, y ), v +(x, y ), c +(x, y )) , αa < arctan 
+
+Å y + lx
+
+ã
+
+< α 0, (4.4) whereas the lower simple wave S− is given by 
+
+(u, v, c ) = ( u−(x, y ), v −(x, y ), c −(x, y )) , αa < arctan 
+
+Å l − yx
+
+ã
+
+< α 0. (4.5) The simple wave S+ is enclosed by the two straight C+ characteristic lines 
+
+BP : y = x tan α0 − l, BE : y = x tan αa − l. 
+
+The region beyond the characteristic line BE is occupied by a constant state, which is separated from the sur-rounding atmosphere by the jet boundary 
+
+J− : y + lx = tan θa.
+
+Similarly, S− is enclosed by the two straight C− characteristic lines 
+
+DP : y = l − x tan α0, DG : y = l − x tan αa.
+
+The constant-state region behind the characteristic line DG is bounded by the jet boundary 
+
+J+ : l − yx = tan θa,
+
+which separates the jet from the stationary atmosphere. The two centered simple waves begin to interact at the point 
+
+P = ( l cot α0, 0) .
+
+From the point P we construct a C+ (C−, respectively) cross-characteristic curve, denoted by dP G (dP E , respec-tively), lying in the simple wave S− (S+, respectively). The flow in the interaction region is then determined by solving the Goursat problem for (1.1) with the boundary condition 
+
+(u, v, c )|dP E = ( u+, v +, c +), (u, v, c )|dP G = ( u−, v −, c −). (4.6) By the results established in Section 3, (1.1)-(4.6) possesses a global classical solution in the domain enclosed by the characteristic curves dP G , dP E , positive characteristic CE 
+
+> +
+
+emanating from E and the negative characteristic 
+
+CG 
+
+> −
+
+emanating from G. Furthermore, the solution obeys the estimates obtained in Lemma 3.4. Since the flow adjacent to a constant-state region is itself a simple wave, two non-planar simple waves, denoted by I+ and I−, are generated from the characteristic curves CG 
+
+> −
+
+and CE 
+
+> +
+
+, respectively. The characteristic curves of I+ (I−, respectively) are straight C+ (C−, respectively) characteristics. Lemma 3.4 yields ¯∂±c|CE 
+
+> +
+
+< 0.
+
+Exploiting the above inequality together with (2.25) and the characteristic decomposition (2.29), it follows that the simple wave I− obeys ¯∂+β > 0, ¯∂+c < 0.
+
+Consequently, the straight C− characteristic originating from CE 
+
+> +
+
+remains non-intersecting. 25 Let F (H, respectively) denote the intersection point of the straight C− (C+, respectively) characteristic emanating from E (G, respectively) with the jet boundary J− (J+, respectively). The simple waves I+ and I−
+
+are then reflected from the jet boundary at the points F and H, respectively. Finally, we construct a C+ (C−, respectively) cross characteristic, denoted by CF 
+
+> +
+
+(CH 
+
+> −
+
+, respectively), inside the simple wave I+ (I−, respectively). Since ¯∂+c < 0 on CE 
+
+> +
+
+, another application of (2.29) yields 
+
+¯∂+c|CF 
+
+> +
+
+< 0.
+
+To investigate the reflected simple waves I+ and I− from the jet boundaries J− and J+, respectively, we analyze (1.1) subject to the boundary conditions 
+
+
+
+(u, v, c ) = ( uCF 
+
+> +
+
+, v CF 
+
+> +
+
+, c CF 
+
+> +
+
+)( x, y ), (x, y ) ∈ CF 
+
+> +
+
+,v(x−(s), y −(s)) x′−(s) = u(x−(s), y −(s)) y′−(s), x′2 
+
+> −
+
++ y′2 
+
+> −
+
+= 1 , s > 0,p(x−, y −)( s) = pa, s > 0,
+
+(x−(0) , y −(0)) = ( xF , y F ),
+
+(4.7) where (uCF 
+
+> +
+
+, v CF 
+
+> +
+
+, c CF 
+
+> +
+
+) denotes the flow state prescribed along the characteristic curve CF 
+
+> +
+
+.The free boundary is the unknown jet boundary 
+
+J− : ( x, y ) = ( x−, y −)( s), s > 0.
+
+For later convenience, we parameterize the characteristic curve CF 
+
+> +
+
+by 
+
+x = ˜ xF (s), y = ˜ yF (s),
+
+where s ≥ 0 denotes the arc-length parameter. We now establish a local existence result for the free boundary problem (1.1)–(4.7). 
+
+Lemma 4.1. There exists a sufficiently small constant ϵ0 > 0 such that the free boundary value problem (1.1) –
+
+(4.7) admits a unique classical solution in the domain Φϵ0 bounded by the characteristic curve CF 
+
+> +
+
+, the jet boundary J− and the C− characteristic originating from the point  ˜xF (ϵ0), ˜yF (ϵ0). Here, the constant ϵ0
+
+depends only on the C1-norm of the prescribed boundary condition on CF 
+
+> +
+
+. Furthermore, the solution obeys 
+
+¯∂−c > 0, ¯∂0θ J− > 0, ¯∂+c < 0. (4.8) 
+
+Proof. The local solvability of the free boundary problem (1.1)–(4.7) follows directly from the local existence theorem established in [2]. It therefore remains only to verify the estimates in (4.8). From the boundary condition on CF 
+
+> +
+
+, we have 
+
+¯∂+c|CF 
+
+> +
+
+< 0.
+
+An application of the first characteristic decomposition in Corollary 2.3.1 shows that 
+
+¯∂+c < 0 in Φϵ0 . (4.9) The boundary condition in (4.7) further implies that 
+
+¯∂0c = ( ¯∂+ + ¯∂−)c
+
+2 = 0 on J−. (4.10) Consequently, ¯∂−c|J− > 0,
+
+and the second characteristic decomposition in Corollary 2.3.1 yields 
+
+¯∂−c > 0 in Φϵ0 . (4.11) 26 Using (2.25) together with (2.26), a straightforward calculation gives 
+
+¯∂0θ =
+
+Å ¯∂+ + ¯∂−
+
+4 cos ω
+
+ã
+
+(α + β)=
+
+Å κ(τ )2√u2 + v2
+
+ã
+
+( ¯∂− − ¯∂+)c
+
+=⇒ ¯∂0θ > 0, on J−.
+
+(4.12) The proof is therefore completed. 
+
+4.2. Local sonic-supersonic jet flow solution in an atmosphere 
+
+We next turn our attention to the construction of a local sonic–supersonic jet solution in the presence of an atmosphere. To this end, we introduce the following quantities: 
+
+α nj 
+
+> a
+
+= {α : ˆ c nj (α) = ca},α∞ 
+
+> a
+
+= {α : ˆ c(α) = ca},ω∞ 
+
+> a
+
+= arcsin 
+
+Ç ca
+
+pˆu 2(α∞ 
+
+> a
+
+) + ˆ v 2(α∞ 
+
+> a
+
+)
+
+å
+
+,θ∞ 
+
+> a
+
+= α∞ 
+
+> a
+
+− ω∞ 
+
+> a
+
+, β∞ 
+
+> a
+
+= α∞ 
+
+> a
+
+− 2ω∞ 
+
+> a
+
+.
+
+(4.13) For each nj , let C nj 
+
+> +
+
+denote the C+ characteristic curve issuing from the point B with initial slope tan α nj 
+
+> a
+
+in the corresponding supersonic jet solution for the vacuum case. By the results of Section 3.3, for u0 = unk  
+
+> 0
+
+the flow is described by 
+
+(u, v, c ) = ( unj , v nj , c nj )( x, y ).
+
+Parameterizing the characteristic curve C nj 
+
+> +
+
+by its arc length, 
+
+x = xnj (s), y = ynj (s), s > 0,
+
+we have 
+
+»(x′ 
+
+> nj
+
+(s)) 2 + ( y′ 
+
+> nj
+
+(s)) 2 = 1 ,y′ 
+
+> nj
+
+(s)
+
+x′ 
+
+> nj
+
+(s) = Λ +
+
+ (unj , v nj , c nj )( xnj (s), y nj (s))  , s > 0. (4.14) We then consider the free boundary value problem for (1.1) subject to 
+
+
+
+(u, v, c ) = ( unj , v nj , c nj )( x, y ), (x, y ) ∈ C nj 
+
+> +
+
+;
+
+u(x, y ) = v(x, y )ψ′ 
+
+> nj
+
+(y), p (x, y ) = pa, (x, y ) ∈ { (x, y )|x = ψnj (y), y < −l};
+
+ψnj (−l) = 0 .
+
+(4.15) The unknown jet-free boundary is given by 
+
+x = ψnj (y), y < −l, (4.16) By Lemma 3.6, the solution satisfies 
+
+− 1
+
+Kl < ¯∂+cnj ≤ 0, on C nj 
+
+> +
+
+∩ { y < 0}. (4.17) Throughout this subsection, we assume that 
+
+β∞ 
+
+> a
+
+> −π. (4.18) Accordingly, there is a sufficiently small constant ε0 > 0 such that 
+
+−π < β ∞ 
+
+> a
+
+− ε0 < β ∞ 
+
+> a
+
++ ε0 < θ ∞ 
+
+> a
+
+− ε0 < θ ∞ 
+
+> a
+
++ ε0 < 0. (4.19) 27 By Lemma 4.1, together with (4.10) and (4.17), there exists a uniform constant ϵ0 > 0, such that for all suffi-ciently large j, the problem (1.1), (4.15) admits a unique piecewise smooth solution 
+
+(u∗ 
+
+> nj
+
+, v ∗ 
+
+> nj
+
+, c ∗ 
+
+> nj
+
+)( x, y )
+
+in the domain Ψ nj 
+
+> −
+
+bounded by the characteristic curve C nj 
+
+> +
+
+, the free boundary x = ψnj (y) and the C− charac-teristic issuing from the point  xnj (ϵ0), y nj (ϵ0). Furthermore, the solution admits 
+
+|(θ, α, β ) − (θ∞ 
+
+> a
+
+, α ∞ 
+
+> a
+
+, β ∞ 
+
+> a
+
+)| ≤ ε0, ca
+
+2 ≤ c∗ 
+
+> nj
+
+≤ ca, (4.20) and 
+
+− 2
+
+Kl < ¯∂+c∗ 
+
+> nj
+
+≤ 0, 0 ≤ ¯∂−c∗ 
+
+> nj
+
+< 2
+
+Kl . (4.21) Let x = x− 
+
+> nj
+
+(y) denote the C− characteristic curve issuing from the point 
+
+ xnj (ϵ0), y nj (ϵ0).
+
+This characteristic intersects the free boundary x = ψnj (y) at the point  ψnj (yj ), y j
+
+. Along the characteristic curve, we have 
+
+dx − 
+
+> nj
+
+(y)
+
+dy = cot ˜βnj
+
+ x− 
+
+> nj
+
+(y), y , yj < y < y nj (ϵ0). (4.22) On the other hand, the free boundary (4.15) satisfies 
+
+dψ nj (y)
+
+dy = cot θ∗nj
+
+ ψnj (y), y , yj < y < −l. (4.23) Thus, applying Arzelà–Ascoli theorem together with a standard diagonal argument, there exists a constant ξ > 0,a subsequence {njk }∞ 
+
+> k=1
+
+⊂ { nj }∞
+
+> j=1
+
+, functions 
+
+x∞(s), y ∞(s) ∈ C[0 , ϵ 0], x∞− (y) ∈ C[−l − ξ, y ∞(ϵ0)] ,ψ∞(y) ∈ C[−l − ξ, −l], (u∗, v ∗, c ∗) ∈ C0,1(Ψ −),
+
+such that 
+
+yjk −→ − l − ξ, as k → ∞ , (4.24) and 
+
+(xnjk , y njk ) −→ (x∞, y ∞) in C[0 , ϵ 0],x−
+
+> njk
+
+−→ x∞− in C[−l − ξ, y ∞(ϵ0)] ,ψnjk −→ ψ∞ in C[−l − ξ, −l],
+
+(u∗
+
+> njk
+
+, v ∗
+
+> njk
+
+, c ∗
+
+> njk
+
+) −→ (u∗, v ∗, c ∗) in C0,1(Ψ −),
+
+as k → ∞ . (4.25) Here, Ψ− denotes the domain enclosed by 
+
+x = x∞(s), y = y∞(s), s ∈ (0 , ϵ 0),
+
+the characteristic curve 
+
+x = x∞− (y), y ∈ (−l − ξ, y ∞(ϵ0)) ,
+
+and the free boundary 
+
+x = ψ∞(y), y ∈ (−l − ξ, −l).
+
+Using symmetry, an analogous solution is obtained in the domain Ψ+, which is enclosed by 
+
+x = x∞(s), y = −y∞(s), s ∈ (0 , ϵ 0),
+
+28 Figure 8: Configuration of the local sonic–supersonic jet flow into an atmosphere from a straight 2-D nozzle and the wave structure together with the free jet boundaries separating the jet from the surrounding atmosphere. 
+
+the characteristic curve 
+
+x = x∞− (−y), y ∈ (−y∞(ϵ0), l + ξ),
+
+and the free boundary 
+
+x = ψ(−y), y ∈ (l, l + ξ).
+
+Let 
+
+L =  x∞(ϵ0), y ∞(ϵ0), J =  x∞(ϵ0), −y∞(ϵ0).
+
+Denote by dDL and dBJ the C− and C+ characteristic curves connecting D to L and B to J, respectively, in the sonic–supersonic jet flow expanding into a vacuum. These two characteristic curves intersect at a point, denoted by G.Finally, let Ψ0 denote the region enclosed by the segment BD together with the characteristic arcs ”GJ , dGL ,
+
+dDJ and dBL ; see Figure 8. Further define 
+
+(u, v, c ) =( u∗, v ∗, c ∗) for (x, y ) ∈ Ψ−,
+
+(u, v, c ) =(˘ u, ˘v, ˘c) for (x, y ) ∈ Ψ0. (4.26) The solution in Ψ+ is then obtained by symmetry, namely, 
+
+(u, v, c ) =  u∗(x, −y), −v∗(x, −y), c ∗(x, −y), (x, y ) ∈ Ψ+. (4.27) Here, (˘ u, ˘v, ˘c) denotes the sonic–supersonic jet solution corresponding to the vacuum case constructed in Sec-tion 3.3. By construction, the function (u, v, c ) defined by (4.26)-(4.27) provides a local sonic–supersonic solution to the free boundary value problem (1.1)–(2.3) with u0 = c0. Consequently, there exists a sufficiently small constant δ > 0 such that the solution is defined in the domain Γ( δ). This establishes Theorem 2.2. 
+
+5. Conclusions 
+
+We investigated sonic-supersonic jet flows issuing from a straight two-dimensional nozzle for compressible fluids governed by the van der Waals equation of state. Owing to the presence of sonic states at the nozzle exit 29 the governing Euler system becomes degenerate hyperbolic which led to a very interesting free boundary value problem. By employing the method of characteristic decomposition together with suitable a priori estimates, we established the global existence of locally Lipschitz continuous sonic-supersonic jet flow solutions expanding into a vacuum. Furthermore, by constructing a family of local supersonic jet flow solutions and passing to the sonic limit through a compactness argument, we proved the local existence of sonic-supersonic jet flow solutions exhausting into a static atmosphere with pressure 0 < p a < p 0.In this work, we extended the existing theory of sonic-supersonic jet flows from the classical polytropic framework to the physically more realistic van der Waals gas model. Although the analysis is carried out under a suitable convexity assumption on the pressure law, many of the analytical techniques developed here rely only on general structural properties of the equation of state and are therefore expected to be applicable to a broader class of convex pressure laws. The results obtained in this article provide a useful foundation for the mathematical analysis of transonic free boundary problems arising in more general nozzle geometries and under different ambient flow conditions. 
+
+Acknowledgements 
+
+The first author is grateful to the Indian Institute of Technology Kharagpur for the financial support. The second author (TRS) acknowledges the financial support received from SERB, DST, Government of India, under the Core Research Grant (Ref. No. CRG/2022/006297). 
+
+References 
+
+[1] R. Courant and K. O. Friedrichs, Supersonic Flow and Shock Waves , Interscience Publishers, Inc., New York, 1948. [2] Chen, Shuxing and Qu, Aifang, “Interaction of rarefaction waves in jet stream,” Journal of Differential Equations , 248 (2010), no. 12, 2931–2954. [3] Chen, Shuxing and Qu, Aifang, “Interaction of rarefaction waves and vacuum in a convex duct”, Arch. Ration. Mech. Anal. , 213, 2014, no. 2, 423–446. [4] Luan, Liping and Chen, Jianjun and Liu, Jianli, “Two dimensional relativistic Euler equations in a convex duct”, J. Math. Anal. Appl. , 461, 2018, no. 2, 1084–1099 [5] G. Lai, “Sonic-supersonic jet flows from a two-dimensional nozzle,” Journal of Differential Equations , 360 (2023), 287–313. [6] Y. Nie, C. Wang, and G. Gai, “A free boundary problem in an unbounded domain and subsonic jet flows from divergent nozzles,” SIAM Journal on Mathematical Analysis , 56 (2024), no. 5, 6337–6360. [7] X. Zhang, P. Qu, and H. Yu, “Time-periodic transonic shock solution in divergent nozzles,” Journal of Differential Equations , 475 (2026), Paper No. 114510. [8] G. Lai and W. Sheng, “Supersonic reacting jet flows from two-dimensional divergent nozzles,” Journal de Mathématiques Pures et Appliquées , 210 (2026), Paper No. 103878. [9] Park, Hyangdong, “Three-dimensional supersonic flows for the steady Euler-Poisson system in divergent nozzles”, Nonlinearity , 39 (2026), no. 2, Paper No. 025012, 26, [10] Z. Zhang, “Subsonic Euler flows with gravity in a two-dimensional finitely long curved nozzle,” Nonlinear Analysis: Real World Applications , 90 (2026), Paper No. 104566. [11] J. Gao, F. Huang, J. Kuang, D. Wang, and W. Xiang, “Steady supersonic combustion flows with a contact discontinuity in two-dimensional finitely long nozzles,” Calculus of Variations and Partial Differential Equations , 64 (2025), no. 2, Paper No. 41. 30 [12] Y. Pu, “The incompressible impinging jet flows issuing from an asymmetric finitely long nozzle,” Journal of Differential Equations , 322 (2022), 71–100. [13] S. Chen and A. Qu, “Interaction of rarefaction waves and vacuum in a convex duct,” Archive for Rational Mechanics and Analysis , 213 (2014), no. 2, 423–446. [14] G. Lai, “Global nonisentropic rotational supersonic flows in a semi-infinite divergent duct,” SIAM Journal on Mathematical Analysis , 52 (2020), no. 5, 5121–5154. [15] G. Xu and H. Yin, “Three-dimensional global supersonic Euler flows in the infinitely long divergent noz-zles,” SIAM Journal on Mathematical Analysis , 53 (2021), no. 1, 133–180. [16] T. Zhang and Y. Zheng, “Sonic-supersonic solutions for the steady Euler equations,” Indiana University Mathematics Journal , 63 (2014), no. 6, 1785–1817. [17] Y. Hu and J. Li, “Sonic-supersonic solutions for the two-dimensional steady full Euler equations,” Archive for Rational Mechanics and Analysis , 235 (2020), no. 3, 1819–1871. [18] C. Wang and Z. Xin, “Smooth transonic flows of Meyer type in de Laval nozzles,” Archive for Rational Mechanics and Analysis , 232 (2019), no. 3, 1597–1647. [19] Curró, C. and Manganaro, N. and Pavlov, M. V., “Nonlinear wave interaction problems in the three-dimensional case”, Nonlinearity , 30, (2017), no. 1, 207–224. [20] Manganaro, N., “Conservation laws for 2 × 2 hyperbolic systems”, Nonlinearity , 32 (2019), no. 11, 4188– 4205, [21] H. Srivastava and M. Zafar, “Existence and regularity of sonic-supersonic solutions for two-dimensional steady magnetohydrodynamics system with van der Waals fluid,” Mathematical Methods in the Applied Sciences , 49 (2026), no. 2, 631–658. [22] A. Pandey, R. Barthwal, and T. Raja Sekhar, “Construction of solutions of the Riemann problem for a two-dimensional Keyfitz–Kranzer type model governing a thin film flow,” Applied Mathematics and Com-putation , 498 (2025), Paper No. 129378. [23] A. Pandey and T. Raja Sekhar, “Formation of vacuum state and delta shock in the solution of the two-dimensional Riemann problem for zero pressure gas dynamics,” Studies in Applied Mathematics , 156 (2026), no. 1, Paper No. e70169. [24] Barthwal, Rahul and Rohde, Christian and Sen, Anupam, “Existence and stability of the Riemann solutions for a non-symmetric Keyfitz-Kranzer type model”, Nonlinearity , 39 (2026), no. 3, Paper No. 035006, 34. [25] M. Zafar and V. D. Sharma, “Expansion of a wedge of non-ideal gas into vacuum,” Nonlinear Analysis: Real World Applications , 31 (2016), 580–592. [26] H. B. Callen, Thermodynamics & an Introduction to Thermostatistics , American Association of Physics Teachers, College Park, MD, 1998. [27] A. Pandey and T. Raja Sekhar, “Supersonic–sonic patch solution for the two-dimensional Euler equations with a van der Waals equation of state,” Journal of Mathematical Analysis and Applications , 563 (2026), no. 2, 130818. [28] G. Lai, “Interactions of composite waves of the two-dimensional full Euler equations for van der Waals gases,” SIAM Journal on Mathematical Analysis , 50 (2018), no. 4, 3535–3597. [29] G. Lai, “On the expansion of a wedge of van der Waals gas into a vacuum,” Journal of Differential Equa-tions , 259 (2015), no. 3, 1181–1202. 31 [30] G. Lai, “On the expansion of a wedge of van der Waals gas into a vacuum II,” Journal of Differential Equations , 260 (2016), no. 4, 3538–3575. [31] J. Li, T. Zhang, and Y. Zheng, “Simple waves and a characteristic decomposition of the two-dimensional compressible Euler equations,” Communications in Mathematical Physics , 267 (2006), no. 1, 1–12. [32] Y. Fan, L. Guo, Y. Hu, and S. You, “Semi-hyperbolic patch characterized by two-dimensional steady rela-tivistic Euler equations,” Journal of Differential Equations , 354 (2023), 264–295. [33] J. Chen, Y. Zhang, and S. Li, “The regularity of semi-hyperbolic patches of solutions to the two-dimensional compressible Euler equations in magnetohydrodynamics,” Journal of Mathematical Analysis and Applica-tions , 545 (2025), no. 2, Paper No. 129242. [34] R. Barthwal and T. Raja Sekhar, “Existence and regularity of solutions of a supersonic-sonic patch arising in axisymmetric relativistic transonic flow with general equation of state,” Journal of Mathematical Analysis and Applications , 523 (2023), no. 2, Paper No. 127022. [35] T. W. Tuer and G. S. Springer, “Axisymmetric expansion of a gas from a nozzle into a vacuum,” Journal of Fluid Mechanics , 66 (1974), no. 1, 107–113. [36] R. A. Cassanova and W. B. Stephenson, “Expansion of a jet into a vacuum,” Proceedings of the Symposium (International) on Combustion , 11 (1967), no. 1, 577–587. [37] J. Li, Z. Yang, and Y. Zheng, “Characteristic decompositions and interactions of rarefaction waves of two-dimensional Euler equations,” Journal of Differential Equations , 250 (2011), no. 2, 782–798. [38] Li, Ta Tsien and Yu, Wen Ci, “Boundary value problems for quasilinear hyperbolic systems”, Duke Uni-versity Mathematics Series, V, Duke University, Mathematics Department, Durham, NC, 1985, [39] G. Lai, “Interactions of rarefaction waves and rarefaction shocks of the two-dimensional compressible Euler equations with general equation of state,” Journal of Dynamics and Differential Equations , 35 (2023), no. 1, 381–419. [40] T. T. Li, Global Classical Solutions for Quasilinear Hyperbolic Systems , RAM: Research in Applied Math-ematics, Vol. 32, Masson, Paris; John Wiley & Sons, Ltd., Chichester, 1994. [41] Lai, Geng and Sheng, Wancheng, “Two-dimensional pseudosteady flows around a sharp corner”, Arch. Ration. Mech. Anal., 241, 2021, no. 2, 805–884. 32

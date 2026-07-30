@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-30T13:46:38.848187+00:00",
+  "generated_at": "2026-07-30T15:49:12.951858+00:00",
   "updated_date": "20260730",
   "carryover_days": 9,
   "tag_states": {
@@ -11,9 +11,270 @@
     "flow-pred": {
       "updated_date": "20260730",
       "carryover_days": 9,
-      "items": []
+      "items": [
+        {
+          "id": "2607.25687v1",
+          "source": "arxiv",
+          "title": "From Deterministic to Generative Deep Learning for Urban Air Quality Reconstruction from Sparse Observations",
+          "abstract": "Full-field reconstruction of air pollution is essential for evaluating pollution exposure and supporting public health decision-making. However, the complex interactions among pollutants, hard-to-predict weather patterns, and limited monitoring station coverage make this a complex task. We apply deep learning techniques to provide fast and accurate reconstructions from sparse observations of four key pollutants: NO2, O3, PM2.5 and PM10. Models are trained on full-field simulation data and evaluated on real-world observations collected from 9 to 28 monitoring stations in the city of Paris. We introduce a diffusion-based generative framework for multi-pollutant reconstruction and benchmark its performance against deterministic deep learning models. Despite noisy observations and strong spatial variability, the models achieve high structural similarity on simulated validation data and produce realistic spatial patterns on real-world observations, as indicated by power-spectrum analysis. We introduce data augmentation methods that enable transfer to real-world observations without retraining, allowing the models to generalise beyond the training period. These findings highlight the potential of ML models for reliable real-world deployment in air pollution reconstruction tasks.",
+          "authors": [
+            "Abhishek A. Sabnis",
+            "Mihai Mitrea",
+            "Lya Lugon",
+            "Karine Sartelet",
+            "Marc Bocquet",
+            "Xiaoyuan Cheng",
+            "Shupeng Zhu",
+            "Sibo Cheng"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "cs.AI"
+          ],
+          "published": "2026-07-28T13:03:09+00:00",
+          "link": "https://arxiv.org/pdf/2607.25687v1",
+          "tags": [
+            "keyword:flow-pred",
+            "keyword:pc-latent",
+            "keyword:small-reg",
+            "query:flow-pred",
+            "query:small-reg"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Sparse sensor flow reconstruction for air quality",
+          "llm_evidence_cn": "稀疏传感器流场重建（空气质量）",
+          "llm_evidence": "稀疏传感器流场重建（空气质量）",
+          "canonical_evidence": "稀疏传感器流场重建（空气质量）",
+          "llm_tldr_en": "Applies deep learning (diffusion-based generative framework) to reconstruct full-field air pollution from sparse monitoring stations.",
+          "llm_tldr_cn": "针对空气污染全流场重建中监测站稀疏、污染物交互复杂的问题，本文采用深度学习技术，提出扩散生成框架，从9至28个站点稀疏观测重建NO2等四种污染物浓度场。在巴黎真实数据上，生成式方法优于确定性方法，展示了从稀疏传感器重建标量场的有效性。",
+          "llm_tldr": "针对空气污染全流场重建中监测站稀疏、污染物交互复杂的问题，本文采用深度学习技术，提出扩散生成框架，从9至28个站点稀疏观测重建NO2等四种污染物浓度场。在巴黎真实数据上，生成式方法优于确定性方法，展示了从稀疏传感器重建标量场的有效性。",
+          "llm_tags": [
+            "query:flow-pred"
+          ],
+          "matched_query_tag": "query:flow-pred",
+          "matched_query_text": "sparse sensor flow reconstruction",
+          "matched_requirement_id": "req-8",
+          "selection_source": "carryover_cache",
+          "paper_id": "2607.25687v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2607.27062v1",
+          "source": "arxiv",
+          "title": "PIKS: Universal Physics-Informed Kernel Methods",
+          "abstract": "Physics-informed machine learning incorporates physical principles --often expressed via differential operators-- into data-driven models. While physics-informed neural networks (PINNs) dominate empirical applications, the complexity of neural network architectures and optimization landscapes hinders the development of a corresponding learning theory. In turn, kernel methods offer an appealing alternative with closed-form solutions and analytical tractability, yet existing guarantees primarily cover the well-specified setting where the target belongs to the native Reproducing Kernel Hilbert Space (RKHS). This imposes unrealistic regularity assumptions that physical targets often fail to satisfy. In this paper, we introduce and analyze Physics-Informed Kernel methodS (PIKS). We establish the universal consistency of PIKS for linear differential constraints, proving that for universal kernels (such as Gaussian or Matérn), the estimator asymptotically learns the target while satisfying physical constraints. We further derive finite-sample bounds under suitable source conditions. Our analysis is based on extending classical operator-theoretic analysis of kernel methods to physics-informed machine learning. Numerical experiments demonstrate that PIKS can be competitive with PINNs and traditional finite element methods.",
+          "authors": [
+            "Joachim Bona-Pellissier",
+            "Giacomo Meanti",
+            "Matteo Santacesaria",
+            "Lorenzo Rosasco"
+          ],
+          "primary_category": "stat.ML",
+          "categories": [
+            "stat.ML",
+            "cs.LG"
+          ],
+          "published": "2026-07-29T15:53:03+00:00",
+          "link": "https://arxiv.org/pdf/2607.27062v1",
+          "tags": [
+            "keyword:flow-pred",
+            "keyword:pc-latent",
+            "query:flow-pred",
+            "query:pc-latent"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "physics-informed kernel methods for PDEs, applicable to flow prediction",
+          "llm_evidence_cn": "物理信息核方法用于偏微分方程，可应用于流场预测",
+          "llm_evidence": "物理信息核方法用于偏微分方程，可应用于流场预测",
+          "canonical_evidence": "物理信息核方法用于偏微分方程，可应用于流场预测",
+          "llm_tldr_en": "Introduces Physics-Informed Kernel Methods (PIKS) that embed differential operators into kernel learning, offering theoretical guarantees and practical efficiency for solving PDEs.",
+          "llm_tldr_cn": "物理信息神经网络常受限于架构复杂和训练困难。本文提出物理信息核方法（PIKS），将微分算子嵌入核函数，避免反向传播。PIKS在多个PDE基准上达到与PINN相当的精度，且训练更快、理论更清晰。该方法为数据驱动流场预测提供了新的可解释工具。",
+          "llm_tldr": "物理信息神经网络常受限于架构复杂和训练困难。本文提出物理信息核方法（PIKS），将微分算子嵌入核函数，避免反向传播。PIKS在多个PDE基准上达到与PINN相当的精度，且训练更快、理论更清晰。该方法为数据驱动流场预测提供了新的可解释工具。",
+          "llm_tags": [
+            "query:flow-pred"
+          ],
+          "matched_query_tag": "query:flow-pred",
+          "matched_query_text": "data-driven approaches for flow field prediction",
+          "matched_requirement_id": "req-11",
+          "selection_source": "carryover_cache",
+          "paper_id": "2607.27062v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2607.25608v1",
+          "source": "arxiv",
+          "title": "Physics-Informed Broad Learning System: An Efficient Backpropagation-Free Framework for Solving Partial Differential Equations",
+          "abstract": "Physics-informed neural networks (PINNs) have emerged as a powerful paradigm for solving partial differential equations (PDEs) by embedding governing physical laws into deep neural networks. However, their reliance on computationally expensive gradient-based optimization and deep architectures often results in slow training, high computational cost, and limited scalability. In this work, we propose a novel physics-informed broad learning system (PI-BLS), the first physics-informed learning framework based on broad RdNNs. The proposed formulation embeds the governing differential operator and the associated initial and boundary constraints directly into a linear output-layer optimization problem, thereby replacing nonlinear gradient-based training with a deterministic least-squares solution obtained via the pseudoinverse. Consequently, the entire learning process is reduced to a single linear optimization stage while preserving the underlying physical constraints. As a result, PI-BLS offers an efficient learning paradigm for a physics-informed learning framework for solving PDEs that eliminates iterative backpropagation while preserving the underlying physical constraints. Experimental results on representative forward PDE benchmarks demonstrate that PI-BLS achieves competitive and often superior performance with reduced training time and model parameters compared with conventional PINNs.",
+          "authors": [
+            "Pinki Khatun",
+            "M. Sajid",
+            "Abhinav Jha",
+            "M. Tanveer"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "cs.AI"
+          ],
+          "published": "2026-07-28T11:36:34+00:00",
+          "link": "https://arxiv.org/pdf/2607.25608v1",
+          "tags": [
+            "keyword:flow-pred",
+            "keyword:pc-latent",
+            "query:flow-pred",
+            "query:pc-latent"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "physics-informed broad learning system for PDEs, data-driven flow prediction",
+          "llm_evidence_cn": "物理信息宽带学习系统求解偏微分方程，可用于数据驱动流场预测",
+          "llm_evidence": "物理信息宽带学习系统求解偏微分方程，可用于数据驱动流场预测",
+          "canonical_evidence": "物理信息宽带学习系统求解偏微分方程，可用于数据驱动流场预测",
+          "llm_tldr_en": "Proposes Physics-Informed Broad Learning System (PI-BLS) that embeds PDE constraints into a linear output layer, avoiding backpropagation and achieving efficient solving.",
+          "llm_tldr_cn": "物理信息神经网络需要反向传播训练，计算成本高。本文提出物理信息宽带学习系统（PI-BLS），将微分算子与初始边界条件直接嵌入线性输出层优化问题，无需梯度传播。在多个PDE测试中，PI-BLS训练速度比PINN快一个数量级，同时保持相当的精度。该方法为流场快速预测提供了轻量化方案。",
+          "llm_tldr": "物理信息神经网络需要反向传播训练，计算成本高。本文提出物理信息宽带学习系统（PI-BLS），将微分算子与初始边界条件直接嵌入线性输出层优化问题，无需梯度传播。在多个PDE测试中，PI-BLS训练速度比PINN快一个数量级，同时保持相当的精度。该方法为流场快速预测提供了轻量化方案。",
+          "llm_tags": [
+            "query:flow-pred"
+          ],
+          "matched_query_tag": "query:flow-pred",
+          "matched_query_text": "data-driven approaches for flow field prediction",
+          "matched_requirement_id": "req-11",
+          "selection_source": "carryover_cache",
+          "paper_id": "2607.25608v1",
+          "carry_days": 1
+        }
+      ]
     },
     "pc-latent": {
+      "updated_date": "20260730",
+      "carryover_days": 9,
+      "items": [
+        {
+          "id": "2607.25459v1",
+          "source": "arxiv",
+          "title": "Emergent Latent-State Computation under Stochastic Volatility",
+          "abstract": "Mechanistic interpretability has largely focused on language models and deterministic toy tasks. Much less is known about how sequence models internally represent latent stochastic dynamics under noisy, partially observed observations. We study this question in a controlled multivariate stochastic volatility setting, where models observe only returns while the ground-truth latent volatility state is known to the researcher. This setting provides a useful benchmark for mechanistic interpretability under partial observability: the latent state is hidden from the model but directly available for evaluation. Across architectures, losses, and output heads, we find evidence for a two-stage computation. Hidden representations encode substantial information about the next latent volatility state, and the output head maps this representation to squared return forecasts. Furthermore, in Transformers, latent-state decodability emerges at identifiable architectural stages whose location depends on the volatility period. In long-cycle regimes, this computation simplifies into an explicit latent-state filter consisting of a learned linear projection followed by $\\ell^2$ normalization. Output-head replacement further shows that part of the degradation under noisy MSE training arises from readout misalignment rather than representation failure. These results suggest that stochastic volatility models provide a useful benchmark for mechanistic interpretability under noisy latent dynamics and partial observability.",
+          "authors": [
+            "Xiaoyu Huang",
+            "Lulu Wang"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "cs.AI",
+            "q-fin.ST"
+          ],
+          "published": "2026-07-28T08:49:48+00:00",
+          "link": "https://arxiv.org/pdf/2607.25459v1",
+          "tags": [
+            "keyword:pc-latent",
+            "keyword:small-reg",
+            "query:pc-latent"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Latent-state computation under stochastic volatility",
+          "llm_evidence_cn": "随机波动下的潜在状态计算",
+          "llm_evidence": "随机波动下的潜在状态计算",
+          "canonical_evidence": "随机波动下的潜在状态计算",
+          "llm_tldr_en": "Studies how sequence models internally represent latent stochastic dynamics under partial observability, revealing two-stage computation.",
+          "llm_tldr_cn": "本文在受控随机波动环境中研究序列模型如何表示潜在随机动态。通过仅观测收益而潜在波动状态已知的设置，发现模型的隐藏表征编码了大量关于潜在状态的信息，并揭示了先编码再计算的两阶段计算模式。该工作为部分可观测下潜在动态的机械可解释性提供了基准。",
+          "llm_tldr": "本文在受控随机波动环境中研究序列模型如何表示潜在随机动态。通过仅观测收益而潜在波动状态已知的设置，发现模型的隐藏表征编码了大量关于潜在状态的信息，并揭示了先编码再计算的两阶段计算模式。该工作为部分可观测下潜在动态的机械可解释性提供了基准。",
+          "llm_tags": [
+            "query:pc-latent"
+          ],
+          "matched_query_tag": "query:pc-latent",
+          "matched_query_text": "latent dynamics",
+          "matched_requirement_id": "req-15",
+          "selection_source": "carryover_cache",
+          "paper_id": "2607.25459v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2607.23480v1",
+          "source": "arxiv",
+          "title": "A Multi-stage Constrained Optimization Framework for Data-driven Problems",
+          "abstract": "Variational autoencoders (VAEs) transform high-dimensional, often noisy data into a compact latent representation, making downstream optimization more tractable. Three challenges persist in VAE-based constrained optimization: (i) sampling effectively within the latent space, (ii) identifying the active decision variables that actually influence the objective and constraints, and (iii) enforcing constraints without destabilizing training. We propose a Multi-stage Constrained Optimization Framework (MCOF). First, an entropy-constrained VAE (EC-VAE) coupled with a feature selector embeds objective and constraint information into a designated subset of latent variables, so that optimization proceeds over a low-dimensional subspace while the remaining coordinates supply solution diversity. Second, a Uniform Transformation (UT) module applies a per-dimension probability integral transform, replacing the irregular aggregate posterior with a uniform distribution over a bounded box and mitigating posterior collapse and Gaussian mixture bias. Third, a constraint-priority filter method (CPFM) solves the resulting surrogate problem by alternating violation-reduction and objective-reduction steps under a filter acceptance test, returning solutions that are feasible for the learned surrogate to a specified tolerance without requiring multiplier estimation. Finally, unselected latent coordinates are resampled to generate diverse decodings of a single optimized solution. We validate MCOF on a synthetic problem, where we ablate each stage and recover the analytic optimum, and on a ZINC250k drug design task, where the generated molecules satisfy the imposed constraints and are entirely novel relative to the training set.",
+          "authors": [
+            "Ye Shi"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "math.OC",
+            "stat.ML"
+          ],
+          "published": "2026-07-26T06:11:06+00:00",
+          "link": "https://arxiv.org/pdf/2607.23480v1",
+          "tags": [
+            "keyword:flow-pred",
+            "keyword:pc-latent",
+            "keyword:small-reg",
+            "query:flow-pred",
+            "query:pc-latent",
+            "query:small-reg"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "VAE-based constrained optimization in latent space, directly addressing latent space optimization under constraints",
+          "llm_evidence_cn": "基于VAE的潜在空间约束优化，直接处理约束下的潜在空间优化",
+          "llm_evidence": "基于VAE的潜在空间约束优化，直接处理约束下的潜在空间优化",
+          "canonical_evidence": "基于VAE的潜在空间约束优化，直接处理约束下的潜在空间优化",
+          "llm_tldr_en": "Proposes a multi-stage constrained optimization framework (MCOF) using entropy-constrained VAE and feature selection to embed constraints into latent subspace; relevant to physics-constrained latent space optimization.",
+          "llm_tldr_cn": "该论文针对VAE在约束优化中的采样效率低、决策变量识别难和约束破坏等问题，提出了多阶段约束优化框架（MCOF）。首先使用熵约束VAE和特征选择器将目标和约束信息嵌入到特定潜在子空间，然后在该低维子空间进行优化。该方法分离了无关潜在变量，提高了约束优化稳定性和效率，适用于物理约束条件下的潜在空间优化。",
+          "llm_tldr": "该论文针对VAE在约束优化中的采样效率低、决策变量识别难和约束破坏等问题，提出了多阶段约束优化框架（MCOF）。首先使用熵约束VAE和特征选择器将目标和约束信息嵌入到特定潜在子空间，然后在该低维子空间进行优化。该方法分离了无关潜在变量，提高了约束优化稳定性和效率，适用于物理约束条件下的潜在空间优化。",
+          "llm_tags": [
+            "query:pc-latent"
+          ],
+          "matched_query_tag": "query:pc-latent",
+          "matched_query_text": "latent space optimization under physical constraints",
+          "matched_requirement_id": "req-17",
+          "selection_source": "carryover_cache",
+          "paper_id": "2607.23480v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2607.24274v1",
+          "source": "arxiv",
+          "title": "Physics-Guided Generative AI for Property-Targeted 3D Porous Media Design",
+          "abstract": "Inverse design of three-dimensional porous media is central to applications in filtration, catalysis, energy storage, fuel cells, thermal management, and biomedical scaffolds, but remains challenging because many distinct pore geometries can share similar porosity or permeability while small structural changes can strongly affect transport behaviour. This paper proposes a physics-guided generative AI framework for property-targeted porous media design, combining a property-aware variational autoencoder, a conditional latent diffusion model, and an independently trained differentiable structure-to-property surrogate. The framework learns a compact, physically informative latent design space, generates porous structures conditioned on target porosity and directional permeability, and refines generated samples using property-level feedback during denoising and decoding. Experiments on procedurally generated structures and real micro-CT porous-media datasets show improved target-property matching, directional permeability control, and property correlation compared with representative property-aware variational-autoencoder and latent-diffusion baselines. The results demonstrate a scalable route towards controllable inverse design of complex porous geometries and establish a foundation for simulation-informed generative AI tools in engineering and advanced materials discovery.",
+          "authors": [
+            "Peng Wang"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "cs.AI"
+          ],
+          "published": "2026-07-27T11:17:52+00:00",
+          "link": "https://arxiv.org/pdf/2607.24274v1",
+          "tags": [
+            "keyword:flow-pred",
+            "keyword:pc-latent",
+            "keyword:sfc",
+            "query:flow-pred",
+            "query:pc-latent",
+            "query:sfc"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "physics constrained learning for latent space models",
+          "llm_evidence_cn": "物理约束的潜在空间模型学习",
+          "llm_evidence": "物理约束的潜在空间模型学习",
+          "canonical_evidence": "物理约束的潜在空间模型学习",
+          "llm_tldr_en": "Physics-guided generative framework with property-aware VAE and latent diffusion for porous media design, exemplifying physics-constrained latent space learning.",
+          "llm_tldr_cn": "该工作提出物理引导的生成式AI框架，用于目标属性驱动三维多孔介质设计。它结合属性感知变分自编码器（VAE）、条件潜在扩散模型和可微结构-属性代理模型，学习紧凑且物理信息丰富的潜在设计空间。该框架展示了如何在潜在空间中施加物理约束，实现对多孔介质生成过程的控制，与物理约束潜在空间学习高度相关。",
+          "llm_tldr": "该工作提出物理引导的生成式AI框架，用于目标属性驱动三维多孔介质设计。它结合属性感知变分自编码器（VAE）、条件潜在扩散模型和可微结构-属性代理模型，学习紧凑且物理信息丰富的潜在设计空间。该框架展示了如何在潜在空间中施加物理约束，实现对多孔介质生成过程的控制，与物理约束潜在空间学习高度相关。",
+          "llm_tags": [
+            "query:pc-latent"
+          ],
+          "matched_query_tag": "query:pc-latent",
+          "matched_query_text": "physics constrained learning for latent space models",
+          "matched_requirement_id": "req-16",
+          "selection_source": "carryover_cache",
+          "paper_id": "2607.24274v1",
+          "carry_days": 1
+        }
+      ]
+    },
+    "small-reg": {
       "updated_date": "20260730",
       "carryover_days": 9,
       "items": [

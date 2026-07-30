@@ -1,0 +1,4451 @@
+Title: Adaptive deep nonparametric regression from dependent data under covariate shift
+
+URL Source: https://arxiv.org/pdf/2607.20309v1
+
+Published Time: Thu, 23 Jul 2026 01:07:57 GMT
+
+Number of Pages: 37
+
+Markdown Content:
+# Adaptive deep nonparametric regression from dependent data under covariate shift 
+
+July 23, 2026 
+
+William Kengne and Ehud Mossa Ockegna 
+
+Université Jean Monnet, ICJ UMR5208, CNRS, Ecole Centrale de Lyon, INSA Lyon, Universite Claude Bernard Lyon 1, 42000 Saint-Étienne, France E-mail: william.kengne@univ-st-etienne.fr ; ehud.mossa.ockegna@univ-st-etienne.fr 
+
+Abstract: Covariate shift often occurs because, in many real applications, the source and the target observations may be generated from different distributions. In this case, the standard metric under the source distribution is not appropriate. This paper considers deep neural network estimators for nonparametric quantile and Huber regression under covariate shift and from dependent observations. We deal with a generalized Bernstein-type inequality that is satisfied by many classical models, including i.i.d. observations, ϕ-mixing, strong mixing, and C-mixing processes. To perform the covariate shift phenomenon, we propose a sparse-penalized deep neural network (SPDNN) estimator that takes into account the discrepancy between the source and target distributions of the data. When the density ratio (between the source and target distributions of the covariate) is unknown, a two steps pre-training procedure is carried out: the first step is devoted to the construction of a least squares SPDNN estimator of the density ratio; which is used in the second step to perform a pre-training reweighted SPDNN estimator of the regression function. For both the quantile and the Huber regression, non-asymptotic error bounds of the proposed SPDNN estimators are established in the class of Hölder smooth functions. These estimators can adaptively attain (up to a logarithmic factor) the minimax optimal convergence rate from i.i.d. data as well as from several classical time series models. 
+
+Keywords: Deep neural networks, covariate shift, nonparametric regression, generalized Bernstein-type inequality, sparse-penalized regularization, convergence rate. 
+
+# 1 Introduction 
+
+Many results on the theoretical guarantees of deep neural network (DNN) algorithms have been established; see, for example, [2], [39], [24], [35], [34], [19] for some contributions from independent data, and [29], [26], [1], [27], [21] for some works from dependent observations. But most of these results in the literature on DNN estimators assume that the source (training) and the target (testing) datasets have the same distribution. Such a condition fails in many real-world applications. For example, in healthcare applications, the distribution mismatch may due to the inconsistency in medical equipment and the scanning protocols, see for instance [43], [25], [13]. Another example is natural language processing with vocabulary evolution in the study population. 1arXiv:2607.20309v1 [stat.ML] 22 Jul 2026 2 Adaptive deep nonparametric regression under covariate shift 
+
+The phenomenon of distribution shift appears when there exists a divergence between the distributions of the training and the testing datasets. Covariate shift is a particular case of distribution shift, and it appears when the marginal distributions of the covariates of the training and the target data are different. This question has recently been addressed for nonparametric regression from independent and identically distributed (i.i.d.) observations, see for instance [12], [28], [11]. In this contribution, we consider a stationary and ergodic process {Zt = ( Xt, Y t), t ∈ Z} with values in 
+
+Z = X × Y ⊂ Rd × R (with d ∈ N), and satisfying: 
+
+Yt = h0(Xt) + ξt, t ∈ Z, (1.1) where X , Y are respectively the feature and the response spaces, h0 : X → R is the unknown (measurable) regression function, and (ξt)t∈Z is a centered iid error process. We focus on the estimation of h0 from the Huber and the quantile regression in the covariate shift framework, and based on a training sample D := 
+
+{(X1, Y 1), · · · , (Xn, Y n)}.Assume that the training and testing data are trajectories of the stationary process (Xt, Y t)t∈Z where the distribution of (X0, Y 0) is PX0,Y 0 and QX0,Y 0 respectively for the training and the testing observations. As pointed out above, in many real applications, PX0,Y 0 is not equal to QX0,Y 0 . For the distribution PX0,Y 0 , denote by PX0 and PY0|X0 , respectively, the marginal distribution of X0 and the conditional distribution of Y0 given 
+
+X0. The same notations are set for QX0,Y 0 . In the setting considered here, PX0 and QX0 are different, but 
+
+PY0|X0 = QY0|X0 , which implies that the conditional distribution of ξ0 given X0 remains invariant whatever 
+
+X0 is generated from PX0 or QX0 . This is known as the covariate shift phenomenon. When it occurs, it is appropriate to assess the performance of estimators from the L2(QX0 ) norm, instead of the L2(PX0 ) norm as in the standard approach. In the sequel, denote by pX0 and qX0 , the probability density functions of the distributions PX0 and QX0 respectively. The density ratio, given by: 
+
+r(x) := qX0 (x)
+
+pX0 (x) , for all x ∈ X , (1.2) can be used to quantify the discrepancy between PX0 and QX0 .The literature on deep nonparametric regression under covariate shift is not vast. This question has recently been addressed by [8], [11], [45]. [8] propose ReLU (rectified linear unit) DNN estimators for nonparametric regression with a sub-Gaussian noise under covariate shift. The convergence rates of the proposed estimators are established on the class of Hölder smooth functions. [11] consider this question for nonparametric quantile regression. Based on the ReLU DNN, they construct a reweighted and pre-training reweighted estimators, and derive their convergence rates on the class of Hölder functions. The pre-training reweighted DNN estimator is performed from a two-stage procedure when the density ratio is unknown. Let us highlight the great merit of this approach, which allows these authors to obtain estimators that can achieve (up to a logarithmic factor) the minimax optimal rate when the density ratio is unbounded and has moments of any order; whereas the optimality of the standard unweighted estimator is not ensured. Nonparametric regression with repeated measurements under covariate shift has been considered by [45]. They proposed ReLU DNN estimators for the density ratio (when it is unknown) and the regression function, and established their convergence rates on the class of Hölder functions. These estimators can attain (up to a logarithmic factor) the minimax optimal rate. However, the results in [8], [11], [45] are established under independent assumptions of the observations. Kengne and Mossa 3This work is an extension of [11] in three directions: (i) dependent observations, (ii) Huber and quantile nonparametric regression, and (iii) sparse-penalized regularization which leads to adaptive estimators. (i) Dependent framework . We unify the theory for several class dependence structures, including ϕ-mixing, strong mixing, and C-mixing processes. This is handled through a generalized Bernstein-type inequality, which is based on the so-called the “effective number of observations” φ(n). So, the convergence rates of the proposed estimators are expressed in terms of this value φ(n).(ii) Huber and quantile regression . Besides the quantile regression as in [11], we also consider the Huber regression. This induces other issues, including the calibration of the parameter of the Huber loss function, see for instance, Lemma 3.1 below. This loss function is widely used for robust estimation of the presence of outliers or for problems with heavy-tailed data. Moreover, for deep nonparametric regression with heavy-tailed errors, the Huber estimator can achieve the minimax optimal rate, whereas the least square estimators cannot attain this rate, except when the error is sub-Gaussian, see [9]. (iii) Sparse-penalized regularization . We perform the sparse-penalization approach. The regularization is carried out through a penalty term, and the estimators proposed can adaptively attain the minimax convergence rate. [11] focus on the sparsity constrained regularization, based on a parameter S. Besides the difficulties in its practical implementation (due to the discrete nature of such a constraint), the appropriate level S needed to reach the optimal rate depends on the smoothness of the target function, which is unknown. Such estimators are nonadaptive. We consider the Huber and the quantile nonparametric regression under covariate shift from dependent observations in the model (1.1) and in addition to the issues pointed above, our main contributions include: 1. We propose sparse-penalized DNN (SPDNN) unweighted and reweighted estimators of h0, and establish their non-asymptotic L2(QX0 ) error bounds on the class of Hölder smooth functions. For this purpose, some preliminary bounds for both the Huber and the quantile regression have been established, see, for instance Lemma 3.1. In the case of unbounded density ratio, a truncated version is considered in the reweighted SPDNN estimator. When the density ratio is uniformly bounded, these estimators can adaptively achieve (up to a logarithmic factor) the minimax optimal rate of order O(n− 2s 
+
+> 2s+d
+
+) (where 
+
+n is the sample size and s > 0 the smoothness parameter of the regression function) in many classical models. The reweighted estimator remains minimax optimal even if the density ratio is not uniformly bounded, but has moments of any order. 2. When the density ratio is unknown, a two-step pre-training procedure based on the approach of [11] is performed. The first step focuses on a least squares SPDNN estimator of the density ratio r and its 
+
+L2(PX0 ) error bound on the Hölder class. This is used in the second step to construct a pre-training reweighted SPDNN estimator of the regression function h0. This two steps pre-training procedure is carried out in both the bounded and unbounded density ratio. In this latter case, a truncated estimator of r is considered. Non-asymptotic L2(QX0 ) error bounds of these pre-training reweighted SPDNN estimators of h0 are derived. For several dependence structures, including ϕ-mixing, strong mixing, and 
+
+C-mixing, these estimators can adaptively attain the minimax optimal rate. Figure 1 summarizes our main contributions with an illustration of the estimators proposed. 4 Adaptive deep nonparametric regression under covariate shift  
+
+> Huber and quantile regression under covariate shift
+> Unweighted estimator ( bhD)
+> Without density ratio
+> Known density ratio
+> Reweighted estimators
+> Pre-training reweighted estimators
+> Unknown density ratio
+> Reweighted estimator with true density ratio (bhr, D)
+> Uniformly bounded
+> Reweighted estimator with truncated density ratio (bhTη r D)
+> Unbounded
+> Pre-training reweighted estimator with ratio estimator ( bhbrS,D)
+> Pre-training reweighted estimator with truncated ratio estimator ( bhbrη, S,D)
+> Uniformly bounded Unbounded
+
+Figure 1: Our main contribution: settings considered with the associated SPDNN estimators. The rest of the paper is organized as follows. Section 2 presents some notations, assumptions and the deep regression framework. Unweighted and reweighted SPDNN estimators are studied in Section 3, whereas Section 4 focuses on the two steps pre-training reweighted estimators. Some applications and examples are considered in Section 5. Conclusion and outlook is given in Section 6, and Section 7 is devoted to the proofs of the main results. 
+
+# 2 Regression framework and deep neural networks 
+
+2.1 Some notations 
+
+Let E1 and E2 be two subsets of separable Banach spaces equipped, respectively, with a norm ∥ · ∥ E1 , ∥ · ∥ E2 .Let us set some notations for the sequel. 
+
+• For any function h : E1 → E2 and U ⊂ E1, we set, 
+
+∥h∥∞ = sup 
+
+> x∈E1
+
+∥h(x)∥E2 , ∥h∥∞,U = sup 
+
+> x∈U
+
+∥h(x)∥E2 . (2.1) 
+
+• Denote by F(E1, E 2), the set of measurable functions from E1 to E2.
+
+• Let h ∈ F (E1, E 2) and ϵ > 0. Set B(h, ϵ ), the ball of radius ϵ of F(E1, E 2) centered at h; that is, 
+
+B(h, ϵ ) = {f ∈ F (E1, E 2), ∥f − h∥∞ ≤ ϵ}.Kengne and Mossa 5
+
+• For any ϵ > 0 and H ⊂ F (E1, E 2), the ϵ-covering number of H, denoted N (H, ϵ ), is the minimal number of balls of radius ϵ needed to cover H; that is, 
+
+N (H, ϵ ) = inf 
+
+(
+
+m ≥ 1 : ∃h1, . . . , h m ∈ H such that H ⊂ 
+
+> m
+
+[
+
+> i=1
+
+B(hi, ϵ )
+
+)
+
+. (2.2) 
+
+• For all u, v ∈ R, set u ∨ v = max( u, v ) and u ∧ v = min( u, v ).
+
+• For two sequences of real numbers (un)n and (vn)n, we write un ≲ vn or vn ≳ un if there exists a constant C > 0 such that un ≤ Cv n for all n ∈ N. Also, we write un ≍ vn if un ≲ vn and un ≳ vn.
+
+2.2 Huber and quantile nonparametric regression under covariate shift 
+
+Recall the model, 
+
+Yt = h0(Xt) + ξt, t ∈ Z (2.3) where X ⊂ Rd (d ≥ 1) , Y ⊂ R, are respectively the input and the output spaces, h0 : X → R is the unknown regression function, assumed to be measurable, (Xt, Y t)t∈Z is a stationary and ergodic process, and (ξt)t∈Z is a centered iid error process satisfying E (|ξ0|) < ∞. We consider a learning procedure based on a loss function 
+
+ℓ : R × Y → [0 , ∞) with ℓ(y, y ′) = ℓτ (y − y′) for all (y, y ′) ∈ R × Y . Two frameworks: 
+
+• Huber regression : ℓτ is the Huber loss with parameter τ > 0, defined for all x ∈ R by: 
+
+ℓτ (x) = 12 x21{| x|≤ τ } +
+
+Å
+
+τ |x| − 12 τ 2
+
+ã
+
+1{| x|>τ }.
+
+In this case, it is assumed that for all x ∈ X , the distribution of ξ0|X0 = x is symmetric around 0 and there exists Cξ > 0 such that E(|ξ0| | X0 = x) ≤ Cξ < ∞ for all x ∈ X .
+
+• Quantile regression : For all x ∈ X and τ ∈ (0 , 1) , the conditional τ -th quantile of Y0 given X0 = x
+
+is h0(x), such that P  Y0 − h0(X0) ≤ 0|X0 = x = P (ξ0 ≤ 0|X0 = x) = τ . In this case, ℓτ is the τ -th quantile loss defined for all x ∈ R by: 
+
+ℓτ (x) = x  τ − 1{x< 0}
+
+ .
+
+We focus on the estimation of h0 from the Huber and the quantile regression under covariate shift, and based on a training sample D := {(X1, Y 1), · · · , (Xn, Y n)}, which is a trajectory of the process (Xt, Y t)t∈Z. For the training and the testing observations, the distribution of (X0, Y 0) is PX0,Y 0 and QX0,Y 0 , with the marginal distribution of X0, PX0 and QX0 respectively. It is assumed that these distributions have density functions 
+
+pX0 and qX0 with respect to the Lebesgue measure. Also, the distribution of ξ0|X0 is assumed to be the same, whether X0 is distributed as PX0 or QX0 . This implies that the conditional distribution of Y0 given X0 is the same over the source and the target distributions. Denote by FY0|X0 , its cumulative distribution function. In the setting considered for both the Huber and the quantile regression, the regression function h0 satisfies, 
+
+h0 ∈ argmin 
+
+> h∈F
+
+Rτ (h), where Rτ (h) = E(X0,Y 0)∼PX0,Y 0
+
+ℓτ
+
+ Y0 − h(X0) , (2.4) where F := {h : X → Y , measurable } and τ > 0. Also, for the Huber regression, one can get from the proof of Proposition 3.1 in [9] that for any h ∈ F ,
+
+Rτ (h) − Rτ (h0) ≤ 12 ∥h − h0∥22,PX0 , (2.5) 6 Adaptive deep nonparametric regression under covariate shift 
+
+where for all κ ≥ 1,
+
+∥h − h0∥κκ, PX0 =
+
+Z
+
+∥h(x) − h0(x)∥κdP X0 (x).
+
+In the case of quantile regression and under (A4) (see below), we get (see, for instance, the proof Theorem 3.13 in [44]), 
+
+Rτ (h) − Rτ (h0) ≤ ˜c
+
+2 ∥h − h0∥22,PX0 , (2.6) where ˜c is given in (A4) .
+
+2.3 Some assumptions 
+
+Consider the regression problem above and throughout the sequel, we assume that: 
+
+• X ⊂ Rd is a compact set. 
+
+• For some constant K > 0,
+
+∥h0∥∞,X ≤ K < ∞,
+
+where h0 is the regression function. 
+
+• There exits Kℓτ such that, the loss function ℓτ is Kℓτ -Lipchitz. In the cases of the Huber and the quantile losses ℓτ , the latter assumption is satisfied with Kℓτ = τ and 
+
+Kℓτ = max {τ, 1 − τ } respectively. Let us set some additional assumptions: 
+
+(A1) : The process Z = {Zt = ( Xt, Y t), t ∈ Z} is stationary and ergodic. Moreover, let g : Z → R be a bounded measurable function such that E [g(Z0)] = 0 , E î(g(Z0)) 2ó ≤ γ2 and ∥g∥∞ ≤ A for some A > 0 and γ ≥ 0.Assume that, for all ε > 0, there exits n0 ≥ 1 independent of ε and φ(n) ≥ 1 such that for all n ≥ n0,we get 
+
+P
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+g(Zi) ≥ ε
+
+)
+
+≤ C exp 
+
+Å
+
+− ε2φ(n)
+
+cγ γ2 + cAεA 
+
+ã
+
+,
+
+where φ : N → N is no decreasing function, satisfaying φ(n) ≤ n, C > 0 is a constant independent of n
+
+and cγ , c A are positive constants. 
+
+(A2) : The density ratio r(x) = qX0 (x)/p X0 (x) is uniformly upper-bounded, that is, Γ := sup x∈X r(x) < ∞.
+
+(A3) : There exists some constant μ > 0 such that, the μ-th moment of the density ratio r with respect to PX0
+
+is finite, that is, Uμ := EX0∼PX0 [rμ(X0)] < ∞.
+
+(A4) : There exist η1, η 2, κ > 0 such that for any x ∈ X , δ, y ∈ R satisfying |δ| ≤ η1 and |y − h0(x)| ≤ η2 it holds, 
+
+FY0|X0=x(y + δ) − FY0|X0=x(y) ≥ κ|δ|, almost surely .
+
+Furthermore, sup t∈R pY0|X0=x(t) ≤ ˜c < ∞ for some constant ˜c > 0.
+
+(A5) : For all x ∈ X , pX0 (x) > 0 and the density ratio r is bounded away from zero, that is, Υ := inf x∈X r(x) >
+
+0.Kengne and Mossa 7Assumption (A1) is a generalized Bernstein-type inequality and has also been considered by [14]. φ(n) is often called the “effective number of observations”, which refers to a heuristic of the fact that the statistical properties from dependent observations are similar to a suitably number of independent observations, see [49]. Several classes of stationary processes, such as ϕ-mixing, strong mixing, and C-mixing processes satisfy this assumption, see [14] and Section 5 below. This includes many useful autoregressive processes which are 
+
+ϕ-mixing or strong mixing, see for instance [7, 4]. In the literature on covariate shift, assumption (A2) is often used, see [11], [8], [28], [12], [5]. This condition indicates that the difference between qX0 and pX0 is not too large; and one can easily get ∥h − h0∥22,QX0
+
+≤ Γ∥h − h0∥22,PX0
+
+for all h ∈ F . Let μ ≥ 1. Under (A2) ,we have EX0∼PX0 [rμ(X0)] = EX0∼QX0 [rμ−1(X0)] ≤ Γμ−1. Hence (A3) is satisfied with Uμ = Γ μ−1. This assumption (A3) which is weaker than assumption (A2) , is introduced to relax the conditions on the density ratio. These assumptions (A2) and (A3) , also used by [12], [11], [28] are related to the Rényi divergence between pX0 and qX0 , see [5]. Assumption (A4) is common in quantile regression see, for instance, [35], [41], [11]. If the distribution of Y0|X0 has a density that is bounded away from zero on any compact set, then the assumption (A4) is satisfied, see [30]. (A5) ensures that the density ratio r is well-defined and is uniformly lower bounded. 
+
+2.4 Deep neural networks 
+
+In the sequel, we consider the class of (L, p) architecture DNN based on an activation function σ : R ⇒ R,where L ∈ N is the number of hidden layers or depth, and p = ( p0, p 1, . . . , p L+1 ) ∈ NL+2 is the vector of widths. These functions are written as: 
+
+h : Rp0 → RpL+1 , x 7 → h(x) = AL+1 ◦ σL ◦ AL ◦ σL−1 ◦ · · · ◦ σ1 ◦ A1(x), (2.7) where Aj : Rpj−1 → Rpj is a linear affine map, defined by Aj (x) := Wj x + bj , for given pj × pj−1 weight matrix Wj and shift vector bj ∈ Rpj and σj : Rpj → Rpj is a nonlinear element-wise activation map, defined for all z = ( z1, . . . , z pj )′ ∈ Rpj by σj (z) = ( σ(z1), . . . , σ (zpj )) ′, and ′ denotes the transpose. The parameter of a DNN h of the form (2.7) is: 
+
+θ(h) = ( vec (W1)′, b′
+
+> 1
+
+, . . . , vec (WL)′, b′
+
+> L
+
+)′, (2.8) where vec (W ) is the vector obtained by concatenating the column vectors of the matrix W . Denote by 
+
+Hσ, p0,p L+1 the class of DNN predictors with p0-dimensional input and pL+1 -dimensional output based on the activation function σ. In the framework of the regression considered above, p0 = d and pL+1 = 1 . For a DNN 
+
+h as in (2.7), let us denote by depth (h) and width (h) its depth and width, respectively; that is, depth (h) = L
+
+and width (h) = max 1≤j≤L pj . For any constants L, N, B, F > 0, set: 
+
+Hσ (L, N, B, F ) = ¶h ∈ H σ,d, 1 : depth (h) ≤ L, width (h) ≤ N, ∥θ(h)∥∞ ≤ B, ∥h∥∞,X ≤ F © . (2.9) Define the class of sparsity constrained DNN with sparsity level S > 0, by: 
+
+Hσ (L, N, B, F, S ) = {h ∈ H σ (L, N, B, F ) : ∥θ(h)∥0 ≤ S} , (2.10) where ∥x∥0 = PPi=1 I(xi̸ = 0) , ∥x∥∞ = max 1≤i≤P |xi| for all x = ( x1, . . . , x P )′ ∈ RP (p ∈ N). In the sequel, we will consider the class of DNN above, based on piecewise linear or locally quadratic activation functions, see, for instance [33], [34]. 8 Adaptive deep nonparametric regression under covariate shift 
+
+Definition 2.1. Let f : R → R.1. f is continuous piecewise linear (or “piecewise linear” for simplicity) if it is continuous and there exists 
+
+K (K ∈ N) break points a1, . . . , a K ∈ R with a1 ≤ a2 ≤ · · · ≤ aK such that, for any k = 1 , · · · , K ,
+
+f ′(a− 
+
+> k
+
+)̸ = f ′(a+ 
+
+> k
+
+) and f is linear on (−∞ , a 1], [a1, a 2], · · · [aK , ∞).2. f is locally quadratic if there exists an interval (c, d ) on which f is three times continuously differentiable with bounded derivatives and there exists η ∈ (c, d ) such that f ′(η)̸ = 0 and f ′′ (η)̸ = 0 .
+
+In the following, we consider the DNN class Hσ,d, 1 and assume that the activation function σ is Cσ -Lipschitz (for some Cσ > 0), either piecewise linear or locally quadratic, and fixes a non empty interior segment I ⊂ [0 , 1] 
+
+(i.e. σ(z) = z for all z ∈ I). The ReLU activation function ( σ(z) = max( z, 0) for all z ∈ R) and several other classical activation functions satisfy this assumption, see [20]. 
+
+# 3 Unweighted and reweighted SPDNN estimators and L2(QX0 ) error bounds 
+
+Let Ln, N n, B n, F > 0. Consider the DNN class Hσ (Ln, N n, B n, F ). The unweighted and reweighted SPDNN estimators are based on a sparse penalty term Jn defined for all h ∈ H σ (Ln, N n, B n, F ) by: 
+
+Jn(h) = 
+
+> p
+
+X
+
+> j=1
+
+πλn,τ n (|θj (h)|), (3.1) where θj (h) is the j-th component of θ(h) = ( θ1(h), . . . , θ p(h)) ′, which is the parameter of h (recall that ′
+
+denotes the transpose) and πλn,τ n : [0 , ∞) → [0 , ∞) is a positive function based on the tuning parameters 
+
+λn, τ n > 0. For the function πλn,τ n , it is assumed that (see also [27]): (i) πλn,τ n (0) = 0 and πλn,τ n (·) is non-decreasing. (ii) πλn,τ n (x) = λn if x > τ n.An example of such penalty is the clipped L1 penalty (see [48]) given as in (3.1) with 
+
+πλn,τ n (x) = λn
+
+Å xτn
+
+∧ 1
+
+ã
+
+for all x ≥ 0.
+
+This example satisfies the conditions (i) and (ii) above. Other examples are the smoothly clipped absolute deviation (SCAD) penalty studied by [10], the minimax concave penalty [47] or the seamless L0 penalty, see [6]; which are specific cases of the penalty Jn above, see [27]. Consider the Huber and the quantile nonparametric regressions (2.3). Based on the penalty term Jn and the training sample D = {(Xi, Y i), i = 1 , · · · , n }, the unweighted sparse-penalized DNN (SPDNN) estimator of h0 is given by: 
+
+bhD ∈ argmin   
+
+> h∈H σ(Ln,N n,B n,F )
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ℓτ
+
+ Yi − h(Xi) + Jn(h)
+
+)
+
+, (3.2) where ℓτ is either the Huber or the quantile loss. Note that, for any h ∈ H σ (Ln, N n, B n, F ), the empirical risk 
+
+> 1
+> n
+
+Pni=1 ℓτ
+
+ Yi − h(Xi) in (3.2) is an unbiased estimator of the risk Rτ (h) = E(X0,Y 0)∼PX0,Y 0
+
+ℓτ
+
+ Y0 − h(X0)].Kengne and Mossa 9But under covariate shift, we would like to construct an estimator whose the risk on the target data and the 
+
+L2(QX0 ) error are small. So, when the density ratio r is known, consider the reweighted SPDNN estimator defined by: 
+
+bhr, D ∈ argmin   
+
+> h∈H σ(Ln,N n,B n,F )
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+r(Xi)ℓτ (Yi − h(Xi)) + Jn(h)
+
+)
+
+. (3.3) Therefore, the estimator bhr, D is computed from the reweighted empirical risk 1
+
+> n
+
+Pni=1 r(Xi)ℓτ
+
+ Yi − h(Xi),which is an unbiased estimator of the target risk eRτ (h) = E(X0,Y 0)∼QX0,Y 0
+
+ℓτ
+
+ Y0 − h(X0)]. In fact, on can easily get that, E(X0,Y 0)∼PX0,Y 0
+
+r(X0)ℓτ
+
+ Y0 − h(X0)] = E(X0,Y 0)∼QX0,Y 0
+
+ℓτ
+
+ Y0 − h(X0)]. Similar approach has been considered, among other, by [28], [12], [11]. 
+
+3.1 Some preliminary results 
+
+In the sequel, for a network architecture Ln, N n, B n, F n > 0, we set 
+
+Hσ,n := Hσ (Ln, N n, B n, F n) . (3.4) Let hHσ,n be a best approximation of h0 within the class Hσ,n , that is 
+
+hHσ,n ∈ argmin 
+
+> h∈H σ,n
+
+∥h − h0∥∞,X . (3.5) For any estimator hn ∈ H σ,n , the following lemma establishes a decomposition of the L2(PX0 ) error of hn into an estimation error (with respect to hHσ,n ) and the L2 approximation error. 
+
+Lemma 3.1. Consider model (2.3) , a DNN class Hσ,n := Hσ (Ln, N n, B n, F ) for some Ln, N n, B n, F > 0
+
+and assume (A4) . For both the Huber regression with τ > 6 ( K ∨ F ∨ Cξ ) and the quantile regression, we have for all h ∈ H σ,n ,
+
+∥h − h0∥22,PX0
+
+≤ C1E(X0,Y 0)∼PX0,Y 0
+
+ℓτ (Y0 − h(X0)) − ℓτ
+
+ Y0 − hHσ,n (X0) + C2 inf 
+
+> h∈H σ,n
+
+∥h − h0∥2 
+
+> ∞,X
+
+, (3.6) 
+
+for some constants C1, C 2 > 0 and where hHσ,n is given in (3.5). 
+
+So, from this Lemma 3.1, to derive an upper bound of ED
+
+î∥bhD − h0∥22,PX0
+
+ó (ED denotes the expectation taken over the training sample ED), it suffices to bound the statistical error ED E(X0,Y 0)∼PX0,Y 0
+
+ℓτ
+
+ÄY0 − bhD(X0)ä −
+
+ℓτ
+
+ Y0 − hHσ,n (X0)  and the approximation error term inf h∈H σ,n ∥h − h0∥2 
+
+> ∞,X
+
+. The latter can be done using Theorem 3.2 in [20]. The next lemma establishes a decomposition of the L2(QX0 ) error into an estimation error with respect to the reweighted risk and the L2 approximation error. 
+
+Lemma 3.2. Consider model (2.3) , a DNN class Hσ,n := Hσ (Ln, N n, B n, F ) for some Ln, N n, B n, F > 0
+
+and assume (A4) . For both the Huber regression with τ > 6 ( K ∨ F ∨ Cξ ) and the quantile regression, we have for all h ∈ H σ,n ,
+
+∥h − h0∥22,QX0
+
+≤ E(X0,Y 0)∼PX0,Y 0
+
+r(X0)  ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − hHσ,n (X0) + C2 inf 
+
+> h∈H σ,n
+
+∥h − h0∥2 
+
+> ∞,X
+
+,
+
+for some constants C1, C 2 > 0, and where hHσ,n is given in (3.5). 10 Adaptive deep nonparametric regression under covariate shift 
+
+3.2 L2(QX0 ) error bounds of the unweighted and the reweighted estimators 
+
+In this subsection, we consider the unweighted and the reweighted SPDNN estimators bhD and bhr, D defined above under covariate shift and focus on bounds of bhD − h0
+
+> 22,QX0
+
+and bhr, D − h0
+
+> 22,QX0
+
+, where 
+
+∥h − h0∥22,QX0
+
+= EX0∼QX0
+
+î h(X0) − h0(X0)2ó =
+
+Z
+
+> X
+
+ h(x) − h0(x)2 qX0 (x) dx, (3.7) for all predictors h and qX0 is the density (with respect to the Lebesgue measure) of QX0 . To this end, it is assumed that h0 belongs to the class of Hölder smooth functions. Let r ∈ N, D ⊂ Rr , β, A > 0. We will consider the ball of β-Hölder functions with radius A defined by: 
+
+Cβ (D, A ) = 
+
+h : D → R : X
+
+> α:|α|1<β
+
+∥∂αh∥∞ + X
+
+> α:|α|1=⌊β⌋
+
+sup 
+
+> x,y ∈Dx̸=y
+
+|∂αh(x) − ∂αh(y)||x − y|β−⌊ β⌋ ≤ A
+
+ , (3.8) with α = ( α1, . . . , α r ) ∈ Nr , |α|1 := Pri=1 αi and ∂α = ∂α1 · · · ∂αr .The following theorem establishes non-asymptotic L2(QX0 ) error bounds of bhD under the uniformly bounded and finite second-order moment conditions on the density ratio. 
+
+Theorem 3.1. Consider model (2.3) as either the Huber regression with τ > 6 ( K ∨ F ∨ Cξ ) or the quantile regression. Assume that (A1) and (A4) hold, and that h0 ∈ C s(X , K) for some s, K > 0 the class of Hölder smooth functions. Consider the DNNs class Hσ (Ln, N n, B n, F n) with the network architecture parameters 
+
+(Ln, N n, B n, F n) satisfying 
+
+Ln ≍ log 
+
+
+
+φ(n)
+
+
+
+, N n ≳
+
+
+
+φ(n)
+
+ d
+
+> 2s+d
+
+, B n ≳
+
+
+
+φ(n)
+
+ 4( s+d)2s+d
+
+, F n = F ≥ K + 1 . (3.9) 
+
+Let bhD be the unweighted SPDNN estimator defined in (3.2) where the tuning parameters λn and τn of the penalty term fulfill (3.14). Then, 1. Under (A2) , it holds that 
+
+ED
+
+ï
+
+bhD − h0
+
+> 22,QX0
+
+ò
+
+≲
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
+, for all ν > 3. (3.10) 
+
+2. Under (A3) with μ = 2 , we have 
+
+ED
+
+ï
+
+bhD − h0
+
+> 22,QX0
+
+ò
+
+≲
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ s
+
+> 2s+d
+
+, for all ν > 3/2. (3.11) In the i.i.d. case, φ(n) = n (see Section 5) and the bounds in Theorem 3.1 coincide (up to logarithmic factors), with that obtained in Theorem 8 and 9 of [11] in the context of nonparametric quantile regression. Theorem 3.1 above extends such results to dependent observations and to Huber regression. For i.i.d. data, ϕ-mixing, exponential α-mixing and C-mixing processes, which satisfy assumption (A1) with φ(n) = n/ (log n)ν0 for some ν0 ≥ 0 (see Section 5), the upper bounds in (3.10) match (up to a logarithmic factor) with the minimax Kengne and Mossa 11 lower bound in [42]. So, when the covariate shift occurs, the unweighted SPDNN estimator bhD remains optimal in the minimax sense if the density ratio r is uniformly bounded. This condition implies that the shift between 
+
+PX0 and QX0 is not too large, which leads to the optimality of bhD. Under the weaker condition of finite second-order moment of r, the bound in (3.11) is suboptimal. As we will see later, this can be overcome with the reweighted estimator based on the truncated density ratio. Now, let us focus on the L2(QX0 ) error bound of bhr, D. Define the reweighted risk by, 
+
+RP,r (h) := E(X0,Y 0)∼PX0,Y 0
+
+h
+
+r(X0)
+
+
+
+ℓτ (Y0 − h(X0)) 
+
+i 
+
+. (3.12) We have the following proposition. 
+
+Proposition 3.1. Consider model (2.3) and assume (A4) . For both the Huber regression with τ > 6 ( K ∨ F ∨ Cξ )
+
+and the quantile regression, the regression function defined in (2.3) satisfies, 
+
+h0 ∈ argmin 
+
+> h∈F
+
+RP,r (h),
+
+where F := {h : X → Y , measurable }.
+
+Proposition 3.1 states that, for both the nonparametric quantile and Huber regressions, the regression function 
+
+h0 is a target function with respect to the reweighted risk. This allows us to define the reweighted excess risk of a predictor h as follows: 
+
+EP,r (h) := RP,r (h) − RP,r (h0) = E(X0,Y 0)∼PX0,Y 0
+
+h
+
+r(X0)
+
+
+
+ℓτ (Y0 − h(X0)) − ℓτ (Y0 − h0(X0)) 
+
+i 
+
+. (3.13) The next theorem establishes an oracle inequality for the reweighted excess risk of bhr, D.
+
+Theorem 3.2. Assume that (A1) and (A2) with 1 < Γ ≲ φ(n)1−ν4 hold. Let Ln ≲ log φ(n), Nn ≲ (φ(n)) ν1 ,
+
+1 ≤ Bn ≲ (φ(n)) ν2 , Fn = F > 0, for some ν1 > 0, ν2 > 0. Let ν3 > 2, 0 < ν 4 ≤ 1 and the regression function is such that ∥h0∥∞ ≤ K for some constant K > 0 . Then, there exists n0 ∈ N such that, for all n ≥ n0, the reweighted SPDNN estimator defined in (3.3) , with 
+
+λn ≍ (log φ(n)) ν3
+
+φ(n)ν4 , τ n ≤ 116Γ Kℓτ (Ln + 1)(( Nn + 1) Bn)Ln+1 φ(n) (3.14) 
+
+satisfies, 
+
+E îEP,r (bhr, D)ó ≤ 2
+
+Å
+
+inf    
+
+> h∈H σ(Ln,N n,B n,F )
+
+[EP,r (h) + Jn(h)] 
+
+ã
+
++ ΞΓ 
+
+φ(n) . (3.15) 
+
+for some constant Ξ > 0, where Kℓτ is the Lipschitz constant of ℓτ .
+
+Remark 3.1. Under Assumption (A2) , Γ < ∞. But in the sequel, we will need the inequality (3.15) in a setting where Γ depends on the sample size n. The condition 1 < Γ ≲ φ(n)1−ν4 in Theorem 3.2 is set to take into account this case. 
+
+The following corollary provides a bound of the reweighted excess risk of bhr, D.
+
+Corollary 3.1. Assume that (A1) and (A2) with 1 < Γ < ∞ hold, and that h0 ∈ C s(X , K) for some 
+
+s, K > 0. Let us consider the DNNs class Hσ (Ln, N n, B n, F n) with the network architecture (Ln, N n, B n, F n)12 Adaptive deep nonparametric regression under covariate shift 
+
+satisfying the condition in (3.9). Then, the reweighted SPDNN estimator bhr, D defined in (3.3) where the tuning parameters λn and τn fulfill the condition in (3.14), satisfies 
+
+E[EP,r (bhr, D)] ≲ (log φ(n)) ν
+
+(φ(n)) 2s
+
+> 2s+d
+
+, (3.16) 
+
+for all ν > 3, and where EP,r denotes the reweighted excess risk defined in (3.13). 
+
+The bound in (3.16) coincides with that obtained when there is no covariate shift, see Corollary 3.4 in [22]. So, under the assumption (A2) , the estimator bhr, D displays the same reweighted excess risk bound as when there is no shift. The next theorem establishes an upper bound of the L2(QX0 ) error of the reweighted estimator when the ratio r is uniformly bounded. 
+
+Theorem 3.3. Consider model (2.3) as either the Huber regression with τ > 6 ( K ∨ F ∨ Cξ ) or the quantile regression. Assume that (A1) , (A2) and (A4) hold, and that h0 ∈ C s(X , K) for some s, K > 0. Let us consider the DNNs class Hσ (Ln, N n, B n, F n) with the network architecture (Ln, N n, B n, F n) satisfying the condition in (3.9). Then, the reweighted SPDNN estimator bhr, D defined in (3.3) where the tuning parameters 
+
+λn and τn fulfill the condition in (3.14), satisfies 
+
+ED
+
+ï
+
+bhr, D − h0
+
+> 22,QX0
+
+ò
+
+≲
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
+, (3.17) 
+
+for all ν > 3.
+
+As in the comment above, the reweighted estimator bhr, D can achieves (up to a logarithmic factor), the minimax optimal rate for i.i.d. observations, ϕ-mixing, exponential α-mixing processes, and geometrically C-mixing processes. Moreover, these processes can fulfill (A1) with φ(n) = n/ (log n)ν0 for some ν0 ≥ 0 (see Section 5). The network architecture Ln, N n, B n, F n can be chosen independently of the smoothness parameter s such that (3.9) is satisfied. Which shows that, bhr, D can adaptively attain (up to a logarithmic factor) the minimax optimal rates on the class of Hölder smooth functions. Let us investigate the case where the density ratio r can be unbounded, but has a finite second-order moment. To this end, consider the truncated density ratio of a threshold η > 0 defined by, 
+
+Tη r(x) = 
+
+
+
+r(x), if r(x) ≤ η, η, otherwise. (3.18) Thus, the reweighted estimator based on the truncated density ratio is defined by, 
+
+bhTη r, D ∈ argmin   
+
+> h∈H σ(Ln,N n,B n,F )
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Tη r(Xi)ℓτ (Yi − h(Xi)) + Jn(h)
+
+)
+
+. (3.19) The following theorem derives a non-asymptotic L2(QX0 ) error bound for the reweighted estimator bhTη r, D on the class of Hölder smooth functions. Kengne and Mossa 13 
+
+Theorem 3.4. Consider model (2.3) as either the Huber regression with τ > 6 ( K ∨ F ∨ Cξ ) or the quantile regression. Assume that (A1) , (A3) with μ = 1+ δ for some δ > 0 and (A4) hold, and that h0 ∈ C s(X , K) for some s, K > 0. Consider the DNNs class Hσ (Ln, N n, B n, F n) with the network architecture (Ln, N n, B n, F n)
+
+satisfying the condition in (3.9). Then, the reweighted estimator with a truncated density ratio defined in (3.19) with η ≍
+
+
+
+φ(n)
+
+ 2s
+
+> (1+ δ)(2 s+d)
+
+where λn and τn fulfill the condition in (3.14) with ν4 = d 
+
+> 2s+d
+
+, satisfies, 
+
+ED
+
+ï
+
+bhTη r, D − h0
+
+> 22,QX0
+
+ò
+
+≲
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ δ  
+
+> 1+ δ×2s
+> 2s+d
+
+, (3.20) 
+
+for all ν > 3.
+
+Therefore, when δ → +∞ (that is, μ → +∞ in (A3) i.e. r has moments of any order), the bound in (3.20) coincides with that of the reweighted estimator under the uniformly bounded condition on the density ratio r
+
+obtained in (3.17). Which shows that the reweighted estimator based on the truncated density ratio can be optimal (up to a logarithmic factor) in the minimax sense, for example, for the class of mixing processes listed above. 
+
+# 4 Pre-training reweighted SPDNN estimators and error bounds 
+
+4.1 Pre-training reweighted estimators 
+
+When the density ratio r is unknown, a natural approach is to seek its estimator. In this section, we perform a two-step reweighted estimation procedure, where the first step focuses on the estimate of r, which is considered in the second step to construct a reweighted estimator of h0. Such an approach has also been considered in [11]. We will carried out a least squares estimation of r, which is a minimizer of u 7 → 12 EX0∼PX0
+
+(u(X0) − r(X0)) 2
+
+for u ∈ F = {h : X → Y , measurable }. From a simple calculation, we get 
+
+r ∈ argmin 
+
+> u∈F
+
+12 EX0∼PX0 [u(X0)2] − EX0∼QX0 [u(X0)] .
+
+Suppose that we get the extra unlabeled samples SP := {XPi }mi=1 and SQ := {XQi }mi=1 drawn from PX0 and 
+
+QX0 respectively. So, a sparse-penalized DNN estimator of r is given by, 
+
+brS ∈ argmin  
+
+> u∈H σ(Lm,N m,B m,F m)
+
+(
+
+12m
+
+> m
+
+X
+
+> i=1
+
+u(XPi )2 − 1
+
+m
+
+> m
+
+X
+
+> i=1
+
+u(XQi ) + Jm(u)
+
+)
+
+, (4.1) for a DNN class Hσ (Lm, N m, B m, F m). In the second step, we proceed as in (3.3), but here we replace r with its estimator above. Hence, the pre-training reweighted SPDNN estimator of h0 is defined by, 
+
+bhbrS,D ∈ argmin  
+
+> h∈H σ(Ln,N n,B n,F n)
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+brS(Xi)ℓτ (Yi − h(Xi)) + Jn(h)
+
+)
+
+. (4.2) We assume the common hypothesis (see also [8], [11]) that the unlabeled data SP and SQ used for the estimation of r, are independent of the training sample D.14 Adaptive deep nonparametric regression under covariate shift 
+
+In many practical problems, the density ratio r may be unbounded or very takes very large values. This is the case, for example, if qX0 is heavy-tailed and pX0 is light-tailed. In such cases, estimating r can become difficult, since we deal with a class of bounded DNNs. In order to overcome this problem, we set a threshold level η > 0 (as in [11]) that the values of r must not exceed. So, the truncated estimator of r, that takes into account this threshold is defined as, 
+
+brη, S ∈ argmin    
+
+> u∈TηHσ(Lm,N m,B m,F )
+
+(
+
+12m
+
+> m
+
+X
+
+> i=1
+
+u(XPi )2 − 1
+
+m
+
+> m
+
+X
+
+> i=1
+
+u(XQi ) + Jm(u)
+
+)
+
+, (4.3) where Tη Hσ (Lm, N m, B m, F ) = {Tη u : u ∈ H σ (Lm, N m, B m, F )} denotes a truncated set of the DNN functions and Tη is defined in (3.18). As above, the pre-training reweighted SPDNN estimator of h0, based on this truncated estimator brη, S is given by, 
+
+bhbrη, S,D ∈ argmin   
+
+> h∈H σ(Ln,N n,B n,F )
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+brη, S(Xi)ℓτ (Yi − h(Xi)) + Jn(h)
+
+)
+
+. (4.4) 
+
+4.2 Error bounds 
+
+In this subsection, we establish non-asymptotic error bounds of the estimators of r and that of the reweighted pre-training estimators of h0, as defined above. The following proposition provides a L2(PX0 ) error bound of the estimator brS on the class of Hölder functions. 
+
+Proposition 4.1. Assume that (A1) , (A2) and (A4) hold, and that r ∈ C s(X , Γ) for some s > 0. Consider the DNN class Hσ,m := Hσ (Lm, N m, B m, F m) where the network architecture parameters (Lm, N m, B m, F m)
+
+satisfy 
+
+Lm ≍ log 
+
+
+
+φ(m)
+
+
+
+, N m ≳
+
+
+
+φ(m)
+
+ d
+
+> 2s+d
+
+, B m ≳
+
+
+
+φ(m)
+
+ 4( α+d)2s+d
+
+, F m = F ≥ Γ + 1 . (4.5) 
+
+Consider the DNN estimator of r, brS defined in (4.1) where the tuning parameters λm and τm of the penalty term Jm satisfy, 
+
+λm ≍
+
+
+
+log 
+
+
+
+φ(m)
+
+ v0
+
+φ(m) for some ν0 > 2 and τm ≤ 132( F + 1)( Lm + 1)(( Nm + 1) Bm)Lm+1 φ(m) . (4.6) 
+
+Then, we have 
+
+ES
+
+î∥brS − r∥22,PX0
+
+ó ≲
+
+
+
+log φ(m)
+
+ν
+
+
+
+φ(m)
+
+ 2s
+
+> 2s+d
+
+,
+
+for all ν > 3.
+
+As the comments in Subsection 3.2 above, Proposition 4.1 shows that the estimator brS can be minimax optimal (up to a logarithmic factor) for many useful processes. Based on this proposition, the next theorem establishes a L2(QX0 ) error bound of the pre-training reweighted SPDNN estimator bhbrS,D.
+
+Theorem 4.1. Consider model (2.3) as either the Huber regression with τ > 6 ( K ∨ F ∨ Cξ ) or the quantile regression. Assume that (A1) , (A2) , (A4) and (A5) hold, and that r ∈ C s1 (X , Γ) , h0 ∈ C s2 (X , K) for some 
+
+s1, s 2, K > 0. Consider the estimator brS defined (4.1) based on the DNN class Hσ,m := Hσ (Lm, N m, B m, F m)
+
+where the network architecture parameters (Lm, N m, B m, F m) and the tuning parameters λm and τm fulfill Kengne and Mossa 15 
+
+(4.5) and (4.6). Consider the estimator bhbrS,D defined in (4.2) based on the DNN class Hσ (Ln, N n, B n, F n)
+
+where the network architecture (Lm, N m, B m, F m) and the tuning parameters λn, τ n satisfy (3.9) and (3.14) with ν4 = 1 . Then, it holds that 
+
+ES,D
+
+ï
+
+bhbrS,D − h0
+
+> 22,QX0
+
+ò
+
+≲ (log φ(m)) ν1
+
+(φ(m)) 2s12s1+d
+
++ (log φ(n)) ν2
+
+(φ(n)) 2s22s2+d
+
+, (4.7) 
+
+for all ν1, ν 2 > 3.
+
+Theorem 4.1 shows the effect of the first step (estimation of the density ratio r) on the error bound of the pre-training reweighted estimator bhbrS,D. This bound is the error of the estimation of r and that of the estimation of h0 when r is known. 
+
+Remark 4.1. The bound in (4.7) is of order O (log φ(m)) 3
+
+(φ(m)) 2s12s1+d
+
++ (log φ(n)) 3
+
+(φ(n)) 2s22s2+d
+
+!
+
+. We have 
+
+(log φ(m)) 3
+
+(φ(m)) 2s12s1+d
+
+≤ (log φ(n)) 3
+
+(φ(n)) 2s22s2+d
+
+⇐⇒ φ(m)
+
+  log φ(m)3(2 s1+d)/2s1
+
+≥
+
+ φ(n)s2(2 s1+d)/s 1(2 s2+d)
+
+  log φ(n)3(2 s1+d)/2s1
+
+. (4.8) 
+
+Let n ≥ 1 fixed. The function m 7 → φ(m)
+
+  log φ(m)
+
+3(2 s1+d)/2s1 increases to ∞. Hence, there exists m0 ≥ 1 depending 
+
+n, d, s 1, s 2 such that the inequalities in (4.8) holds for all m ≥ m0. Therefore, for sufficiently large m, the convergence rate in (4.1) is of order O (log φ(n)) 3
+
+(φ(n)) 2s22s2+d
+
+!
+
+. In this case, the estimator bhbrS,D achieves (up to a logarithmic factor) the minimax optimal rate for many examples of useful processes. 
+
+Let us consider the setting where the density ratio r is unknown and may be unbounded. In this case, the truncated estimator brη, S is performed and the following proposition establishes its L2(PX0 ) error bound. 
+
+Proposition 4.2. Assume that (A1) , (A3) with μ = 2 + δ for some δ > 0 and (A4) hold. Consider the estimator brη, S define in (4.3), based on the DNN class Hσ,m := Hσ (Lm, N m, B m, F m), where the network architecture Lm, N m, B m satisfy (4.5) and Fm = η + 1 with η ≍
+
+
+
+φ(m)
+
+ 2s
+
+> (1+ δ)(2 s+d)
+
+. Also, assume that the tuning parameters λm, τm fulfill 
+
+λm ≍
+
+
+
+log 
+
+
+
+φ(m)
+
+ v0
+
+
+
+φ(m)
+
+ d
+
+> 2s+d
+
+for some ν0 > 2, s > 0 and τm ≤ 132( η + 1)( Lm + 1)(( Nm + 1) Bm)Lm+1 φ(m) .
+
+(4.9) 
+
+If Tη r ∈ C s(X , η ), then, 
+
+ES
+
+î∥brη, S − r∥22,PX0
+
+ó ≲ (log φ(m)) ν
+
+(φ(m)) 2s  
+
+> 2s+d×δ
+> 1+ δ
+
+,
+
+for all ν > 3.
+
+Therefore, as above, if the ratio r has moments of any order, that is δ → ∞ (i.e. μ → +∞ in (A3) ), then the truncated estimator brη, S is optimal (up to a logarithmic factor) in the minimax sense, for several class of useful processes. This proposition is used to derive a L2(QX0 ) error bound of the pre-training reweighted SPDNN estimator bhbrη, S,D.16 Adaptive deep nonparametric regression under covariate shift 
+
+Theorem 4.2. Consider model (2.3) as either the Huber regression with τ > 6 ( K ∨ F ∨ Cξ ) or the quantile regression. Assume that (A1) , (A3) with μ = 2 + δ for some δ > 0, (A4) and (A5) hold, and that 
+
+h0 ∈ C s2 (X , K) for some s2, K > 0. Consider the estimator brS defined in (4.1) based on the DNN class Hσ,m := 
+
+Hσ (Lm, N m, B m, F m) where the network architecture parameters (Lm, N m, B m, F m), the tuning parameters λm,
+
+τm, and the truncation level η fulfill the conditions in Proposition 4.2, and Tη r ∈ C s1 (X , η ) for some s1 > 0.Consider the estimator bhbrη, S,D defined in (4.4) based on the DNN class Hσ (Ln, N n, B n, F n) where the network architecture (Lm, N m, B m, F m) and the tuning parameters λn, τ n satisfy (3.9) and (3.14) with ν4 = d 
+
+> 2s2+d
+
+.Then, it holds that 
+
+ES,D
+
+ï
+
+bhbrη, S,D − h0
+
+> 22,QX0
+
+ò
+
+≲ (log φ(m)) ν1
+
+(φ(m)) 2s12s1+d × δ
+
+> 1+ δ
+
++
+
+  log φ(n)ν2
+
+(φ(m)) 2s1(1+ δ)(2 s1+d)
+
+ φ(n) 2s22s2+d
+
+. (4.10) 
+
+for all ν1, ν 2 > 3.
+
+As in Remark 4.1, for sufficiently large m, the bound in (4.10) is of order O
+
+  log φ(n)3
+
+ φ(n) δ  
+
+> 1+ δ×2s
+> 2s+d
+
+!
+
+. In such cases, even if the ratio r is unbounded but has moments of any order (that is δ → ∞ ), the truncated based pre-training reweighted estimator bhbrη, S,D achieves (up to a logarithmic factor) the minimax optimal rate for several examples of useful processes. 
+
+# 5 Some applications and examples 
+
+Consider a probability space (Ω , B, P ), and a stationary process Z = {Zt}t∈Z on this space. For any −∞ ≤ 
+
+k ≤ +∞, denote by σk 
+
+> −∞
+
+:= σ(Zj , j ≤ k) and σ+∞ 
+
+> k
+
+:= σ(Zj , j ≥ k) the σ-field generated by the whole past and future at time k. Recall that Z = X ×Y ⊂ Rd×R. Consider a stationary and ergodic Z = {Zt = ( Xt, Y t), t ∈ Z}
+
+with values in Z and solution of (2.3). 1. I.I.d. processes. Assume that the process Z = {Zt}t∈Z is i.i.d. By fixing n0 = 1 , C = 1 , cγ = 2 ,
+
+cA = 23 , and φ(n) = n in assumption (A1) , we find the classical Bernstein inequality. 2. ϕ-mixing processes. The Z-valued process Z = {Zt}t∈Z is ϕ-mixing, if its ϕ-mixing coefficient, ϕ(k)
+
+with k ∈ Z satisfies, 
+
+ϕ(k) := sup 
+
+> A∈σ0
+> −∞ ,B ∈σ∞
+> k
+
+{| P (B) − P (B|A|} −→  
+
+> k→∞
+
+0.
+
+From [38], we find that ϕ-mixing processes satisfy assumption (A1) with n0 = 1 , C = 1 , cγ =32 P
+
+> k≥1
+
+pϕ(k), cA = 8 P
+
+> k≥1
+
+pϕ(k), and φ(n) = n.3. Exponential strong mixing processes. The Z-valued process Z = {Zt}t∈Z is said to be α-mixing or strongly mixing, if its α-mixing coefficient, α(k) with k ∈ Z, satisfies, 
+
+α(k) := sup 
+
+> A∈σ0
+> −∞ ,B ∈σ∞
+> k
+
+{| P (A ∩ B) − P (A)P (B)|} −→  
+
+> k→∞
+
+0.
+
+In addition, Z is exponential strongly mixing if, 
+
+α(k) ≤ c exp   − bk ϱ, for all k ≥ 1,Kengne and Mossa 17 for some constants b > 0, c ≥ 0, and ϱ ≥ 1.It follows from [14], [32] that an exponential α-mixing process satisfies assumption (A1) for some n0 ≥ 1,
+
+C, c γ , c A ≥ 0 with φ(n) = n/   log n2 for all n ≥ n0.4. Geometrically C-mixing processes. Recall that (Ω , B, P ) denotes a probability space. For any p ≥ 1,let Lp(P ) := {f : Ω → R measurable: ∥f ∥p < ∞} , where ∥f ∥p =   R  
+
+> Ω
+
+|f (x)|dP (x)1/p . Moreover, if 
+
+B′ ⊂ B is a sub-σ-algebra, we denote by Lp(B′, P ) := {f : Ω → R, B′ − measurable: ∥f ∥p < ∞} . The 
+
+C-norm is defined by ∥f ∥C = ∥f ∥ + ∥f ∥∞ where ∥ · ∥ is a a semi-norm on the vector space of bounded measurable functions f : Z → R and ∥·∥ ∞ is the sup-norm. Therefore, C(Z) := {f : Z → R : ∥f ∥C < ∞} 
+
+denotes the set of all bounded C-functions. The Z-valued process Z = {Zt}t∈Z is said to be C-mixing (see [31], [15]), if its C-mixing coefficient, ϕC (k)
+
+with k ∈ Z, satisfies, 
+
+ϕC (k) := sup 
+
+> j≥1
+
+n
+
+E Zf (Zj+k) − E(Z)E f (Zj+k) : Z ∈ L1(σj
+
+> 1
+
+, P ), ∥Z∥1 ≤ 1, f ∈ C (Z), ∥f ∥C ≤ 1
+
+o
+
+−→  
+
+> k→
+
+0,
+
+Furthermore, Z is geometrically C-mixing if, 
+
+ϕC (k) ≤ c exp   − bk ϱ, for all k ≥ 1,
+
+for some constants c > 0, b > 0, and ϱ > 0. From [14], we find that geometrically C-mixing processes satisfy assumption (A1) for some n0 ≥ 1, and with C = 2 , c γ = 8 , c A = 8 /3, φ(n) = n/   log n2/ϱ for all 
+
+n ≥ n0.The mixing conditions above include many useful autoregressive processes, such as, ARX, TARX, ARMAX among other, and some discrete dynamical systems, see for instance [7], [31] for more details. For the classes of dependence structures above, Table 1 displays the “effective number of observations” φ(n),the L2(QX0 ) error bounds of the unweighted, reweighted and pre-training reweighted SPDNN estimators for both the cases where the density ratio is uniformly bounded and may be unbounded. More precisely, this table provides the L2(QX0 ) error bounds of the unweighted, the reweighted, the reweighted with the truncated density ratio, the pre-training reweighted, and the pre-training reweighted with the truncated density ratio estimators on the class of Hölder smooth functions. As previously pointed out, these estimators can adaptively achieve the minimax optimal rate. 18 Adaptive deep nonparametric regression under covariate shift 
+
+> Table 1: Convergence rates of the  L2(QX0 ) error bounds of the unweighted, reweighted and pre-training estimators.  It is assumed that  h0 ∈
+> Cs (X , K) for the unweighted and reweighted estimators  bhD, bhr, D and  bhTη r, D (with existence of (1+ δ)-order moment of  r), and  h0 ∈ Cs2 (X , K)
+> in the case of the pre-training reweighted estimators  bhbrS,D (with  r ∈ Cs1 (X , K)) and  bhbrη, S,D (with  Tη r ∈ Cs1 (X , K) and existence of (2+ δ)-order moment of  r). Convergence rate
+> Dependence structure  φ(n) ED
+> "
+> bhD − h0 22,QX0
+> #
+> ED
+> "
+> bhr, D − h0 22,QX0
+> #
+> ED
+>  bhTη r, D − h0 22,QX0
+>  ES,D
+>  bhbrS,D − h0 22,QX0
+>  ES,D
+>  bhbrη, S,D − h0
+> 22,QX0
+> 
+> iid  n O
+> Ñ
+> n− 2s22s2+d (log  n)3
+> é
+> O
+> Ñ
+> n− 2s22s2+d (log  n)3
+> é
+> O
+> Ñ
+> n− δ
+> 1+ δ × 2s22s2+d (log  n)3
+> é
+> O
+> Ü
+> (log  m)3
+> m
+> 2s12s1+d
+> + (log  n)3
+> n
+> 2s22s2+d
+> ê
+> O
+> à
+> (log  m)3
+> m
+> 2s12s1+d × δ
+> 1+ δ
+> +
+> 
+> log  n
+> 3 × m
+> 2s1(1+ δ)(2 s1+d)
+> n
+> 2s22s2+d
+> í
+> ϕ-mixing  n O
+> Ñ
+> n− 2s22s2+d (log  n)3
+> é
+> O
+> Ñ
+> n− 2s22s2+d (log  n)3
+> é
+> O
+> Ñ
+> n− δ
+> 1+ δ × 2s22s2+d (log  n)3
+> é
+> O
+> Ü
+> (log  m)3
+> m
+> 2s12s1+d
+> + (log  n)3
+> n
+> 2s22s2+d
+> ê
+> O
+> à
+> (log  m)3
+> m
+> 2s12s1+d × δ
+> 1+ δ
+> +
+> 
+> log  n
+> 3 × m
+> 2s1(1+ δ)(2 s1+d)
+> n
+> 2s22s2+d
+> í
+> Exponential
+> α-mixing  n
+> (log  n)2 O
+> Ñ
+> n− 2s22s2+d (log  n)5
+> é
+> O
+> Ñ
+> n− 2s22s2+d (log  n)5
+> é
+> O
+> Ñ
+> n− δ
+> 1+ δ × 2s22s2+d (log  n)5
+> é
+> O
+> Ü
+> (log  m)5
+> m
+> 2s12s1+d
+> + (log  n)5
+> n
+> 2s22s2+d
+> ê
+> O
+> à
+> (log  m)5
+> m
+> 2s12s1+d × δ
+> 1+ δ
+> +
+> 
+> log  n
+> 5 × m
+> 2s1(1+ δ)(2 s1+d)
+> n
+> 2s22s2+d
+> í
+> Geoemtrically
+> C-mixing  n
+> (log  n)2/ϱ  O
+> Ñ
+> n− 2s22s2+d (log  n)3+ 2
+> ϱ
+> é
+> O
+> Ñ
+> n− 2s22s2+d (log  n)3+ 2
+> ϱ
+> é
+> O
+> Ñ
+> n− δ
+> 1+ δ × 2s22s2+d (log  n)3+ 2
+> ϱ
+> é
+> O
+> Ü
+> (log  m)3+ 2
+> ϱm
+> 2s12s1+d
+> + (log  n)3+ 2
+> ϱn
+> 2s22s2+d
+> ê
+> O
+> à
+> (log  m)3+ 2
+> ϱm
+> 2s12s1+d × δ
+> 1+ δ
+> +
+> 
+> log  n
+> 3+ 2
+> ϱ × m
+> 2s1(1+ δ)(2 s1+d)
+> n
+> 2s22s2+d
+> í
+
+Kengne and Mossa 19 
+
+# 6 Conclusion and outlook 
+
+In this work, we consider Huber and quantile nonparametric from dependent observations and under covariate shift, i.e. when the training and test datasets do not follow the same distribution. For this purpose, the density ratio r is used to quantify the shift between the distributions of the covariate over the source and the target datasets. We perform both cases where this ratio is known and unknown. Also, r may be bounded or unbounded. In the latter case, a finite moment condition is considered. We propose SPDNN unweighted, reweighted and two stages pre-training reweighted estimators and establish their non-asymptotic L2(QX0 )
+
+error bounds on the class of Hölder smooth functions. For several classical models, including ϕ-mixing, strong mixing, and C-mixing processes, these estimators can adaptively achieve (up to a logarithmic factor) the minimax optimal rate. This work can be extended in several directions; examples: 1. We have performed nonparametric Huber and quantile regression. An interesting question is to consider a general deep learning framework that includes regression and classification under covariate shift. This issue could be carried out through a general loss function, see for instance [23], [21], [1]. 2. We have assumed that the target function h0 belongs to the class of Hölder smooth functions. Another extension is to consider the classes of composition Hölder functions (see [39]), and non-smooth functions (for instance, piecewise smooth functions, see [36], [16], [17]). 3. One can increase the predictive performance of the proposed estimators by considering transfer learning under covariate shift. In this extension, we deal with two samples: a large sample {(Xi, Y i)}ni=1 with 
+
+(X0, Y 0) ∼ PX0,Y 0 (the source distribution), and a second sample {(X′ 
+
+> i
+
+, Y ′ 
+
+> i
+
+)}ki=1 with (X′
+
+> 0
+
+, Y ′ 
+
+> 0
+
+) ∼ QX0,Y 0
+
+(the target distribution), where k ≪ n. The estimators above will be constructed from these two samples in order to minimize the L2(QX0 ) error. The case examined in the present study corresponds to k = 0 .Such issue has been addressed for regression (see for instance [40], [46]) and for classification (see [37], [18]) from i.i.d. data. Such an approach with k > 0 could be performed in the framework considered here, including dependent observations and adaptive estimators. 
+
+# 7 Proofs of the main results 
+
+7.1 Proof of Lemma 3.1 
+
+Firstly, let us deal with the case of the Huber regression. Let τ > 0. Recall that, the Huber loss ℓτ (u) =  
+
+> 12
+
+u21(|u| ≤ τ ) +  τ |u| − 12 τ 21(|u| > τ ) is differentiable and the derivative is given for all x ∈ R by, 
+
+ℓ′ 
+
+> τ
+
+(X0) = sgn (x)( |x| ∧ τ ).
+
+This score function is Lipschitz continuous and has a derivative for almost everywhere x ∈ R given by, 
+
+ℓ′′  
+
+> τ
+
+(X0) = 1(|x| ≤ τ ).
+
+So, on can write (from the fundamental theorem of calculus) for any u, v ∈ R,
+
+ℓτ (u + v) − ℓτ (u) = ℓ′ 
+
+> τ
+
+(u)v +
+
+Z v
+
+> 0
+
+ℓ′′  
+
+> τ
+
+(u + z)( v − z)dz. (7.1) 20 Adaptive deep nonparametric regression under covariate shift 
+
+Let h ∈ H σ,n . By taking u = Y0 − hHσ,n (X0) and v = hHσ,n (X0) − h(X0), we get, 
+
+ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − hHσ,n (X0) = ℓ′
+
+τ
+
+ Y0 − hHσ,n (X0)  hHσ,n (X0) − h(X0)
+
++
+
+Z hHσ,n (X0)−h(X0)0
+
+ℓ′′ 
+
+τ
+
+ Y0 − hHσ,n (X0) + z  hHσ,n (X0) − h(X0) − zdz 
+
+=  hHσ,n (X0) − h(X0)ℓ′
+
+τ
+
+ Y0 − h0(X0) +  hHσ,n (X0) − h(X0) ℓ′
+
+τ
+
+ Y0 − hHσ,n (X0) − ℓ′
+
+τ
+
+ Y0 − h0(X0) 
+
++
+
+Z hHσ,n (X0)−h(X0)0
+
+ℓ′′ 
+
+τ
+
+ Y0 − hHσ,n (X0) + z  hHσ,n (X0) − h(X0) − zdz 
+
+=  hHσ,n (X0) − h(X0)ℓ′
+
+τ
+
+ ξ0
+
+ +  hHσ,n (X0) − h(X0) ℓ′
+
+τ
+
+ Y0 − hHσ,n (X0) − ℓ′
+
+τ
+
+ Y0 − h0(X0) 
+
++
+
+Z hHσ,n (X0)−h(X0)0
+
+ℓ′′ 
+
+τ
+
+ Y0 − hHσ,n (X0) + z  hHσ,n (X0) − h(X0) − zdz. (7.2) From the proof of Proposition 3.1 in [9], we have for all x ∈ X , E[ℓ′
+
+τ (ξ0)|X0 = x] = 0 . Hence, E  hHσ,n (X0) −
+
+h(X0)ℓ′
+
+τ
+
+ ξ0
+
+ = 0 . Moreover, the function ℓ′
+
+τ is 1-Lipschitzian. So, ℓ′
+
+τ
+
+ Y0 − hHσ,n (X0) − ℓ′
+
+τ
+
+ Y0 − h0(X0) ≤
+
+hHσ,n (X0) − h0(X0) . Therefore, 
+
+E(X0,Y 0)∼PX0,Y 0
+
+h hHσ,n (X0) − h(X0) ℓ′
+
+τ
+
+ Y0 − hHσ,n (X0) − ℓ′
+
+τ
+
+ Y0 − h0(X0) i
+
+≥ − EX0∼PX0
+
+ hHσ,n (X0) − h(X0) hHσ,n (X0) − h0(X0) . (7.3) Now, let x ∈ X . We have, 
+
+E
+
+h Z hHσ,n (X0)−h(X0)0
+
+ℓ′′ 
+
+τ
+
+ Y0 − hHσ,n (X0) + z  hHσ,n (X0) − h(X0) − zdz X0 = x
+
+i
+
+= E
+
+h Z hHσ,n (X0)−h(X0)0
+
+1 |Y0 − hHσ,n (X0) + z| ≤ τ   hHσ,n (X0) − h(X0) − zdz X0 = x
+
+i
+
+= E
+
+h Z hHσ,n (X0)−h(X0)0
+
+
+
+1 − 1 |Y0 − hHσ,n (X0) + z| > τ  hHσ,n (X0) − h(X0) − zdz X0 = x
+
+i
+
+= E
+
+h Z hHσ,n (X0)−h(X0)0
+
+
+
+1 − 1 |ξ0 + h0(X0) − hHσ,n (X0) + z| > τ  hHσ,n (X0) − h(X0) − zdz X0 = x
+
+i
+
+= E
+
+h Z hHσ,n (x)−h(x)0
+
+
+
+1 − 1 |ξ0 + h0(x) − hHσ,n (x) + z| > τ  hHσ,n (x) − h(x) − zdz X0 = x
+
+i
+
+=
+
+Z hHσ,n (x)−h(x)0
+
+ hHσ,n (x) − h(x) − zdz 
+
+− E
+
+h Z hHσ,n (x)−h(x)0
+
+1 |ξ0 + h0(x) − hHσ,n (x) + z| > τ   hHσ,n (x) − h(x) − zdz X0 = x
+
+iKengne and Mossa 21 
+
+= 12
+
+ hHσ,n (x) − h(x)2 − E
+
+h Z hHσ,n (x)−h(x)0
+
+1 |ξ0 + h0(x) − hHσ,n (x) + z| > τ   hHσ,n (x) − h(x) − zdz X0 = x
+
+i
+
+(7.4) 
+
+≥ 12
+
+ hHσ,n (x) − h(x)2
+
+− E
+
+h Z hHσ,n (x)−h(x)0
+
+
+
+1 |ξ0| > τ / 3 + 1 |h0(x) − hHσ,n (x)| > τ / 3 + 1 |hHσ,n (x) − h(x)| > τ / 3
+
+×  hHσ,n (x) − h(x) − zdz X0 = x
+
+i
+
+= 12
+
+ hHσ,n (x) − h(x)2 −
+
+
+
+P  |ξ0| > τ / 3|X0 = x + 1 |h0(x) − hHσ,n (x)| > τ / 3 + 1 |hHσ,n (x) − h(x)| > τ / 3
+
+×
+
+Z hHσ,n (x)−h(x)0
+
+ hHσ,n (x) − h(x) − zdz 
+
+= 12
+
+ hHσ,n (x) − h(x)2
+
+1 − P  |ξ0| > τ / 3|X0 = x − 1 |h0(x) − hHσ,n (x)| > τ / 3 − 1 |hHσ,n (x) − h(x)| > τ / 3
+
+= 12
+
+ hHσ,n (x) − h(x)21 − P  |ξ0| > τ / 3|X0 = x , (7.5) where the last equality holds from |h0(x) − hHσ,n (x)| ≤ ∥ h0∥∞,X + ∥hHσ,n ∥∞,X ≤ K + F ≤ τ / 3 and |hHσ,n (x) −
+
+h(x)| ≤ ∥ hHσ,n ∥∞,X + ∥h∥∞,X ≤ 2F ≤ τ / 3 since τ ≥ 6( K ∨ F ). We get from the Markov’s inequality, 
+
+P  |ξ0| > τ / 3|X0 = x ≤ E(|ξ0|| X0 = x)
+
+τ / 3 ≤ 3Cξ /τ. 
+
+Hence, (7.5) gives, 
+
+E
+
+h Z hHσ,n (X0)−h(X0)0
+
+ℓ′′ 
+
+> τ
+
+ Y0−hHσ,n (X0)+ z  hHσ,n (X0)−h(X0)−zdz X0 = x
+
+i
+
+≥ 12
+
+ 1− 3Cξ
+
+τ
+
+  hHσ,n (x)−h(x)2.
+
+(7.6) Recall that 1 − 3Cξ
+
+τ > 0 since τ > 3Cξ . Thus, in addition to (7.2), (7.3) and from the Cauchy-Schwarz inequality, we get for all β > 0,
+
+E(X0,Y 0)∼PX0,Y 0
+
+ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − hHσ,n (X0) 
+
+≥ − EX0∼PX0
+
+ hHσ,n (X0) − h(X0) hHσ,n (X0) − h0(X0)  + 12
+
+ 1 − 3Cξ
+
+τ
+
+EX0∼PX0
+
+  hHσ,n (X0) − h(X0)2
+
+≥ − 
+
+q
+
+EX0∼PX0
+
+  hHσ,n (X0) − h(X0)2q
+
+EX0∼PX0
+
+  hHσ,n (X0) − h0(X0)2
+
++ 12
+
+ 1 − 3Cξ
+
+τ
+
+EX0∼PX0
+
+  hHσ,n (X0) − h(X0)2
+
+≥ − 12β EX0∼PX0
+
+  hHσ,n (X0) − h(X0)2 − β
+
+2 EX0∼PX0
+
+  hHσ,n (X0) − h0(X0)2
+
++ 12
+
+ 1 − 3Cξ
+
+τ
+
+EX0∼PX0
+
+  hHσ,n (X0) − h(X0)2
+
+= 12
+
+ 1 − 3Cξ
+
+τ
+
+ − 1
+
+β
+
+
+
+∥hHσ,n − h∥22,PX0 − β
+
+2 ∥hHσ,n − h0∥22,PX0 .
+
+Hence, 
+
+12
+
+ 1− 3Cξ
+
+τ
+
+− 1
+
+β
+
+
+
+∥hHσ,n −h∥22,PX0 ≤ E(X0,Y 0)∼PX0,Y 0
+
+ℓτ
+
+ Y0−h(X0)−ℓτ
+
+ Y0−hHσ,n (X0) + β
+
+2 ∥hHσ,n −h0∥22,PX0 .22 Adaptive deep nonparametric regression under covariate shift 
+
+So, 
+
+∥h − h0∥22,PX0 ≤ 2∥hHσ,n − h∥22,PX0 + 2 ∥hHσ,n − h0∥22,PX0
+
+≤ 4
+
+ 1 − 3Cξ
+
+τ
+
+ − 1
+
+β
+
+
+
+E(X0,Y 0)∼PX0,Y 0
+
+ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − hHσ,n (X0) + β
+
+2 ∥hHσ,n − h0∥22,PX0
+
+
+
++ 2 ∥hHσ,n − h0∥22,PX0
+
+= 4
+
+ 1 − 3Cξ
+
+τ
+
+ − 1
+
+β
+
+E(X0,Y 0)∼PX0,Y 0
+
+ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − hHσ,n (X0) + 2β
+
+ 1 − 3Cξ
+
+τ
+
+ − 1
+
+β
+
++ 2 
+
+!
+
+∥hHσ,n − h0∥22,PX0 .
+
+(7.7) This inequality holds for all β > 0 and h ∈ H σ,n . So, set 
+
+β = 2 , C 1 = 4 
+
+> 12
+
+− 3Cξ
+
+τ
+
+and C2 = C1 + 2 .
+
+We have C1 > 0, since τ > 6Cξ . It holds from (7.7) that, 
+
+∥h − h0∥22,PX0 ≤ C1E(X0,Y 0)∼PX0,Y 0
+
+ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − hHσ,n (X0) + C2∥hHσ,n − h0∥22,PX0
+
+≤ C1E(X0,Y 0)∼PX0,Y 0
+
+ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − hHσ,n (X0) + C2∥hHσ,n − h0∥2
+
+> ∞,X
+
+= C1E(X0,Y 0)∼PX0,Y 0
+
+ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − hHσ,n (X0) + C2 inf 
+
+> h∈H σ,n
+
+∥h − h0∥2 
+
+> ∞,X
+
+. (7.8) The case of the quantile regression can be performed as in Lemma 4 in [11]. This completes the proof of the lemma. 
+
+7.2 Proof of Lemma 3.2 
+
+We will perform the proof for the Huber regression. The case of the quantile regression can be obtained in the same way as in the proof of Lemma 21 in [11]. Let h ∈ H σ,n . We get from (7.2), 
+
+r(X0)  ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − hHσ,n (X0) 
+
+=  r(X0) hHσ,n (X0) − h(X0)ℓ′
+
+> τ
+
+ ξ0
+
+ + r(X0) hHσ,n (X0) − h(X0) ℓ′
+
+> τ
+
+ Y0 − hHσ,n (X0) − ℓ′
+
+> τ
+
+ Y0 − h0(X0) 
+
++ r(X0)
+
+Z hHσ,n (X0)−h(X0)0
+
+ℓ′′ 
+
+> τ
+
+ Y0 − hHσ,n (X0) + z  hHσ,n (X0) − h(X0) − zdz. (7.9) From the same arguments as in the proof of Lemma 3.1, we get, E   r(X0) hHσ,n (X0) − h(X0)ℓ′
+
+> τ
+
+ ξ0
+
+ = 0 ,for all β > 0,
+
+E(X0,Y 0)∼PX0,Y 0
+
+  r(X0) hHσ,n (X0) − h(X0)  ℓ′
+
+> τ
+
+ Y0 − hHσ,n (X0) − ℓ′
+
+> τ
+
+ Y0 − h0(X0) 
+
+≥ − EX0∼PX0
+
+r(X0)|hHσ,n (X0) − h(X0)| × | hHσ,n (X0) − h0(X0)| (7.10) 
+
+≥ − 
+
+q
+
+EX0∼PX0
+
+îr(X0) hHσ,n (X0) − h(X0)2óq
+
+EX0∼PX0
+
+îr(X0) hHσ,n (X0) − h0(X0)2ó (7.11) 
+
+≥ − 12β EX0∼PX0
+
+îr(X0) hHσ,n (X0) − h(X0)2ó − β
+
+2 EX0∼PX0
+
+îr(X0) hHσ,n (X0) − h0(X0)2ó (7.12) Kengne and Mossa 23 and for all x ∈ X ,
+
+E
+
+ñ
+
+r(X0)
+
+Z hHσ,n (X0)−h(X0)0
+
+ℓ′′ 
+
+> τ
+
+ Y0 − hHσ,n (X0) + z  hHσ,n (X0) − h(X0) − zdz X0 = x
+
+ô
+
+≥ 12
+
+Å
+
+1 − 3Cξ
+
+τ
+
+ã  hHσ,n (x) − h(x)2 r(x). (7.13) The inequalities in (7.10), (7.11) and (7.13) hold by going as in (7.3), (7.6) and by using the Cauchy-Schwarz inequality. Hence, according to (7.9), (7.12) and (7.13), we have for all β > 0,
+
+E(X0,Y 0)∼PX0,Y 0
+
+r(X0)  ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − hHσ,n (X0) 
+
+≥ 12
+
+ÅÅ 
+
+1 − 3Cξ
+
+τ
+
+ã
+
+− 1
+
+β
+
+ã
+
+EX0∼PX0
+
+îr(X0)  hHσ,n (X0) − h(X0)2ó − β
+
+2 EX0∼PX0
+
+îr(X0)  hHσ,n (X0) − h0(X0)2ó
+
+≥ 12
+
+ÅÅ 
+
+1 − 3Cξ
+
+τ
+
+ã
+
+− 1
+
+β
+
+ã
+
+hHσ,n − h 22,QX0
+
+− β
+
+2 hHσ,n − h0
+
+> 22,QX0
+
+, (7.14) where the inequality (7.14) holds since 
+
+EX0∼PX0
+
+îr(X0)  hHσ,n (X0) − h(X0)2ó = hHσ,n − h 22,QX0
+
+and 
+
+EX0∼PX0
+
+îr(X0)  hHσ,n (X0) − h0(X0)2ó = hHσ,n − h0
+
+> 22,QX0
+
+.
+
+By taking β = 2 and set C1 = 41/2 − 3Cξ /τ , C 2 = C1 + 2 in (7.14) and by going as in (7.7), we get, 
+
+∥h − h0∥22,QX0
+
+≤ 2 hHσ,n − h 22,QX0
+
++ 2 hHσ,n − h0
+
+> 22,QX0
+
+≤ C1E(X0,Y 0)∼PX0,Y 0
+
+r(X0)  ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − hHσ,n (X0) + C2 hHσ,n − h0
+
+> 22,QX0
+
+.
+
+Hence, it holds as in (7.8) that, 
+
+∥h − h0∥22,QX0
+
+≤ C1E(X0,Y 0)∼PX0,Y 0
+
+r(X0)  ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − hHσ,n (X0) + C2 inf 
+
+> h∈H σ,n
+
+∥h − h0∥2 
+
+> ∞,X
+
+,
+
+which completes the proof. 
+
+7.3 Proof of Theorem 3.1 
+
+In this proof, we denote 
+
+RP(h) = E(X0,Y 0)∼PX0,Y 0 [ℓτ (h(X0), Y 0)] .
+
+1. Under (A2) 
+
+Let ν > 3. On the one hand, by applying Lemma 3.1, we have 
+
+ED
+
+ï
+
+bhD − h0
+
+> 22,PX0
+
+ò
+
+≲ ED
+
+¶E(X0,Y 0)∼PX0,Y 0
+
+îℓτ
+
+ÄY0 − bhD(X0)ä − ℓτ
+
+ Y0 − hHσ,n (X0)ó© + inf 
+
+> h∈H σ,n
+
+∥h − h0∥2 
+
+> ∞,X
+
+,
+
+(7.15) 24 Adaptive deep nonparametric regression under covariate shift 
+
+where hHσ,n is given in (3.5). Note that, h0 is a target function, see (2.4) and we have for all h ∈ H σ,n ,
+
+RP(h) − RP(hHσ,n ) ≤ RP(h) − RP(h0). Hence, 
+
+ED
+
+¶E(X0,Y 0)∼PX0,Y 0
+
+îℓτ
+
+ÄY0 − bhD(X0)ä − ℓτ
+
+ Y0 − hHσ,n (X0)ó© 
+
+= ED
+
+îRP(bhD) − RP(hHσ,n )ó ≤ ED
+
+îRP(bhD) − RP(h0)ó ≲
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
+, (7.16) where the last inequality above holds from Corollary 3.4 in [22]. According to Theorem 3.2 in [20], we have 
+
+inf 
+
+> h∈H σ,n
+
+∥h − h0∥2 
+
+> ∞,X
+
+≤ 1
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
+. (7.17) In addition to (7.15) and (7.16), we get 
+
+ED
+
+ï
+
+bhD − h0
+
+> 22,PX0
+
+ò
+
+≲ 1
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
++
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
+≲
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
+. (7.18) On the other hand, we have for all h ∈ H σ,n ,
+
+∥h − h0∥22,QX0 = EX0∼QX0
+
+î(h(X0) − h0(X0)) 2ó = EX0∼PX0
+
+îr(X0) ( h(X0) − h0(X0)) 2ó ≤ Γ∥h − h0∥22,PX0 .
+
+(7.19) Then, we have 
+
+ED
+
+î∥bhD − h0∥22,QX0
+
+ó ≤ ΓED
+
+î∥bhD − h0∥22,PX0
+
+ó .
+
+Hence, it follows from (7.18) that, 
+
+ED
+
+î∥bhD − h0∥22,QX0
+
+ó ≤ ΓED
+
+î∥bhD − h0∥22,PX0
+
+ó ≲
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
+.
+
+2. Under (A3) with μ = 2 
+
+Let ν > 3 and h ∈ H σ,n . From (7.19) and the Cauchy-Schwarz inequality, we have 
+
+∥h − h0∥22,QX0 = EX0∼PX0
+
+îr(X0) ( h(X0) − h0(X0)) 2ó
+
+≤ EX0∼PX0
+
+r2(X0) 12 × ¶EX0∼PX0
+
+î(h(X0) − h0(X0)) 4ó© 12
+
+≤ EX0∼PX0
+
+r2(X0) 12 × ¶EX0∼PX0
+
+î(h(X0) − h0(X0)) 2 (h(X0) − h0(X0)) 2ó© 12
+
+≲ ∥h − h0∥2,PX0 . (7.20) The inequality in (7.20) holds since U2 = EX0∼PX0
+
+r2(X0) < ∞, ∥h0∥∞ ≤ K and ∥h∥∞ ≤ F . From (7.20) and (7.18), we have 
+
+ED
+
+ï
+
+bhD − h0
+
+> 22,QX0
+
+ò
+
+≲ ED
+
+î∥bhD − h0∥2,PX0
+
+ó ≤ ÄED
+
+î∥bhD − h0∥22,PX0
+
+óä 12
+
+≲
+
+
+
+log φ(n)
+
+ν/ 2
+
+
+
+φ(n)
+
+ s
+
+> 2s+d
+
+.
+
+Thus the theorem follows. Kengne and Mossa 25 
+
+7.4 Proof of Proposition 3.1 
+
+It suffices to show that EP,r (h) ≥ 0 for all h ∈ F .
+
+1. Huber regression 
+
+Let h ∈ F . From the proof of Lemma 3.1, we have 
+
+ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − h0(X0) = ℓ′
+
+> τ
+
+ Y0 − h0(X0)  h0(X0) − h(X0)
+
++
+
+Z h0(X0)−h(X0)0
+
+ℓ′′ 
+
+> τ
+
+ Y0 − h0(X0) + z  h0(X0) − h(X0) − zdz. 
+
+So, 
+
+r(X0)  ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − h0(X0) = r(X0)ℓ′
+
+> τ
+
+ ξ0
+
+  h0(X0) − h(X0)
+
++ r(X0)
+
+Z h0(X0)−h(X0)0
+
+ℓ′′ 
+
+> τ
+
+ Y0 − h0(X0) + z  h0(X0) − h(X0) − zdz. 
+
+Since E [ℓ′ 
+
+> τ
+
+(ξ0)|X0 = x] = 0 for all x ∈ X , we have EX0∼PX0
+
+r(X0)ℓ′
+
+> τ
+
+ ξ0
+
+  h0(X0) − h(X0) = 0 . Furthermore, from the proof of Lemma 3.1, we have 
+
+E
+
+ñ
+
+r(X0)
+
+Z h0(X0)−h(X0)0
+
+ℓ′′ 
+
+> τ
+
+ Y0 − h0(X0) + z  h0(X0) − h(X0) − zdz X0 = x
+
+ô
+
+≥ 12
+
+ 1− 3Cξ
+
+τ
+
+  h0(x)−h(X0)2r(x) ≥ 0.
+
+Then, we have 
+
+EP,r (h) ≥ EX0∼PX0
+
+ï 12
+
+ 1 − 3Cξ
+
+τ
+
+  h0(X0) − h(X0)2r(X0)
+
+ò
+
+≥ 0.
+
+Hence, 
+
+h0 ∈ argmin 
+
+> h∈F
+
+RP,r (h).
+
+2. Quantile regression 
+
+From the equation (B.3) in [3], we have for any u, v ∈ R,
+
+ℓτ (u − v) − ℓτ (u) = −v  τ − 1{u≤0}
+
+ +
+
+Z v
+
+> 0
+
+ 1{u≤z} − 1{u≤0}
+
+ dz. 
+
+Let h ∈ F . By taking u = Y0 − h0(X0) and v = h(X0) − h0(X0), we have 
+
+r(X0) ( ℓτ (Y0 − h(X0) − ℓτ (Y0 − h0(X0)) = −r(X0) ( h(X0) − h0(X0))  τ − 1{Y0≤h0(X0)}
+
+
+
++ r(X0)
+
+Z h(X0)−h0(X0)0
+
+ 1{Y0≤h0(X0)+ z} − 1{Y0≤h0(X0)}
+
+ dz. 
+
+Since E τ − 1{Y0≤h0(X0)}|X0
+
+ = τ − τ = 0 , so 
+
+EP,r (h) = EX0∼PX0
+
+ñ
+
+r(X0)
+
+Z h(X0)−h0(X0)0
+
+ÄEY0|X0∼PY0|X0
+
+ 1{Y0≤h0(X0)+ z}|X0
+
+ − EY0|X0∼PY0|X0
+
+ 1{Y0≤h0(X0)}|X0
+
+ä dz 
+
+ô
+
+= EX0∼PX0
+
+ñ
+
+r(X0)
+
+Z h(X0)−h0(X0)0
+
+ FY0|X0 (h0(X0) + z) − FY0|X0 (h0(X0))  dz 
+
+ô
+
+.
+
+From Assumption (A4) and Lemma 13 in [30], one can find a constant C > 0 such that, 
+
+Z h(X0)−h0(X0)0
+
+ FY0|X0 (h0(X0) + z) − FY0|X0 (h0(X0))  dz ≥ C min  |h(X0) − h0(X0)|, |h(X0) − h0(X0)|2 ≥ 0.
+
+Hence, since r(X0) ≥ 0 for all x ∈ X , we get EP,r (h) ≥ 0. This completes the proof of the proposition. 26 Adaptive deep nonparametric regression under covariate shift 
+
+7.5 Proof of Theorem 3.2 
+
+We denote 
+
+EP,r (bhr, D) := E[B1,n ] + E[B2,n ]. (7.21) where, 
+
+B1,n = E(X0,Y 0)∼PX0,Y 0
+
+Är(X0) îℓτ (Y0 − bhr, D(X0)) − ℓτ (Y0 − h0(X0)) óä − 2
+
+n
+
+> n
+
+X
+
+> i=1
+
+r(Xi) îℓτ (Yi − bhr, D(Xi)) − ℓτ (Yi − h0(Xi)) ó
+
+− 2Jn(bhr, D); (7.22) and 
+
+B2,n = 2
+
+n
+
+> n
+
+X
+
+> i=1
+
+r(Xi) îℓτ (Yi − bhr, D(Xi)) − ℓτ (Yi − h0(Xi)) ó + 2 Jn(bhr, D). (7.23) It suffices to derive bounds of E[B1,n ] and E[B2,n ].Let ρ > 1/φ (n) and Ln, N n, B n, F n = F > 0 satisfying the condition of the theorem. Set, 
+
+Hn,j,ρ := h ∈ H σ,n : 2 j−11{j̸ =0 }ρ ≤ Jn(h) ≤ 2j ρ ,
+
+where Hσ,n := Hσ (Ln, N n, B n, F ),. Let 
+
+G(h, Z 0) := r(X0) [ ℓτ (Y0 − h(X0)) − ℓτ (Y0 − h0(X0))] , with Z0 := ( X0, Y 0).
+
+As in the proof of Theorem 4.1 in [21] have for all ρ > 1/φ (n),
+
+P (B1,n > ρ ) = P ÄE[r(X0)ℓτ (Y0 − bhr, D(X0))] − E[r(X0)ℓτ (Y0 − h0(X0))] 
+
+− 2
+
+n
+
+> n
+
+X
+
+> i=1
+
+r(Xi)[ ℓτ (Yi − bhr, D(Xi)) − ℓτ (Yi − h0(Xi))] − 2Jn(bhr, D) > ρ 
+
+!
+
+≤ P ∃h ∈ H σ,n : E[r(X0)ℓτ (Y0 − h(X0))] − E[r(X0)ℓτ (Y0 − h0(X0))] − 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+r(Xi)[ ℓτ (Yi − h(Xi)) − ℓτ (Yi − h0(Xi))] 
+
+> 12 (E[r(X0)ℓτ (Y0 − h(X0))] − E[r(X0)ℓτ (Y0 − h0(X0))] + 2 Jn(h) + ρ)
+
+ã
+
+≤ P ∃h ∈ H σ,n : 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+[E[G(h, Z i)] − G(h, Z i)] > 12 (ρ + 2 Jn(h) + E[G(h, Z 0)]) 
+
+!
+
+≤ P
+
+Ç
+
+sup 
+
+> h∈H σ,n
+> 1
+> n
+
+Pni=1 [E[G(h, Z i)] − G(h, Z i)] 
+
+ρ + 2 Jn(h) + E[G(h, Z 0)] > 12
+
+å
+
+≤
+
+> ∞
+
+X
+
+> j=1
+
+P
+
+Ç
+
+sup 
+
+> h∈H n,j,ρ
+> 1
+> n
+
+Pni=1 [E[G(h, Z i)] − G(h, Z i)] 
+
+ρ + 2 Jn(h) + E[G(h, Z 0)] > 12
+
+å
+
+≤
+
+> ∞
+
+X
+
+> j=1
+
+P
+
+Ç
+
+sup 
+
+> h∈H n,j,ρ
+> 1
+> n
+
+Pni=1 [E[G(h, Z i)] − G(h, Z i)] 2j ρ + E[G(h, Z 0)] > 12
+
+å
+
+≤
+
+> ∞
+
+X
+
+> j=1
+
+P
+
+Ç
+
+sup 
+
+> h∈H n,j,ρ
+> 1
+> n
+
+Pni=1 [E[G(h, Z i)] − G(h, Z i)] 
+
+p2j ρ + E[G(h, Z 0)] > 12
+
+p2j ρ
+
+å
+
+(7.24) 
+
+=
+
+> ∞
+
+X
+
+> j=1
+
+P
+
+Ç
+
+sup 
+
+> G∈G n,j,ρ
+> 1
+> n
+
+Pni=1 [E[G(h, Z i)] − G(h, Z i)] 
+
+p2j ρ + E[G(h, Z 0)] > 12
+
+p2j ρ
+
+å
+
+, (7.25) Kengne and Mossa 27 where 
+
+Gn,j,ρ = {G(h, ·) : Rd × Y → R : h ∈ H n,j,ρ },
+
+and the inequality in (7.24) holds since h ∈ H n,j,ρ , 2Jn(h) ≥ 2j ρ for all j ≥ 0 and E[G(h, Z 0)] = E[r(X0)ℓ(Y0 −
+
+h(X0))] − E[r(X0)ℓ(Y0 − h0(X0))] ≥ 0 from Proposition 3.1. Set for any h ∈ H n,j,ρ and z = ( x, y ),
+
+g(h, z ) = r(x) [ ℓτ (y − h(x)) − ℓτ (y − h0(x))] .
+
+Let h ∈ H n,j,ρ . Since ∥h∥∞ ≤ F, ∥h0∥∞ ≤ K and ℓτ is Kℓτ -Lipschitzian, we have with Z0 = ( X0, Y 0),
+
+|g(h, Z 0)| = |G(h, Z 0)| ≤ ΓKℓτ (F + K),
+
+Var (g(h, Z 0)) ≤ E[g(h, Z 0)2] ≤ ΓKℓτ (F + K)E[g(h, Z 0)] ,
+
+and 
+
+|E(g(h, Z 0)) − g(h, Z 0)) | ≤ 2Γ Kℓτ (F + K) .
+
+By applying Lemma 6.1 in [22] with 
+
+C1 = 2Γ Kℓτ (F + K), C2 = Γ Kℓτ (F + K); ε = 2 j ρ; u = 18 ; CA, c γ > 0,
+
+we get, 
+
+P
+
+Ç
+
+sup 
+
+> G∈G n,j,ρ
+> 1
+> n
+
+Pni=1 [E[G(h, Z i)] − G(h, Z i)] 
+
+p2j ρ + E[G(h, Z 0)] > 12
+
+p2j ρ
+
+å
+
+≲ N
+
+Å
+
+Gn,j,ρ , 2j ρ
+
+8 , ∥ · ∥ ∞
+
+ã
+
+exp 
+
+Å
+
+− 2j ρ φ (n)64 Γ Kℓτ (F + K) ( cγ + 2 CA)
+
+ã
+
+.
+
+Set ε = 2j ρ 
+
+> 8
+
+, we find that 
+
+N (Gn,j,ρ , ε, ∥ · ∥ ∞) ≤ N 
+
+Å
+
+Hn,j,ρ , ε
+
+ΓKℓ
+
+, ∥ · ∥ ∞
+
+ã
+
+.
+
+For all L, N, B, F, S ≥ 0, set 
+
+eHσ (L, N, B, F, S ) := {h ∈ H σ (L, N, B, F ) : Jn(h) ≤ λnS}.
+
+We have for all j ∈ N and ρ > 0
+
+Hn,j,ρ ⊂ eHσ (L, N, B, F, 2j ρλn
+
+).
+
+From lemma E.6 in [27], it holds that for all ε ∈  ΓKℓτ τn(Ln + 1)(( Nn + 1) Bn)Ln+1 , ΓKℓτ
+
+
+
+N (Gn,j,ρ , ε, ∥ · ∥ ∞) ≤ N 
+
+Å
+
+Hn,j,ρ , ε
+
+ΓKℓτ
+
+, ∥ · ∥ ∞
+
+ã
+
+≤ N 
+
+Å
+
+eHσ (Ln, N n, B n, F, 2j ρλn
+
+), ε
+
+ΓKℓτ
+
+, ∥ · ∥ ∞
+
+ã
+
+≤ exp 
+
+ñ
+
+2 2j ρλn
+
+(Ln + 1) log 
+
+Ç (Ln + 1)( Nn + 1) Bnε
+
+> ΓKℓτ
+
+− τn(Ln + 1)(( Nn + 1) Bn)Ln+1 
+
+åô 
+
+. (7.26) 
+
+P (B1,n > ρ ) ≲
+
+> +∞
+
+X
+
+> j=1
+
+exp 
+
+ñ
+
+2 2j ρλn
+
+(Ln + 1) log 
+
+Ç (Ln + 1)( Nn + 1) Bnε
+
+> ΓKℓτ
+
+− τn(Ln + 1)(( Nn + 1) Bn)Ln+1 
+
+åô 
+
+×exp 
+
+Å
+
+− 2j ρ φ (n)64 Γ Kℓτ (F + K) ( cγ + 2 CA)
+
+ã
+
+.
+
+Then, we have 
+
+P (B1,n > ρ ) ≲
+
+> +∞
+
+X
+
+> j=1
+
+exp 
+
+ñ
+
+2 2j ρλn
+
+(Ln + 1) log 
+
+Ç (Ln + 1)( Nn + 1) Bnε
+
+> ΓKℓτ
+
+− τn(Ln + 1)(( Nn + 1) Bn)Ln+1 
+
+å
+
+− 2j ρ φ (n)64 Γ Kℓτ (F + K) ( cγ + 2 CA)
+
+ô
+
+.
+
+(7.27) 28 Adaptive deep nonparametric regression under covariate shift 
+
+The rest of the proof is obtained by following the same steps as in the proof of Theorem 4.1 in [21] dealing with φ(n) instead of n(α). This leads to, for sufficiently large n, 
+
+E[B1,n ] ≤
+
+Z ∞
+
+> 0
+
+P (B1,n > ρ )dρ ≲ Γ
+
+φ(n) ,
+
+and 
+
+E[B2,n ] ≤ 2Jn(h⋄
+
+> r, D
+
+) + 2 EP,r (h⋄
+
+> r, D
+
+) ≤ 2 inf 
+
+> h∈H σ,n
+
+[EP,r (h) + Jn(h)] + 1
+
+φ(n) .
+
+Hence, the theorem follows. 
+
+7.6 Proof of Corollary 3.1 
+
+Firstly, remark that for any predictor h, we have: 
+
+EP,r (h) ≤ 12 (c2 ∨ 1)Γ ∥h − h0∥22,PX0 , (7.28) where c2 is given in (A4) . Indeed, on the one hand for quantile regression, we have from the Knight inequality, 
+
+ℓτ (u − v) − ℓτ (u) = −v(τ − I(u ≤ 0)) + 
+
+Z v
+
+> 0
+
+(I(u ≤ t) − I(u ≤ 0)) dt, 
+
+and by taking u = Y0 − h0(X0) and v = h(X0) − h0(X0), we get, 
+
+ℓτ (Y0 − h(X0)) − ℓτ (Y0 − h0(X0)) = −(h(X0) − h0(X0))( τ − I(Y0 ≤ h0(X0))) +
+
+Z h(X0)−h0(X0)0
+
+(1(Y0 ≤ h0(X0) + t) − I(Y0 ≤ h0(X0))) dt. 
+
+Taking the expectation and using Fubini’s theorem, we obtain that 
+
+EP,r (h) = E(X0,Y 0)∼PX0,Y 0 [r(X0) ( ℓτ (Y0 − h(X0)) − ℓτ (Y0 − h0(X0)))] = −EX0∼PX0 [r(X0)( h(X0) − h0(X0)) EY0|X0 (( τ − I(Y0 ≤ h0(X0)))] + EX0∼PX0
+
+ñ
+
+r(X0)
+
+Z h(X0)−h0(X0)0
+
+[EY0|X0 (I(Y0 ≤ h0(X0) + t)) − EY0|X0 (I(Y0 ≤ h0(X0)))] dt 
+
+ô
+
+.
+
+Since EY0|X0 [τ − I(Y0 ≤ h0(X0)) |X] = τ − P [Y0 ≤ h0(X0)) |X0] = τ − τ = 0 , we get 
+
+EP,r (h) = EX0∼PX0
+
+ñ
+
+r(X0)
+
+Z h(X0)−h0(X0)0
+
+[EY0|X0 (I(Y0 ≤ h0(X0) + t)) − EY0|X0 (I(Y0 ≤ h0(X0)))] dt 
+
+ô
+
+= EX0∼PX0
+
+ñ
+
+r(X0)
+
+Z h(X0)−h0(X0)0
+
+[FY0|X0 (h0(X0) + t) − FY0|X0 (h0(X0))] dt 
+
+ô
+
+≤ c2EX0∼PX0
+
+ñ
+
+r(X0)
+
+Z |h(X0)−h0(X0)|
+
+> 0
+
+tdt 
+
+ô
+
+≤ c2Γ2 ∥h − h0∥22,PX0 ,
+
+where the first inequality holds from the mean value theorem and c2 is given in (A4) . Hence, (7.28) is satisfied. On the other hand for Huber regression, by taking u = Y0 − h0(X0) and v = h0(X0) − h(X0) in (7.1), we get, 
+
+r(X0)  ℓτ
+
+ Y0 − h(X0) − ℓτ
+
+ Y0 − h0(X0) = r(X0)ℓ′
+
+> τ
+
+ ξ0
+
+  h0(X0) − h(X0)
+
++ r(X0)
+
+Z h0(X0)−h(X0)0
+
+ℓ′′ 
+
+> τ
+
+ ξ0 + z  h0(X0) − h(X0) − zdz. Kengne and Mossa 29 From the proof of Proposition 3.1 in [9], we have for all x ∈ X , E[r(X0)ℓ′ 
+
+> τ
+
+(ξ0)|X0 = x] = 0 . Hence, E  h0(X0)−
+
+h(X0)ℓ′
+
+> τ
+
+ ξ0
+
+ = 0 . Now, let x ∈ X . By going in the same way as in (7.5), we get, 
+
+E
+
+h Z h0(X0)−h(X0)0
+
+ℓ′′ 
+
+> τ
+
+ ξ0 + z  h0(X0) − h(X0) − zdz X0 = x
+
+i
+
+= 12
+
+ h0(x) − h(x)2 − E
+
+h Z h0(x)−h(x)0
+
+1 |ξ0 + z| > τ   h0(x) − h(x) − zdz X0 = x
+
+i
+
+≤ 12
+
+ h0(x) − h(x)2,
+
+(7.29) where the last inequality holds since R h0(x)−h(x)0 1 |ξ0 + z| > τ   h0(x) − h(x) − zdz ≥ 0. So, (7.29) gives, 
+
+E
+
+h
+
+r(X0)
+
+Z h0(X0)−h(X0)0
+
+ℓ′′ 
+
+> τ
+
+ ξ0 + z  h0(X0) − h(X0) − zdz X0 = x
+
+i
+
+≤ 12 r(x) h0(x) − h(x)2.
+
+Hence, 
+
+EP,r (h) ≤ EX0∼PX0
+
+ï 12 r(X0) h0(X0) − h(X0)2
+
+ò
+
+≤ Γ2 ∥h − h0∥22,PX0
+
+.
+
+Thus, (7.28) holds. Now, let Ln, N n, B n, F > 0 satisfying the conditions in Corollary 3.1 and h0 ∈ Cs(X , K ) with s, K > 0.Set 
+
+εn = 1
+
+φ(n) s
+
+> 2s+d
+
+From Theorem 3.2 in [20], there exist positive constants L0, N 0, B 0, S 0 > 0 such that with ˜Ln = sL 0 
+
+> 2s+d
+
+log φ(n), ˜Nn =
+
+N0φ(n) s 
+
+> 2s+d
+
+, ˜Sn = sS 0 
+
+> 2s+d
+
+φ(n) d 
+
+> 2s+d
+
+log φ(n), and ˜Bn = B0φ(n) 4( d+s)2s+d , there exists a neural network ˜hr, D ∈ ˜Hσ,n := 
+
+Hσ ( ˜Ln, ˜Nn, ˜Bn, F, ˜Sn) satisfying, 
+
+∥˜hr, D − h0∥∞,X ≤ εn = 1(φ(n)) s
+
+> 2s+d
+
+. (7.30) Set 
+
+˜Hσ,n,ε n := {h ∈ ˜Hσ,n , ∥h − h0∥∞,X ≤ εn}.
+
+Furthermore, from the assumption on the penalty term, we have for any h ∈ ˜Hσ,n , Jn(h) ≲ λn ˜Sn where 
+
+λn ≍ (log φ(n)) ν3 
+
+> φ(n)
+
+with ν3 > 2. Since eHσ,n,ε n ⊂ eHσ,n ⊂ H σ (Ln, N n, B n, F, eSn) ⊂ H σ (Ln, N n, B n, F )), in addition to Theorem 3.2 and (7.28), we get: 
+
+E[EP,r (bhr, D)] ≲ inf    
+
+> h∈H σ(Ln,N n,B n,F )
+
+[EP,r (h) + Jn(h)] + 1
+
+φ(n) ≲ inf     
+
+> h∈H σ( ˜Ln,˜Nn,˜Bn,F, ˜Sn)
+
+[EP,r (h) + Jn(h)] + 1
+
+φ(n)
+
+≲ inf  
+
+> h∈˜Hσ,n
+
+îEP,r (h) + λn ˜Sn
+
+ó + 1
+
+φ(n) ≲ inf  
+
+> h∈˜Hσ,n,εn
+
+îEP,r (h) + λn ˜Sn
+
+ó + 1
+
+φ(n)
+
+≲ inf  
+
+> h∈˜Hσ,n,εn
+
+Γ∥h − h0∥22,PX0 + λn ˜Sn + 1
+
+φ(n) ≲ inf  
+
+> h∈˜Hσ,n,εn
+
+Γ∥h − h0∥2 
+
+> ∞,X
+
++ λn ˜Sn + 1
+
+φ(n)
+
+≲ Γ ( φ(n)) − 2s 
+
+> 2s+d
+
++ ( φ(n)) d  
+
+> 2s+d−1
+
+(log φ(n)) ν3+1 + Γ
+
+φ(n) ≲ Γ (log n)ν3+1 
+
+(φ(n)) 2s
+
+> 2s+d
+
+. (7.31) Hence, 
+
+E[EP,r (bhr, D)] ≲ (log φ(n)) ν
+
+(φ(n)) 2s
+
+> 2s+d
+
+,
+
+for all v > 3.30 Adaptive deep nonparametric regression under covariate shift 
+
+7.7 Proof of Theorem 3.3 
+
+Let ν > 3. From Lemma 3.2, we have 
+
+ED
+
+ï
+
+bhr, D − h0
+
+> 22,QX0
+
+ò
+
+≲ ED
+
+¶E(X0,Y 0)∼PX0,Y 0
+
+îr(X0) Äℓτ
+
+ Y0 − bhr, D(X0) − ℓτ
+
+ Y0 − hHσ,n (X0)äó© + inf 
+
+> h∈H σ,n
+
+∥h−h0∥2 
+
+> ∞,X
+
+.
+
+(7.32) Since h0 is a target function with respect to the reweighted risk (see Proposition 3.1), and in addition to Corollary 3.1, we have 
+
+ED
+
+¶E(X0,Y 0)∼PX0,Y 0
+
+îr(X0) Äℓτ
+
+ Y0 − bhr, D(X0) − ℓτ
+
+ Y0 − hHσ,n (X0)äó© ≤ ED[EP,r (bhr, D)] ≲
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
+.
+
+(7.33) In addition to (7.17), it holds from (7.32) that, 
+
+ED
+
+ï
+
+bhr, D − h0
+
+> 22,QX0
+
+ò
+
+≲
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
++ 1
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
+≲
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
+,
+
+which completes the proof. 
+
+7.8 Proof of Theorem 3.4 
+
+Let h ∈ H σ,n . Set, 
+
+eEP,r (h) := E(X0,Y 0)∼PX0,Y 0
+
+h
+
+r(X0)
+
+
+
+ℓτ (Y0 − h(X0)) − ℓτ (Y − hHσ,n (X)) 
+
+i 
+
+,
+
+and 
+
+eEP,T η r (h) := E(X0,Y 0)∼PX0,Y 0
+
+h
+
+Tη r(X0)
+
+
+
+ℓτ (Y0 − h(X0)) − ℓτ (Y − hHσ,n (X)) 
+
+i 
+
+,
+
+where hHσ,n is given in (3.5). Furthermore, one can easily see that, 
+
+|Tη r(X0) − r(X0)| ≤ r(X0)1(r(X0) ≥ η).
+
+Hence, according to the Lipschitz condition on ℓτ and (A3) with μ = 1 + δ, we get 
+
+eEP,r (h) − eEP,T η r (h) = E(X0,Y 0)∼PX0,Y 0
+
+h
+
+(Tη r(X0) − r(X0)) 
+
+
+
+ℓτ (Y0 − h(X0)) − ℓτ (Y − hHσ,n (X0)) 
+
+i 
+
+≤ F Kℓτ EX0∼PX0 [r(X0)1(r(X0) ≥ η)] ≤ F Kℓτ EX0∼PX0
+
+ñ
+
+r(X0) rδ (X0)
+
+ηδ
+
+ô
+
+≤ F Kℓτ Uμ
+
+ηδ .
+
+(7.34) Therefore, 
+
+eEP,r (h) ≤ eEP,T η r (h) + F Kℓτ Uμ
+
+ηδ .
+
+In addition to Lemma 3.2, we have, 
+
+ED
+
+ï
+
+bhTη r, D − h0
+
+> 22,QX0
+
+ò
+
+≤ C1ED
+
+î eEP,T η r (bhTη r, D)ó + C1
+
+F Kℓτ Uμ
+
+ηδ + C2 inf 
+
+> h∈H σ,n
+
+∥h − h0∥2 
+
+> ∞,X
+
+, (7.35) Kengne and Mossa 31 for some C1, C 2 > 0. Recall that η ≍
+
+
+
+φ(n)
+
+ 2s
+
+> (1+ δ)(2 s+d)
+
+≍ (φ(n)) 1−ν41+ δ with ν4 = d 
+
+> 2s+d
+
+. Since Tη r(X0) ≤ η, it holds from (7.31) that, 
+
+ED
+
+î eEP,T η r (bhTη r, D)ó ≲ η
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
+≲
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ δ  
+
+> 1+ δ×2s
+> 2s+d
+
+, (7.36) for all ν > 3. So, from (7.35 ), (7.36) and (7.30), we get for all ν > 3,
+
+ED
+
+ï
+
+bhTη r, D − h0
+
+> 22,QX0
+
+ò
+
+≲
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ δ  
+
+> 1+ δ×2s
+> 2s+d
+
++ 1
+
+
+
+φ(n)
+
+ δ  
+
+> 1+ δ×2s
+> 2s+d
+
++ 1
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
+≲
+
+
+
+log φ(n)
+
+ν
+
+
+
+φ(n)
+
+ δ  
+
+> 1+ δ×2s
+> 2s+d
+
+.
+
+Hence, the theorem follows. 
+
+7.9 Proof of Proposition 4.1 
+
+Consider the function ℓ defined by: 
+
+ℓ(u; x) = 12
+
+ u2(xp) − r2(xp) −  u(xq ) − r(xq ) for all x = ( xp, x q ) ∈ X 2 and u ∈ H σ,m .ℓ is Lipchitz continuous over u; that is, for all x = ( xp, x q ) ∈ X 2 and u1, u 2 ∈ H σ,n , one can easily get, 
+
+ℓ(u1; x) − ℓ(u2; x) ≤ (F + 1) 
+
+
+
+|u1(xp) − u2(xp)| + |u1(xq ) − u2(xq )|
+
+
+
+≤ 2( F + 1) ∥u1 − u2∥∞.
+
+Let XP 
+
+> 0
+
+and XQ 
+
+> 0
+
+be two random variables with values in X and distribution PX0 and QX0 respectively. Set 
+
+eX0 = ( XP 
+
+> 0
+
+, X Q 
+
+> 0
+
+). Define the contrast function, 
+
+C(u) = E[ℓ(u; eX0)] , for all u ∈ H σ,m .
+
+From the extra unlabelled samples, SP := {XPi }mi=1 and SQ := {XQi }mi=1 , set eXi = ( XPi , X Qi ) for all i = 1 , · · · m.Define the empirical version of the contrast C by, 
+
+bCn(u) = 1
+
+m
+
+> m
+
+X
+
+> i=1
+
+ℓ(u; eXi), for all u ∈ H σ,m .
+
+The density ratio r and the estimator brS satisfy, 
+
+r ∈ argmin 
+
+> u∈F
+
+C(u) and brS ∈ argmin 
+
+> u∈H σ,m
+
+ bCm(u) + Jm(u).
+
+Let u ∈ H σ,m . By using the equality E[r(XP 
+
+> 0
+
+)u(XP 
+
+> 0
+
+)] = E[u(XQ 
+
+> 0
+
+)] , we get, 
+
+C(u)−C(r) = C(u) = E 12
+
+ u2(XP 
+
+> 0
+
+)−r2(XP 
+
+> 0
+
+)− u(XQ 
+
+> 0
+
+)−r(XQ 
+
+> 0
+
+) = 12 E  u(XP 
+
+> 0
+
+)−r(XP 
+
+> 0
+
+)2 = 12 ∥u−r∥22,PX0 .
+
+Therefore, since r ∈ C s(X , Γ) and in addition to (4.5) and (4.6), one can follow the same steps as in the proof of Theorem 4.1 and Corollary 4.3 in [21] (with φ(m) instead of n(α) and with κ = 2 ) to obtain the result of the proposition. 32 Adaptive deep nonparametric regression under covariate shift 
+
+7.10 Proof of Theorem 4.1 
+
+From Lemma 3.2, one can find C1, C 2 > 0 such that, 
+
+ES,D
+
+ï
+
+bhbrS,D − h0
+
+22,QX0
+
+ò
+
+≤ C1ES,DE(X0,Y 0)∼PX0,Y 0
+
+h 
+
+r(X0) − brS(X0) + brS(X0)
+
+ Äℓτ
+
+ Y0 − bhbrS,D(X0) − ℓτ
+
+ Y0 − hHσ,n (X0)äi
+
++ C2 inf 
+
+h∈H σ,n 
+
+∥h − h0∥2
+
+∞,X
+
+≤ C1ES,DE(X0,Y 0)∼PX0,Y 0
+
+h 
+
+r(X0) − brS(X0)
+
+ Äℓτ
+
+ Y0 − bhbrS,D(X0) − ℓτ
+
+ Y0 − hHσ,n (X0)äi
+
++ C1ES,DE(X0,Y 0)∼PX0,Y 0
+
+îbrS(X0) Äℓτ
+
+ Y0 − bhbrS,D(X0) − ℓτ
+
+ Y0 − hHσ,n (X0)äó + C2 inf 
+
+h∈H σ,n 
+
+∥h − h0∥2
+
+∞,X .
+
+(7.37) We have for all β > 0,
+
+An,m := ES,DE(X0,Y 0)∼PX0,Y 0
+
+h 
+
+r(X0) − brS(X0)
+
+ Äℓτ
+
+ Y0 − bhbrS,D(X0) − ℓτ
+
+ Y0 − hHσ,n (X0)äi
+
+≤ 12β ES
+
+îEX0∼PX0
+
+ r(X0) − brS(X0)2ó + β
+
+2 ES,DEX0,Y 0∼PX0,Y 0
+
+ï
+
+ℓτ
+
+ Y0 − bhbrS,D(X0) − ℓτ
+
+ Y0 − hHσ,n (X0)2ò
+
+.
+
+(7.38) It follows from the assumption (A5) that, 
+
+EX0∼QX0 [( bhbrS,D(X0)−hHσ,n (X0) 2 = EX0∼PX0
+
+h
+
+r(X0) ÄbhbrS,D(X0) − hHσ,n (X0)ä2i
+
+≥ Υ bhbrS,D − hHσ,n 
+
+22,PX0
+
+.
+
+In addition, according to the Lipschitz condition on ℓτ , we get 
+
+ES,DEX0,Y 0∼PX0,Y 0 [( ℓτ
+
+ Y0 − bhbrS,D(X0) − ℓτ
+
+ Y0 − hHσ,n (X0)  2 ≤ K 2
+
+ℓτ ES,D
+
+ï
+
+bhbrS,D − hHσ,n 
+
+22,PX0
+
+ò
+
+≤ K2
+
+ℓτ
+
+Υ ES,D
+
+ï
+
+bhbrS,D − hHσ,n 
+
+22,QX0
+
+ò
+
+. (7.39) (7.38) and (7.39) give 
+
+An,m ≤ 12β ES
+
+î∥brS − r∥22,PX0
+
+ó + βK2
+
+ℓτ
+
+Υ ES,D
+
+ï
+
+bhbrS,D − h0
+
+22,QX0
+
+ò
+
++ βK2
+
+ℓτ
+
+Υ hHσ,n − h0
+
+22,QX0
+
+. (7.40) Hence, it holds from (7.37), (7.38) and (7.40) that, 
+
+ES,D
+
+ï
+
+bhbrS,D − h0
+
+22,QX0
+
+ò
+
+≤ C1
+
+2β ES
+
+î∥brS − r∥22,PX0
+
+ó + C1βK2
+
+ℓτ
+
+Υ ES,D
+
+ï
+
+bhbrS,D − h0
+
+22,QX0
+
+ò
+
++ C1βK2
+
+ℓτ
+
+Υ hHσ,n − h0
+
+2
+
+∞,X
+
++ C1EDE(X0,Y 0)∼PX0,Y 0
+
+îbrS(X0) Äℓτ
+
+ Y0 − bhbrS,D(X0) − ℓτ
+
+ Y0 − hHσ,n (X0)äó 
+
++ C2 inf 
+
+h∈H σ,n 
+
+∥h − h0∥2
+
+∞,X . (7.41) By choosing β sufficiently small, such as β < Υ/C 1K2
+
+ℓτ , we get from (7.42), 
+
+
+
+1 − C1βK2
+
+ℓτ
+
+Υ
+
+
+
+ES,D
+
+ï
+
+bhbrS,D − h0
+
+22,QX0
+
+ò
+
+≤ C1
+
+2β ES
+
+î∥brS − r∥22,PX0
+
+ó
+
++ C1ES,DE(X0,Y 0)∼PX0,Y 0
+
+îbrS(X0) Äℓτ
+
+ Y0 − bhbrS,D(X0) − ℓτ
+
+ Y0 − hHσ,n (X0)äó 
+
++
+
+
+
+C2 + C1βK2
+
+ℓτ
+
+Υ
+
+
+
+inf 
+
+h∈H σ,n 
+
+∥h − h0∥2
+
+∞,X .Kengne and Mossa 33 Hence, 
+
+ES,D
+
+ï
+
+bhbrS,D − h0
+
+> 22,QX0
+
+ò
+
+≲ ES
+
+î∥brS − r∥22,PX0
+
+ó
+
++ ES,DE(X0,Y 0)∼PX0,Y 0
+
+îbrS(X0) Äℓτ
+
+ Y0 − bhbrS,D(X0) − ℓτ
+
+ Y0 − hHσ,n (X0)äó 
+
++ inf 
+
+> h∈H σ,n
+
+∥h − h0∥2 
+
+> ∞,X
+
+. (7.42) Since ∥brS∥∞ ≤ Γ, by employing similar arguments as in the proof of Theorem 3.3, we get 
+
+ES,DE(X0,Y 0)∼PX0,Y 0
+
+îbrS(X0) Äℓτ
+
+ Y0 − bhbrS,D(X0) − ℓτ
+
+ Y0 − hHσ,n (X0)äó ≲ (log φ(n)) ν2
+
+(φ(n)) 2s22s2+d
+
+, ν 2 > 3. (7.43) So, (7.42), (7.30), (7.43) and Proposition 4.1 we have 
+
+ES,D
+
+ï
+
+bhbrS,D − h0
+
+> 22,QX0
+
+ò
+
+≲ (log φ(m)) ν1
+
+(φ(m)) 2s12s1+d
+
++ (log φ(n)) ν2
+
+(φ(n)) 2s22s2+d
+
++ 1(φ(n)) 2s22s2+d
+
+≲ (log φ(m)) ν1
+
+(φ(m)) 2s12s1+d
+
++ (log φ(n)) ν2
+
+(φ(n)) 2s22s2+d
+
+,
+
+for some ν1, ν 2 > 3. This completes the proof. 
+
+7.11 Proof of Proposition 4.2 
+
+We have, 
+
+ES
+
+î∥brη, S − r∥22,PX0
+
+ó ≲ ES
+
+î∥brη, S − Tη r∥22,PX0
+
+ó + ∥Tη r − r∥22,PX0
+
+. (7.44) Since ∥brη, S∥∞ ≤ η and Tη r ∈ C s(X , η ), by using the approach in the proof of Proposition 4.1, and by following the steps of the proof of Theorem 4.1 and Corollary 4.3 in [21] we get (as in (7.31)) for some constant 
+
+C > 0 independent of η,
+
+ES
+
+î∥brη, S − Tη r∥22,PX0
+
+ó ≤ Cη (log φ(m)) ν1
+
+(φ(m)) 2s
+
+> 2s+d
+
+≲ η (log φ(m)) ν1
+
+(φ(m)) 2s
+
+> 2s+d
+
+, (7.45) for all ν > 3. Furthermore, we have as in the proof of Theorem 3.4 above, 
+
+∥Tη r − r∥22,PX0 ≤ ∥ r1(r > η )∥22,PX0 = EX0∼PX0
+
+r2(X0)1 r(X0) > η 
+
+≤ EX0∼PX0
+
+ñ
+
+r2(X0) rδ (X0)
+
+ηδ
+
+ô
+
+≤ Uμ
+
+ηδ , with μ = 2 + δ for some δ. 
+
+In addition to (7.44) and (7.45), we get with η ≍
+
+
+
+φ(m)
+
+ 2s
+
+> (1+ δ)(2 s+d)
+
+,
+
+ES
+
+î∥brη, S − r∥22,PX0
+
+ó ≲ η (log φ(m)) ν
+
+(φ(m)) 2s
+
+> 2s+d
+
++ Uμ
+
+ηδ ≲ (log φ(m)) ν
+
+(φ(m)) 2s  
+
+> 2s+d×δ
+> 1+ δ
+
+,
+
+for all ν > 3. Hence, the proposition holds. 34 Adaptive deep nonparametric regression under covariate shift 
+
+7.12 Proof of Theorem 4.2 
+
+By going along similar lines as in (7.42), we get, 
+
+ES,D
+
+ï
+
+bhbrη, S,D − h0
+
+> 22,QX0
+
+ò
+
+≲ ES
+
+î∥brη, S − r∥22,PX0
+
+ó
+
++ ES,DE(X0,Y 0)∼PX0,Y 0
+
+îbrη, S(X0) Äℓτ
+
+ Y0 − bhbrη, S,D(X0) − ℓτ
+
+ Y0 − hHσ,n (X0)äó 
+
++ inf 
+
+> h∈H σ,n
+
+∥h − h0∥2 
+
+> ∞,X
+
+. (7.46) It holds from Proposition 4.2 that, 
+
+ES
+
+î∥brη, S − r∥22,PX0
+
+ó ≲ (log φ(m)) ν1
+
+(φ(m)) 2α  
+
+> 2α+d×δ
+> 1+ δ
+
+, (7.47) for all ν1 > 3. Since ∥brη, S∥∞ ≤ η, from similar arguments as in (7.31) and (7.33), one can find that 
+
+ES,DE(X0,Y 0)∼PX0,Y 0
+
+îbrη, S(X0) Äℓτ
+
+ Y0 − bhbrη, S,D(X0) − ℓτ
+
+ Y0 − hHσ,n (X0)äó ≲ η
+
+
+
+log φ(n)
+
+ν2
+
+
+
+φ(n)
+
+ 2s
+
+> 2s+d
+
+, (7.48) for all ν2 > 3. Hence, with η ≍
+
+
+
+φ(n)
+
+ 2s
+
+> (1+ δ)(2 s+d)
+
+, the result of the theorem follows from (7.46), (7.47), (7.48) and (7.30). 
+
+# References 
+
+[1] Alquier, P., and Kengne, W. Minimax optimality of deep neural networks on dependent data via pac-bayes bounds. Electronic Journal of Statistics 19 , 2 (2025), 5895–5924. [2] Bauer, B., and Kohler, M. On deep learning as a remedy for the curse of dimensionality in nonpara-metric regression. [3] Belloni, A., and Chernozhukov, V. l1-penalized quantile regression in high-dimensional sparse models. The Annals of Statistics 39 , 1 (2011), 82–130. [4] Chen, M., and Chen, G. Geometric ergodicity of nonlinear autoregressive models with changing conditional variances. Canadian Journal of Statistics 28 , 3 (2000), 605–614. [5] Cortes, C., Mansour, Y., and Mohri, M. Learning bounds for importance weighting. Advances in neural information processing systems 23 (2010). [6] Dicker, L., Huang, B., and Lin, X. Variable selection and estimation with the seamless-l 0 penalty. 
+
+Statistica Sinica (2013), 929–962. [7] Doukhan, P. Mixing . Springer New York, New York, NY, 1994, pp. 15–23. [8] Duan, C., Jiao, Y., Kang, L., Lu, X., and Yang, J. Z. On convergence rates of deep nonparametric regression under covariate shift. Kengne and Mossa 35 [9] Fan, J., Gu, Y., and Zhou, W.-X. How do noise tails impact on deep relu networks? The Annals of Statistics 52 , 4 (2024), 1845–1871. [10] Fan, J., and Li, R. Variable selection via nonconcave penalized likelihood and its oracle properties. 
+
+Journal of the American statistical Association 96 , 456 (2001), 1348–1360. [11] Feng, X., He, X., Jiao, Y., Kang, L., and Wang, C. Deep nonparametric quantile regression under covariate shift. Journal of Machine Learning Research 25 , 385 (2024), 1–50. [12] Feng, X., He, X., Wang, C., Wang, C., and Zhang, J. Towards a unified analysis of kernel-based methods under covariate shift. Advances in Neural Information Processing Systems 36 (2023), 73839–73851. [13] Guan, H., and Liu, M. Domain adaptation for medical image analysis: a survey. IEEE Transactions on Biomedical Engineering 69 , 3 (2021), 1173–1185. [14] Hang, H., Feng, Y., Steinwart, I., and Suykens, J. A. Learning theory estimates with observations from general stationary stochastic processes. Neural computation 28 , 12 (2016), 2853–2889. [15] Hang, H., and Steinwart, I. A bernstein-type inequality for some mixing processes and dynamical systems with an application to learning. The Annals of Statistics (2017), 708–743. [16] Imaizumi, M., and Fukumizu, K. Deep neural networks learn non-smooth functions effectively. In The 22nd international conference on artificial intelligence and statistics (2019), PMLR, pp. 869–878. [17] Imaizumi, M., and Fukumizu, K. Advantage of deep neural networks for estimating functions with singularity on hypersurfaces. Journal of Machine Learning Research 23 , 111 (2022), 1–54. [18] Jiao, Y., Lin, H., Luo, Y., and Yang, J. Z. Deep transfer learning: Model framework and error analysis. arXiv preprint arXiv:2410.09383 (2024). [19] Jiao, Y., Shen, G., Lin, Y., and Huang, J. Deep nonparametric regression on approximate manifolds: Nonasymptotic error bounds with polynomial prefactors. The Annals of Statistics 51 , 2 (2023), 691–716. [20] Kengne, W. Excess risk bound for deep learning under weak dependence. Mathematical Methods in the Applied Sciences 48 , 6 (2025), 6844–6850. [21] Kengne, W., and Wade, M. Deep learning from strongly mixing observations: Sparse-penalized regularization and minimax optimality. Journal of Complexity (2025), 101978. [22] Kengne, W., and Wade, M. A general framework for deep learning. arXiv preprint arXiv:2512.23425 
+
+(2025). [23] Kengne, W., and Wade, M. Robust deep learning from weakly dependent data. Neural Networks 185 
+
+(2025), 107227. [24] Kim, Y., Ohn, I., and Kim, D. Fast convergence rates of deep neural networks for classification. Neural Networks 138 (2021), 179–197. 36 Adaptive deep nonparametric regression under covariate shift 
+
+[25] Koh, P. W., Sagawa, S., Marklund, H., Xie, S. M., Zhang, M., Balsubramani, A., Hu, W., Yasunaga, M., Phillips, R. L., Gao, I., et al. Wilds: A benchmark of in-the-wild distribution shifts. In International conference on machine learning (2021), PMLR, pp. 5637–5664. [26] Kohler, M., and Krzyżak, A. On the rate of convergence of a deep recurrent neural network estimate in a regression problem with dependent data. Bernoulli 29 , 2 (2023), 1663–1685. [27] Kurisu, D., Fukami, R., and Koike, Y. Adaptive deep learning for nonlinear time series models. 
+
+Bernoulli 31 , 1 (2025), 240–270. [28] Ma, C., Pathak, R., and Wainwright, M. J. Optimally tackling covariate shift in rkhs-based nonparametric regression. The Annals of Statistics 51 , 2 (2023), 738–761. [29] Ma, M., and Safikhani, A. Theoretical analysis of deep neural networks for temporally dependent observations. Advances in Neural Information Processing Systems 35 (2022), 37324–37334. [30] Madrid Padilla, O. H., and Chatterjee, S. Risk bounds for quantile trend filtering. Biometrika 109 , 3 (2022), 751–768. [31] Maume-Deschamps, V. Exponential inequalities and functional estimations for weak dependent data: applications to dynamical systems. Stochastics and Dynamics 6 , 04 (2006), 535–560. [32] Merlevède, F., Peligrad, M., and Rio, E. Bernstein inequality and moderate deviations under strong mixing conditions. In High dimensional probability V: the Luminy volume , vol. 5. Institute of Mathematical Statistics, 2009, pp. 273–293. [33] Ohn, I., and Kim, Y. Smooth function approximation by deep neural networks with general activation functions. Entropy 21 , 7 (2019), 627. [34] Ohn, I., and Kim, Y. Nonconvex sparse regularization for deep neural networks and its optimality. 
+
+Neural computation 34 , 2 (2022), 476–517. [35] Padilla, O. H. M., Tansey, W., and Chen, Y. Quantile regression with relu networks: Estimators and minimax rates. Journal of Machine Learning Research 23 , 247 (2022), 1–42. [36] Petersen, P., and Voigtlaender, F. Optimal approximation of piecewise smooth functions using deep relu neural networks. Neural Networks 108 (2018), 296–330. [37] Reeve, H. W., Cannings, T. I., and Samworth, R. J. Adaptive transfer learning. The Annals of Statistics 49 , 6 (2021), 3618–3649. [38] Samson, P.-M. Concentration of measure inequalities for markov chains and ϕ-mixing processes. The Annals of Probability 28 , 1 (2000), 416–461. [39] Schmidt-Hieber, J. Nonparametric regression using deep neural networks with relu activation function. [40] Schmidt-Hieber, J., and Zamolodtchikov, P. Local convergence rates of the nonparametric least squares estimator with applications to transfer learning. Bernoulli 30 , 3 (2024), 1845–1877. Kengne and Mossa 37 [41] Shen, G., Jiao, Y., Lin, Y., Horowitz, J. L., and Huang, J. Nonparametric estimation of non-crossing quantile regression process with deep requ neural networks. Journal of Machine Learning Research 25 , 88 (2024), 1–75. [42] Stone, C. J. Optimal global rates of convergence for nonparametric regression. The annals of statistics 
+
+(1982), 1040–1053. [43] Taori, R., Dave, A., Shankar, V., Carlini, N., Recht, B., and Schmidt, L. Measuring robustness to natural distribution shifts in image classification. In Advances in Neural Information Processing Systems 
+
+(2020), vol. 33, pp. 18583–18599. [44] Wang, C., and Feng, X. Optimal kernel quantile learning with random features. arXiv preprint arXiv:2408.13591 (2024). [45] Wang, Y., Xing, X., and Xu, W. Deep regression for repeated measurements under covariate shift. 
+
+arXiv preprint arXiv:2605.24854 (2026). [46] Zamolodtchikov, P. A minimax theory of nonparametric regression under covariate shift. arXiv preprint arXiv:2603.05897 (2026). [47] Zhang, C.-H. Nearly unbiased variable selection under minimax concave penalty. The Annals of Statistics 38 , 2 (2010), 894–942. [48] Zhang, T. Analysis of multi-stage convex relaxation for sparse regularization. Journal of Machine Learning Research 11 , 3 (2010). [49] Zięba, A. Effective number of observations and unbiased estimators of variance for autocorrelated data-an overview. Metrology and Measurement Systems , 1 (2010).
