@@ -1,215 +1,38 @@
 {
-  "generated_at": "2026-07-28T21:42:49.736930+00:00",
-  "updated_date": "20260728",
+  "generated_at": "2026-07-30T13:46:38.848187+00:00",
+  "updated_date": "20260730",
   "carryover_days": 9,
   "tag_states": {
     "sfc": {
-      "updated_date": "20260728",
+      "updated_date": "20260730",
       "carryover_days": 9,
       "items": []
     },
     "flow-pred": {
-      "updated_date": "20260728",
+      "updated_date": "20260730",
       "carryover_days": 9,
-      "items": [
-        {
-          "id": "2607.23667v1",
-          "source": "arxiv",
-          "title": "No Free Lunch in Flow Surrogates under Time-Varying Boundary Conditions: A Two-Regime Study",
-          "abstract": "A flow surrogate validated on a simple regime is often taken as evidence that the approach will carry to a richer one. We test this assumption on two transient flows under time-varying boundary conditions emulating the process startup: the three-dimensional slurry film in chemical-mechanical planarisation (CMP), a core semiconductor-manufacturing process, and the two-dimensional Karman vortex street (KVS) behind a cylinder. Eight surrogate models are compared on one shared evaluation pipeline, differing in whether they learn the full field or a latent representation, and whether they predict trajectories in one shot or step by step. No single architecture wins both regimes. On the film, a one-shot full-field model reconstructs the process-relevant cumulative wall shear stress to 3.2% relative error. On the wake, a latent autoregressive DeepONet retains 96% of the shedding power that direct and one-shot models damp to almost zero. The deciding axis is the treatment of time. The self-sustained wake requires the phase memory that autoregressive feedback provides, while the boundary-driven film rewards a direct map. Pointwise RMSE picks the wrong model in both regimes, so the evaluation scores five physical questions instead, the field, its structure, invented motion, amplitude, and timing. The trained surrogates answer queries $10^3$ to $10^4$ times faster than the finite-element solver, but the offline cost of the training simulations means they pay off from the first query beyond the training set for CMP and the third for the KVS. The choice of surrogate should follow the dynamical character of the target flow, and its validation should use failure-mode-resolved metrics, since neither the winning architecture nor its validation transfers.",
-          "authors": [
-            "Georg Winkler",
-            "Martin Stoll"
-          ],
-          "primary_category": "math.NA",
-          "categories": [
-            "math.NA",
-            "cs.LG",
-            "physics.flu-dyn"
-          ],
-          "published": "2026-07-26T14:02:46+00:00",
-          "link": "https://arxiv.org/pdf/2607.23667v1",
-          "tags": [
-            "keyword:flow-pred",
-            "keyword:pc-latent",
-            "keyword:sfc",
-            "query:flow-pred",
-            "query:sfc"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "compares eight flow surrogates on transient flows with time-varying boundary conditions",
-          "llm_evidence_cn": "在时变边界条件下比较八种流替代模型",
-          "llm_evidence": "在时变边界条件下比较八种流替代模型",
-          "canonical_evidence": "在时变边界条件下比较八种流替代模型",
-          "llm_tldr_en": "Tests assumption that flow surrogates validated on simple regimes generalize to richer ones, comparing eight models on two transient flows.",
-          "llm_tldr_cn": "该论文检验了在简单工况下验证的流替代模型能否推广到复杂工况的假设。在三维浆料薄膜和二维卡门涡街两种瞬态流上，比较了八种替代模型（全场vs潜空间、一步vs逐步预测），发现没有单一架构在两个工况下都最优。",
-          "llm_tldr": "该论文检验了在简单工况下验证的流替代模型能否推广到复杂工况的假设。在三维浆料薄膜和二维卡门涡街两种瞬态流上，比较了八种替代模型（全场vs潜空间、一步vs逐步预测），发现没有单一架构在两个工况下都最优。",
-          "llm_tags": [
-            "query:flow-pred"
-          ],
-          "matched_query_tag": "query:flow-pred",
-          "matched_query_text": "flow field prediction methods",
-          "matched_requirement_id": "req-9",
-          "selection_source": "carryover_cache",
-          "paper_id": "2607.23667v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2607.23337v1",
-          "source": "arxiv",
-          "title": "Neural operator discovery from heterogeneous trajectories",
-          "abstract": "Neural operators provide data-driven mappings for modeling dynamical systems. Extending them to families of systems typically requires explicit conditioning variables such as physical parameters, geometries, or boundary conditions. In many real-world settings, these quantities are unobserved. Here, we formulate neural operator discovery (NOD) as the problem of learning both shared solution operators and system-specific variation directly from heterogeneous trajectories without access to labeled governing factors. We introduce a factorized latent-conditioning formulation that jointly learns a neural operator and a low-dimensional latent representation through factorized prediction, trajectory-decoupled sampling, and dimension selection. Across diverse systems, the learned latent representation captures the intrinsic dimensionality of system variation and organizes system instances in a smooth and approximately invertible latent structure aligned with the underlying governing factors. This organization enables generalization to previously unseen system instances, including zero-shot extrapolation across regimes and stable long-horizon prediction. These results establish an interpretable paradigm for operator learning in the absence of explicit factor supervision.",
-          "authors": [
-            "Zituo Chen",
-            "Qiaofeng Li",
-            "Jiaxin Hu",
-            "Sili Deng"
-          ],
-          "primary_category": "cs.LG",
-          "categories": [
-            "cs.LG"
-          ],
-          "published": "2026-07-25T19:20:25+00:00",
-          "link": "https://arxiv.org/pdf/2607.23337v1",
-          "tags": [
-            "keyword:flow-pred",
-            "keyword:pc-latent",
-            "keyword:small-reg",
-            "query:flow-pred",
-            "query:pc-latent"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "neural operator discovery from heterogeneous trajectories for dynamical systems",
-          "llm_evidence_cn": "从异构轨迹进行神经算子发现，用于动力系统建模",
-          "llm_evidence": "从异构轨迹进行神经算子发现，用于动力系统建模",
-          "canonical_evidence": "从异构轨迹进行神经算子发现，用于动力系统建模",
-          "llm_tldr_en": "Neural operator discovery (NOD) learns both shared solution operators and system-specific latent representations from heterogeneous trajectories without explicit conditioning variables, using a factorized latent-conditioning formulation.",
-          "llm_tldr_cn": "针对实际动力系统建模中缺乏显式条件变量的问题，论文提出神经算子发现方法，通过因子化潜在条件公式，从异构轨迹中联合学习共享算子和低维潜在表示，无需标注控制因素。在多个系统上验证了方法的有效性，为数据驱动动力学建模提供了新思路。",
-          "llm_tldr": "针对实际动力系统建模中缺乏显式条件变量的问题，论文提出神经算子发现方法，通过因子化潜在条件公式，从异构轨迹中联合学习共享算子和低维潜在表示，无需标注控制因素。在多个系统上验证了方法的有效性，为数据驱动动力学建模提供了新思路。",
-          "llm_tags": [
-            "query:flow-pred"
-          ],
-          "matched_query_tag": "query:flow-pred",
-          "matched_query_text": "neural operators for fluid dynamics",
-          "matched_requirement_id": "req-7",
-          "selection_source": "carryover_cache",
-          "paper_id": "2607.23337v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2607.23143v1",
-          "source": "arxiv",
-          "title": "Physics-informed token transformer methodology for nonlinear balance laws. I. Schwarzschild--Burgers fluid flows",
-          "abstract": "We introduce a Physics-Informed Token Transformer (PITT) methodology for nonlinear hyperbolic balance laws in one space dimension, using piecewise steady-state profiles for the representation of approximate weak solutions. The method combines symbolic equation tokenization, a Fourier neural operator encoder, an explicit Rankine--Hugoniot law for shock motion, and a learned correction term. For clarity, we present it here for the relativistic Schwarzschild--Burgers equation, a scalar model for spherically symmetric fluid flows on a Schwarzschild background. For this model the steady-state invariant and the generalized Riemann solutions are explicit, and they can therefore be built into the neural evolution. In particular, the leading discontinuities are advanced by the analytical jump condition, while the learned part reconstructs smooth regions, rarefaction fans, geometric dependence, and finite-resolution effects. The method is designed to locate wave fronts accurately and to preserve the relevant steady states. We test our PITT method on moving shocks, stationary shocks, rarefaction waves, and compare it with a standard high-order finite-volume approximation. We also analyze the standard Burgers limit (when the Schwarzschild mass tends to zero). The Rankine--Hugoniot prior plays the dominant role in these tests, while equation tokenization gives a systematic additional gain. The method is relevant for problems involving geometric effects and/or complex shock-wave dynamics, and is used here to study the long-time dynamics of perturbations of steady-state solutions. In particular, we exhibit an asymptotic law of propagation for the shock location of perturbed steady-state flows.",
-          "authors": [
-            "Philippe G. LeFloch",
-            "Shuyang Xiang"
-          ],
-          "primary_category": "math.NA",
-          "categories": [
-            "math.NA",
-            "physics.flu-dyn"
-          ],
-          "published": "2026-07-25T10:51:22+00:00",
-          "link": "https://arxiv.org/pdf/2607.23143v1",
-          "tags": [
-            "keyword:flow-pred",
-            "keyword:sfc",
-            "query:flow-pred",
-            "query:sfc"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "Fourier neural operator encoder for fluid flows",
-          "llm_evidence_cn": "使用傅里叶神经算子编码器处理流体流动",
-          "llm_evidence": "使用傅里叶神经算子编码器处理流体流动",
-          "canonical_evidence": "使用傅里叶神经算子编码器处理流体流动",
-          "llm_tldr_en": "Proposes a Physics-Informed Token Transformer (PITT) combining Fourier neural operator encoder and explicit shock laws for nonlinear fluid flows.",
-          "llm_tldr_cn": "论文提出了一种物理信息令牌变换器（PITT），用于求解非线性双曲平衡定律。该方法结合符号方程标记化、傅里叶神经算子编码器、显式Rankine-Hugoniot激波运动定律和可学习修正项，在Schwarzschild-Burgers流体流动上展示了有效性，为流体动力学中的神经算子方法提供了新思路。",
-          "llm_tldr": "论文提出了一种物理信息令牌变换器（PITT），用于求解非线性双曲平衡定律。该方法结合符号方程标记化、傅里叶神经算子编码器、显式Rankine-Hugoniot激波运动定律和可学习修正项，在Schwarzschild-Burgers流体流动上展示了有效性，为流体动力学中的神经算子方法提供了新思路。",
-          "llm_tags": [
-            "query:flow-pred"
-          ],
-          "matched_query_tag": "query:flow-pred",
-          "matched_query_text": "neural operators for fluid dynamics",
-          "matched_requirement_id": "req-7",
-          "selection_source": "carryover_cache",
-          "paper_id": "2607.23143v1",
-          "carry_days": 1
-        }
-      ]
+      "items": []
     },
     "pc-latent": {
-      "updated_date": "20260728",
+      "updated_date": "20260730",
       "carryover_days": 9,
       "items": [
         {
-          "id": "2607.24569v1",
+          "id": "2607.26528v1",
           "source": "arxiv",
-          "title": "The balance between compactness and forecast accuracy of data-driven latent-space reduced-order models in controlled wake flows",
-          "abstract": "Model-based active flow control requires predictive models that are accurate, stable, and fast enough for real-time optimisation. In controlled wake flows, this is often achieved through Reduced-Order Models (ROMs) that first compress high-dimensional velocity snapshots into a latent space and then learn a time- stepping predictor for the dynamics in the latent space. Here, we study how the choice of the spatial encoder affects the predictability of the resulting latent coordinates for wake flows under control inputs. Using two actuated 2D wake configurations, a simplified truck wake and the fluidic pinball, we compare Proper Orthogonal Decomposition (POD) against nonlinear Convolutional Autoencoders (CAEs) and two types of variational autoencoders for compression, and evaluate several temporal predictors based on Long Short-Term Memory networks. CAEs achieve higher compression efficiency and sharper short-term reconstructions, but they produce latent dynamics that are more irregular and with broadband spectral content. As a consequence, long-horizon forecasts degrade faster and show a higher probability of catastrophic divergence than POD-based models. POD yields smoother latent trajectories that are easier to learn and extrapolate, leading to more reliable predictions beyond the short- term regime. These results reveal a clear trade-off between compactness and forecast accuracy, and suggest that the stability of the latent dynamics prediction can outweigh maximal compression. This is particularly relevant for control strategies rooted in forecasts of the dynamics, such as model predictive control and reinforcement learning. The findings provide practical guidance for designing actuation-aware, hardware-feasible predictive ROMs for real-time flow control.",
+          "title": "Shared Symbolic Backbones for Physically Consistent Multi-Output Symbolic Regression",
+          "abstract": "Symbolic regression provides analytical expressions, but it is usually applied one output at a time. This is limiting in process systems, where state variables are often coupled through shared physical parameters. Independent symbolic regression can give accurate individual equations that are difficult to interpret as one model. We present a neuro-evolutionary symbolic regression method for coupled multi-output systems. The method searches for a shared symbolic backbone: a set of latent symbolic units that is discovered once and reused by several outputs through sparse additive or multiplicative read-outs. The discrete model structure is evolved by mutation and crossover, whereas the continuous parameters are tuned by gradient descent and inherited by the offspring. The method is assessed on a set of benchmarks with known ground truth and on a hydrothermal liquefaction yield case. The results show that coupling is not a general route to lower prediction error. Its main contribution is the enforcement and diagnosis of cross-output consistency when a physically shared factor is embedded in a latent expression and is weakly identifiable from the data. This occurs for Langmuir-Hinshelwood and site-coverage denominators, for which independent PySR does not close the consistency gap or recover the same shared form. Conversely, when each output is already identifiable, as in the Van de Vusse benchmark, independent symbolic regression matches or improves the coupled model. The proposed framework, rather than a general purpose predictor, is a structured shared-mechanism extractor. Its value is highest when the target structure is sparse, shared, weakly identifiable or constrained by closure.",
           "authors": [
-            "Alberto Solera-Rico",
-            "Patricia García-Caspueñas",
-            "Carlos Sanmiguel Vila",
-            "Stefano Discetti"
+            "Manuel Rodriguez"
           ],
-          "primary_category": "physics.flu-dyn",
+          "primary_category": "cs.NE",
           "categories": [
-            "physics.flu-dyn",
-            "cs.LG"
+            "cs.NE",
+            "cs.AI",
+            "cs.CE"
           ],
-          "published": "2026-07-27T15:36:18+00:00",
-          "link": "https://arxiv.org/pdf/2607.24569v1",
-          "tags": [
-            "keyword:flow-pred",
-            "keyword:pc-latent",
-            "keyword:sfc",
-            "query:flow-pred",
-            "query:pc-latent",
-            "query:sfc"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "studies latent-space reduced-order models for controlled wake flows",
-          "llm_evidence_cn": "研究受控尾流潜空间降阶模型",
-          "llm_evidence": "研究受控尾流潜空间降阶模型",
-          "canonical_evidence": "研究受控尾流潜空间降阶模型",
-          "llm_tldr_en": "Compares POD and convolutional autoencoders as spatial encoders for latent-space ROMs in controlled wake flows, assessing impact on predictability.",
-          "llm_tldr_cn": "该论文研究了数据驱动潜空间降阶模型中空间编码器选择对可控尾流预测性的影响。在简化卡车尾流和流体弹球两种激励二维尾流构型上，对比了本征正交分解（POD）与非线性卷积自编码器作为编码器的效果，揭示了编码器对潜坐标可预测性的关键作用。",
-          "llm_tldr": "该论文研究了数据驱动潜空间降阶模型中空间编码器选择对可控尾流预测性的影响。在简化卡车尾流和流体弹球两种激励二维尾流构型上，对比了本征正交分解（POD）与非线性卷积自编码器作为编码器的效果，揭示了编码器对潜坐标可预测性的关键作用。",
-          "llm_tags": [
-            "query:pc-latent"
-          ],
-          "matched_query_tag": "query:pc-latent",
-          "matched_query_text": "latent dynamics",
-          "matched_requirement_id": "req-15",
-          "selection_source": "carryover_cache",
-          "paper_id": "2607.24569v1",
-          "carry_days": 1
-        }
-      ]
-    },
-    "small-reg": {
-      "updated_date": "20260728",
-      "carryover_days": 9,
-      "items": [
-        {
-          "id": "2607.21916v1",
-          "source": "arxiv",
-          "title": "Estimating dynamic models by matching random features",
-          "abstract": "Scientists increasingly express their ideas as dynamic models of complex processes. It is often much easier to simulate these models than to calculate the probability of their generating a particular outcome, making likelihood-based estimation infeasible. Existing likelihood-free approaches rely either on manually chosen summary statistics or on representations learned by neural networks. The former is error-prone and laborious, while the latter is computationally intensive, leaving many scientists in a difficult position. We show that, for a large class of dynamic models, parameters can be estimated by matching a small number of random features of the observed and simulated data. Specifically, we adapt results from nonlinear dynamics to show that models with a $p$-dimensional parameter can generically be identified from just $2p+1$ random features. We introduce two estimators for stationary and nonstationary processes, respectively, and we establish their consistency under mild regularity conditions. More broadly, our results serve as the foundation for a new class of random feature methods for simulation-based estimation and inference.",
-          "authors": [
-            "Michael Wieck-Sosa",
-            "Cosma Rohilla Shalizi"
-          ],
-          "primary_category": "stat.ME",
-          "categories": [
-            "stat.ME",
-            "math.ST",
-            "nlin.CD",
-            "physics.data-an"
-          ],
-          "published": "2026-07-24T02:43:40+00:00",
-          "link": "https://arxiv.org/pdf/2607.21916v1",
+          "published": "2026-07-29T06:47:36+00:00",
+          "link": "https://arxiv.org/pdf/2607.26528v1",
           "tags": [
             "keyword:flow-pred",
             "keyword:pc-latent",
@@ -219,13 +42,61 @@
             "query:small-reg"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "estimates dynamic model parameters by matching few random features, applicable to small sample regression",
-          "llm_evidence_cn": "通过匹配少量随机特征估计动态模型参数，适用于小样本回归",
-          "llm_evidence": "通过匹配少量随机特征估计动态模型参数，适用于小样本回归",
-          "canonical_evidence": "通过匹配少量随机特征估计动态模型参数，适用于小样本回归",
-          "llm_tldr_en": "Proposes a likelihood-free parameter estimation method for dynamic models by matching a small number of random features, offering a computationally efficient alternative to neural-network-based approaches. Theoretically consistent for a large class of models.",
-          "llm_tldr_cn": "针对动态模型参数估计中似然函数难以计算的问题，提出一种通过匹配少量随机特征进行参数估计的方法。该方法避免了神经网络训练的高计算开销，适用于大规模动态模型。理论分析表明，对于一类具有p维参数空间的模型，随机特征匹配方法具有统计一致性，为小样本下的模型校准提供了实用工具。",
-          "llm_tldr": "针对动态模型参数估计中似然函数难以计算的问题，提出一种通过匹配少量随机特征进行参数估计的方法。该方法避免了神经网络训练的高计算开销，适用于大规模动态模型。理论分析表明，对于一类具有p维参数空间的模型，随机特征匹配方法具有统计一致性，为小样本下的模型校准提供了实用工具。",
+          "llm_evidence_en": "physical-constrained latent symbolic units for multi-output systems",
+          "llm_evidence_cn": "物理约束的潜在符号单元用于多输出系统",
+          "llm_evidence": "物理约束的潜在符号单元用于多输出系统",
+          "canonical_evidence": "物理约束的潜在符号单元用于多输出系统",
+          "llm_tldr_en": "Proposes a neuro-evolutionary symbolic regression method that discovers a shared latent symbolic backbone reused across outputs, enforcing physical consistency via shared parameters.",
+          "llm_tldr_cn": "现有符号回归方法通常独立处理每个输出，忽略了多输出系统中状态变量通过共享物理参数耦合的特性。本文提出一种神经进化符号回归方法，通过搜索共享的潜在符号骨干单元（latent symbolic backbone）并在多个输出间重用，同时采用稀疏加性或乘法读出，保证了物理一致性。离散结构由进化优化，连续参数由梯度下降调整，从而得到可解释且物理一致的联合模型。该方法适用于多输出系统建模，具有广泛的应用前景。",
+          "llm_tldr": "现有符号回归方法通常独立处理每个输出，忽略了多输出系统中状态变量通过共享物理参数耦合的特性。本文提出一种神经进化符号回归方法，通过搜索共享的潜在符号骨干单元（latent symbolic backbone）并在多个输出间重用，同时采用稀疏加性或乘法读出，保证了物理一致性。离散结构由进化优化，连续参数由梯度下降调整，从而得到可解释且物理一致的联合模型。该方法适用于多输出系统建模，具有广泛的应用前景。",
+          "llm_tags": [
+            "query:pc-latent"
+          ],
+          "matched_query_tag": "query:pc-latent",
+          "matched_query_text": "latent space methods with physical constraints",
+          "matched_requirement_id": "req-18",
+          "selection_source": "carryover_cache",
+          "paper_id": "2607.26528v1",
+          "carry_days": 1
+        }
+      ]
+    },
+    "small-reg": {
+      "updated_date": "20260730",
+      "carryover_days": 9,
+      "items": [
+        {
+          "id": "2607.27196v1",
+          "source": "arxiv",
+          "title": "From Classification to Regression: Using a Fruitfly to Solve Equations",
+          "abstract": "We present a novel approach to regression tasks using classification which is motivated by the mechanism used by fruitflies to sense their environment. Specifically, we formulate a general framework for learning nonlinear input-output relationships by replacing complex global surrogate models with a finite library of representative local patterns. Since scientific data often occupy limited and recurring regions of the input space, we generate predictions by measuring similarities between a query and stored patterns, then combining their associated responses through weighted reconstruction. We apply this approach to nonlinear dynamical systems, data-driven regression, and physics-informed learning using suitable embeddings and similarity measures. For dynamical systems, our offline-online workflow extracts patterns from data or governing equations during the offline phase, while online prediction requires only similarity evaluation and response aggregation. This structure helps us reduce computational and memory demands while providing explicit control over the trade-off among accuracy, storage, and inference cost.",
+          "authors": [
+            "Shady E. Ahmed",
+            "Panos Stinis"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "math.NA"
+          ],
+          "published": "2026-07-29T17:58:05+00:00",
+          "link": "https://arxiv.org/pdf/2607.27196v1",
+          "tags": [
+            "keyword:flow-pred",
+            "keyword:pc-latent",
+            "keyword:small-reg",
+            "query:flow-pred",
+            "query:pc-latent",
+            "query:small-reg"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "regression method for small datasets using local pattern library",
+          "llm_evidence_cn": "利用局部模式库的小样本回归方法",
+          "llm_evidence": "利用局部模式库的小样本回归方法",
+          "canonical_evidence": "利用局部模式库的小样本回归方法",
+          "llm_tldr_en": "Presents a regression approach using classification via a library of local patterns, suitable for data-driven regression and physics-informed learning with limited data.",
+          "llm_tldr_cn": "受果蝇嗅觉机制启发，提出一种基于分类的回归框架，用有限局部模式库替代全局代理模型，通过测量查询与模式相似度加权重建输出。该方法适用于非线性动态系统、数据驱动回归和物理知情学习，尤其在小样本场景下表现出色。",
+          "llm_tldr": "受果蝇嗅觉机制启发，提出一种基于分类的回归框架，用有限局部模式库替代全局代理模型，通过测量查询与模式相似度加权重建输出。该方法适用于非线性动态系统、数据驱动回归和物理知情学习，尤其在小样本场景下表现出色。",
           "llm_tags": [
             "query:small-reg"
           ],
@@ -233,50 +104,7 @@
           "matched_query_text": "methods for regression on small datasets",
           "matched_requirement_id": "req-23",
           "selection_source": "carryover_cache",
-          "paper_id": "2607.21916v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2607.22238v1",
-          "source": "arxiv",
-          "title": "Optimization of time-consuming experimental conditions using pseudo-experimental data guided by adaptive polynomial regression",
-          "abstract": "Bayesian optimization (BO) is an optimization method that sequentially proposes the next candidate explainable variables for optimizing target variables by balancing exploration and exploitation. BO is often used under a limited evaluation budget, such as hyperparameter tuning of deep learning. Despite its effectiveness, conventional BO may have poor convergence in practical experimental science where each evaluation is often costly and time-consuming. Recently, BO methods have been proposed that accelerate optimization by using pseudo-experimental data that simulate experimental data. However, when only a limited number of experimental data are available, the generated pseudo-experimental data may be of insufficient quality. In this study, we developed PolyBO to improve optimization time by generating high-quality pseudo-experimental data even when the number of trials is limited. PolyBO performs BO efficiently by generating pseudo-experimental data with an adaptively updated versatile parametric model. This low-capacity polynomial regression model is intended to enable efficient BO even with limited experimental data. PolyBO updates the BO surrogate model with a combined dataset consisting of experimental data and pseudo-experimental data and then performs optimization. Using synthetic benchmark functions with diverse landscapes, we found that PolyBO reduced the optimization time by a median of 42\\%. For a real-world material composition optimization problem, PolyBO reduced the optimization time by a median of 96\\% compared with conventional methods. Overall, PolyBO achieves efficient optimization in settings where each experiment requires a long time.",
-          "authors": [
-            "Hirotaka Sugawara",
-            "Yujin Taguchi",
-            "Kei Minagawa",
-            "Yusuke Hiki",
-            "Takashi Morikura",
-            "Akira Funahashi"
-          ],
-          "primary_category": "cs.LG",
-          "categories": [
-            "cs.LG",
-            "cs.AI"
-          ],
-          "published": "2026-07-24T12:16:53+00:00",
-          "link": "https://arxiv.org/pdf/2607.22238v1",
-          "tags": [
-            "keyword:small-reg",
-            "query:pc-latent",
-            "query:small-reg"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "optimizing regression models with limited data using pseudo-experimental data",
-          "llm_evidence_cn": "使用伪实验数据优化有限数据下的回归模型",
-          "llm_evidence": "使用伪实验数据优化有限数据下的回归模型",
-          "canonical_evidence": "使用伪实验数据优化有限数据下的回归模型",
-          "llm_tldr_en": "Proposes adaptive polynomial regression with pseudo-experimental data to accelerate Bayesian optimization under limited evaluation budgets.",
-          "llm_tldr_cn": "贝叶斯优化在实验评估成本高时收敛慢。本文提出自适应多项式回归引导的伪实验数据生成，在有限真实数据下加速优化，在多个实验科学问题上验证有效性。",
-          "llm_tldr": "贝叶斯优化在实验评估成本高时收敛慢。本文提出自适应多项式回归引导的伪实验数据生成，在有限真实数据下加速优化，在多个实验科学问题上验证有效性。",
-          "llm_tags": [
-            "query:small-reg"
-          ],
-          "matched_query_tag": "query:small-reg",
-          "matched_query_text": "How to optimize regression models when training data is limited?",
-          "matched_requirement_id": "req-31",
-          "selection_source": "carryover_cache",
-          "paper_id": "2607.22238v1",
+          "paper_id": "2607.27196v1",
           "carry_days": 1
         }
       ]

@@ -1,0 +1,5796 @@
+Title: Estimating dynamic models by matching random features
+
+URL Source: https://arxiv.org/pdf/2607.21916v1
+
+Published Time: Mon, 27 Jul 2026 00:19:48 GMT
+
+Number of Pages: 73
+
+Markdown Content:
+# Estimating dynamic models by matching random features 
+
+Michael Wieck-Sosa ∗ and Cosma Rohilla Shalizi †
+
+Department of Statistics & Data Science, Carnegie Mellon University July 27, 2026 
+
+Abstract 
+
+Scientists increasingly express their ideas as dynamic models of complex processes. It is often much easier to simulate these models than to calculate the probability of their generating a particular outcome, making likelihood-based estimation infeasible. Existing likelihood-free approaches rely either on manually chosen summary statis-tics or on representations learned by neural networks. The former is error-prone and laborious, while the latter is computationally intensive, leaving many scientists in a difficult position. We show that, for a large class of dynamic models, parameters can be estimated by matching a small number of random features of the observed and simulated data. Specifically, we adapt results from nonlinear dynamics to show that models with a 𝑝 -dimensional parameter can generically be identified from just 
+
+2𝑝 + 1 random features. We introduce two estimators for stationary and nonstation-ary processes, respectively, and we establish their consistency under mild regularity conditions. More broadly, our results serve as the foundation for a new class of random feature methods for simulation-based estimation and inference. 
+
+Keywords: likelihood-free, simulation-based parameter estimation, time series, nonlinear dynamics, embedding theory 
+
+> ∗
+
+The authors gratefully acknowledge support from NSF grant DMS-2310834. 
+
+> †
+
+Corresponding author. E-mail: cshalizi@cmu.edu 
+
+1arXiv:2607.21916v1 [stat.ME] 24 Jul 2026 1 Introduction 
+
+Across scientific disciplines, dynamic models are used to describe the mechanisms that generate natural phenomena over time. Yet the same mechanistic detail that makes these models scientifically compelling often places conventional likelihood-based statistical in-ference out of reach. In such cases, simulation offers a way forward. Simulation-based methods assess parameter values 𝜃 by comparing certain characteristics of the observations with those of the synthetic data generated from the model at 𝜃 . However, it is often unclear which characteristics should be compared and which should be treated as noise. Many simulation-based methods rely on carefully crafted summary statistics. These sum-mary statistics are designed to be sensitive to changes in the parameter values and to ensure identifiability. Typically, the summary statistics are user-chosen (Wood, 2010; Beaumont, 2019) or learned (Cranmer et al., 2020; Zammit-Mangion et al., 2025). However, both approaches face difficulties. Manually selecting summary statistics requires substantial problem-specific effort from scientists. On the other hand, neural network-based methods are computationally demanding and sensitive to implementation choices. We propose to replace both hand-crafted and learned summary statistics with randomly chosen functions of the data. We establish that models with a 𝑝 -dimensional parameter 𝜃 
+
+can be identified with generic choices of just 2𝑝 + 1 random features. Our results imply that simulation-based methods can be made far more automatic through random features, without meaningfully reducing precision. Our approach combines classical statistical ideas with modern random feature methods from machine learning (Rahimi and Recht, 2007) and embedding results from the “geom-etry from a time series” literature (Sauer et al., 1991). It is well-known that probability distributions can be uniquely characterized by the expectations they assign a sufficiently 2rich set of test functions. Indeed, probabilists define convergence of distributions as the con-vergence of the expectations of all bounded, continuous functions (Kallenberg, 2002, ch. 4). The space of all test functions is too rich to be practically useful, but it is there are smaller, more practical function spaces that are rich enough to be convergence-determining. For dis-tributions on Euclidean spaces, the expectations of Fourier basis functions are convergence-determining (Kallenberg, 2002, ch. 5). Our first innovation is to realize that a parametric model can only produce a very limited variety of distributions. Using ideas from embedding theory, we show that the expectations of “almost any” 2𝑝 + 1 smooth test functions will uniquely characterize the 𝑝 -dimensional manifold of distributions produced by a model with a 𝑝 -dimensional parameter space. Our second innovation is to realize that it is enough to pick 2𝑝 + 1 functions at random from one of those sufficiently-rich, convergence-determining classes. This can be done without looking at the data, or even understanding much about the model. The expectations of 
+
+2𝑝 + 1 randomly chosen functions will typically characterize the 𝑝 -dimensional parameter of the model, and the mapping from expectation values to parameter values will be smooth. Figure 1B illustrates this in a simple example: independent and identically distributed (iid) observations from a Gaussian distribution with unknown mean. This, in and of itself, is a result at the level of probability distributions and expectations, rather than data and estimators; it is about identification, rather than consistency. To get a parameter estimation procedure, we need to make additional assumptions which allow us to reliably approximate expectation values from observations. We show this is possible in two regimes: long-time (or ergodic) asymptotics, and dense-sampling (or infill) asymptotics. The first regime applies when there is a stationary distribution, or at least an asymptoti-cally stationary distribution. Because a stationary process is, by definition, one where the distribution of values over time intervals is invariant under translation, we can meaningfully 3speak of the expectation value of any function. The expectation values of the 2𝑝+1 random features can then be reliably approximated simply by taking averages of those features over time, using classical ergodic theory and mixing theory. Figure 1A illustrates the key steps. The second regime applies to nonstationary processes, precisely those where the distribution changes meaningfully over time, and so the expectations of random features also vary over time. The correct framework for such situations is that of so-called “infill asymptotics”, where we get more and more observations related to each local structure of the underlying nonstationary process. In this regime, the local expectations of the 2𝑝 + 1 random features can be reliably approximated by averages of those features over rolling windows, which can be specified without knowledge of the data generating process. In both regimes, we use mathematical representations of stochastic processes as transfor-mations of sequences of noise inputs. Most dynamic models admit such a representation. This can be checked by recursively expressing each observation in terms of its past noise inputs. Examples include discrete-time dynamical systems and ordinary differential equa-tions (ODEs) with observational noise, discretized stochastic differential equations (SDEs), linear and nonlinear time series models, and state-space models. To establish the convergence of averages to the corresponding expectations, we require some mild, technical regularity assumptions, which say that the impact of any single noise input must eventually decay over time. Under certain conditions, our assumptions are equivalent to mixing-type assumptions concerning the decay of temporal dependence. We also require that the distributions change smoothly with the parameter. Under these assumptions, we provide guarantees that our parameter estimators are consistent. 4(A) (B) θ                      
+
+> Simulate from generative model with parameter θ
+> X(1) (θ)X(2) (θ)· · · X(s)(θ)Xobs
+> Convert to time-averaged random features via F(·)
+> F(X(1) (θ)) F(X(2) (θ)) · · · F(X(s)(θ)) F(Xobs )
+> Evaluate objective ∥F(Xobs )−1
+> s
+> ∑sr=1 F(X(r)(θ)) ∥0.12
+> 0.06
+> 0.00
+> 0.06
+> 0.12
+> F0.18
+> 0.12
+> 0.06
+> 0.00
+> F
+> 0.45
+> 0.30
+> 0.15
+> 0.00
+> F
+> 3
+> 2
+> 1
+> 0
+> 1
+> 2
+> 3
+
+Figure 1: Key steps of the procedure and example with the normal distribution. 
+
+(A) We observe a time series Xobs and simulate 𝑠 replicate time series X(𝑟) (𝜃) , 𝑟 = 1, … , 𝑠 ,from the model, given some value for the 𝑝 -dimensional parameter 𝜃 . Each time series is converted to time-averages of the same 𝑘 = 2𝑝 + 1 random features via F(⋅) , which yields F(Xobs ) and F(X(𝑟) (𝜃)) , 𝑟 = 1, … , 𝑠 . We then evaluate the objective by calculating the Euclidean distance ∥F(Xobs ) − 1𝑠 ∑𝑠 𝑟=1 F(X(𝑟) (𝜃))∥ . The estimate ̂ 𝜃 is obtained by minimizing this objective via optimization. The rolling-window procedure for nonstationary time series is similar, but it minimizes distances between rolling-window averages. (B) Let X(𝑟) = (𝑋 (𝑟) 𝑡 )𝑛 𝑡=1 , where 𝑋 (𝑟) 𝑡 
+
+iid 
+
+∼ 𝑁 (𝜇, 1) , for 𝑡 = 1, … , 𝑛 ≡ 1,000 , 𝑟 = 1, … , 𝑠 ≡ 10 .The plot shows 1𝑠 ∑𝑠 𝑟=1 F(X(𝑟) (𝜃)) as a function of the mean parameter 𝜃 = 𝜇 of the normal distribution, where color denotes the value of 𝜇 ∈ [−3, 3] . Three random features identify each 𝜇 value, the parameter-to-feature map is smooth, and it has a smooth inverse. 51.1 Related work 
+
+We provide a selective overview of simulation-based estimation methods. The Supplemen-tary Material contains a comprehensive review of random feature methods, embedding results in nonlinear dynamics, and limit theorems for stochastic processes. Classical simulation-based approaches include the method of simulated moments (McFad-den, 1989) and indirect inference (Gourieroux et al., 1993); see Gourieroux and Monfort (1996) for an overview. Wood (2010) extends these ideas by introducing the synthetic like-lihood, which is based on the idea of treating user-chosen summary statistics as normally distributed. This work inspired an entire literature on synthetic likelihoods. Price et al. (2018) introduce the Bayesian synthetic likelihood approach, which assigns a prior distribution on the parameter and uses Markov chain Monte Carlo methods to sample from the resulting posterior distribution of the parameter conditional on the observed sum-mary statistics. Approximate Bayesian computation is another well-established Bayesian approach, which tries to approximate these posterior distributions by determining whether the simulated summary statistics are sufficiently close to the observed summary statistics based on a user-chosen tolerance level (Beaumont, 2019). Lastly, we point to reviews of neural methods. These methods replace user-chosen summary statistics with representations learned from simulated data–parameter pairs (Cranmer et al., 2020; Zammit-Mangion et al., 2025). Overall, simulation-based estimation methods share the idea of substituting unknown quantities with their simulated analogues. 
+
+# 2 Methods 
+
+In this section, we introduce the notation, setting, random features, and estimators. 62.1 Notation and setting 
+
+We observe a time series 𝑋 obs  
+
+> 𝑡
+
+, 𝑡 = 1, … , 𝑛 , taking values in ℝ𝑑 for some fixed dimension 
+
+𝑑 ∈ ℕ . The observed time series is assumed to arise from a known generative model with an unknown 𝑝 -dimensional parameter 𝜃 0 ∈ Θ ⊂ ℝ 𝑝 , 𝑝 ∈ ℕ . Each value of 𝜃 ∈ Θ determines a law of a stochastic process. For any value of 𝜃 , we can use the generative model to simulate 
+
+𝑠 ∈ ℕ realizations of a length 𝑛 time series (𝑋 (𝑟) 1∶𝑛 (𝜃)) 𝑟∈[𝑠] . When we do not need to refer to a particular realization, we drop the superscript. 
+
+Notation : For real numbers 𝑥, 𝑦 ∈ ℝ , denote 𝑥∧𝑦 = min (𝑥, 𝑦) and 𝑥∨𝑦 = max (𝑥, 𝑦) . For a vector 𝑥 ∈ ℝ 𝑑 , denote the ℓ𝑝 norm by ‖𝑥‖ 𝑝 and the Euclidean norm by ‖𝑥‖ = ‖𝑥‖ 2. For a random vector 𝑋 with distribution depending on 𝜃 ∈ Θ , ‖𝑋‖ ℒ𝑞 (𝜃) = (𝔼 𝜃 ‖𝑋‖ 𝑞 )1/𝑞 
+
+, where 
+
+𝔼 𝜃 (⋅) denotes expectation with respect to this 𝜃 -dependent distribution. For any natural number 𝑗 ∈ ℕ , denote [𝑗] = {1, 2, … , 𝑗} . For a sequence of random vectors 𝑋 𝑡 , 𝑡 = 1, … , 𝑛 ,each taking values in ℝ𝑑 , we denote a subsequence as 𝑋 𝑡 1∶𝑡 2 = (𝑋 𝑡 1 , … , 𝑋 𝑡 2 )⊤, which takes values in ℝ(𝑡 2−𝑡 1+1)×𝑑 for some 𝑡 1, 𝑡 2 ∈ [𝑛] .
+
+2.2 Random Fourier features 
+
+The central idea is that we should estimate the 𝑝 -dimensional parameter 𝜃 0 by matching the values of a small number of random features of the simulated and observed data. Consider 
+
+𝑘 = 2𝑝 + 1 randomly drawn functions 𝜑 1, … , 𝜑 𝑘 from a distribution 𝐷 over a suitably nice function class ℱ. The 𝑘 functions should be sampled independently of one another and of the data. Each function 𝜑 𝑖 ∶ ℝ (𝑚+1)×𝑑 −→ ℝ takes as input a length 𝑚 + 1 subsequence of the 𝑑 -dimensional time series, where 𝑚 is chosen based on the dynamics of the generative model. For instance, if the model is an order 𝑚 ∗ Markov process, then set 𝑚 = 𝑚 ∗.Let 𝑥 1, … , 𝑥 𝑚+1 be vectors in ℝ𝑑 , and define 𝑥 = (𝑥 1, … , 𝑥 𝑚+1 )⊤ ∈ ℝ (𝑚+1)×𝑑 . Here we focus on random Fourier features, though our framework can be used with different random 7features. Specifically, we consider random Fourier features of the form 
+
+𝜑 𝑖 (𝑥) = cos (
+
+> 𝑚+1
+
+∑
+
+> 𝑗=1
+
+Ω𝑖,𝑗 ⋅ 𝑥 𝑗 + 𝛼 𝑖 ) , (1) where Ω𝑖,𝑗 
+
+> iid
+
+∼ 𝑁 (0, 𝐼 𝑑 ) and 𝛼 𝑖 
+
+> iid
+
+∼ 𝑈 (−𝜋, 𝜋) for 𝑖 = 1, … , 𝑘 and 𝑗 = 1, … , 𝑚 + 1 . Denote all 
+
+𝑘 of these functions by 
+
+𝜑 = (𝜑 1, … , 𝜑 𝑘 ), (2) so that 𝜑 ∶ ℝ (𝑚+1)×𝑑 −→ ℝ 𝑘 . Define the 𝑖 -th random feature of the observed and 𝑟 -th simulated time series at time 𝑡 = 𝑚 + 1, … , 𝑛 as 
+
+𝑓 obs  
+
+> 𝑡,𝑖
+
+= 𝜑 𝑖 (𝑋 obs 
+
+> 𝑡−𝑚∶𝑡
+
+), 𝑓 (𝑟) 𝑡,𝑖 (𝜃) = 𝜑 𝑖 (𝑋 (𝑟) 𝑡−𝑚∶𝑡 (𝜃)) . 
+
+Similarly, write all 𝑘 random features at time 𝑡 as 
+
+𝑓 obs  
+
+> 𝑡
+
+= (𝑓 obs  
+
+> 𝑡,1
+
+, … , 𝑓 obs  
+
+> 𝑡,𝑘
+
+) , 𝑓 (𝑟) 𝑡 (𝜃) = (𝑓 (𝑟) 𝑡,1 (𝜃), … , 𝑓 (𝑟) 𝑡,𝑘 (𝜃)) . (3) 
+
+2.3 Estimators 
+
+Time-average estimator. 
+
+For processes that are stationary, or at least asymptotically mean stationary, it suffices to consider the time-average of 𝑘 = 2𝑝 + 1 random features. Denote the time-averages of the observed and simulated random features by 
+
+𝐹 obs = 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝑓 obs  
+
+> 𝑡
+
+,̄ 𝐹 sim (𝜃) = 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+̄𝑓 sim  
+
+> 𝑡
+
+(𝜃), (4) where ̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃) = 1𝑠 ∑𝑠 𝑟=1 𝑓 (𝑟) 𝑡 (𝜃) . The time-average estimator is given by ̂𝜃 TA = argmin 
+
+> 𝜃∈Θ
+
+∥̂𝑄 TA  
+
+> 𝑛
+
+(𝜃)∥ , (5) where the sample discrepancy function is defined as ̂𝑄 TA  
+
+> 𝑛
+
+(𝜃) = 𝐹 obs −̄ 𝐹 sim (𝜃). (6) In practice, an optimization procedure is used to find the minimizer of ∥̂𝑄 TA  
+
+> 𝑛
+
+(⋅)∥ .8Rolling-window estimator. 
+
+For many nonstationary processes, a different approach is required because the time-average of the (time-varying) expectations of the random features may not converge to a limiting mean. Even when it does converge, the limiting mean may not uniquely identify each 𝜃 .Hence, we introduce the following rolling-window estimator. For some window size 𝑤 ∈ ℕ , denote the rolling-window averages of the observed and simulated random features at time 𝑡 by 
+
+𝐹 obs  
+
+> 𝑡
+
+= 1𝑤 ∧ 𝑡 
+
+> 𝑡
+
+∑
+
+> 𝑗=(𝑡−𝑤)∨(𝑚+1)
+
+𝑓 obs  
+
+> 𝑗
+
+,̄ 𝐹 sim  
+
+> 𝑡
+
+(𝜃) = 1𝑤 ∧ 𝑡 
+
+> 𝑡
+
+∑
+
+> 𝑗=(𝑡−𝑤)∨(𝑚+1)
+
+̄𝑓 sim  
+
+> 𝑗
+
+(𝜃), (7) where ̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃) = 1𝑠 ∑𝑠 𝑟=1 𝑓 (𝑟) 𝑡 (𝜃) . The rolling-window estimator is given by ̂𝜃 RW = argmin 
+
+> 𝜃∈Θ
+
+∣̂𝑄 RW  
+
+> 𝑛
+
+(𝜃)∣ , (8) where the sample discrepancy function is defined as ̂𝑄 RW  
+
+> 𝑛
+
+(𝜃) = 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+[∥𝐹 obs  
+
+> 𝑡−𝐿
+
+−̄ 𝐹 sim 
+
+> 𝑡−𝐿
+
+(𝜃)∥ 2 + 𝐾 𝑡 (𝜃)] , 𝐾 𝑡 (𝜃) = 2 (𝐹 obs  
+
+> 𝑡−𝐿
+
+−̄ 𝐹 sim 
+
+> 𝑡−𝐿
+
+(𝜃)) ⊤ ([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] − [𝐹 obs  
+
+> 𝑡−𝐿
+
+−̄ 𝐹 sim 
+
+> 𝑡−𝐿
+
+(𝜃)]) , 
+
+(9) where 𝜏 ∈ ℕ is an initial time-offset and 𝐿 ∈ ℕ is a lag. An optimization procedure is used to find the minimizer of ∣̂𝑄 RW  
+
+> 𝑛
+
+(⋅)∣ . We select 𝑤 = 𝑤 𝑛 , 𝜏 = 𝜏 𝑛 , and 𝐿 = 𝐿 𝑛 as follows, so that they grow with the sample size 𝑛 . The lag 𝐿 𝑛 is selected as ⌈ 110 log (𝑛) 2⌉, the window size 𝑤 𝑛 is selected as the integer within [𝑛 12 , 𝑛 34 ] that minimizes the sum of squared distances ∑𝑛 𝑡=𝑚+1+𝐿 ∥𝐹 obs  
+
+> 𝑡−𝐿
+
+− 𝑓 obs  
+
+> 𝑡
+
+∥2, and the offset is selected as 𝜏 𝑛 = 𝑤 𝑛 .
+
+Extensions. Some extensions are possible. First, both estimators can be generalized by replacing the Euclidean norm with a weighted norm, using a weight matrix given by the inverse of a suitable estimator of the long-run covariance matrix. Second, the sample averages used in both estimators can be replaced with different mean estimators. 93 Theory 
+
+In this section, we present the assumptions and theoretical results for the estimators. 
+
+3.1 Noise inputs 
+
+Let (𝜀 𝑖 )𝑖∈ℤ be an iid sequence of random variables. Let (𝜀 (𝑟) 𝑖 )𝑖∈ℤ , 𝑟 = 0, 1, … , 𝑠 , be iid copies of (𝜀 𝑖 )𝑖∈ℤ . Define the sequence of noise inputs up to time 𝑡 as 
+
+𝜺 𝑡 = (𝜀 𝑡 , 𝜀 𝑡−1 , …), (10) and define 𝜺 (𝑟) 𝑡 , 𝑟 = 0, 1, … , 𝑠 , analogously. For each time 𝑡 = 1, … , 𝑛 , we express 𝑋 obs 
+
+> 𝑡
+
+and each 𝑋 (𝑟) 𝑡 (𝜃) as functions of one of these noise inputs. In practice, simulations only use finitely many noise inputs. However, considering a countably infinite sequence of noise inputs is convenient for several reasons. For instance, this allows us to accommodate sequences of simulation models that are approximations to the true data generating process, where the approximation improves by letting the number of burn-in noise inputs grow. Let (𝜀 ∗𝑖 )𝑖∈ℤ be an iid copy of (𝜀 𝑖 )𝑖∈ℤ . For 𝑡 ∈ ℤ , 𝑗 ∈ ℕ 0, define ̃𝜺 𝑡,𝑗 = (𝜀 𝑡 , … , 𝜀 𝑡−𝑗+1 , 𝜀 ∗𝑡−𝑗 , 𝜀 𝑡−𝑗−1 , …) , (11) and define ̃ 𝜺 (𝑟) 𝑡,𝑗 , 𝑟 = 0, 1, … , 𝑠 , analogously. ̃ 𝜺 𝑡,𝑗 is the sequence of noise inputs 𝜺 𝑡 with the innovation from 𝑗 steps in the past, 𝜀 𝑡−𝑗 , replaced by an iid copy 𝜀 ∗𝑡−𝑗 . Intuitively, the output of the generative model at time 𝑡 changes if we replace the noise input from 𝑗 steps ago with an iid copy because the process at time 𝑡 is a function of the past noise inputs. Our central assumption is that the generative model’s current output becomes increasingly insensitive to the 𝑗 -th noise input in the past as 𝑗 grows. To formalize this, we use the physical dependence measure of Wu (2005). Under certain conditions, the physical dependence measure conditions we use imply and are implied by 𝛽 -mixing and strong mixing conditions; see the Supplementary Material for more discussion. 10 3.2 Results for time-average estimator 
+
+We state sufficient conditions for ̂ 𝜃 TA from (5) to be consistent. The main result is stated in Theorem 3. In a separate paper focused on statistical inference, we establish asymptotic normality under slightly stronger conditions, which implies a convergence rate of 𝑂(1/ √𝑛) .In this setting, we use long-run asymptotics. That is, 𝑛 increasing corresponds to observing the process further into the future. We allow the observed and simulated time series to be generated by approximations to a limiting data generating process. This accommodates many settings with imperfect observations (e.g., observing residuals rather than errors), discretization errors, unknown initial values, and growing burn-in periods. For each 𝑡 ∈ ℕ , 𝑖 ∈ ℕ , 𝑟 = 0, 1, … , 𝑠 , the measurable mapping 𝐺 (𝑖,𝑟) 𝑡 is from ℝ∞ × Θ 
+
+to ℝ𝑑 and (𝐺 (𝑖,𝑟) 𝑡 (𝜺 𝑗 , 𝜃)) 𝑗∈ℤ is a stationary ergodic process. The observed and simulated time series may be nonstationary because the mappings may change over time 𝑡 ∈ ℕ .Throughout, we endow ℝ∞ with the 𝜎 -algebra generated by all finite projections. The mapping 𝐺 (𝑖,𝑟) 𝑡 can be understood as an approximation to some limiting mapping 𝐺 (𝑟) 𝑡 ,where the approximation improves as 𝑖 grows and the dependence on 𝑟 allows for random initial conditions. See Assumption 2 and the following discussion for more details. The superscript may be ignored if approximations are unnecessary. The index 𝑛 ∈ ℕ is linked to both the approximation and the sample size. 
+
+Assumption 1. The observed and simulated time series of length 𝑛 ∈ ℕ are 
+
+𝑋 obs  
+
+> 𝑡
+
+= 𝐺 (𝑛,0) 𝑡 (𝜺 (0) 𝑡 , 𝜃 0), 𝑋 (𝑟) 𝑡 (𝜃) = 𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃), 𝑡 = 1, … , 𝑛, (12) 
+
+for all 𝑟 = 1, … , 𝑠 and 𝜃 ∈ Θ .
+
+Oftentimes, we can take the observed time series to be generated by the limiting mapping, i.e. 𝐺 (𝑛,0) 𝑡 ≡ 𝐺 (0) 𝑡 for all 𝑛 ∈ ℕ . The following assumption imposes the convergence to 11 limiting mappings as the approximation level grows. Note that no rate of convergence is required. We write 𝜺 0 because it has the same distribution as each 𝜺 𝑡 .
+
+Assumption 2. For each 𝑡 ∈ ℕ and 𝑟 = 0, 1, … , 𝑠 , there exists a measurable mapping 
+
+𝐺 (𝑟) 𝑡 ∶ ℝ ∞ × Θ − → ℝ 𝑑 such that (𝐺 (𝑟) 𝑡 (𝜺 𝑗 , 𝜃)) 𝑗∈ℤ is a stationary ergodic process, and for some 
+
+𝑞 > 2 , as 𝑛 − → ∞ , we have 
+
+sup 
+
+> 𝜃∈Θ
+
+( 1𝑛 
+
+> 𝑛
+
+∑
+
+> 𝑡=1
+
+∥𝐺 (𝑛,𝑟) 𝑡 (𝜺 0, 𝜃) − 𝐺 (𝑟) 𝑡 (𝜺 0, 𝜃)∥ ℒ𝑞 (𝜃) ) − → 0. 
+
+Under Assumption 1, the 𝑘 = 2𝑝 + 1 time-averages from (4) can be written as 
+
+𝐹 obs = 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝜑 ([𝐺 (𝑛,0) 𝑡−𝑚 (𝜺 (0) 𝑡−𝑚 , 𝜃 0), … , 𝐺 (𝑛,0) 𝑡 (𝜺 (0) 𝑡 , 𝜃 0)] ⊤
+
+) ,̄ 𝐹 sim (𝜃) = 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+[1𝑠 
+
+> 𝑠
+
+∑
+
+> 𝑟=1
+
+𝜑 ([𝐺 (𝑛,𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] . 
+
+(13) Denote by 𝑃 (𝑟) 𝜃,𝑡 the distribution of [𝐺 (𝑟) 𝑡−𝑚 (𝜺 −𝑚 , 𝜃), … , 𝐺 (𝑟) 𝑡 (𝜺 0, 𝜃)] ⊤
+
+, where 𝑚 is the number of lags in the random features 𝜑 from (2). We impose asymptotic mean stationarity by requiring the time-average of the distributions (𝑃 (𝑟) 𝜃,𝑡 )𝑡∈ℕ to converge weakly to a limiting distribution 𝑃 𝜃 which depends neither on 𝑡 nor 𝑟 , uniformly over 𝜃 ∈ Θ . For example, this allows us to consider discrete-time dynamical systems with unknown initial value. 
+
+Assumption 3. For all 𝜃 ∈ Θ , there exists a limiting distribution 𝑃 𝜃 , such that, for all 
+
+𝑟 = 0, 1, … , 𝑠 , we have, as 𝑛 − → ∞ ,
+
+sup 
+
+> 𝜃∈Θ
+
+∣∫ 
+
+> ℝ(𝑚+1)×𝑑
+
+𝜙(𝑥) 𝑑̄𝑃 (𝑟) 𝜃,𝑛 (𝑥) − ∫ 
+
+> ℝ(𝑚+1)×𝑑
+
+𝜙(𝑥) 𝑑𝑃 𝜃 (𝑥)∣ − → 0, 
+
+for all continuous, bounded functions 𝜙 ∶ ℝ (𝑚+1)×𝑑 −→ ℝ , where ̄ 𝑃 (𝑟) 𝜃,𝑛 = 1𝑛−𝑚 ∑𝑛 𝑡=𝑚+1 𝑃 (𝑟) 𝜃,𝑡 .
+
+Next, we introduce mappings Φ ∶ ℝ 𝑝 −→ ℝ 𝑘 , whose restrictions to Θ satisfy 
+
+Φ| Θ(𝜃) = ∫ 
+
+> ℝ(𝑚+1)×𝑑
+
+𝜑(𝑥) 𝑑𝑃 𝜃 (𝑥), 𝜃 ∈ Θ. (14) 12 Under Assumptions 1-3, the limiting expectation values of the 𝑘 = 2𝑝 + 1 random features of the time series coincide with Φ restricted to Θ. Roughly speaking, we would like to say that, on Θ, for “generic” choices of the 𝑘 = 2𝑝 + 1 random features, we have that Φ is 𝐶 1,
+
+Φ−1 exists, and Φ−1 is also 𝐶 1. For more details, see the proof of Theorem 2. Yorke and Ott (2005) introduce the following genericity axioms , which serve as desiderata for a notion of “generic”. For a topological vector space 𝑉 , we desire that: 1. A generic subset of 𝑉 is dense in 𝑉 .2. If 𝐹 ⊃ 𝐸 and 𝐸 is generic, then 𝐹 is generic. 3. A countable intersection of generic sets is generic. 4. Every translate of a generic set is generic. 5. A subset 𝐸 of finite-dimensional Euclidean space is generic if and only if 𝐸 is a set of full Lebesgue measure. The topological notion of genericity is based on the idea of residual sets , defined as a countable intersection of open, dense sets. The Baire category theorem states that residual subsets of Baire spaces are dense. However, the Lebesgue measure of these residual sets can be zero; see Yorke and Ott (2005) for examples. As a result, the topological notion of genericity does not satisfy Axiom 5. Hence, it would be of interest to use a measure-theoretic notion of “generic”. As discussed in Sauer et al. (1991); Hunt et al. (1992); Yorke and Ott (2005), the difficulty with statements asserting that a property holds for “almost every” smooth map is that the space of all smooth maps is an infinite-dimensional space. The idea of probability one in finite dimensions does not extend in any canonical way to infinite-dimensional spaces. Nevertheless, it is desirable to formalize the idea that a property holds for “almost all” maps. To do this, we adopt the notion of prevalence from Yorke and Ott (2005), which 13 therein is shown to satisfy all of the genericity axioms. 
+
+Definition 1. (Prevalence (Yorke and Ott, 2005)). Let 𝑉 be a completely metrizable topological vector space. A Borel set 𝐸 ⊂ 𝑉 is said to be prevalent if there exists some Borel measure 𝜇 on 𝑉 such that: 1. 0 < 𝜇(𝐶) < ∞ for some compact subset 𝐶 of 𝑉 .2. The set 𝐸 + 𝑣 has full 𝜇 -measure (complement has measure zero) for all 𝑣 ∈ 𝑉 .In this literature, it is common to say that, if 𝐸 ⊂ 𝑉 contains a prevalent Borel set, then “almost every” element of 𝑉 lies in 𝐸 . In this sense, “almost every” smooth map from ℝ𝑝 
+
+to ℝ𝑘 has the following properties. 
+
+Theorem 1. (Fractal Whitney Embedding Prevalence Theorem (Sauer et al., 1991)). Let Θ be a compact subset of ℝ𝑝 of box-counting dimension 𝑝 ′, and let 𝑘 be an integer greater than 2𝑝 ′. For almost every 𝐶 1 smooth map Φ ∶ ℝ 𝑝 −→ ℝ 𝑘 :1. Φ is one-to-one on Θ.2. Φ is an immersion on each compact subset of a smooth manifold contained in Θ.
+
+We impose the following conditions so that we may apply Theorem 1. Let 𝒫 (ℝ (𝑚+1)×𝑑 )
+
+denote the space of probability measures on ℝ(𝑚+1)×𝑑 .
+
+Assumption 4. The following conditions hold: 1. Θ is a compact subset of ℝ𝑝 with non-empty interior. 2. The map 𝜃 ↦ 𝑃 𝜃 is a bijection. 3. For some open set 𝑂 ⊃ Θ , the map 𝜃 ↦ 𝑃 𝜃 admits an extension p ∶ 𝑂 − → 𝒫 (ℝ (𝑚+1)×𝑑 )
+
+that is Fréchet 𝐶 1 on 𝑂 with respect to the total variation norm. 
+
+14 That is, there exists an open set 𝑂 ⊂ ℝ 𝑝 with Θ ⊂ 𝑂 and a map p ∶ 𝑂 − → 𝒫 (ℝ (𝑚+1)×𝑑 ),such that p(𝜃) = 𝑃 𝜃 for all 𝜃 ∈ Θ , and p is Fréchet 𝐶 1 on 𝑂 with respect to the total variation norm. We impose structure on the extension p from Assumption 4 by linking it to Φ through the definition of the function class 
+
+𝒞 𝜑 = {Φ ∶ ℝ 𝑝 −→ ℝ 𝑘 ∣ Φ| 𝑂 (𝜃) = ∫ 
+
+> ℝ(𝑚+1)×𝑑
+
+𝜑(𝑥) 𝑑 p(𝜃)(𝑥), Φ is 𝐶 1 on ℝ𝑝 ∖ Θ} , 
+
+and let 𝒞 = ⋃ 𝜑∈ℱ 𝑘 𝒞 𝜑 . 𝒞 consists of all functions Φ ∶ ℝ 𝑝 −→ ℝ 𝑘 whose restriction to 𝑂 ⊂ ℝ 𝑝 
+
+from Assumption 4 coincides with the expectations of the 𝑘 random features with respect to p(𝜃), 𝜃 ∈ 𝑂 , for some 𝜑 ∈ ℱ 𝑘 , and which admit a 𝐶 1 extension to the rest of ℝ𝑝 .
+
+Theorem 2. Suppose Assumptions 1-4 hold. Then the limiting expectation values of the 𝑘 
+
+random features are 𝐶 1-smooth in the parameter values, so 𝒞 ⊂ 𝐶 1(ℝ 𝑝 , ℝ 𝑘 ). Furthermore, once 𝑘 ≥ 2𝑝 + 1 , almost every 𝐶 1 smooth map from ℝ𝑝 to ℝ𝑘 is one-to-one on Θ, and is an immersion on each compact subset of a smooth manifold contained in Θ.
+
+To simplify the presentation of the following results, we make the assumption that the 
+
+𝑘 = 2𝑝 + 1 random features yield such a function. 
+
+Assumption 5. The function Φ from (14) is one-to-one on Θ, and is an immersion on each compact subset of a smooth manifold contained in Θ.
+
+Therefore, if we knew Φ, then we could smoothly translate between the values of 𝜃 and expectations of the random features Φ(𝜃) .The next stochastic equicontinuity-type assumption is useful for establishing consistency. 
+
+Assumption 6. For all 𝑖 ∈ ℕ , all 𝑟 = 0, 1, … , 𝑠 , and all 𝜖 > 0 , there exists an 𝜂 𝐺 =𝜂 𝐺 (𝑖, 𝑟, 𝜖) > 0 such that 
+
+sup 
+
+> 𝑡∈ℕ
+
+𝔼 ⎛⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥𝐺 (𝑖,𝑟) 𝑡 (𝜺 0, 𝜃) − 𝐺 (𝑖,𝑟) 𝑡 (𝜺 0, 𝜃 ′)∥ ⎞⎟⎟⎟⎠< 𝜂 𝐺 ,
+
+15 with 𝜂 𝐺 −→ 0 as 𝜖 − → 0 , where the expectation 𝔼(⋅) is taken w.r.t. the law of the noise inputs. 
+
+The next assumption controls the temporal dependence uniformly over Θ, so that we can estimate the expectations of the random features based on their time-averages. Specifi-cally, we impose a uniform moment bound and a uniform polynomial decay of the physical dependence measure of Wu (2005). 
+
+Assumption 7. There exist Ψ > 0 , 𝛽 > 2 such that, for some 𝑞 > 2 , all 𝑗 ∈ ℕ , all 𝑖 ∈ ℕ ,and all 𝑟 = 0, 1, … , 𝑠 , we have 
+
+sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑡∈ℕ
+
+∥𝐺 (𝑖,𝑟) 𝑡 (𝜺 0, 𝜃) − 𝐺 (𝑖,𝑟) 𝑡 (̃𝜺 0,𝑗 , 𝜃)∥ ℒ𝑞 (𝜃) ≤ Ψ(𝑗 ∨ 1) −𝛽 ,
+
+sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑡∈ℕ
+
+∥𝐺 (𝑖,𝑟) 𝑡 (𝜺 0, 𝜃)∥ ℒ𝑞 (𝜃) ≤ Ψ, 
+
+where ̃ 𝜺 0,𝑗 is from (11) .
+
+We now establish the consistency of the time-average estimator ̂ 𝜃 TA from (5). 
+
+Theorem 3. If Assumptions 1-7 hold, then ̂ 𝜃 TA 𝑝 
+
+−→ 𝜃 0.
+
+3.3 Results for rolling-window estimator 
+
+We present assumptions that guarantee the consistency of the rolling-window estimator ̂ 𝜃 RW 
+
+from (8). The main result is Theorem 6. In a separate manuscript focused on statistical inference, we prove asymptotic normality under slightly stronger conditions, which implies a 𝑂(1/ √𝑛) rate of convergence. In this section, we rescale time to the unit interval and use infill asymptotics as in the literature on locally stationary processes by Dahlhaus (1997). As 𝑛 grows, an increasing number of observations related to each local structure of the process become available. The rolling-window estimator introduced here can be used to fit models with very general forms 16 of nonstationarity, such as ordinary differential equations (ODEs), state-space models with covariates and control inputs, and structural time series models with complicated trends, seasonality, change-points, and “rough” nonstationarity. The observed and simulated time series may be generated by approximations to a limiting data generating process. For example, this distinction allows the observed time series to be based on observed residuals rather than errors, or to consist of imperfect observations of an exact solution of an ODE. Similarly, the simulated time series can be based on an ODE solver with observational noise processes with growing burn-in periods. We represent the generative model using measurable mappings. For each 𝑢 ∈ [0, 1] , 𝑖 ∈ ℕ ,
+
+𝑟 = 0, 1, … , 𝑠 , the mapping 𝐺 (𝑖,𝑟) 𝑢 is from ℝ∞ ×Θ to ℝ𝑑 and (𝐺 (𝑖,𝑟) 𝑢 (𝜺 𝑗 , 𝜃)) 𝑗∈ℤ is a stationary ergodic process. The time series may be nonstationary because the mappings may change over rescaled time 𝑢 ∈ [0, 1] . The mapping 𝐺 (𝑖,𝑟) 𝑢 is an approximation to a limiting mapping. When an approximation is not needed, the superscript can be ignored. The index 𝑛 ∈ ℕ is linked to the sample size and approximation. 
+
+Assumption 8. The observed and simulated time series of length 𝑛 ∈ ℕ are 
+
+𝑋 obs  
+
+> 𝑡
+
+= 𝐺 (𝑛,0) 𝑡/𝑛 (𝜺 (0) 𝑡 , 𝜃 0), 𝑋 (𝑟) 𝑡 (𝜃) = 𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 𝑡 , 𝜃), 𝑡 = 1, … , 𝑛, (15) 
+
+for all 𝑟 = 1, … , 𝑠 and 𝜃 ∈ Θ .
+
+In many situations, we can take the observed time series to be generated by the limiting mapping, i.e. 𝐺 (𝑛,0) 𝑢 ≡ 𝐺 (0) 𝑢 for all 𝑢 ∈ [0, 1] . The next assumption imposes convergence to the limiting mapping, with no required convergence rate. Note that 𝜺 0 has the same distribution as 𝜺 𝑡 for all 𝑡 ∈ ℤ .
+
+Assumption 9. For each 𝑢 ∈ [0, 1] , there exists a measurable mapping 𝐺 𝑢 ∶ ℝ ∞ × Θ − → ℝ 𝑑 
+
+such that (𝐺 𝑢 (𝜺 𝑗 , 𝜃)) 𝑗∈ℤ is a stationary ergodic process, and for some 𝑞 > 2 and all 𝑟 = 
+
+17 0, 1, … , 𝑠 , as 𝑖 − → ∞ , we have 
+
+sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑢∈[0,1]
+
+∥𝐺 (𝑖,𝑟) 𝑢 (𝜺 0, 𝜃) − 𝐺 𝑢 (𝜺 0, 𝜃)∥ ℒ𝑞 (𝜃) −→ 0. 
+
+Under Assumption 8, the observed and simulated rolling-window random features at time 
+
+𝑡 can be written as 
+
+𝐹 obs  
+
+> 𝑡
+
+= 1𝑤 ∧ 𝑡 
+
+> 𝑡
+
+∑
+
+> 𝑗=(𝑡−𝑤)∨(𝑚+1)
+
+𝜑 ([𝐺 (𝑛,0) (𝑗−𝑚)/𝑛 (𝜺 (0) 𝑗−𝑚 , 𝜃 0), … , 𝐺 (𝑛,0) 𝑗/𝑛 (𝜺 (0) 𝑗 , 𝜃 0)] ⊤
+
+) ,̄ 𝐹 sim  
+
+> 𝑡
+
+(𝜃) = 1𝑤 ∧ 𝑡 
+
+> 𝑡
+
+∑
+
+> 𝑗=(𝑡−𝑤)∨(𝑚+1)
+
+[1𝑠 
+
+> 𝑠
+
+∑
+
+> 𝑟=1
+
+𝜑 ([𝐺 (𝑛,𝑟) (𝑗−𝑚)/𝑛 (𝜺 (𝑟) 𝑗−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑗/𝑛 (𝜺 (𝑟) 𝑗 , 𝜃)] ⊤
+
+)] . 
+
+For all 𝑢 ∈ [0, 1] , denote by 𝑃 𝜃,𝑢 the distribution of [𝐺 𝑢 (𝜺 −𝑚 , 𝜃), … , 𝐺 𝑢 (𝜺 0, 𝜃)] ⊤, where 𝑚 
+
+is the number of lags used in the random features. We introduce mappings Φ𝑢 ∶ ℝ 𝑝 −→ ℝ 𝑘 ,
+
+𝑢 ∈ [0, 1] , whose restrictions to Θ satisfy 
+
+Φ𝑢 |Θ(𝜃) = ∫ 
+
+> ℝ(𝑚+1)×𝑑
+
+𝜑(𝑥) 𝑑𝑃 𝜃,𝑢 (𝑥). (16) Under Assumptions 8 and 9, the expectation values of the 𝑘 = 2𝑝 + 1 random features at rescaled time 𝑢 ∈ [0, 1] coincide with Φ𝑢 restricted to Θ.Unfortunately, in general, we cannot embed Θ into ℝ𝑘 using Φ𝑢 at one particular rescaled time 𝑢 ∈ [0, 1] . To see this, consider a family of stochastic processes defined by 𝑋 𝑡 (𝜃) = 
+
+cos (𝜃2𝜋𝑡/𝑛) + 𝜀 𝑡 , 𝑡 = 1, … , 𝑛 , where each 𝜀 𝑡 
+
+> iid
+
+∼ 𝑁 (0, 1) and 𝜃 ∈ [0, 10] . For 𝑢 ∈ [0, 1] 
+
+and 𝑚 = 0 , denote by 𝑃 𝜃,𝑢 the distribution of cos (𝜃2𝜋𝑢) + 𝜀 𝑡 , i.e. 𝑃 𝜃,𝑢 = 𝑁 ( cos (𝜃2𝜋𝑢), 1) .Clearly, for two different parameters 𝜃 1 ≠ 𝜃 2, it is possible for 𝑃 𝜃 1,𝑢 = 𝑃 𝜃 2,𝑢 . Of course, this also occurs in more complicated dynamic models, such as differential equations. To deal with these situations, we make the following reparametrization assumption. 
+
+Assumption 10. For all 𝑢 ∈ [0, 1] , there exists a Lipschitz mapping 𝑔 𝑢 ∶ Θ − →̃ Θ 𝑢 defined by 𝑔 𝑢 (𝜃) =̃ 𝜃 𝑢 where ̃ Θ𝑢 = {𝑔 𝑢 (𝜃) ∶ 𝜃 ∈ Θ} is a subset of ℝ̃ 𝑝 for some ̃ 𝑝 ∈ ℕ , and there 
+
+18 exists a function ̃ 𝐺 𝑢 ∶ ℝ ∞ ×̃ Θ 𝑢 −→ ℝ 𝑑 such that ̃𝐺 𝑢 (𝜺 0,̃ 𝜃 𝑢 ) = 𝐺 𝑢 (𝜺 0, 𝜃). 
+
+For each fixed 𝑢 ∈ [0, 1] , (̃𝐺 𝑢 (𝜺 𝑗 ,̃ 𝜃 𝑢 )) 𝑗∈ℤ is a stationary ergodic process. 
+
+In the previous example, we may take 𝑔 𝑢 (𝜃) = cos (𝜃2𝜋𝑢) . Similar ideas apply for our experiments with the rolling-window estimator (e.g., with ODEs). When 𝜃 ↦ 𝑃 𝜃,𝑢 is a bijection for all 𝑢 ∈ [0, 1] , we may always take 𝑔 𝑢 (𝜃) = 𝜃 .Going forward, let ̃ 𝑃 ̃𝜃 𝑢 ,𝑢 denote the distribution of [̃𝐺 𝑢 (𝜺 −𝑚 ,̃ 𝜃 𝑢 ), … ,̃ 𝐺 𝑢 (𝜺 0,̃ 𝜃 𝑢 )] ⊤
+
+. Now, we introduce the mappings ̃ Φ𝑢 ∶ ℝ ̃ 𝑝 −→ ℝ 𝑘 whose restrictions to ̃ Θ𝑢 satisfy ̃Φ𝑢 |̃ Θ𝑢 
+
+(̃𝜃 𝑢 ) = ∫ 
+
+> ℝ(𝑚+1)×𝑑
+
+𝜑(𝑥) 𝑑̃𝑃 ̃𝜃 𝑢 ,𝑢 (𝑥). (17) Under Assumptions 8-10, the limiting local expectation values at rescaled time 𝑢 ∈ [0, 1] 
+
+of the 𝑘 = 2𝑝 + 1 random features of the time series are given by ̃ Φ𝑢 (̃𝜃 𝑢 ),̃ 𝜃 𝑢 ∈̃ Θ 𝑢 . We would like to say that, on ̃ Θ𝑢 , for “generic” choices of the 𝑘 = 2𝑝 + 1 random features, we have that ̃ Φ𝑢 is 𝐶 1, its inverse exists, and is also 𝐶 1. Again, we adopt the notion of prevalence from Definition 1 and use the fractal Whitney embedding prevalence theorem. For convenience, we restate the theorem here in the notation of this section. 
+
+Theorem 4. (Fractal Whitney Embedding Prevalence Theorem (Sauer et al., 1991)). Let ̃ Θ𝑢 be a compact subset of ℝ̃ 𝑝 of box-counting dimension 𝑝 , and let 𝑘 be an integer greater than 2𝑝 . For almost every 𝐶 1 smooth map ̃ Φ𝑢 ∶ ℝ ̃ 𝑝 −→ ℝ 𝑘 :1. ̃ Φ𝑢 is one-to-one on ̃ Θ𝑢 .2. ̃ Φ𝑢 is an immersion on each compact subset of a smooth manifold contained in ̃ Θ𝑢 .
+
+We impose the following conditions so that we may apply Theorem 4 at each rescaled time 
+
+𝑢 ∈ [0, 1] . Denote by 𝒫 (ℝ (𝑚+1)×𝑑 ) the space of probability measures on ℝ(𝑚+1)×𝑑 .19 Assumption 11. The following conditions hold for all rescaled times 𝑢 ∈ [0, 1] :1. ̃ Θ𝑢 ⊂ ℝ ̃ 𝑝 is compact, and Θ ⊂ ℝ 𝑝 is compact with non-empty interior. 2. The map ̃ 𝜃 𝑢 ↦̃ 𝑃 ̃ 𝜃 𝑢 ,𝑢 is a bijection. 3. For some open set ̃ 𝑂 𝑢 ⊃̃ Θ 𝑢 , the map ̃ 𝜃 𝑢 ↦̃ 𝑃 ̃𝜃 𝑢 ,𝑢 admits an extension ̃ p𝑢 ∶̃ 𝑂 𝑢 −→𝒫 (ℝ (𝑚+1)×𝑑 ) that is Fréchet 𝐶 1 on ̃ 𝑂 𝑢 with respect to the total variation norm. 
+
+That is, for all 𝑢 ∈ [0, 1] , there exists an open set ̃ 𝑂 𝑢 ⊂ ℝ ̃ 𝑝 with ̃ Θ𝑢 ⊂̃ 𝑂 𝑢 and a map ̃
+
+p𝑢 ∶̃ 𝑂 𝑢 −→ 𝒫 (ℝ (𝑚+1)×𝑑 ), such that ̃ p𝑢 (̃𝜃 𝑢 ) =̃ 𝑃 ̃𝜃 𝑢 ,𝑢 for all 𝜃 ∈ Θ , and ̃ p𝑢 is Fréchet 𝐶 1 on 
+
+𝑂 with respect to the total variation norm. We impose structure on these extensions ̃ p𝑢 ,
+
+𝑢 ∈ [0, 1] , by linking them to ̃ Φ𝑢 , 𝑢 ∈ [0, 1] , through the definition of the function classes ̃𝒞 𝑢,𝜑 = {̃Φ 𝑢 ∶ ℝ ̃ 𝑝 −→ ℝ 𝑘 ∣̃ Φ 𝑢 |̃𝑂 𝑢 
+
+(̃𝜃 𝑢 ) = ∫ 
+
+> ℝ(𝑚+1)×𝑑
+
+𝜑(𝑥)𝑑̃ p𝑢 (̃𝜃 𝑢 )(𝑥),̃ Φ 𝑢 is 𝐶 1 on ℝ̃ 𝑝 ∖̃ Θ 𝑢 } , 
+
+for 𝑢 ∈ [0, 1] , and let ̃ 𝒞 𝑢 = ⋃ 𝜑∈ℱ 𝑘 ̃ 𝒞 𝑢,𝜑 . In words, ̃ 𝒞 𝑢 is the collection of all functions ̃Φ𝑢 ∶ ℝ ̃ 𝑝 −→ ℝ 𝑘 whose restriction to the open set ̃ 𝑂 𝑢 ⊂ ℝ ̃ 𝑝 from Assumption 11 coincides with the local expectations of the 𝑘 random features with respect to ̃ p𝑢 (̃𝜃 𝑢 ),̃ 𝜃 𝑢 ∈̃ 𝑂 𝑢 , for some 𝜑 ∈ ℱ 𝑘 , and which admit a 𝐶 1 extension to the rest of ℝ̃ 𝑝 .
+
+Theorem 5. Suppose Assumptions 8-11 hold. Then, for all 𝑢 ∈ [0, 1] , the limiting local expectation values at rescaled time 𝑢 of the 𝑘 random features are 𝐶 1-smooth in the param-eter values, so ̃ 𝒞 𝑢 ⊂ 𝐶 1(ℝ ̃ 𝑝 , ℝ 𝑘 ). Furthermore, for all 𝑢 ∈ [0, 1] , once 𝑘 ≥ 2𝑝 + 1 , almost every 𝐶 1 smooth map from ℝ̃ 𝑝 to ℝ𝑘 is one-to-one on ̃ Θ𝑢 , and is an immersion on each compact subset of a smooth manifold contained in ̃ Θ𝑢 .
+
+To simplify the presentation of the results below, we make the assumption that the 𝑘 = 2𝑝 + 1 random features yield such a function. 
+
+Assumption 12. For each 𝑢 ∈ [0, 1] , the mapping ̃ Φ𝑢 from (17) is one-to-one on ̃ Θ𝑢 , and is an immersion on each compact subset of a smooth manifold contained in ̃ Θ𝑢 .
+
+20 Next, we assume that the paths of distributions (𝑃 𝜃 1,𝑢 )𝑢∈[0,1] , (𝑃 𝜃 2,𝑢 )𝑢∈[0,1] are sufficiently distinguishable, in some sense, for any two different parameters 𝜃 1, 𝜃 2 ∈ Θ . This is a mild condition, as we still allow 𝑃 𝜃 1,𝑢 = 𝑃 𝜃 2,𝑢 for all but a measurable amount of rescaled times. 
+
+Assumption 13. For all 𝜃 1, 𝜃 2 ∈ Θ , if 𝜃 1 ≠ 𝜃 2, then there exists a subset 𝒰 𝜃 1,𝜃 2 ⊆ [0, 1] 
+
+with positive Lebesgue measure such that 𝑃 𝜃 1,𝑢 ≠ 𝑃 𝜃 2,𝑢 for all 𝑢 ∈ 𝒰 𝜃 1,𝜃 2 .
+
+We have stated the core assumptions, so we may now sketch the main ideas of the proof of Theorem 6, which shows the consistency of ̂ 𝜃 RW . By Assumption 13, for any two different parameters 𝜃 1, 𝜃 2 ∈ Θ , we have that 𝑃 𝜃 1,𝑢 ≠ 𝑃 𝜃 2,𝑢 for all 𝑢 ∈ 𝒰 𝜃 1,𝜃 2 . Since 𝑃 𝜃 1,𝑢 ≠ 𝑃 𝜃 2,𝑢 
+
+for all 𝑢 ∈ 𝒰 𝜃 1,𝜃 2 , we also have that ̃ 𝑃 𝑔 𝑢 (𝜃 1),𝑢 ≠̃ 𝑃 𝑔 𝑢 (𝜃 2),𝑢 for all 𝑢 ∈ 𝒰 𝜃 1,𝜃 2 because ̃𝑃 𝑔 𝑢 (𝜃),𝑢 = 𝑃 𝜃,𝑢 is the distribution of 
+
+[̃𝐺 𝑢 (𝜺 −𝑚 , 𝑔 𝑢 (𝜃)), … ,̃ 𝐺 𝑢 (𝜺 0, 𝑔 𝑢 (𝜃))] ⊤ = [𝐺 𝑢 (𝜺 −𝑚 , 𝜃), … , 𝐺 𝑢 (𝜺 0, 𝜃)] ⊤.
+
+Therefore, for all 𝑢 ∈ 𝒰 𝜃 1,𝜃 2 , we have that 𝑔 𝑢 (𝜃 1) ≠ 𝑔 𝑢 (𝜃 2) because ̃ 𝜃 𝑢 ↦̃ 𝑃 ̃𝜃 𝑢 ,𝑢 is a bijection for all 𝑢 ∈ [0, 1] by Assumption 11. We also have that ̃ Φ𝑢 (𝑔 𝑢 (𝜃 1)) ≠̃ Φ 𝑢 (𝑔 𝑢 (𝜃 2)) 
+
+for all 𝑢 ∈ 𝒰 𝜃 1,𝜃 2 , because by Assumption 12, ̃ 𝜃 𝑢 ↦̃ Φ 𝑢 (̃𝜃 𝑢 ) is one-to-one for all 𝑢 ∈ [0, 1] .This also implies that Φ𝑢 (𝜃 1) ≠ Φ 𝑢 (𝜃 2) for all 𝑢 ∈ 𝒰 𝜃 1,𝜃 2 by the definitions of Φ𝑢 and ̃ Φ𝑢 
+
+from (16) and (17), respectively, because ̃ 𝑃 𝑔 𝑢 (𝜃),𝑢 = 𝑃 𝜃,𝑢 as discussed above. Thus, if Φ𝑢 
+
+were known, we could distinguish 𝜃 1 and 𝜃 2 by looking at the expectation values of the random features Φ𝑢 (𝜃 1) and Φ𝑢 (𝜃 2) at rescaled times 𝑢 ∈ 𝒰 𝜃 1,𝜃 2 .We use the following stochastic equicontinuity-type assumption to establish consistency. 
+
+Assumption 14. For all 𝑖 ∈ ℕ , all 𝑟 = 0, 1, … , 𝑠 , and all 𝜖 > 0 , there exists an 𝜂 𝐺 =𝜂 𝐺 (𝑖, 𝑟, 𝜖) > 0 such that 
+
+sup 
+
+> 𝑢∈[0,1]
+
+𝔼 ⎛⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥𝐺 (𝑖,𝑟) 𝑢 (𝜺 0, 𝜃) − 𝐺 (𝑖,𝑟) 𝑢 (𝜺 0, 𝜃 ′)∥ 2⎞⎟⎟⎟⎠< 𝜂 𝐺 ,
+
+21 with 𝜂 𝐺 −→ 0 as 𝜖 − → 0 , where the expectation 𝔼(⋅) is taken w.r.t. the law of the noise inputs. 
+
+The next assumptions control the temporal dependence and nonstationarity uniformly over 
+
+Θ, so that we can estimate the expectations of the random features Φ𝑢 (𝜃) at all 𝑢 ∈ [0, 1] 
+
+and 𝜃 ∈ Θ . First, we impose a uniform moment bound and a uniform exponential decay of the physical dependence measure of Wu (2005). 
+
+Assumption 15. There exist constants 𝜌 ∈ (0, 1) , Λ > 0 , such that, for some 𝑞 > 2 , all 
+
+𝑗 ∈ ℕ , all 𝑖 ∈ ℕ , and all 𝑟 = 0, 1, … , 𝑠 , we have 
+
+sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑢∈[0,1]
+
+∥𝐺 (𝑖,𝑟) 𝑢 (𝜺 0, 𝜃) − 𝐺 (𝑖,𝑟) 𝑢 (̃𝜺 0,𝑗 , 𝜃)∥ ℒ𝑞 (𝜃) ≤ Λ𝜌 𝑗 ,
+
+sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑢∈[0,1]
+
+∥𝐺 (𝑖,𝑟) 𝑢 (𝜺 0, 𝜃)∥ ℒ𝑞 (𝜃) ≤ Λ, 
+
+where ̃ 𝜺 0,𝑗 is from (11) .
+
+Second, we impose a regularity condition to control the nonstationarity, which allows for smooth changes, abrupt change-points, and “rough” nonstationarity. Define 
+
+∥(𝐺 (𝑖,𝑟) 𝑢 (𝜺 0, 𝜃)) 𝑢 ∥𝜅 -var ,ℒ 𝑞 (𝜃) 
+
+= sup 
+
+> 0=𝑢 0<…<𝑢 ℓ=1 ℓ∈ℕ
+
+(
+
+> ℓ
+
+∑
+
+> 𝑗=1
+
+∥𝐺 (𝑖,𝑟) 𝑢 𝑗 (𝜺 0, 𝜃) − 𝐺 (𝑖,𝑟) 𝑢 𝑗−1 (𝜺 0, 𝜃)∥ 𝜅 ℒ𝑞 (𝜃) )
+
+> 1𝜅
+
+.
+
+Assumption 16. For some 𝑞 > 2 , some 𝜅 ∈ [1, 4) , all 𝑖 ∈ ℕ , and all 𝑟 = 0, 1, … , 𝑠 , the constant Λ > 0 from Assumption 15 also satisfies 
+
+sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑢∈[0,1]
+
+∥𝐺 (𝑖,𝑟) 𝑢 (𝜺 0, 𝜃)∥ ℒ𝑞 (𝜃) + sup 
+
+> 𝜃∈Θ
+
+∥(𝐺 (𝑖,𝑟) 𝑢 (𝜺 0, 𝜃)) 𝑢 ∥𝜅 -var ,ℒ 𝑞 (𝜃) 
+
+≤ Λ. 
+
+Next, we specify the rates of growth for the window size 𝑤 𝑛 , the offset 𝜏 𝑛 , and the lag 𝐿 𝑛 
+
+from (9). This ensures that we can improve our estimates of the local expectation values of the random features at 𝑢 ∈ [0, 1] as we gain more observations near rescaled time 𝑢 .
+
+Assumption 17. Recall 𝑞 > 2 from Assumption 15 and 𝜅 ∈ [1, 4) from Assumption 16. Assume that 𝑞 , 𝜅 , (𝑤 𝑛 )𝑛∈ℕ , (𝜏 𝑛 )𝑛∈ℕ , and (𝐿 𝑛 )𝑛∈ℕ satisfy: 
+
+22 1. 𝜏 𝑛 = 𝑜(𝑛) .2. 𝑤 𝑛 ≫ 𝑛 2𝑞 , 𝑤 𝑛 = 𝑜(𝑛) , and 𝑤 𝑛 𝑛 max (1−2/𝜅,0) = 𝑜(𝑛) .3. 𝐿 𝑛 ≫ log (𝑛) 1+𝑎 for some 𝑎 ∈ (0, 1) , 𝐿 𝑛 ≪ 𝜏 𝑛 , 𝐿 𝑛 ≪ 𝑛 1𝜅 − 14 , and 𝐿 𝑛 = 𝑜(𝑛 12𝜅 ).
+
+We now establish the consistency of the rolling-window estimator ̂ 𝜃 RW from (8). 
+
+Theorem 6. If Assumptions 8-17 hold, then ̂ 𝜃 RW 𝑝 
+
+−→ 𝜃 0.
+
+# 4 Experiments 
+
+We apply our methods to fit several dynamic models. Additional simulation results are reported in the Supplementary Material. Each density plot is constructed from 1,000 
+
+independent estimates of the 𝑝 -dimensional parameter using 2𝑝 + 1 random features and 
+
+10 simulations per parameter value. To be clear, each parameter estimate is based on an independent realization of the process and an independent draw of 2𝑝 + 1 random features. The experiments reported below were conducted in Python. We optimized the objec-tive functions using the differential evolution solver differential_evolution from the 
+
+scipy.optimize module in the SciPy library, although our experiments indicate that other optimizers perform comparably. For the examples with differential equations (ODEs), we used the Runge–Kutta 5(4) solver RK45 from the scipy.integrate module in SciPy. 
+
+4.1 Experiments with time-average estimator 
+
+Moving average process. For 𝑡 = 1, … , 𝑛 , we observe 
+
+𝑋 𝑡 = 𝜇 + 𝜓𝜀 𝑡−1 + 𝜀 𝑡 ,
+
+where the noise inputs 𝜀 𝑡 are sampled iid from the intractable g-and-k distribution (Rayner and MacGillivray, 2002). We set the location component to zero, the kurtosis component 23 to 0.1 , and the 𝑐 component to 0.8 . The remaining components 𝜎 and 𝑔 control the scale and skewness, respectively. We aim to estimate 
+
+𝜓 0 = 0.5, 𝜇 0 = −3, 𝜎 0 = 0.2, 𝑔 0 = 0.1. 0.0 0.2 0.4 0.6 0.8 1.0                     
+
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> 8
+> Density
+> 3.20 3.15 3.10 3.05 3.00 2.95 2.90 2.85
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> 35
+> 0.12 0.14 0.16 0.18 0.20 0.22 0.24 0.26
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> 0.0 0.1 0.2 0.3 0.4 0.5
+> g
+> 0
+> 2
+> 4
+> 6
+> 8n = 100
+> n = 1000
+> True value
+
+Figure 2: Moving average process. Density of estimates using 9 random features. 
+
+Autoregressive process. For 𝑡 = 1, … , 𝑛 , we observe 
+
+𝑋 𝑡 = 𝑋 𝑡−1 + 𝜓(𝜇 − 𝑋 𝑡−1 ) + 𝜀 𝑡 ,
+
+where the noise inputs 𝜀 𝑡 are sampled iid from the intractable g-and-k distribution (Rayner and MacGillivray, 2002) and the initial value 𝑋 0 = 3 is known, so the model may be viewed as a discretized version of a Lévy-driven Ornstein–Uhlenbeck process. We set the location component to zero, the kurtosis component to 0.2 , and 𝑐 component to 0.8 . The remaining components 𝜎 and 𝑔 control the scale and skewness. We aim to estimate 
+
+𝜓 0 = 0.3, 𝜇 0 = 2, 𝜎 0 = 0.3, 𝑔 0 = 0.2. 
+
+Logistic map model. May (1976) popularized the logistic map as a population model capable of producing chaotic dynamics. For 𝑡 = 1, … , 𝑛 , define the latent state by 
+
+𝑍 𝑡 = 𝜌𝑍 𝑡−1 (1 − 𝑍 𝑡−1 ), 
+
+where the unknown initial value 𝑍 0 is sampled from a 𝑈 [0, 1] distribution. We observe 
+
+𝑋 𝑡 = 𝑍 𝑡 + 𝜎𝜀 𝑡 ,
+
+24 0.00 0.25 0.50 0.75 1.00 1.25 1.50                  
+
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> 12
+> 14
+> Density
+> 1.00 1.25 1.50 1.75 2.00 2.25 2.50 2.75
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> 0.1 0.2 0.3 0.4 0.5
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> 35
+> 0.0 0.1 0.2 0.3 0.4 0.5
+> g
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5n = 100
+> n = 1000
+> True value
+
+Figure 3: Autoregressive process. Density of estimates using 9 random features. where each 𝜀 𝑡 
+
+iid 
+
+∼ 𝑁 (0, 1) . Our goal is to estimate 
+
+𝜌 0 = 3.9, 𝜎 0 = 0.1. 
+
+The logistic map is in a chaotic regime when 𝜌 = 3.9 ; see Devaney (1992) for more details. 3.2 3.4 3.6 3.8 4.0        
+
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> Density
+> 0.00 0.05 0.10 0.15 0.20 0.25 0.30
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30 n = 100
+> n = 1000
+> True value
+
+Figure 4: Logistic map model. Density of estimates using 5 random features. 
+
+State-space model. For times 𝑡 = 1, … , 𝑛 , define the latent state by 
+
+𝑍 𝑡 = 𝑍 𝑡−1 + 𝜓(𝜇 − 𝑍 𝑡−1 ) + 𝜎𝜀 𝑡 ,
+
+where each 𝜀 𝑡 
+
+iid 
+
+∼ 𝑁 (0, 1) . For dimensions 𝑗 = 1, … , 𝑑 ≡ 25 , we observe 
+
+𝑋 (𝑗) 𝑡 = 𝑍 𝑡 + 𝜆𝜉 (𝑗) 𝑡 ,
+
+where each 𝜉 (𝑗) 𝑡 
+
+iid 
+
+∼ 𝑁 (0, 1) . We aim to estimate 
+
+𝜓 0 = 0.25, 𝜎 0 = 0.08, 𝜇 0 = 2.5, 𝜆 0 = 0.05. 
+
+25 0.0 0.1 0.2 0.3 0.4 0.5 0.6                
+
+> 0
+> 2
+> 4
+> 6
+> 8
+> Density
+> 0.000 0.025 0.050 0.075 0.100 0.125 0.150
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> 2.40 2.45 2.50 2.55 2.60
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> 35
+> 0.00 0.02 0.04 0.06 0.08 0.10
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> n = 100
+> n = 1000
+> True value
+
+Figure 5: State-space model. Density of estimates using 9 random features. 
+
+4.2 Experiments with rolling-window estimator 
+
+SIR model. Kermack and McKendrick (1927) introduced the susceptible-infected-recovered (SIR) model to describe the dynamics of infectious disease transmission. For time horizon 𝑇 = 50 , let (𝑆(𝑣), 𝐼(𝑣), 𝑅(𝑣)) 𝑣∈[0,𝑇 ] be defined by the system of ODEs 
+
+𝑑𝑆 𝑑𝑣 (𝑣) = − 𝛽 𝑁 𝑆(𝑣) 𝐼(𝑣), 𝑑𝐼 𝑑𝑣 (𝑣) = 𝛽 𝑁 𝑆(𝑣) 𝐼(𝑣) − 𝛾𝐼(𝑣), 𝑑𝑅 𝑑𝑣 (𝑣) = 𝛾𝐼(𝑣), 
+
+where 𝑆(𝑣)/𝑁 , 𝐼(𝑣)/𝑁 , and 𝑅(𝑣)/𝑁 denote the fractions of the population that are sus-ceptible, infected, and recovered at time 𝑣 ∈ [0, 𝑇 ] , respectively, 𝛽 > 0 is the transmission rate, and 𝛾 > 0 is the recovery rate. Let the known initial values be 𝑆(0) = 980,000 ,
+
+𝐼(0) = 20,000 , 𝑅(0) = 0 , where the population size is 𝑁 = 𝑆(0) + 𝐼(0) + 𝑅(0) = 1,000,000 .For 𝑡 = 1, … , 𝑛 , we randomly test TE 𝑡 = ⌊𝑁 /100⌋ people using a test with sensitivity SE 𝑡 = 0.95 and specificity SP 𝑡 = 0.99 . We observe the proportion of positive tests 
+
+𝑋 𝑡 = 𝑍 𝑡 /TE 𝑡 , 𝑍 𝑡 ∼ Binomial (TE 𝑡 , 𝜋 𝑡 ) , 
+
+where 𝜋 𝑡 = SE 𝑡 𝐼(𝑇 𝑡/𝑛)/𝑁 + (1 − SP 𝑡 ) (1 − 𝐼(𝑇 𝑡/𝑛)/𝑁 ) . This model allows TE 𝑡 , SE 𝑡 , and SP 𝑡 to change over time 𝑡 , but we keep them constant for simplicity. We aim to estimate 
+
+𝛽 0 = 0.5, 𝛾 0 = 0.2. 
+
+26 0.5 0.6 0.7 0.8 0.9         
+
+> 0
+> 50
+> 100
+> 150
+> 200
+> 250
+> 300
+> Density
+> 0.14 0.15 0.16 0.17 0.18 0.19 0.20 0.21
+> 0
+> 100
+> 200
+> 300
+> 400
+> 500
+> 600 n = 100
+> n = 1000
+> True value
+
+Figure 6: SIR model. Density of estimates using 5 random features. 
+
+Structural time series model. We consider a two-dimensional structural time series model with cycles, trends, and an abrupt change-point. For 𝑢 ∈ [0, 1] , define 
+
+𝑍 (1) (𝑢) = 𝜇 (1) 𝑢 + 𝛼 1𝑢≥𝜏 + cos (2𝜋𝛽 (1) 𝑢), 𝑍 (2) (𝑢) = 𝜇 (2) 𝑢 − 𝛼 1𝑢≥𝜏 + sin (2𝜋𝛽 (2) 𝑢). 
+
+For 𝑡 = 1, … , 𝑛 , we observe 
+
+𝑋 (1) 𝑡 = 𝑍 (1) (𝑡/𝑛) + 𝜎 (1) 𝜀 (1) 𝑡 , 𝑋 (2) 𝑡 = 𝑍 (2) (𝑡/𝑛) + 𝜎 (2) 𝜀 (2) 𝑡 ,
+
+where each 𝜀 (1) 𝑡 , 𝜀 (2) 𝑡 
+
+> iid
+
+∼ 𝑁 (0, 1) and each 𝜎 (1) , 𝜎 (2) > 0 . We aim to estimate 
+
+𝛼 0 = 1.8, 𝜏 0 = 0.28, 𝜇 (1) 0 = −1.5, 𝜇 (2) 0 = 0.4, 𝛽 (1) 0 = 2.8, 𝛽 (2) 0 = 2.8, 𝜎 (1) 0 = 0.9, 𝜎 (2) 0 = 0.9. 
+
+# 5 Conclusion 
+
+We present an alternative to the existing paradigms for simulation-based estimation. Typically, simulation-based methods rely on user-chosen summary statistics or on neural network-based learned representations. Both approaches have large costs. In contrast, we reduce the problem of estimating a 𝑝 -dimensional parameter to the problem of matching 
+
+2𝑝 + 1 random features of the observed and simulated data. The principle of matching random features is applicable beyond dynamic models for time series data. This suggests a broader research program on random feature methods for 27 1.0 1.5 2.0 2.5 3.0                                      
+
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 1.25
+> 1.50
+> 1.75
+> Density
+> 0.0 0.1 0.2 0.3 0.4 0.5
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> 12
+> 43210
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> 1.4 n = 100
+> n = 1000
+> True value
+> 1.0 1.5 2.0 2.5 3.0 3.5 4.0
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> Density
+> 1.0 1.5 2.0 2.5 3.0 3.5 4.0
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> 3.0
+> 3.5
+> 4.0
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> 3.0
+> 3.5
+
+Figure 7: Structural time series model. Density of estimates using 17 random features. various data types, such as spatiotemporal and network data. The key technical ingredients are: concentration inequalities under dependence, control of the variation of the data-generating mechanism, and a suitable class of random features for the dependence structure. Random features may also be used for uncertainty quantification. For example, measures of uncertainty may be obtained using a model-based bootstrap procedure. Additionally, in a separate manuscript, we establish the asymptotic normality of the random feature estimators under a slightly stronger set of assumptions. Simulation results concerning uncertainty quantification will be reported there. 
+
+# 6 Disclosure statement 
+
+The authors declare that no conflicts of interest exist. 
+
+# 7 Data availability statement 
+
+The synthetic data generated for the experiments will be made publicly available. 28 References 
+
+Beaumont, M. A. (2019), ‘Approximate bayesian computation’, Annual Review of Statistics and its Application 6(1), 379–403. Cranmer, K., Brehmer, J. and Louppe, G. (2020), ‘The frontier of simulation-based infer-ence’, Proceedings of the National Academy of Sciences 117 (48), 30055–30062. Dahlhaus, R. (1997), ‘Fitting time series models to nonstationary processes’, The Annals of Statistics 25 (1), 1–37. Devaney, R. L. (1992), A First Course in Chaotic Dynamical Systems: Theory and Exper-iment , Addison-Wesley, Reading, Massachusetts. Gourieroux, C. and Monfort, A. (1996), Simulation-based Econometric Methods , Oxford University Press, Oxford, England. Gourieroux, C., Monfort, A. and Renault, E. (1993), ‘Indirect inference’, Journal of Applied Econometrics 8, S85–S118. Hunt, B. R., Sauer, T. and Yorke, J. A. (1992), ‘Prevalence: a translation-invariant almost every on infinite-dimensional spaces’, Bulletin of the American Mathematical Society 
+
+27 (2), 217–238. Kallenberg, O. (2002), Foundations of Modern Probability , second edn, Springer-Verlag, New York. Kermack, W. O. and McKendrick, A. G. (1927), ‘A contribution to the mathematical theory of epidemics’, Proceedings of the Royal Society of London Series A 115 (772), 700–721. May, R. M. (1976), ‘Simple mathematical models with very complicated dynamics’, Nature 
+
+261 (5560), 459–467. McFadden, D. (1989), ‘A method of simulated moments for estimation of discrete response 29 models without numerical integration’, Econometrica: Journal of the Econometric Soci-ety 57 (5), 995–1026. Price, L. F., Drovandi, C. C., Lee, A. and Nott, D. J. (2018), ‘Bayesian synthetic likelihood’, 
+
+Journal of Computational and Graphical Statistics 27 (1), 1–11. Rahimi, A. and Recht, B. (2007), ‘Random features for large-scale kernel machines’, Ad-vances in Neural Information Processing Systems 20 .Rayner, G. D. and MacGillivray, H. L. (2002), ‘Numerical maximum likelihood estima-tion for the g-and-k and generalized g-and-h distributions’, Statistics and Computing 
+
+12 (1), 57–75. Sauer, T., Yorke, J. A. and Casdagli, M. (1991), ‘Embedology’, Journal of Statistical Physics 65 (3), 579–616. Wood, S. N. (2010), ‘Statistical inference for noisy nonlinear ecological dynamic systems’, 
+
+Nature 466 (7310), 1102–1104. Wu, W. B. (2005), ‘Nonlinear system theory: another look at dependence’, Proceedings of the National Academy of Sciences 102 (40), 14150–14154. Yorke, J. and Ott, W. (2005), ‘Prevalence’, Bulletin of the American Mathematical Society 
+
+42 (3), 263–290. Zammit-Mangion, A., Sainsbury-Dale, M. and Huser, R. (2025), ‘Neural methods for amor-tized inference’, Annual Review of Statistics and Its Application 12 (1), 311–335. 30 SUPPLEMENTARY MATERIAL 
+
+Supplement to “Estimating dynamic models by matching random features”: 
+
+Proofs of the theoretical results, additional experiments, and discussions. (PDF) 
+
+# Table of contents 
+
+1 Introduction 2
+
+1.1 Related work . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 6
+
+2 Methods 6
+
+2.1 Notation and setting . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 72.2 Random Fourier features . . . . . . . . . . . . . . . . . . . . . . . . . . . . 72.3 Estimators . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+
+3 Theory 10 
+
+3.1 Noise inputs . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10 3.2 Results for time-average estimator . . . . . . . . . . . . . . . . . . . . . . . 11 3.3 Results for rolling-window estimator . . . . . . . . . . . . . . . . . . . . . 16 
+
+4 Experiments 23 
+
+4.1 Experiments with time-average estimator . . . . . . . . . . . . . . . . . . . 23 4.2 Experiments with rolling-window estimator . . . . . . . . . . . . . . . . . . 26 
+
+5 Conclusion 27 6 Disclosure statement 28 7 Data availability statement 28 A Proofs 32 
+
+A.1 Proof of Theorem 1 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 32 A.2 Proof of Theorem 2 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 32 A.3 Proof of Theorem 3 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 35 A.4 Proof of Theorem 4 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 41 A.5 Proof of Theorem 5 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 42 A.6 Proof of Theorem 6 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 44 A.7 Auxiliary results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 64 
+
+B Additional experiments 68 
+
+B.1 More experiments with time-average estimator . . . . . . . . . . . . . . . . 68 B.2 More experiments with rolling-window estimator . . . . . . . . . . . . . . . 69 
+
+C Additional discussions 69 
+
+31 A Proofs 
+
+A.1 Proof of Theorem 1 
+
+See the proof of Theorem 2.3 in Sauer et al. (1991). 
+
+□
+
+A.2 Proof of Theorem 2 
+
+Step 1: Limiting expectations. We claim that under Assumptions 1-3, ∀𝜃 ∈ Θ , the limiting expectation values of the 𝑘 random features of the time series are given by 
+
+Φ(𝜃) = ∫ 
+
+> ℝ(𝑚+1)×𝑑
+
+𝜑(𝑥) 𝑑𝑃 𝜃 (𝑥). 
+
+That is, for all 𝜃 ∈ Θ and all 𝑟 ∈ {0, 1, … , 𝑠} , we have, as 𝑛 − → ∞ ,
+
+∥ 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝔼 𝜃 [𝜑 ([𝐺 (𝑛,𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] − Φ(𝜃)∥ = 𝑜(1). (18) Note that the time series have this causal representation by Assumption 1. Observe that 
+
+∥ 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝔼 𝜃 [𝜑 ([𝐺 (𝑛,𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] − Φ(𝜃)∥ 
+
+> (1)
+
+≤∥∥∥∥∥1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝔼 𝜃 [𝜑 ([𝐺 (𝑛,𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] − 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝔼 𝜃 [𝜑 ([𝐺 (𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] ∥∥∥∥∥+ ∥ 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝔼 𝜃 [𝜑 ([𝐺 (𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] − Φ(𝜃)∥ 
+
+> (2)
+
+= 𝑜(1), 
+
+where (1) is from adding and subtracting the corresponding term with the limiting map-ping and by applying the triangle inequality, and (2) holds because both terms are 𝑜(1) .Specifically, the second term is 𝑜(1) by upper bounding the ℓ2 norm ‖⋅‖ by the ℓ1 norm (i.e. over the 𝑘 random features) using the monotonicity of norms, linearity, and applying the weak convergence from Assumption 3. The first term is 𝑜(1) because the approximations can be asymptotically replaced by the limiting mappings, i.e. because for all 𝜃 ∈ Θ and all 32 𝑟 ∈ {0, 1, … , 𝑠} , we have 
+
+∥∥∥∥∥1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝔼 𝜃 [𝜑 ([𝐺 (𝑛,𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] − 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝔼 𝜃 [𝜑 ([𝐺 (𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] ∥∥∥∥∥
+
+> (1)
+
+≤ 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+∥∥∥∥𝜑 ([𝐺 (𝑛,𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)− 𝜑 ([𝐺 (𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)∥∥∥∥ℒ1(𝜃) (2) 
+
+≤ 𝐿 𝜑 
+
+1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+∥Vec (𝐺 (𝑛,𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)) − Vec (𝐺 (𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)) ∥
+
+> ℒ1(𝜃) (3)
+
+≤ 𝐿 𝜑 
+
+1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1 𝑚
+
+∑
+
+> 𝑗=0
+
+∥𝐺 (𝑛,𝑟) 𝑡−𝑗 (𝜺 (𝑟) 𝑡−𝑗 , 𝜃) − 𝐺 (𝑟) 𝑡−𝑗 (𝜺 (𝑟) 𝑡−𝑗 , 𝜃)∥ ℒ1(𝜃) (4) 
+
+≤ 𝐿 𝜑 
+
+11 − 𝑚/𝑛 (𝑚 + 1) ( 1𝑛 
+
+> 𝑛
+
+∑
+
+> 𝑡=1
+
+∥𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 0 , 𝜃) − 𝐺 (𝑟) 𝑡 (𝜺 (𝑟) 0 , 𝜃)∥ ℒ1(𝜃) )
+
+> (5)
+
+= 𝑜(1), 
+
+where (1) holds by linearity of summation, the triangle inequality, linearity of expectation, and Jensen’s inequality, (2) holds because the random Fourier features 𝜑 are 𝐿 𝜑 -Lipschitz with Lipschitz constant given by (26), (3) holds by the triangle inequality and Minkowski inequality, (4) follows by upper bounding the original quantity by 𝑚 + 1 times full sum (i.e. by including more non-negative terms in the summation), factoring out 1/𝑛 , and noting that each (𝐺 (𝑖,𝑟) 𝑡 (𝜺 𝑗 , 𝜃)) 𝑗∈ℤ , (𝐺 (𝑟) 𝑡 (𝜺 𝑗 , 𝜃)) 𝑗∈ℤ is a stationary ergodic process for each fixed 
+
+𝑡 ∈ ℕ , 𝑖 ∈ ℕ , and 𝑟 = 0, 1, … , 𝑠 , which allows us to shift the noise inputs, and (5) is from applying the convergence condition from Assumption 2. 
+
+Step 2: Smoothness. Next, we show that 𝒞 from Theorem 2 consists of 𝐶 1-smooth functions Φ. To begin, we establish that the map 𝜃 ↦ Φ(𝜃) is differentiable on the open set 𝑂 from Assumption 4. For any 𝜑 ∈ ℱ 𝑘 , define the linear functional 
+
+𝑇 𝜑 (𝜇) = ∫ 
+
+> ℝ(𝑚+1)×𝑑
+
+𝜑(𝑥) 𝑑𝜇(𝑥), 
+
+which maps probability measures on ℝ(𝑚+1)×𝑑 to ℝ𝑘 . For 𝜃 ∈ 𝑂 , denote the derivative 
+
+𝐷Φ(𝜃)[ℎ] = 𝐷 (∫ 
+
+> ℝ(𝑚+1)×𝑑
+
+𝜑(𝑥) 𝑑 p(𝜃)(𝑥)) [ℎ] = ∫ 
+
+> ℝ(𝑚+1)×𝑑
+
+𝜑 𝑑(𝐷 p(𝜃)[ℎ]), 
+
+33 where ℎ ∈ ℝ 𝑝 . For all 𝜃 ∈ 𝑂 , we have, as ‖ℎ‖ − → 0 ,
+
+‖Φ(𝜃 + ℎ) − Φ(𝜃) − 𝐷Φ(𝜃)[ℎ]‖ ‖ℎ‖ 
+
+> (1)
+
+= ∥∫ ℝ(𝑚+1)×𝑑 𝜑(𝑥) 𝑑 p(𝜃 + ℎ)(𝑥) − ∫ ℝ(𝑚+1)×𝑑 𝜑(𝑥) 𝑑 p(𝜃)(𝑥) − ∫ ℝ(𝑚+1)×𝑑 𝜑 𝑑(𝐷 p(𝜃)[ℎ])∥ ‖ℎ‖ 
+
+> (2)
+
+= ∥𝑇 𝜑 (p(𝜃 + ℎ)) − 𝑇 𝜑 (p(𝜃)) − 𝑇 𝜑 (𝐷 p(𝜃)[ℎ])∥ ‖ℎ‖ 
+
+> (3)
+
+= ∥𝑇 𝜑 (p(𝜃 + ℎ) − p(𝜃) − 𝐷 p(𝜃)[ℎ])∥ ‖ℎ‖ 
+
+> (4)
+
+≤ ‖𝜑‖ ∞
+
+‖p(𝜃 + ℎ) − p(𝜃) − 𝐷 p(𝜃)[ℎ]‖ TV 
+
+‖ℎ‖ 
+
+> (5)
+
+≤ ‖p(𝜃 + ℎ) − p(𝜃) − 𝐷 p(𝜃)[ℎ]‖ TV 
+
+‖ℎ‖ 
+
+> (6)
+
+−→ 0, 
+
+by (1) the definition of Φ, (2) the definition of 𝑇 𝜑 , (3) the linearity of 𝑇 𝜑 , (4) upper bounding by the sup norm multiplied by the total variation norm, (5) the boundedness of the random Fourier features so that ‖𝜑‖ ∞ ≤ 1 , and (6) because p is Fréchet 𝐶 1 on 𝑂 with respect to the total variation norm by Assumption 4. Next, we establish the continuity of 𝜃 ↦ 𝐷Φ(𝜃) on 𝑂 . By Assumption 4, we know that the map 𝜃 ↦ 𝐷 p(𝜃) is continuous on 𝑂 . That is, for all 𝜃 ∈ 𝑂 and all 𝜖 > 0 , there exists a 
+
+𝛿 > 0 such that for all 𝜃 ′ ∈ 𝑂 , if ‖𝜃 − 𝜃 ′‖ < 𝛿 , then 
+
+‖𝐷 p(𝜃) − 𝐷 p(𝜃 ′)‖ op = sup 
+
+> ‖ℎ‖≤1
+
+‖𝐷 p(𝜃)[ℎ] − 𝐷 p(𝜃 ′)[ℎ]‖ TV < 𝜖. 
+
+Observe that, for all 𝜃 ∈ 𝑂 and all 𝜖 > 0 , there exists a 𝛿 > 0 such that for all 𝜃 ′ ∈ 𝑂 , if 
+
+‖𝜃 − 𝜃 ′‖ < 𝛿 , then for ‖𝐷Φ(𝜃) − 𝐷Φ(𝜃 ′)‖ op = sup 
+
+> ‖ℎ‖≤1
+
+‖𝐷Φ(𝜃)[ℎ] − 𝐷Φ(𝜃 ′)[ℎ]‖ we have 
+
+‖𝐷Φ(𝜃) − 𝐷Φ(𝜃 ′)‖ op 
+
+> (1)
+
+= ∥∫ 
+
+> ℝ(𝑚+1)×𝑑
+
+𝜑 𝑑(𝐷 p(𝜃)) − ∫ 
+
+> ℝ(𝑚+1)×𝑑
+
+𝜑 𝑑(𝐷 p(𝜃 ′))∥ 
+
+> op
+> (2)
+
+= ∥𝑇 𝜑 (𝐷 p(𝜃)) − 𝑇 𝜑 (𝐷 p(𝜃 ′))∥ op 
+
+> (3)
+
+= ∥𝑇 𝜑 (𝐷 p(𝜃) − 𝐷 p(𝜃 ′))∥ op 
+
+> (4)
+
+≤ ‖𝜑‖ ∞ ‖𝐷 p(𝜃) − 𝐷 p(𝜃 ′)‖ op 
+
+> (5)
+
+≤ ‖𝐷 p(𝜃) − 𝐷 p(𝜃 ′)‖ op 
+
+> (6)
+
+≤ 𝜖, 
+
+34 by (1) the definition of 𝐷Φ , (2) the definition of 𝑇 𝜑 , (3) the linearity of 𝑇 𝜑 , (4) upper bounding by the sup norm multiplied by the operator norm, (5) the boundedness of the random Fourier features so that ‖𝜑‖ ∞ ≤ 1 , and (6) because p is Fréchet 𝐶 1 on 𝑂 with respect to the total variation norm by Assumption 4. This shows that the map 𝜃 ↦ Φ(𝜃) is 
+
+𝐶 1 on 𝑂 . The Whitney (1934) extension theorem ensures the existence of a 𝐶 1 extension to the rest of ℝ𝑝 . Therefore, 𝒞 consists of 𝐶 1-smooth functions, i.e. 𝒞 ⊂ 𝐶 1(ℝ 𝑝 , ℝ 𝑘 ).
+
+Step 3: Embeddings. Lastly, by Assumption 4, Θ is a compact subset of ℝ𝑝 with non-empty interior, so the box-counting dimension is 𝑝 . Thus, once 𝑘 ≥ 2𝑝 + 1 , the fractal Whitney embedding prevalence theorem (Theorem 1) implies that embeddings are prevalent in 𝐶 1(Θ, ℝ 𝑘 ); specifically, “almost every” (in the sense of prevalence) smooth map from ℝ𝑝 
+
+to ℝ𝑘 is one-to-one on Θ and is an immersion on each compact subset of a smooth manifold contained in Θ.
+
+□
+
+A.3 Proof of Theorem 3 
+
+Setup. We will use Corollary 3.2 of Pakes and Pollard (1989) to conclude that ̂ 𝜃 TA is consistent. The sample discrepancy function, from (6), is given by ̂𝑄 TA  
+
+> 𝑛
+
+(𝜃) = 𝐹 obs −̄ 𝐹 sim (𝜃), 
+
+and the population discrepancy function is given by 
+
+𝑄 TA (𝜃) = Φ(𝜃 0) − Φ(𝜃). 
+
+To use Corollary 3.2 of Pakes and Pollard (1989), it suffices to show that, under the as-sumptions of Theorem 3, the following conditions hold: 1. ∥̂𝑄 TA  
+
+> 𝑛
+
+(̂𝜃 TA )∥ ≤ 𝑜 𝑝 (1) + inf 𝜃∈Θ ∥̂𝑄 TA  
+
+> 𝑛
+
+(𝜃)∥ .2. inf ‖𝜃−𝜃 0‖>𝛿 ∥𝑄 TA (𝜃)∥ > 0 for each 𝛿 > 0 .3. sup 𝜃∈Θ ∥̂𝑄 TA    
+
+> 𝑛 (𝜃)−𝑄 TA (𝜃)∥ 1+∥̂𝑄 TA
+> 𝑛 (𝜃)∥+‖𝑄 TA (𝜃)‖
+
+= 𝑜 𝑝 (1) .
+
+Condition 1. 
+
+We defined the time-average estimator from (5) as ̂𝜃 TA = argmin 
+
+> 𝜃∈Θ
+
+∥̂𝑄 TA  
+
+> 𝑛
+
+(𝜃)∥ , 
+
+with a slight abuse of notation (since argmin is a set) because we have implicitly assumed that the sample objective function attains the infimum and that it is unique, i.e. 
+
+∥̂𝑄 TA  
+
+> 𝑛
+
+(̂𝜃 TA )∥ = inf  
+
+> 𝜃∈Θ
+
+∥̂𝑄 TA  
+
+> 𝑛
+
+(𝜃)∥ . 
+
+Therefore, the desired result is immediate 
+
+∥̂𝑄 TA  
+
+> 𝑛
+
+(̂𝜃 TA )∥ = inf  
+
+> 𝜃∈Θ
+
+∥̂𝑄 TA  
+
+> 𝑛
+
+(𝜃)∥ ≤ 𝑜 𝑝 (1) + inf  
+
+> 𝜃∈Θ
+
+∥̂𝑄 TA  
+
+> 𝑛
+
+(𝜃)∥ . 
+
+35 Condition 2. 
+
+We establish that the infimum is strictly positive through contradiction. Assume for con-tradiction that there exists a 𝛿 > 0 such that inf  
+
+> ‖𝜃−𝜃 0‖>𝛿
+
+∥𝑄 TA (𝜃)∥ = 0. 
+
+Then by applying the definition of infimum, there exists a sequence (𝜃 𝑛 )𝑛∈ℕ , where 
+
+‖𝜃 𝑛 − 𝜃 0‖ > 𝛿 for all 𝑛 ∈ ℕ , such that lim 𝑛 −→∞ ∥𝑄 TA (𝜃 𝑛 )∥ = 0 by continuity with respect to 𝜃 . By Assumption 4, Θ is a compact subset of ℝ𝑝 , hence Θ is also sequentially compact, i.e. every sequence of parameters in Θ has a convergent subsequence converging to a parameter in Θ. Thus, there exists a subsequence (𝜃 𝑛 𝑗 )𝑗∈ℕ , where ∥𝜃 𝑛 𝑗 − 𝜃 0∥ > 𝛿 for all 
+
+𝑗 ∈ ℕ , and a parameter 𝜃 ∗ ∈ Θ satisfying ∥𝑄 TA (𝜃 ∗)∥ = 0 , such that 𝜃 𝑛 𝑗 −→ 𝜃 ∗ as 𝑗 − → ∞ .By Assumption 5, the function Φ is one-to-one, so the function 𝑄 TA only takes on the value zero at the true parameter 𝜃 0, which means that 𝜃 ∗ = 𝜃 0.However, by the continuity of 𝜃 ↦ ‖𝜃 − 𝜃 0‖, we have ∥𝜃 𝑛 𝑗 − 𝜃 0∥ − → ‖𝜃 ∗ − 𝜃 0‖ as 𝑗 − → ∞ .Therefore, ‖𝜃 ∗ − 𝜃 0‖ ≥ 𝛿 because ∥𝜃 𝑛 𝑗 − 𝜃 0∥ > 𝛿 for all 𝑗 ∈ ℕ , so we have 
+
+0 = ‖𝜃 0 − 𝜃 0‖ = ‖𝜃 ∗ − 𝜃 0‖ ≥ 𝛿 > 0, 
+
+which is a contradiction. 
+
+Condition 3. 
+
+It suffices to show that sup 𝜃∈Θ ∥̂𝑄 TA  
+
+> 𝑛
+
+(𝜃) − 𝑄 TA (𝜃)∥ = 𝑜 𝑝 (1) because the denominator is always greater than or equal to one. For 𝜃 ∈ Θ and 𝑟 ∈ {0, 1, … , 𝑠} , denote 
+
+𝐹 (𝑟) (𝜃) = 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝜑 ([𝐺 (𝑛,𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+) . (19) We have sup 
+
+> 𝜃∈Θ
+
+∥̂𝑄 TA  
+
+> 𝑛
+
+(𝜃) − 𝑄 TA (𝜃)∥ 
+
+> (1)
+
+≤ ∥𝐹 obs − Φ(𝜃 0)∥ + sup 
+
+> 𝜃∈Θ
+
+∥̄𝐹 sim (𝜃) − Φ(𝜃)∥ 
+
+> (2)
+
+≤ ∥𝐹 obs − Φ(𝜃 0)∥ + 1𝑠 
+
+> 𝑠
+
+∑
+
+> 𝑟=1
+
+sup 
+
+> 𝜃∈Θ
+
+∥𝐹 (𝑟) (𝜃) − Φ(𝜃)∥ 
+
+> (3)
+
+≤ ∥𝐹 (0) (𝜃 0) − Φ(𝜃 0)∥ + 1𝑠 
+
+> 𝑠
+
+∑
+
+> 𝑟=1
+
+sup 
+
+> 𝜃∈Θ
+
+∥𝐹 (𝑟) (𝜃) − Φ(𝜃)∥ 
+
+> (4)
+
+≤ sup 
+
+> 𝜃∈Θ
+
+∥𝐹 (0) (𝜃) − Φ(𝜃)∥ + 1𝑠 
+
+> 𝑠
+
+∑
+
+> 𝑟=1
+
+sup 
+
+> 𝜃∈Θ
+
+∥𝐹 (𝑟) (𝜃) − Φ(𝜃)∥ , 
+
+by (1) the triangle inequality and subadditivity of the supremum, (2) the triangle inequality and subadditivity of the supremum, (3) noting that 𝐹 obs = 𝐹 (0) (𝜃 0) as in (13) and (19), and (4) upper bounding by the supremum over 𝜃 ∈ Θ .36 Observe that, by the triangle inequality, for each 𝑟 ∈ {0, 1, … , 𝑠} , we have sup 
+
+> 𝜃∈Θ
+
+∥𝐹 (𝑟) (𝜃) − Φ(𝜃)∥ ≤ sup 
+
+> 𝜃∈Θ
+
+∥𝐹 (𝑟) (𝜃) − 𝔼 𝜃 [𝐹 (𝑟) (𝜃)]∥ + sup 
+
+> 𝜃∈Θ
+
+∥𝔼 𝜃 [𝐹 (𝑟) (𝜃)] − Φ(𝜃)∥ . (20) The next steps are to show that the first term is 𝑜 𝑝 (1) and the second term is 𝑜(1) .
+
+Step 1. First, we consider the term sup 𝜃∈Θ ∥𝐹 (𝑟) (𝜃) − 𝔼 𝜃 [𝐹 (𝑟) (𝜃)]∥ . Since Θ ⊂ ℝ 𝑝 is compact by Assumption 4, it is totally bounded, so there exists an 𝜖 -net, i.e. for every 
+
+𝜖 > 0 , there exist finitely many points 𝜃 1, … , 𝜃 𝑁(𝜖) ∈ Θ for some 𝑁 (𝜖) ∈ ℕ , such that 
+
+Θ ⊂ ⋃
+
+> 𝑖∈[𝑁(𝜖)]
+
+𝐵 𝜖 (𝜃 𝑖 ), 
+
+where 𝐵 𝜖 (𝜃 𝑖 ) is a ball of radius 𝜖 . Thus, ∀𝜃 ∈ Θ , there exists an 𝑖 ∈ [𝑁 (𝜖)] such that 
+
+‖𝜃 − 𝜃 𝑖 ‖ ≤ 𝜖 . By adding and subtracting the same term, the triangle inequality, the defi-nition of the 𝜖 -net for some 𝜖 > 0 and 𝑁 (𝜖) ∈ ℕ , and the definition of the supremum, we have sup 
+
+> 𝜃∈Θ
+
+∥𝐹 (𝑟) (𝜃) − 𝔼 𝜃 [𝐹 (𝑟) (𝜃)]∥ ≤ max 
+
+> 𝑖∈[𝑁(𝜖)]
+
+∥𝐹 (𝑟) (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝐹 (𝑟) (𝜃 𝑖 )]∥ + sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥(𝐹 (𝑟) (𝜃) − 𝔼 𝜃 [𝐹 (𝑟) (𝜃)]) − (𝐹 (𝑟) (𝜃 ′) − 𝔼 𝜃 ′ [𝐹 (𝑟) (𝜃 ′)])∥ . 
+
+37 Taking the expectation 𝔼(⋅) with respect to the law of the noise inputs, we have 
+
+𝔼 ( sup 
+
+> 𝜃∈Θ
+
+∥𝐹 (𝑟) (𝜃) − 𝔼 𝜃 [𝐹 (𝑟) (𝜃)]∥) 
+
+> (1)
+
+≤ 𝔼 ( max 
+
+> 𝑖∈[𝑁(𝜖)]
+
+∥𝐹 (𝑟) (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝐹 (𝑟) (𝜃 𝑖 )]∥) + 𝔼 ⎛⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥(𝐹 (𝑟) (𝜃) − 𝔼 𝜃 [𝐹 (𝑟) (𝜃)]) − (𝐹 (𝑟) (𝜃 ′) − 𝔼 𝜃 ′ [𝐹 (𝑟) (𝜃 ′)])∥ ⎞⎟⎟⎟⎠
+
+> (2)
+
+≤ ∑
+
+> 𝑖∈[𝑁(𝜖)]
+
+𝔼 𝜃 𝑖 (∥𝐹 (𝑟) (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝐹 (𝑟) (𝜃 𝑖 )]∥) + 𝔼 ⎛⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥(𝐹 (𝑟) (𝜃) − 𝔼 𝜃 [𝐹 (𝑟) (𝜃)]) − (𝐹 (𝑟) (𝜃 ′) − 𝔼 𝜃 ′ [𝐹 (𝑟) (𝜃 ′)])∥ ⎞⎟⎟⎟⎠
+
+> (3)
+
+≤ ∑
+
+> 𝑖∈[𝑁(𝜖)]
+
+𝔼 𝜃 𝑖 (∥𝐹 (𝑟) (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝐹 (𝑟) (𝜃 𝑖 )]∥) + 𝔼 ⎛⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥𝐹 (𝑟) (𝜃) − 𝐹 (𝑟) (𝜃 ′)∥ ⎞⎟⎟⎟⎠+ sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥𝔼 𝜃 [𝐹 (𝑟) (𝜃)] − 𝔼 𝜃 ′ [𝐹 (𝑟) (𝜃 ′)]∥ 
+
+> (4)
+
+≤ ∑
+
+> 𝑖∈[𝑁(𝜖)]
+
+𝔼 𝜃 𝑖 (∥𝐹 (𝑟) (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝐹 (𝑟) (𝜃 𝑖 )]∥) + 2 𝔼 ⎛⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥𝐹 (𝑟) (𝜃) − 𝐹 (𝑟) (𝜃 ′)∥ ⎞⎟⎟⎟⎠,
+
+by (1) the previous 𝜖 -net inequality, monotonicity of expectation, and linearity of expecta-tion, (2) upper bounding the maximum by the sum and linearity of expectation, (3) the triangle inequality and subadditivity of the supremum, and (4) linearity of expectation, Jensen’s inequality, and monotonicity of expectation. 38 Step 1.1. We begin with the first term. For all 𝑖 ∈ 𝑁 (𝜖) , we have 
+
+𝔼 𝜃 𝑖 (∥𝐹 (𝑟) (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝐹 (𝑟) (𝜃 𝑖 )]∥) 
+
+> (1)
+
+≤ 2 𝐶 1𝑛 − 𝑚 
+
+> ∞
+
+∑
+
+> 𝑗=1
+
+(
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+(𝜂 (𝑛,𝑟) 𝑡,𝑗,2,2 (𝜃 𝑖 )) 2)
+
+> 12
+> (2)
+
+≤ 2 𝐶 1𝑛 − 𝑚 
+
+> ∞
+
+∑
+
+> 𝑗=1
+
+(𝑛 − 𝑚) 12 max 
+
+> 𝑡∈{𝑚+1,…,𝑛}
+
+𝜂 (𝑛,𝑟) 𝑡,𝑗,2,2 (𝜃 𝑖 )
+
+> (3)
+
+≤ 2 𝐶 1√𝑛 − 𝑚 Ψ𝜑 ∞
+
+∑
+
+> 𝑗=1
+
+𝑗 −𝛽 𝜑 
+
+> (4)
+
+≤ 2 𝐶 1√𝑛 − 𝑚 Ψ𝜑 𝐾, 
+
+by (1) factoring out 1𝑛−𝑚 then applying the second inequality from Lemma 3 to the time series of random features and further upper bounding with infinitely many terms in the summation, (2) upper bounding the sum by 𝑛 − 𝑚 times the maximum and taking the square root of both terms, (3) by bounds on the physical dependence measures of the original time series by Assumption 7 and of the time series of random features by Lemma 2, and (4) because 𝛽 𝜑 > 2 so the series converges. Hence, for each fixed 𝜖 > 0 and 𝑁 (𝜖) ∈ ℕ ,for all 𝑖 ∈ 𝑁 (𝜖) , we have 
+
+𝔼 𝜃 𝑖 (∥𝐹 (𝑟) (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝐹 (𝑟) (𝜃 𝑖 )]∥) = 𝑂(𝑛 − 12 ). 
+
+Step 1.2. We now consider the second term. Observe that 
+
+𝔼 ⎛⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥𝐹 (𝑟) (𝜃) − 𝐹 (𝑟) (𝜃 ′)∥ ⎞⎟⎟⎟⎠
+
+> (1)
+
+≤ 𝐿 𝜑 
+
+1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1 𝑚
+
+∑
+
+> 𝑗=0
+
+𝔼 ⎛⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥𝐺 (𝑛,𝑟) 𝑡−𝑗 (𝜺 (𝑟) 𝑡−𝑗 , 𝜃) − 𝐺 (𝑛,𝑟) 𝑡−𝑗 (𝜺 (𝑟) 𝑡−𝑗 , 𝜃 ′)∥ ⎞⎟⎟⎟⎠
+
+> (2)
+
+≤ 𝐿 𝜑 (𝑚 + 1)𝜂 𝐺 ,
+
+because (1) the random Fourier features 𝜑 are 𝐿 𝜑 -Lipschitz with Lipschitz constant given by (26), the triangle inequality, subadditivity of the supremum, and linearity of expecta-tion, and (2) by upper bounding the average by the supremum over 𝑡 and applying the stochastic equicontinuity-type condition from Assumption 6, noting that each mapping 
+
+(𝐺 (𝑖,𝑟) 𝑡 (𝜺 𝑗 , 𝜃)) 𝑗∈ℤ is a stationary ergodic process for each fixed 𝑡 ∈ ℕ , 𝑖 ∈ ℕ , 𝑟 = 0, 1, … , 𝑠 ,which allows us to use this condition even with shifted noise inputs. By Assumption 6, 
+
+𝜂 𝐺 −→ 0 as 𝜖 − → 0 . However, taking 𝜖 − → 0 makes 𝑁 (𝜖) − → ∞ , so we must specify the rates. Previously, we showed that, for each fixed 𝜖 > 0 and 𝑁 (𝜖) ∈ ℕ , for all 𝑖 ∈ 𝑁 (𝜖) , we have 
+
+𝔼 𝜃 𝑖 (∥𝐹 (𝑟) (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝐹 (𝑟) (𝜃 𝑖 )]∥) = 𝑂(𝑛 − 12 ). 
+
+39 Therefore, for any sequence (𝜖 𝑛 )𝑛∈ℕ , 𝜖 𝑛 −→ 0 as 𝑛 − → ∞ , such that 𝑁 (𝜖 𝑛 ) = 𝑜(𝑛 12 ), we have 
+
+∑
+
+> 𝑖∈[𝑁(𝜖)]
+
+𝔼 𝜃 𝑖 (∥𝐹 (𝑟) (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝐹 (𝑟) (𝜃 𝑖 )]∥) ≤ 𝑁 (𝜖) max 
+
+> 𝑖∈[𝑁(𝜖)]
+
+𝔼 𝜃 𝑖 (∥𝐹 (𝑟) (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝐹 (𝑟) (𝜃 𝑖 )]∥) = 𝑜(1), 
+
+and 𝜂 𝐺 = 𝜂 𝐺 (𝜖 𝑛 ) = 𝑜(1) so that the upper bound from (2) is 𝐿 𝜑 (𝑚 + 1)𝜂 𝐺 = 𝑜(1) .Putting everything together, by Markov’s inequality, we have the desired result sup 
+
+> 𝜃∈Θ
+
+∥𝐹 (𝑟) (𝜃) − 𝔼 𝜃 [𝐹 (𝑟) (𝜃)]∥ = 𝑜 𝑝 (1). 
+
+Step 2. Second, we consider the term sup 𝜃∈Θ ∥𝔼 𝜃 [𝐹 (𝑟) (𝜃)] − Φ(𝜃)∥ . For each 
+
+𝑟 ∈ {0, 1, … , 𝑠} ,sup 
+
+> 𝜃∈Θ
+
+∥𝔼 𝜃 [𝐹 (𝑟) (𝜃)] − Φ(𝜃)∥ 
+
+> (1)
+
+= sup 
+
+> 𝜃∈Θ
+
+∥ 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝔼 𝜃 [𝜑 ([𝐺 (𝑛,𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] − Φ(𝜃)∥ 
+
+> (2)
+
+≤ sup 
+
+> 𝜃∈Θ
+
+∥∥∥∥∥1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝔼 𝜃 [𝜑 ([𝐺 (𝑛,𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] − 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝔼 𝜃 [𝜑 ([𝐺 (𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] ∥∥∥∥∥+ sup 
+
+> 𝜃∈Θ
+
+∥ 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝔼 𝜃 [𝜑 ([𝐺 (𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] − Φ(𝜃)∥ 
+
+> (3)
+
+= 𝑜(1), 
+
+by (1) the definition of 𝐹 (𝑟) (𝜃) from (19) and linearity of expectation, (2) adding and subtracting the same term, the triangle inequality, and subadditivity of the supremum, (3) because both terms are 𝑜(1) . Specifically, the second term is 𝑜(1) by upper bounding the 
+
+ℓ2 norm ‖⋅‖ by the ℓ1 norm (i.e. over the 𝑘 random features) using the monotonicity of norms, subadditivity of the supremum, linearity, and applying the weak convergence from Assumption 3. The first term is 𝑜(1) because the approximations can be asymptotically 40 replaced by the limiting mappings, because for all 𝑟 ∈ {0, 1, … , 𝑠} , we have sup 
+
+> 𝜃∈Θ
+
+∥∥∥∥∥1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝔼 𝜃 [𝜑 ([𝐺 (𝑛,𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] − 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+𝔼 𝜃 [𝜑 ([𝐺 (𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] ∥∥∥∥∥
+
+> (1)
+
+≤ sup 
+
+> 𝜃∈Θ
+
+⎛⎜⎜⎜⎜⎝1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+∥∥∥∥𝜑 ([𝐺 (𝑛,𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)− 𝜑 ([𝐺 (𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)∥∥∥∥ℒ1(𝜃) 
+
+⎞⎟⎟⎟⎟⎠
+
+> (2)
+
+≤ 𝐿 𝜑 sup 
+
+> 𝜃∈Θ
+
+⎛⎜⎜⎝1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1
+
+∥Vec (𝐺 (𝑛,𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)) − Vec (𝐺 (𝑟) 𝑡−𝑚 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑟) 𝑡 (𝜺 (𝑟) 𝑡 , 𝜃)) ∥
+
+> ℒ1(𝜃)
+
+⎞⎟⎟⎠
+
+> (3)
+
+≤ 𝐿 𝜑 sup 
+
+> 𝜃∈Θ
+
+( 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+1 𝑚
+
+∑
+
+> 𝑗=0
+
+∥𝐺 (𝑛,𝑟) 𝑡−𝑗 (𝜺 (𝑟) 𝑡−𝑗 , 𝜃) − 𝐺 (𝑟) 𝑡−𝑗 (𝜺 (𝑟) 𝑡−𝑗 , 𝜃)∥ ℒ1(𝜃) )
+
+> (4)
+
+≤ 𝐿 𝜑 
+
+11 − 𝑚/𝑛 (𝑚 + 1) sup 
+
+> 𝜃∈Θ
+
+( 1𝑛 
+
+> 𝑛
+
+∑
+
+> 𝑡=1
+
+∥𝐺 (𝑛,𝑟) 𝑡 (𝜺 (𝑟) 0 , 𝜃) − 𝐺 (𝑟) 𝑡 (𝜺 (𝑟) 0 , 𝜃)∥ ℒ1(𝜃) )
+
+> (5)
+
+= 𝑜(1), 
+
+where (1) holds by linearity of summation, the triangle inequality, linearity of expectation, and Jensen’s inequality, (2) holds because the random Fourier features 𝜑 are 𝐿 𝜑 -Lipschitz with Lipschitz constant given by (26), (3) holds by the triangle inequality and Minkowski inequality, (4) follows by upper bounding the original quantity by 𝑚 + 1 times full sum (i.e. by including more non-negative terms in the summation), factoring out 1/𝑛 , and noting that each (𝐺 (𝑖,𝑟) 𝑡 (𝜺 𝑗 , 𝜃)) 𝑗∈ℤ , (𝐺 (𝑟) 𝑡 (𝜺 𝑗 , 𝜃)) 𝑗∈ℤ is a stationary ergodic process for each fixed 
+
+𝑡 ∈ ℕ , 𝑖 ∈ ℕ , and 𝑟 = 0, 1, … , 𝑠 , which allows us to shift the noise inputs, and (5) is from applying the convergence condition from Assumption 2. 
+
+Step 3. We have shown that for each 𝑟 ∈ {0, 1, … , 𝑠} , the terms from (20) are 𝑜 𝑝 (1) and 
+
+𝑜(1) , respectively. Putting it all together, we have the desired result that sup 
+
+> 𝜃∈Θ
+
+∥̂𝑄 TA  
+
+> 𝑛
+
+(𝜃) − 𝑄 TA (𝜃)∥ = 𝑜 𝑝 (1). 
+
+□
+
+A.4 Proof of Theorem 4 
+
+See the proof of Theorem 2.3 in Sauer et al. (1991). 
+
+□
+
+41 A.5 Proof of Theorem 5 
+
+Step 1: Limiting local expectations. We claim that under Assumptions 8-10, ∀̃𝜃 𝑢 ∈̃ Θ𝑢 , the limiting local expectation values of the 𝑘 random features of the time series are given by ̃Φ𝑢 (̃𝜃 𝑢 ) = ∫ 
+
+> ℝ(𝑚+1)×𝑑
+
+𝜑(𝑥) 𝑑̃𝑃 ̃𝜃 𝑢 ,𝑢 (𝑥), 𝑢 ∈ [0, 1]. 
+
+That is, for all 𝜃 ∈ Θ , all 𝑢 ∈ [0, 1] , and all 𝑟 ∈ {0, 1, … , 𝑠} , we have, as 𝑛 − → ∞ ,
+
+∥𝔼 𝜃 [𝜑 ([𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)] −̃ Φ 𝑢 (̃𝜃 𝑢 )∥ = 𝑜(1). (21) Note that the time series has this causal representation by Assumptions 8, and that we only observe the time series at rescaled times 𝑡/𝑛 for 𝑡 = 1, … , 𝑛 .The desired result from (21) follows because, for all 𝜃 ∈ Θ , all 𝑢 ∈ [0, 1] , and all 𝑟 ∈ {0, 1, … , 𝑠} , we have 
+
+∥𝔼 𝜃 [𝜑 ([𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)] −̃ Φ 𝑢 (̃𝜃 𝑢 )∥ 
+
+> (1)
+
+≤∥∥∥∥𝔼 𝜃 [𝜑 ([𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)] − 𝔼 𝜃 [𝜑 ([𝐺 𝑢 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 𝑢 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)] ∥∥∥∥+ ∥𝔼 𝜃 [𝜑 ([𝐺 𝑢 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 𝑢 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)] −̃ Φ 𝑢 (̃𝜃 𝑢 )∥ 
+
+> (2)
+
+= 𝑜(1), 
+
+where (1) is from adding and subtracting the corresponding term with the limiting mapping and by applying the triangle inequality, and (2) holds because the second term is equal to zero by using the equivalent causal representation from Assumption 10 and because the first term is 𝑜(1) . Specifically, because the approximations can be asymptotically replaced by the limiting mappings, because for all 𝜃 ∈ Θ , all 𝑢 ∈ [0, 1] , and all 𝑟 ∈ {0, 1, … , 𝑠} , we 42 have 
+
+∥∥∥∥𝔼 𝜃 [𝜑 ([𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)] − 𝔼 𝜃 [𝜑 ([𝐺 𝑢 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 𝑢 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)] ∥∥∥∥
+
+> (1)
+
+≤∥∥∥∥𝜑 ([𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)− 𝜑 ([𝐺 𝑢 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 𝑢 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)∥∥∥∥ℒ1(𝜃) (2) 
+
+≤ 𝐿 𝜑 ∥Vec (𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) 0 , 𝜃)) − Vec (𝐺 𝑢 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 𝑢 (𝜺 (𝑟) 0 , 𝜃)) ∥
+
+> ℒ1(𝜃) (3)
+
+≤ 𝐿 𝜑 𝑚 
+
+∑
+
+> 𝑗=0
+
+∥𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) −𝑗 , 𝜃) − 𝐺 𝑢 (𝜺 (𝑟) −𝑗 , 𝜃)∥ ℒ1(𝜃) (4) 
+
+= 𝑜(1), 
+
+where (1) holds by linearity of expectation and Jensen’s inequality, (2) holds because the random Fourier features 𝜑 are 𝐿 𝜑 -Lipschitz with Lipschitz constant given by (26), (3) holds by the triangle inequality and Minkowski inequality, and (4) follows from the convergence condition from Assumption 9, noting that each mapping (𝐺 (𝑖,𝑟) 𝑢 (𝜺 𝑗 , 𝜃)) 𝑗∈ℤ , (𝐺 𝑢 (𝜺 𝑗 , 𝜃)) 𝑗∈ℤ 
+
+is a stationary ergodic process for each fixed 𝑢 ∈ [0, 1] , 𝑖 ∈ ℕ , 𝑟 ∈ {0, 1, … , 𝑠} , which allows us to use the convergence condition regardless of the shifts in the noise inputs. 
+
+Step 2: Smoothness. The arguments used to show that ̃ Φ𝑢 , 𝑢 ∈ [0, 1] , are 𝐶 1-smooth in the parameter values are analogous to those used in the proof of Theorem 2 to show that 
+
+Φ is 𝐶 1-smooth in the parameter values. Specifically, by Assumption 11, ̃ p𝑢 is Fréchet 𝐶 1
+
+on ̃ 𝑂 𝑢 with respect to the total variation norm (cf. Assumption 4), so the same arguments used in the proof of Theorem 2 hold when replacing 𝜃 , Φ, 𝑃 𝜃 , 𝒞 , 𝑂 , p with ̃ 𝜃 𝑢 ,̃ Φ𝑢 ,̃ 𝑃 ̃𝜃 𝑢 ,𝑢 ,̃ 𝒞 𝑢 ,̃𝑂 𝑢 ,̃ p𝑢 at a particular rescaled time 𝑢 ∈ [0, 1] . The details are omitted due to similarity. 
+
+Step 3: Embeddings. For each 𝑢 ∈ [0, 1] , the box-counting dimension of ̃ Θ𝑢 is less than or equal to 𝑝 because: (1) Θ has box-counting dimension 𝑝 as it is a compact subset of 
+
+ℝ𝑝 with non-empty interior by Assumption 11, and (2) ̃ Θ𝑢 = 𝑔 𝑢 (Θ) and 𝑔 𝑢 is Lipschitz by Assumption 10 so dim (̃Θ 𝑢 ) = dim (𝑔 𝑢 (Θ)) ≤ dim (Θ) = 𝑝 . Therefore, once 𝑘 ≥ 2𝑝 + 1 , the fractal Whitney embedding prevalence theorem (Theorem 1) implies that for each 𝑢 ∈ [0, 1] 
+
+(i.e. applying the theorem at each 𝑢 ), embeddings are prevalent in 𝐶 1(̃Θ 𝑢 , ℝ 𝑘 ); specifically, “almost every” (in the sense of prevalence) smooth map from ℝ̃ 𝑝 to ℝ𝑘 is one-to-one on ̃ Θ𝑢 
+
+and is an immersion on each compact subset of a smooth manifold contained in ̃ Θ𝑢 .
+
+□
+
+43 A.6 Proof of Theorem 6 
+
+Setup. We will use Corollary 3.2 of Pakes and Pollard (1989) to conclude that ̂ 𝜃 RW is consistent. The sample discrepancy function, from (9), is given by ̂𝑄 RW  
+
+> 𝑛
+
+(𝜃) = 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+[∥𝐹 obs  
+
+> 𝑡−𝐿
+
+−̄ 𝐹 sim 
+
+> 𝑡−𝐿
+
+(𝜃)∥ 2 + 𝐾 𝑡 (𝜃)] , 𝐾 𝑡 (𝜃) = 2 (𝐹 obs  
+
+> 𝑡−𝐿
+
+−̄ 𝐹 sim 
+
+> 𝑡−𝐿
+
+(𝜃)) ⊤ ([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] − [𝐹 obs  
+
+> 𝑡−𝐿
+
+−̄ 𝐹 sim 
+
+> 𝑡−𝐿
+
+(𝜃)]) , 
+
+and the population discrepancy function is given by 
+
+𝑄 RW (𝜃) = ∫ 
+
+> 10
+
+‖Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃)‖ 2 𝑑𝑢. 
+
+To use Corollary 3.2 of Pakes and Pollard (1989), it suffices to show that, under the as-sumptions of Theorem 6, the following conditions hold: 1. ∣̂𝑄 RW  
+
+> 𝑛
+
+(̂𝜃 RW )∣ ≤ 𝑜 𝑝 (1) + inf 𝜃∈Θ ∣̂𝑄 RW  
+
+> 𝑛
+
+(𝜃)∣ .2. inf ‖𝜃−𝜃 0‖>𝛿 ∣𝑄 RW (𝜃)∣ > 0 for each 𝛿 > 0 .3. sup 𝜃∈Θ ∣̂𝑄 RW    
+
+> 𝑛 (𝜃)−𝑄 RW (𝜃)∣ 1+∣̂𝑄 RW
+> 𝑛 (𝜃)∣+|𝑄 RW (𝜃)|
+
+= 𝑜 𝑝 (1) .
+
+Condition 1. 
+
+We defined the rolling-window estimator from (8) ̂𝜃 RW = argmin 
+
+> 𝜃∈Θ
+
+∣̂𝑄 RW  
+
+> 𝑛
+
+(𝜃)∣ , 
+
+with a slight abuse of notation (since argmin is a set) because we have implicitly assumed that the sample objective function attains the infimum and that it is unique, i.e. 
+
+∣̂𝑄 RW  
+
+> 𝑛
+
+(̂𝜃 RW )∣ = inf  
+
+> 𝜃∈Θ
+
+∣̂𝑄 RW  
+
+> 𝑛
+
+(𝜃)∣ . 
+
+Therefore, the desired result is immediate 
+
+∣̂𝑄 RW  
+
+> 𝑛
+
+(̂𝜃 RW )∣ = inf  
+
+> 𝜃∈Θ
+
+∣̂𝑄 RW  
+
+> 𝑛
+
+(𝜃)∣ ≤ 𝑜 𝑝 (1) + inf  
+
+> 𝜃∈Θ
+
+∣̂𝑄 RW  
+
+> 𝑛
+
+(𝜃)∣ . 
+
+Condition 2. 
+
+We establish that the infimum is strictly positive through contradiction. Assume for con-tradiction that there exists a 𝛿 > 0 such that inf  
+
+> ‖𝜃−𝜃 0‖>𝛿
+
+∣𝑄 RW (𝜃)∣ = 0. 
+
+Then by applying the definition of infimum, there exists a sequence (𝜃 𝑛 )𝑛∈ℕ , where 
+
+‖𝜃 𝑛 − 𝜃 0‖ > 𝛿 for all 𝑛 ∈ ℕ, such that lim 𝑛 −→∞ ∣𝑄 RW (𝜃 𝑛 )∣ = 0 by continuity with respect to 𝜃 and the dominated convergence theorem. By Assumption 11, Θ is a compact 44 subset of ℝ𝑝 , hence Θ is also sequentially compact, i.e. every sequence of parameters in Θ has a convergent subsequence converging to a parameter in Θ. Thus, there exists a subsequence (𝜃 𝑛 𝑗 )𝑗∈ℕ , where ∥𝜃 𝑛 𝑗 − 𝜃 0∥ > 𝛿 for all 𝑗 ∈ ℕ , and a parameter 𝜃 ∗ ∈ Θ 
+
+satisfying ∣𝑄 RW (𝜃 ∗)∣ = 𝑄 RW (𝜃 ∗) = 0 , such that 𝜃 𝑛 𝑗 −→ 𝜃 ∗ as 𝑗 − → ∞ .By Assumption 13, for all 𝜃 0, 𝜃 ∗ ∈ Θ , if 𝜃 0 ≠ 𝜃 ∗, then there exists a subset 𝒰 𝜃 0,𝜃 ∗ ⊆ [0, 1] 
+
+with positive Lebesgue measure such that 𝑃 𝜃 0,𝑢 ≠ 𝑃 𝜃 ∗,𝑢 for all 𝑢 ∈ 𝒰 𝜃 0,𝜃 ∗ . Since 𝑃 𝜃 0,𝑢 ≠𝑃 𝜃 ∗,𝑢 for all 𝑢 ∈ 𝒰 𝜃 0,𝜃 ∗ , we also have that ̃ 𝑃 𝑔 𝑢 (𝜃 0),𝑢 ≠̃ 𝑃 𝑔 𝑢 (𝜃 ∗),𝑢 for all 𝑢 ∈ 𝒰 𝜃 0,𝜃 ∗ because ̃𝑃 𝑔 𝑢 (𝜃),𝑢 = 𝑃 𝜃,𝑢 is the distribution of 
+
+[̃𝐺 𝑢 (𝜺 −𝑚 , 𝑔 𝑢 (𝜃)), … ,̃ 𝐺 𝑢 (𝜺 0, 𝑔 𝑢 (𝜃))] ⊤ = [𝐺 𝑢 (𝜺 −𝑚 , 𝜃), … , 𝐺 𝑢 (𝜺 0, 𝜃)] ⊤.
+
+Therefore, for all 𝑢 ∈ 𝒰 𝜃 0,𝜃 ∗ , we have that 𝑔 𝑢 (𝜃 0) ≠ 𝑔 𝑢 (𝜃 ∗) because ̃ 𝜃 𝑢 ↦̃ 𝑃 ̃𝜃 𝑢 ,𝑢 is a bijection for all 𝑢 ∈ [0, 1] by Assumption 11. We also have that ̃ Φ𝑢 (𝑔 𝑢 (𝜃 0)) ≠̃ Φ 𝑢 (𝑔 𝑢 (𝜃 ∗)) for all 
+
+𝑢 ∈ 𝒰 𝜃 0,𝜃 ∗ , because by Assumption 12, ̃ 𝜃 𝑢 ↦̃ Φ 𝑢 (̃𝜃 𝑢 ) is one-to-one for all 𝑢 ∈ [0, 1] . This also implies that Φ𝑢 (𝜃 0) ≠ Φ 𝑢 (𝜃 ∗) for all 𝑢 ∈ 𝒰 𝜃 0,𝜃 ∗ by the definitions of Φ𝑢 and ̃ Φ𝑢 
+
+from (16) and (17), respectively, because ̃ 𝑃 𝑔 𝑢 (𝜃),𝑢 = 𝑃 𝜃,𝑢 as discussed above. Putting it all together, we have that, if 𝜃 0 ≠ 𝜃 ∗, then 
+
+𝑄 RW (𝜃 ∗) = ∫ 
+
+> 10
+
+‖Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃 ∗)‖ 2 𝑑𝑢 ≥ ∫ 
+
+> 𝒰 𝜃 0,𝜃 ∗
+
+‖Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃 ∗)‖ 2 𝑑𝑢 > 0. 
+
+In other words, if 𝑄 RW (𝜃 ∗) = 0 , then 𝜃 ∗ = 𝜃 0.However, by the continuity of 𝜃 ↦ ‖𝜃 − 𝜃 0‖, we have ∥𝜃 𝑛 𝑗 − 𝜃 0∥ − → ‖𝜃 ∗ − 𝜃 0‖ as 𝑗 − → ∞ .Therefore, ‖𝜃 ∗ − 𝜃 0‖ ≥ 𝛿 because ∥𝜃 𝑛 𝑗 − 𝜃 0∥ > 𝛿 for all 𝑗 ∈ ℕ , so we have 
+
+0 = ‖𝜃 0 − 𝜃 0‖ = ‖𝜃 ∗ − 𝜃 0‖ ≥ 𝛿 > 0, 
+
+which is a contradiction. 
+
+Condition 3. 
+
+It suffices to show that sup 𝜃∈Θ ∣̂𝑄 RW  
+
+> 𝑛
+
+(𝜃) − 𝑄 RW (𝜃)∣ = 𝑜 𝑝 (1) because the denominator is always greater than or equal to one. For 𝜃 ∈ Θ and 𝑟 ∈ {0, 1, … , 𝑠} , define 
+
+𝐹 (𝑟) 𝑡 (𝜃) = 1𝑤 ∧ 𝑡 
+
+> 𝑡
+
+∑
+
+> 𝑗=(𝑡−𝑤)∨(𝑚+1)
+
+𝜑 ([𝐺 (𝑛,𝑟) (𝑗−𝑚)/𝑛 (𝜺 (𝑟) 𝑗−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑗/𝑛 (𝜺 (𝑟) 𝑗 , 𝜃)] ⊤
+
+) , (22) and 
+
+𝐼 1𝑛 (𝜃) = 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)∥ 2
+
+,𝐼 2𝑛 (𝜃) = 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) −̂ 𝜇 𝑡−𝐿,𝑛 (𝜃)∥ 2
+
+,𝐼 3𝑛 (𝜃) = 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝐾 ∗𝑡 (𝜃), 
+
+(23) 45 where 
+
+𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) = 𝔼 𝜃 0 [𝑓 obs  
+
+> 𝑡
+
+] − 1𝑠 
+
+> 𝑠
+
+∑
+
+> 𝑟=1
+
+𝔼 𝜃 [𝑓 (𝑟) 𝑡 (𝜃)] = 𝔼 𝜃 0 [𝜑 ([𝐺 (𝑛,0) (𝑡−𝑚)/𝑛 (𝜺 (0) 𝑡−𝑚 , 𝜃 0), … , 𝐺 (𝑛,0) 𝑡/𝑛 (𝜺 (0) 𝑡 , 𝜃 0)] ⊤
+
+)] − 1𝑠 
+
+> 𝑠
+
+∑
+
+> 𝑟=1
+
+𝔼 𝜃 [𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝑚)/𝑛 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)] ,̂ 𝜇 𝑡,𝑛 (𝜃) = 𝐹 obs  
+
+> 𝑡
+
+−̄ 𝐹 sim  
+
+> 𝑡
+
+(𝜃), 𝐾 𝑡 (𝜃) = 2̂𝜇 𝑡−𝐿,𝑛 (𝜃) ⊤ ([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] −̂ 𝜇 𝑡−𝐿,𝑛 (𝜃)) , 𝐾 ∗𝑡 (𝜃) = 2̂𝜇 𝑡−𝐿,𝑛 (𝜃) ⊤ ([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] − 𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)) . 
+
+(24) We have sup 
+
+> 𝜃∈Θ
+
+∣̂𝑄 RW  
+
+> 𝑛
+
+(𝜃) − 𝑄 RW (𝜃)∣ 
+
+> (1)
+
+= sup 
+
+> 𝜃∈Θ
+
+∣ 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+[∥𝐹 obs  
+
+> 𝑡−𝐿
+
+−̄ 𝐹 sim 
+
+> 𝑡−𝐿
+
+(𝜃)∥ 2 + 𝐾 𝑡 (𝜃)] − ∫ 
+
+> 10
+
+‖Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃)‖ 2 𝑑𝑢∣ 
+
+> (2)
+
+= sup 
+
+> 𝜃∈Θ
+
+∣𝐼 1𝑛 (𝜃) − 𝐼 2𝑛 (𝜃) + 𝐼 3𝑛 (𝜃) − ∫ 
+
+> 10
+
+‖Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃)‖ 2 𝑑𝑢∣ 
+
+> (3)
+
+≤ sup 
+
+> 𝜃∈Θ
+
+∣𝐼 1𝑛 (𝜃) − ∫ 
+
+> 10
+
+‖Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃)‖ 2 𝑑𝑢∣ + sup 
+
+> 𝜃∈Θ
+
+∣𝐼 2𝑛 (𝜃)∣ + sup 
+
+> 𝜃∈Θ
+
+∣𝐼 3𝑛 (𝜃)∣ , 
+
+by (1) definition of ̂ 𝑄 RW  
+
+> 𝑛
+
+(𝜃) and 𝑄 RW (𝜃) , (2) a Taylor expansion (see below) and the definition of 𝐼 1𝑛 (𝜃) , 𝐼 2𝑛 (𝜃) , 𝐼 3𝑛 (𝜃) , and (3) the triangle inequality and subadditivity of the supremum. More specifically, regarding (2), at each time 𝑡 , a Taylor expansion yields 
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)∥ 2
+
+= ∥̂𝜇 𝑡−𝐿,𝑛 (𝜃)∥ 2 + 2̂𝜇 𝑡−𝐿,𝑛 (𝜃) ⊤ (𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) −̂ 𝜇 𝑡−𝐿,𝑛 (𝜃)) + ∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) −̂ 𝜇 𝑡−𝐿,𝑛 (𝜃)∥ 2
+
+,
+
+so rearranging this equation and plugging in for ∥̂𝜇 𝑡−𝐿,𝑛 (𝜃)∥ 2 = ∥𝐹 obs  
+
+> 𝑡−𝐿
+
+−̄ 𝐹 sim 
+
+> 𝑡−𝐿
+
+(𝜃)∥ 2 yields 
+
+∥𝐹 obs  
+
+> 𝑡−𝐿
+
+−̄ 𝐹 sim 
+
+> 𝑡−𝐿
+
+(𝜃)∥ 2 + 𝐾 𝑡 (𝜃) = ∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)∥ 2
+
+− ∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) −̂ 𝜇 𝑡−𝐿,𝑛 (𝜃)∥ 2
+
++ [−2̂𝜇 𝑡−𝐿,𝑛 (𝜃) ⊤ (𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) −̂ 𝜇 𝑡−𝐿,𝑛 (𝜃)) + 𝐾 𝑡 (𝜃)] = ∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)∥ 2
+
+− ∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) −̂ 𝜇 𝑡−𝐿,𝑛 (𝜃)∥ 2
+
++ 2̂𝜇 𝑡−𝐿,𝑛 (𝜃) ⊤ ([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] − 𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)) , 
+
+therefore summing yields 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+[∥𝐹 obs  
+
+> 𝑡−𝐿
+
+−̄ 𝐹 sim 
+
+> 𝑡−𝐿
+
+(𝜃)∥ 2 + 𝐾 𝑡 (𝜃)] = 𝐼 1𝑛 (𝜃) − 𝐼 2𝑛 (𝜃) + 𝐼 3𝑛 (𝜃). 
+
+46 It suffices to show that sup 
+
+> 𝜃∈Θ
+
+∣𝐼 1𝑛 (𝜃) − ∫ 
+
+> 10
+
+‖Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃)‖ 2 𝑑𝑢∣ = 𝑜(1), 
+
+sup 
+
+> 𝜃∈Θ
+
+∣𝐼 2𝑛 (𝜃)∣ = 𝑜 𝑝 (1), 
+
+sup 
+
+> 𝜃∈Θ
+
+∣𝐼 3𝑛 (𝜃)∣ = 𝑜 𝑝 (1), 
+
+so we break down the remainder of the proof into these three steps. 
+
+Step 1. We show that sup 
+
+> 𝜃∈Θ
+
+∣𝐼 1𝑛 (𝜃) − ∫ 
+
+> 10
+
+‖Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃)‖ 2 𝑑𝑢∣ = 𝑜(1). 
+
+Observe that sup 
+
+> 𝜃∈Θ
+
+∣𝐼 1𝑛 (𝜃) − ∫ 
+
+> 10
+
+‖Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃)‖ 2 𝑑𝑢∣ 
+
+> (1)
+
+= sup 
+
+> 𝜃∈Θ
+
+∣ 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)∥ 2
+
+− ∫ 
+
+> 10
+
+‖Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃)‖ 2 𝑑𝑢∣ 
+
+> (2)
+
+≤ sup 
+
+> 𝜃∈Θ
+
+∣ 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)∥ 2
+
+− ∫ 
+
+> 10
+
+‖𝜇 𝑛 𝑢 (𝜃)‖ 2 𝑑𝑢∣ + sup 
+
+> 𝜃∈Θ
+
+∣∫ 
+
+> 10
+
+‖𝜇 𝑛 𝑢 (𝜃)‖ 2 𝑑𝑢 − ∫ 
+
+> 10
+
+‖Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃)‖ 2 𝑑𝑢∣ , 
+
+by (1) the definition of 𝐼 1𝑛 (𝜃) , and (2) adding and subtracting the same term, the triangle inequality, and subadditivity of the supremum. We will show that both terms are 𝑜(1) .47 Step 1.1. Observe that sup 
+
+> 𝜃∈Θ
+
+∣ 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)∥ 2
+
+− ∫ 
+
+> 1
+> 𝑚+𝜏+𝐿 𝑛
+
+‖𝜇 𝑛 𝑢 (𝜃)‖ 2 𝑑𝑢∣ 
+
+> (1)
+
+≤ 𝑚𝑘 𝑛 + sup 
+
+> 𝜃∈Θ
+
+∣ 1𝑛 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)∥ 2
+
+− ∫ 
+
+> 1
+> 𝑚+𝜏+𝐿 𝑛
+
+‖𝜇 𝑛 𝑢 (𝜃)‖ 2 𝑑𝑢∣ 
+
+> (2)
+
+≤ 𝑚𝑘 𝑛 + sup 
+
+> 𝜃∈Θ
+
+∫
+
+> 1
+> 𝑚+𝜏+𝐿 𝑛
+
+∣∥𝜇 𝑛 
+
+> ⌈𝑢𝑛⌉ 𝑛
+
+(𝜃)∥ 
+
+> 2
+
+− ‖𝜇 𝑛 𝑢 (𝜃)‖ 2∣ 𝑑𝑢 
+
+> (3)
+
+≤ 𝑚𝑘 𝑛 + 1𝑛 sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+sup     
+
+> 𝑢∈[ 𝑡−1 𝑛 ,𝑡 𝑛 ]
+
+∣∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)∥ 2
+
+− ‖𝜇 𝑛 𝑢 (𝜃)‖ 2∣
+
+> (4)
+
+≤ 𝑚𝑘 𝑛 + 1𝑛 sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+sup     
+
+> 𝑢∈[ 𝑡−1 𝑛 ,𝑡 𝑛 ]
+
+(∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)∥ + ‖𝜇 𝑛 𝑢 (𝜃)‖) ∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) − 𝜇 𝑛 𝑢 (𝜃)∥ 
+
+> (5)
+
+≤ 𝑚𝑘 𝑛 + 4 √𝑘 1𝑛 sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+sup     
+
+> 𝑢∈[ 𝑡−1 𝑛 ,𝑡 𝑛 ]
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) − 𝜇 𝑛 𝑢 (𝜃)∥ 
+
+> (6)
+
+≤ 𝑚𝑘 𝑛 + 4 √𝑘𝐿 𝜑 (𝑚 + 1) 1𝑛 sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+sup     
+
+> 𝑢∈[ 𝑡−1 𝑛 ,𝑡 𝑛 ]
+
+∥𝐺 (𝑛,𝑟) 
+
+> 𝑡 𝑛
+
+(𝜺 (𝑟) 0 , 𝜃) − 𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) 0 , 𝜃)∥ ℒ1(𝜃) 
+
++ 4 √𝑘𝐿 𝜑 (𝑚 + 1) 1𝑛 1𝑠 
+
+> 𝑠
+
+∑
+
+> 𝑟=1
+
+sup 
+
+> 𝜃∈Θ
+
+(
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+sup     
+
+> 𝑢∈[ 𝑡−1 𝑛 ,𝑡 𝑛 ]
+
+∥𝐺 (𝑛,𝑟) 
+
+> 𝑡 𝑛
+
+(𝜺 (𝑟) 0 , 𝜃) − 𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) 0 , 𝜃)∥ ℒ1(𝜃) 
+
+)
+
+> (7)
+
+≤ 𝑚𝑘 𝑛 + 8 √𝑘𝐿 𝜑 (𝑚 + 1) 𝑛 1−1/𝜅 
+
+𝑛 Λ, 
+
+by (1) adding and subtracting the same term (i.e. with a factor of 1𝑛 ), the triangle in-equality, subadditivity of the supremum, factoring out the sum of squared norms, the equality 1𝑛−𝑚 − 1𝑛 = 𝑚 𝑛(𝑛−𝑚) , upper bounding the sum by 𝑛 − 𝑚 times the maximum over time 𝑡 of the squared norm, noting that the random Fourier features are bounded between 
+
+−1 and 1 so the corresponding expectations must be as well, then upper bounding the squared norm by the number of random features 𝑘 , (2) the definition of the ceiling func-tion, using the Riemann sum approximation of the integral, and the triangle inequality for integrals, (3) upper bounding the integral over each interval by the supremum over that interval multiplied by the interval length and summing over the intervals, (4) the equal-ity ∣𝑥 2 − 𝑦 2∣ = |𝑥 − 𝑦| |𝑥 + 𝑦| applied to the norms and the triangle inequality applied to this absolute value of the sum of norms, (5) using the definition of 𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) and 𝜇 𝑛 𝑢 (𝜃) and applying the triangle inequality to each of their norms, applying the triangle inequality and absolute homogeneity to the simulation-average, upper bounding each norm by √𝑘 
+
+where 𝑘 = 2𝑝 + 1 , 𝜃 ∈ ℝ 𝑝 , because each of the 𝑘 dimensions of the random Fourier fea-tures takes values in [−1, 1] , so we can upper bound by four times this amount, and the distributive property, (6) the triangle inequality, subadditivity of the supremum, linearity of expectation, Jensen’s inequality, the random Fourier features 𝜑 are 𝐿 𝜑 -Lipschitz with Lipschitz constant given by (26), the triangle inequality, the Minkowski inequality, shifting the noise inputs which is equivalent due to stationarity, and (7) Hölder’s inequality applied to each sum over time 𝑡 (i.e. for each 𝑟 = 0, 1, … , 𝑠 ), upper bounding by the 𝜅 -variation, 48 and applying the upper bound from Assumption 16. Lastly, observe that sup 
+
+> 𝜃∈Θ
+
+∣ 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)∥ 2
+
+− ∫ 
+
+> 10
+
+‖𝜇 𝑛 𝑢 (𝜃)‖ 2 𝑑𝑢∣ 
+
+> (1)
+
+≤ sup 
+
+> 𝜃∈Θ
+
+∣ 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)∥ 2
+
+− ∫ 
+
+> 1
+> 𝑚+𝜏+𝐿 𝑛
+
+‖𝜇 𝑛 𝑢 (𝜃)‖ 2 𝑑𝑢∣ + sup 
+
+> 𝜃∈Θ
+
+∣∫ 
+
+> 1
+> 𝑚+𝜏+𝐿 𝑛
+
+‖𝜇 𝑛 𝑢 (𝜃)‖ 2 𝑑𝑢 − ∫ 
+
+> 10
+
+‖𝜇 𝑛 𝑢 (𝜃)‖ 2 𝑑𝑢∣ 
+
+> (2)
+
+= sup 
+
+> 𝜃∈Θ
+
+∣ 1𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃)∥ 2
+
+− ∫ 
+
+> 1
+> 𝑚+𝜏+𝐿 𝑛
+
+‖𝜇 𝑛 𝑢 (𝜃)‖ 2 𝑑𝑢∣ + sup 
+
+> 𝜃∈Θ
+
+∣∫ 
+
+> 𝑚+𝜏+𝐿 𝑛
+> 0
+
+‖𝜇 𝑛 𝑢 (𝜃)‖ 2 𝑑𝑢∣ 
+
+> (3)
+
+≤ ( 𝑚𝑘 𝑛 + 8 √𝑘𝐿 𝜑 (𝑚 + 1) 𝑛 1−1/𝜅 
+
+𝑛 Λ) + 𝑚 + 𝜏 + 𝐿 𝑛 𝑘 
+
+> (4)
+
+= 𝑜(1), 
+
+by (1) adding and subtracting the same term, the triangle inequality, and subadditivity of the supremum, (2) subtraction, (3) upper bounding the first term by applying the inequality derived previously, and upper bounding the second term by the length of the interval [0, 𝑚+𝜏+𝐿 𝑛 ] multiplied by 𝑘 because the integrand can be upper bounded by 𝑘 since the 𝑘 random Fourier features each take values in [−1, 1] , and (4) noting that both of these terms converge to zero because the first term is 𝑜(1) because 𝜅 ∈ [1, 4) by Assumption 16 and the second term is 𝑜(1) because 𝜏 𝑛 = 𝑜(𝑛) by Assumption 17. 49 Step 1.2. Observe that sup 
+
+> 𝜃∈Θ
+
+∣∫ 
+
+> 10
+
+‖𝜇 𝑛 𝑢 (𝜃)‖ 2 𝑑𝑢 − ∫ 
+
+> 10
+
+‖Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃)‖ 2 𝑑𝑢∣ 
+
+> (1)
+
+≤ sup 
+
+> 𝜃∈Θ
+
+∫
+
+> 10
+
+∣‖𝜇 𝑛 𝑢 (𝜃)‖ 2 − ‖Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃)‖ 2∣ 𝑑𝑢 
+
+> (2)
+
+≤ 4 √𝑘 sup 
+
+> 𝜃∈Θ
+
+∫
+
+> 10
+
+‖𝜇 𝑛 𝑢 (𝜃) − (Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃))‖ 𝑑𝑢 
+
+> (3)
+
+≤ 4 √𝑘 ∫ 
+
+> 10
+
+∥𝔼 𝜃 0 [𝜑 ([𝐺 (𝑛,0) 𝑢 (𝜺 (0) −𝑚 , 𝜃 0), … , 𝐺 (𝑛,0) 𝑢 (𝜺 (0) 0 , 𝜃 0)] ⊤
+
+)] − Φ 𝑢 (𝜃 0)∥ 𝑑𝑢 + 4 √𝑘 1𝑠 
+
+> 𝑠
+
+∑
+
+> 𝑟=1
+
+sup 
+
+> 𝜃∈Θ
+
+∫
+
+> 10
+
+∥𝔼 𝜃 [𝜑 ([𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)] − Φ 𝑢 (𝜃)∥ 𝑑𝑢 
+
+> (4)
+
+≤ 4 √𝑘 sup 
+
+> 𝑢∈[0,1]
+
+∥𝔼 𝜃 0 [𝜑 ([𝐺 (𝑛,0) 𝑢 (𝜺 (0) −𝑚 , 𝜃 0), … , 𝐺 (𝑛,0) 𝑢 (𝜺 (0) 0 , 𝜃 0)] ⊤
+
+)] − Φ 𝑢 (𝜃 0)∥ + 4 √𝑘 1𝑠 
+
+> 𝑠
+
+∑
+
+> 𝑟=1
+
+sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑢∈[0,1]
+
+∥𝔼 𝜃 [𝜑 ([𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)] − Φ 𝑢 (𝜃)∥ 
+
+> (5)
+
+= 𝑜(1), 
+
+by (1) the linearity of integrals and the triangle inequality for integrals, (2) the equality 
+
+∣𝑥 2 − 𝑦 2∣ = |𝑥 − 𝑦| |𝑥 + 𝑦| applied to the norms and the triangle inequality applied to this absolute value of the sum of norms, then using the definition of 𝜇 𝑛 𝑢 (𝜃) and applying the triangle inequality to each of the norms, applying the triangle inequality and absolute homogeneity to the simulation-average terms, upper bounding each norm by √𝑘 where 
+
+𝑘 = 2𝑝 + 1 , 𝜃 ∈ ℝ 𝑝 , because each of the 𝑘 dimensions of the random Fourier features takes values in [−1, 1] , so we can upper bound by four times this amount, and the distributive property, (3) the triangle inequality, subadditivity, and the distributive property, (4) upper bounding the integral by the length of the interval multiplied by the supremum over the interval, and (5) the same (𝑢, 𝜃) -pointwise inequalities used to show (21), where ̃ Φ𝑢 (̃𝜃 𝑢 ) = Φ𝑢 (𝜃) by the definitions and Assumption 10, hold uniformly over 𝑢 ∈ [0, 1] and over 𝜃 ∈ Θ 
+
+by using the subadditivity of the supremum and because Assumption 9 is a (𝑢, 𝜃) -uniform convergence condition. Putting it all together, we have sup 
+
+> 𝜃∈Θ
+
+∣𝐼 1𝑛 (𝜃) − ∫ 
+
+> 10
+
+‖Φ 𝑢 (𝜃 0) − Φ 𝑢 (𝜃)‖ 2 𝑑𝑢∣ = 𝑜(1). 
+
+Step 2. We show that sup 
+
+> 𝜃∈Θ
+
+∣𝐼 2𝑛 (𝜃)∣ = 𝑜 𝑝 (1). 
+
+50 Observe that sup 
+
+𝜃∈Θ 
+
+∣𝐼 2𝑛 (𝜃)∣ 
+
+(1) 
+
+= sup 
+
+𝜃∈Θ 
+
+1𝑛 − 𝑚 
+
+𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) −̂ 𝜇 𝑡−𝐿,𝑛 (𝜃)∥ 2(2) 
+
+≤ sup 
+
+𝜃∈Θ 
+
+1𝑛 − 𝑚 
+
+𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+(∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃)∥ + ∥𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) −̂ 𝜇 𝑡−𝐿,𝑛 (𝜃)∥) 2(3) 
+
+≤ sup 
+
+𝜃∈Θ 
+
+2𝑛 − 𝑚 
+
+𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃)∥ 2
+
++ sup 
+
+𝜃∈Θ 
+
+2𝑛 − 𝑚 
+
+𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+∥𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) −̂ 𝜇 𝑡−𝐿,𝑛 (𝜃)∥ 2
+
+,
+
+by (1) the definition of 𝐼 2𝑛 (𝜃) , (2) adding and subtracting the same term then applying the triangle inequality, and (3) expanding the square then applying Young’s inequality and subadditivity of the supremum. We will show the first term is 𝑜(1) and the second term is 
+
+𝑜 𝑝 (1) .
+
+Step 2.1. To begin, observe that, for every 𝜃 ∈ Θ , we have 
+
+12
+
+𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃)∥ 2(1) 
+
+≤
+
+𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+∥∥∥∥𝔼 𝜃 0 𝜑 ([𝐺 (𝑛,0) (𝑡−𝑚)/𝑛 (𝜺 (0) −𝑚 , 𝜃 0), … , 𝐺 (𝑛,0) 𝑡/𝑛 (𝜺 (0) 0 , 𝜃 0)] ⊤
+
+)− 𝔼 𝜃 0 𝜑 ([𝐺 (𝑛,0) (𝑡−𝐿−𝑚)/𝑛 (𝜺 (0) −𝑚 , 𝜃 0), … , 𝐺 (𝑛,0) (𝑡−𝐿)/𝑛 (𝜺 (0) 0 , 𝜃 0)] ⊤
+
+)∥∥∥∥
+
+2
+
++ 1𝑠 
+
+𝑠 
+
+∑
+
+𝑟=1 𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+∥∥∥∥𝔼 𝜃 𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝑚)/𝑛 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)− 𝔼 𝜃 𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝐿−𝑚)/𝑛 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) (𝑡−𝐿)/𝑛 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)∥∥∥∥
+
+2(2) 
+
+≤ 𝐿 2𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+∥∥∥∥𝔼 𝜃 0 𝜑 ([𝐺 (𝑛,0) (𝑡−𝑚+1)/𝑛 (𝜺 (0) −𝑚 , 𝜃 0), … , 𝐺 (𝑛,0) (𝑡+1)/𝑛 (𝜺 (0) 0 , 𝜃 0)] ⊤
+
+)− 𝔼 𝜃 0 𝜑 ([𝐺 (𝑛,0) (𝑡−𝑚)/𝑛 (𝜺 (0) −𝑚 , 𝜃 0), … , 𝐺 (𝑛,0) 𝑡/𝑛 (𝜺 (0) 0 , 𝜃 0)] ⊤
+
+)∥∥∥∥
+
+2
+
++ 𝐿 2
+
+𝑠 
+
+𝑠 
+
+∑
+
+𝑟=1 𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+∥∥∥∥𝔼 𝜃 𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝑚+1)/𝑛 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) (𝑡+1)/𝑛 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)− 𝔼 𝜃 𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝑚)/𝑛 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)∥∥∥∥
+
+2(3) 
+
+≤ 𝐿 2𝐿 2𝜑 (𝑚 + 1) 2𝑛 
+
+∑
+
+𝑡=1 
+
+∥𝐺 (𝑛,0) 𝑡/𝑛 (𝜺 (0) 0 , 𝜃 0) − 𝐺 (𝑛,0) (𝑡−1)/𝑛 (𝜺 (0) 0 , 𝜃 0)∥ 2ℒ𝑞 (𝜃) 
+
++ 𝐿 2𝐿 2𝜑 (𝑚 + 1) 2 1𝑠 
+
+𝑠 
+
+∑
+
+𝑟=1 𝑛 
+
+∑
+
+𝑡=1 
+
+∥𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 0 , 𝜃) − 𝐺 (𝑛,𝑟) (𝑡−1)/𝑛 (𝜺 (𝑟) 0 , 𝜃)∥ 2ℒ𝑞 (𝜃) ,
+
+51 by (1) the definition of 𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) and 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) , the triangle inequality, expanding the square, Young’s inequality, and the triangle inequality, (2) adding and subtracting the same inter-mediate lag terms between 𝑡 and 𝑡 − 𝐿 (i.e. 𝑡 − 1, … , 𝑡 − 𝐿 + 1 ), the triangle inequality, applying Young’s inequality 𝐿 times, factoring out 𝐿 , adding extra lag terms so the every lag term is repeated 𝐿 terms and then factoring out this second 𝐿 factor, and (3) linearity of expectation, Jensen’s inequality, because the random Fourier features 𝜑 are 𝐿 𝜑 -Lipschitz with Lipschitz constant given by (26), the triangle inequality, the Minkowski inequality, and Young’s inequality. Observe that sup 
+
+> 𝜃∈Θ
+
+2𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃) − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃)∥ 2(1) 
+
+≤ 4𝐿 2𝐿 2𝜑 (𝑚 + 1) 2
+
+𝑛 − 𝑚 
+
+> 𝑠
+
+∑
+
+> 𝑟=0
+
+sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=1
+
+∥𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 0 , 𝜃) − 𝐺 (𝑛,𝑟) (𝑡−1)/𝑛 (𝜺 (𝑟) 0 , 𝜃)∥ 2ℒ𝑞 (𝜃) (2) 
+
+≤ 4𝐿 2𝐿 2𝜑 (𝑚 + 1) 2
+
+𝑛 − 𝑚 (𝑠 + 1)𝑛 max (1−2/𝜅,0) Λ2(3) 
+
+= 𝑜(1), 
+
+by (1) the previous arguments, linearity, and subadditivity of the supremum, (2) Hölder’s inequality applied to each sum over time 𝑡 (i.e. for each 𝑟 = 0, 1, … , 𝑠 ) so we can upper bound by the squared 𝜅 -variation multiplied by 𝑛 max (1−2/𝜅,0) , where the max is because we consider the cases 𝜅 ∈ [1, 2] and 𝜅 ∈ (2, 4) separately, and applying the upper bound 
+
+Λ > 0 from Assumption 16, and (3) the rate of growth of 𝐿 from Assumption 17. 
+
+Step 2.2. Observe that, for every 𝜃 ∈ Θ , we have 
+
+12
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) −̂ 𝜇 𝑡−𝐿,𝑛 (𝜃)∥ 2
+
+(25) 
+
+> (1)
+
+≤
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝔼 𝜃 0 𝜑 ([𝐺 (𝑛,0) (𝑡−𝐿−𝑚)/𝑛 (𝜺 (0) 𝑡−𝐿−𝑚 , 𝜃 0), … , 𝐺 (𝑛,0) (𝑡−𝐿)/𝑛 (𝜺 (0) 𝑡−𝐿 , 𝜃 0)] ⊤
+
+) − 𝐹 obs 
+
+> 𝑡−𝐿
+
+∥
+
+> 2
+
++
+
+> 𝑠
+
+∑
+
+> 𝑟=1 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝔼 𝜃 𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝐿−𝑚)/𝑛 (𝜺 (𝑟) 𝑡−𝐿−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) (𝑡−𝐿)/𝑛 (𝜺 (𝑟) 𝑡−𝐿 , 𝜃)] ⊤
+
+) − 𝐹 (𝑟) 𝑡−𝐿 (𝜃)∥ 
+
+> 2
+
+,
+
+by (1) the definitions of 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) and ̂ 𝜇 𝑡−𝐿,𝑛 (𝜃) , the triangle inequality, and Young’s in-equality, where 𝐹 (𝑟) 𝑡 (𝜃) is from (22). We have sup 
+
+> 𝜃∈Θ
+
+2𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) −̂ 𝜇 𝑡−𝐿,𝑛 (𝜃)∥ 2(1) 
+
+≤
+
+> 𝑠
+
+∑
+
+> 𝑟=0
+
+sup 
+
+> 𝜃∈Θ
+
+4𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝔼 𝜃 [𝑓 (𝑟) 𝑡−𝐿 (𝜃)] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃)∥ 2
+
+,
+
+by (1) the previous arguments, the definition of the random features 𝑓 (𝑟) 𝑡−𝐿 (𝜃) at time 𝑡−𝐿 in terms of the generative mappings, linearity, and subadditivity of the supremum. It suffices 52 to show that, for all 𝑟 = 0, 1, … , 𝑠 , we have sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝔼 𝜃 [𝑓 (𝑟) 𝑡−𝐿 (𝜃)] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃)∥ 2
+
+= 𝑜 𝑝 (𝑛). 
+
+By adding and subtracting the same term, the triangle inequality, Young’s inequality, and subadditivity of the supremum, half of the previous term is less than or equal to sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝔼 𝜃 [𝑓 (𝑟) 𝑡−𝐿 (𝜃)] − 𝔼 𝜃 𝐹 (𝑟) 𝑡−𝐿 (𝜃)∥ 2
+
++ sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝔼 𝜃 𝐹 (𝑟) 𝑡−𝐿 (𝜃) − 𝐹 (𝑟) 𝑡−𝐿 (𝜃)∥ 2
+
+,
+
+so it suffices to show that the first term is 𝑜(𝑛) and the second term is 𝑜 𝑝 (𝑛) .
+
+Step 2.2.1. For the following, denote 𝒰 𝑡 = [ (𝑡−𝐿−𝑤)∨(𝑚+1) 𝑛 , 𝑡−𝐿 𝑛 ]. Observe that, for all 
+
+𝑟 = 0, 1, … , 𝑠 , we have sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝔼 𝜃 [𝑓 (𝑟) 𝑡−𝐿 (𝜃)] − 𝔼 𝜃 𝐹 (𝑟) 𝑡−𝐿 (𝜃)∥ 2(1) 
+
+≤ sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+sup 
+
+> 𝑢∈𝒰 𝑡
+
+∥∥∥∥𝔼 𝜃 𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝐿−𝑚)/𝑛 (𝜺 (𝑟) 𝑡−𝐿−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) (𝑡−𝐿)/𝑛 (𝜺 (𝑟) 𝑡−𝐿 , 𝜃)] ⊤
+
+)− 𝔼 𝜃 𝜑 ([𝐺 (𝑛,𝑟) 𝑢−𝑚/𝑛 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+)∥∥∥∥
+
+> 2(2)
+
+≤ 𝐿 2𝜑 (𝑚 + 1) 2 sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+sup 
+
+> 𝑢∈𝒰 𝑡
+
+∥𝐺 (𝑛,𝑟) (𝑡−𝐿)/𝑛 (𝜺 (𝑟) 0 , 𝜃) − 𝐺 (𝑛,𝑟) 𝑢 (𝜺 (𝑟) 0 , 𝜃)∥ 2ℒ𝑞 (𝜃) (3) 
+
+≤ 𝑤𝐿 2𝜑 (𝑚 + 1) 2𝑛 max (1−2/𝜅,0) (sup 
+
+> 𝜃∈Θ
+
+∥(𝐺 (𝑛,𝑟) 𝑢 (𝜺 0, 𝜃)) 𝑢 ∥𝜅 -var ,ℒ 𝑞 (𝜃) 
+
+)
+
+> 2(4)
+
+≤ 𝑤𝐿 2𝜑 (𝑚 + 1) 2𝑛 max (1−2/𝜅,0) Λ2(5) 
+
+= 𝑜(𝑛), 
+
+by (1) the definitions of 𝐹 (𝑟) 𝑡−𝐿 (𝜃) and 𝑓 (𝑟) 𝑡−𝐿 (𝜃) from (22) and (24), linearity, the triangle inequality, and upper bounding the rolling-window average of the distances between the expectations by the supremum of the distance between the expectations over the corre-sponding rescaled time interval 𝒰 𝑡 = [ (𝑡−𝐿−𝑤)∨(𝑚+1) 𝑛 , 𝑡−𝐿 𝑛 ], (2) linearity of expectation, Jensen’s inequality, because the random Fourier features 𝜑 are 𝐿 𝜑 -Lipschitz with Lipschitz constant given by (26), the triangle inequality, the Minkowski inequality, and Young’s inequality, (3) upper bounding by 𝑤 multiplied by the squared 𝜅 -variation multiplied by 
+
+𝑛 max (1−2/𝜅,0) , where the max is because we consider the cases 𝜅 ∈ [1, 2] and 𝜅 ∈ (2, 4) 
+
+separately, and where the 𝑤 factor is from the following construction: each interval 𝒰 𝑡 has length at most 𝑤/𝑛 , so we consider a family of 𝑤 subsequences of intervals of the form 
+
+𝒰 𝑗+𝑤 , 𝒰 𝑗+2𝑤 , … so they are disjoint (besides the endpoints), then upper bound the sum over each subsequence by the squared 𝜅 -variation multiplied by 𝑛 max (1−2/𝜅,0) , then sum over all of the subsequences, which leads to the desired upper bound with the factor of 𝑤 , (4) using the bound from Assumption 16, and (5) because of the rates specified in Assumption 17. 53 Step 2.2.2. By Markov’s inequality, it suffices to show that, for all 𝑟 = 0, 1, … , 𝑠 ,
+
+𝔼 ( sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝔼 𝜃 𝐹 (𝑟) 𝑡−𝐿 (𝜃) − 𝐹 (𝑟) 𝑡−𝐿 (𝜃)∥ 2
+
+) = 𝑜(𝑛), 
+
+where 𝔼(⋅) denotes expectation with respect to the law of the noise inputs. By Assump-tion 11, Θ ⊂ ℝ 𝑝 is compact, so it is totally bounded and there exists an 𝜖 -net, i.e. for every 
+
+𝜖 > 0 , there exist finitely many points 𝜃 1, … , 𝜃 𝑁(𝜖) for some 𝑁 (𝜖) ∈ ℕ , such that 
+
+Θ ⊂ ⋃
+
+> 𝑖∈[𝑁(𝜖)]
+
+𝐵 𝜖 (𝜃 𝑖 ), 
+
+where 𝐵 𝜖 (𝜃 𝑖 ) is a ball of radius 𝜖 . By adding and subtracting the same term, the triangle inequality, Young’s inequality, the definition of the 𝜖 -net for some 𝜖 > 0 and 𝑁 (𝜖) ∈ ℕ , and definition of the supremum, 
+
+12 sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝔼 𝜃 [𝐹 (𝑟) 𝑡−𝐿 (𝜃)] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃)∥ 2
+
+≤ max 
+
+> 𝑖∈[𝑁(𝜖)] 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝔼 𝜃 𝑖 [𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )∥ 2
+
++ sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥[𝔼 𝜃 [𝐹 (𝑟) 𝑡−𝐿 (𝜃)] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃)] − [𝔼 𝜃 ′ [𝐹 (𝑟) 𝑡−𝐿 (𝜃 ′)] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃 ′)]∥ 2
+
+.
+
+Taking the expectation 𝔼(⋅) with respect to the law of the noise inputs, we have 
+
+12 𝔼 ( sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝔼 𝜃 [𝐹 (𝑟) 𝑡−𝐿 (𝜃)] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃)∥ 2
+
+)
+
+> (1)
+
+≤ 𝔼 ( max 
+
+> 𝑖∈[𝑁(𝜖)] 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝔼 𝜃 𝑖 [𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )∥ 2
+
+)+ 𝔼 ⎛⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥[𝔼 𝜃 [𝐹 (𝑟) 𝑡−𝐿 (𝜃)] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃)] − [𝔼 𝜃 ′ [𝐹 (𝑟) 𝑡−𝐿 (𝜃 ′)] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃 ′)]∥ 2⎞⎟⎟⎟⎠
+
+> (2)
+
+≤ ∑
+
+> 𝑖∈[𝑁(𝜖)] 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝔼 𝜃 𝑖 (∥𝔼 𝜃 𝑖 [𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )∥ 2
+
+)+ 𝔼 ⎛⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥[𝔼 𝜃 [𝐹 (𝑟) 𝑡−𝐿 (𝜃)] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃)] − [𝔼 𝜃 ′ [𝐹 (𝑟) 𝑡−𝐿 (𝜃 ′)] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃 ′)]∥ 2⎞⎟⎟⎟⎠
+
+> (3)
+
+≤ ∑
+
+> 𝑖∈[𝑁(𝜖)] 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝔼 𝜃 𝑖 (∥𝔼 𝜃 𝑖 [𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )∥ 2
+
+)+ 4 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝔼 ⎛⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥𝐹 (𝑟) 𝑡−𝐿 (𝜃) − 𝐹 (𝑟) 𝑡−𝐿 (𝜃 ′)∥ 2⎞⎟⎟⎟⎠,
+
+54 by (1) the previous 𝜖 -net inequality, monotonicity of expectation, and linearity of expec-tation, (2) upper bounding the maximum by the sum and linearity of expectation, and (3) the triangle inequality, Young’s inequality, subadditivity of the supremum, linearity of expectation, Jensen’s inequality, and monotonicity of expectation. 
+
+Step 2.2.2.1. We begin with the first term. For the following derivations, define 
+
+𝒯 𝑡 = {(𝑡 − 𝐿 − 𝑤) ∨ (𝑚 + 1), … , 𝑡 − 𝐿 − 1, 𝑡 − 𝐿}. 
+
+For all 𝑖 ∈ 𝑁 (𝜖) , we have 
+
+𝔼 𝜃 𝑖 (∥𝔼 𝜃 𝑖 [𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )∥ 2
+
+)
+
+> (1)
+
+= tr [Cov 𝜃 𝑖 (𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 ))] 
+
+> (2)
+
+= tr ⎡⎢⎣
+
+Var 𝜃 𝑖 
+
+⎛⎜⎝1𝑤 ∧ 𝑡 
+
+> 𝑡−𝐿
+
+∑
+
+> 𝑗=(𝑡−𝐿−𝑤)∨(𝑚+1)
+
+𝜑 ([𝐺 (𝑛,𝑟) (𝑗−𝑚)/𝑛 (𝜺 (𝑟) 𝑗−𝑚 , 𝜃 𝑖 ), … , 𝐺 (𝑛,𝑟) 𝑗/𝑛 (𝜺 (𝑟) 𝑗 , 𝜃 𝑖 )] ⊤
+
+)⎞⎟⎠⎤⎥⎦
+
+> (3)
+
+= 1(𝑤 ∧ 𝑡) 2 ∑
+
+> ℓ,𝑗∈𝒯 𝑡
+
+tr ⎡⎢⎢⎣
+
+Cov 𝜃 𝑖 
+
+⎛⎜⎜⎜⎝𝜑 ([𝐺 (𝑛,𝑟) (ℓ−𝑚)/𝑛 (𝜺 (𝑟) ℓ−𝑚 , 𝜃 𝑖 ), … , 𝐺 (𝑛,𝑟) ℓ/𝑛 (𝜺 (𝑟) ℓ , 𝜃 𝑖 )] ⊤
+
+) , 𝜑 ([𝐺 (𝑛,𝑟) (𝑗−𝑚)/𝑛 (𝜺 (𝑟) 𝑗−𝑚 , 𝜃 𝑖 ), … , 𝐺 (𝑛,𝑟) 𝑗/𝑛 (𝜺 (𝑟) 𝑗 , 𝜃 𝑖 )] ⊤
+
+)⎞⎟⎟⎟⎠⎤⎥⎥⎦
+
+> (4)
+
+≤ 1(𝑤 ∧ 𝑡) 2 ∑
+
+> ℓ,𝑗∈𝒯 𝑡
+
+𝐶 𝜑 (|ℓ − 𝑗| + 1) −𝐾 𝜑 
+
+> (5)
+
+≤ 1𝑤 ∧ 𝑡 
+
+> ∞
+
+∑
+
+> ℎ=−∞
+
+𝐶 𝜑 (|ℎ| + 1) −𝐾 𝜑 
+
+,
+
+by (1) equality of inner product with trace of outer product, and the definition of the covariance of this quantity as this outer product, (2) definition of 𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 ) from (22), (3) expanding the trace of the covariance of the sum of random vectors by using the linearity of covariance and trace, (4) upper bounding the trace of the covariance by its trace norm and applying the trace norm inequality with constants 𝐶 𝜑 > 0 , 𝐾 𝜑 > 1 from Lemma 6, (5) by enlarging the inner summation to be over all integers and upper bounding by this quantity multiplied by the number of terms in the outer summation, noting that the series converges because 𝐾 𝜑 > 1 by Lemma 6. Denoting ∑∞ℎ=−∞ 𝐶 𝜑 (|ℎ| + 1) −𝐾 𝜑 
+
+by the constant 𝐶 ′ > 0 , since the series converges, 55 summing over 𝑡 yields 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝔼 𝜃 𝑖 (∥𝔼 𝜃 𝑖 [𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )∥ 2
+
+)
+
+> (1)
+
+≤ 𝐶 ′𝑛 
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+1𝑤 ∧ 𝑡 
+
+> (2)
+
+≤ 𝐶 ′ 𝑛 − 𝑤 𝑤 + 𝐶 ′𝑤 
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+1𝑡 
+
+> (3)
+
+≤ 𝐶 ′ 𝑛 𝑤 + 𝐶 ′(1 + log (𝑤)) 
+
+> (4)
+
+= 𝑂( max (𝑛/𝑤, log (𝑤))), 
+
+by (1) applying the previous inequality, (2) expanding the sum with the minimum, where the inequality covers both cases when 𝑤 is less than or greater than 𝑚 + 𝜏 + 𝐿 , (3) upper bounding the harmonic series and dropping the subtraction by 𝑤 , (4) because 𝑤 𝑛 = 𝑜(𝑛) 
+
+by Assumption 17. 
+
+Step 2.2.2.2. We now consider the second term. Observe that 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝔼 ⎛⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥𝐹 (𝑟) 𝑡−𝐿 (𝜃) − 𝐹 (𝑟) 𝑡−𝐿 (𝜃 ′)∥ 2⎞⎟⎟⎟⎠
+
+> (1)
+
+≤ 2 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏
+
+𝔼 ⎛⎜⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥∥∥∥𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝑚)/𝑛 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)− 𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝑚)/𝑛 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃 ′), … , 𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 𝑡 , 𝜃 ′)] ⊤
+
+)∥∥∥∥
+
+> 2
+
+⎞⎟⎟⎟⎟⎠
+
+> (2)
+
+≤ 2(𝑚 + 1)𝐿 2𝜑 𝑛 
+
+∑
+
+> 𝑡=𝑚+𝜏 𝑚
+
+∑
+
+> 𝑗=0
+
+𝔼 ⎛⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥𝐺 (𝑛,𝑟) (𝑡−𝑗)/𝑛 (𝜺 (𝑟) 𝑡−𝑗 , 𝜃) − 𝐺 (𝑛,𝑟) (𝑡−𝑗)/𝑛 (𝜺 (𝑟) 𝑡−𝑗 , 𝜃 ′)∥ 2⎞⎟⎟⎟⎠
+
+> (3)
+
+≤ 2𝑛(𝑚 + 1) 2𝐿 2𝜑 𝜂 𝐺 ,
+
+because (1) linearity of summation (i.e. for the rolling windows), the triangle inequality, Young’s inequality, subadditivity of the supremum, linearity of expectation, and dividing by 𝑤 from the rolling-window averages to cancel out the factor of 𝑤 due to repeated terms, (2) the random Fourier features 𝜑 are 𝐿 𝜑 -Lipschitz with Lipschitz constant given by (26), the triangle inequality, Young’s inequality 𝑚 + 1 times, subadditivity of the supremum, and linearity of expectation, (3) upper bounding the sum by the 𝑛 times the supremum over 𝑡 and applying the stochastic equicontinuity-type condition from Assumption 14. By Assumption 14, 𝜂 𝐺 −→ 0 as 𝜖 − → 0 . However, taking 𝜖 − → 0 makes 𝑁 (𝜖) − → ∞ , so we must specify the rates. Previously, in Step 2.2.2.1 we showed that, for each fixed 𝜖 > 0 and 𝑁 (𝜖) ∈ ℕ , for all 56 𝑖 ∈ 𝑁 (𝜖) , we have 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝔼 𝜃 𝑖 (∥𝔼 𝜃 𝑖 [𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )∥ 2
+
+) = 𝑂( max (𝑛/𝑤, log (𝑤))). 
+
+Therefore, for any sequence (𝜖 𝑛 )𝑛∈ℕ , 𝜖 𝑛 −→ 0 as 𝑛 −→ ∞, such that 𝑁 (𝜖 𝑛 ) =𝑜( 𝑛  
+
+> max (𝑛/𝑤, log (𝑤))
+
+), we have 
+
+∑
+
+> 𝑖∈[𝑁(𝜖)] 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝔼 𝜃 𝑖 (∥𝔼 𝜃 𝑖 [𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )∥ 2
+
+)≤ 𝑁 (𝜖) max 
+
+> 𝑖∈[𝑁(𝜖)] 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝔼 𝜃 𝑖 (∥𝔼 𝜃 𝑖 [𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )] − 𝐹 (𝑟) 𝑡−𝐿 (𝜃 𝑖 )∥ 2
+
+)= 𝑜(𝑛), 
+
+and 𝜂 𝐺 = 𝜂 𝐺 (𝜖 𝑛 ) = 𝑜(1) so that the upper bound from (3) is 2𝑛(𝑚 + 1) 2𝐿 2𝜑 𝜂 𝐺 = 𝑜(𝑛) .Putting everything together, by Markov’s inequality, we have the desired result sup 
+
+> 𝜃∈Θ 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝔼 𝜃 𝐹 (𝑟) 𝑡−𝐿 (𝜃) − 𝐹 (𝑟) 𝑡−𝐿 (𝜃)∥ 2
+
+= 𝑜 𝑝 (𝑛). 
+
+Step 3. We show that sup 
+
+> 𝜃∈Θ
+
+∣𝐼 3𝑛 (𝜃)∣ = 𝑜 𝑝 (1). 
+
+Observe that sup 
+
+> 𝜃∈Θ
+
+∣𝐼 3𝑛 (𝜃)∣ 
+
+> (1)
+
+= sup 
+
+> 𝜃∈Θ
+
+∣ 2𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+̂𝜇 𝑡−𝐿,𝑛 (𝜃) ⊤ ([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] − 𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃))∣ 
+
+> (2)
+
+≤ sup 
+
+> 𝜃∈Θ
+
+∣ 2𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ ([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] − 𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃))∣ + sup 
+
+> 𝜃∈Θ
+
+∣ 2𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+(̂𝜇 𝑡−𝐿,𝑛 (𝜃) − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃)) ⊤
+
+([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] − 𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃))∣ , 
+
+by (1) the definition of 𝐼 3𝑛 (𝜃) , and (2) adding and subtracting the same term, linearity in the first argument of the inner product, the triangle inequality, and the subadditivity of the supremum. We will show that both terms are 𝑜 𝑝 (1) .
+
+Step 3.1. By Markov’s inequality, it suffices to show that 
+
+𝔼 ( sup 
+
+> 𝜃∈Θ
+
+∣ 2𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ ([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] − 𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃))∣) = 𝑜(1), 
+
+57 where 𝔼(⋅) denotes expectation with respect to the law of the noise inputs. We have sup 
+
+> 𝜃∈Θ
+
+∣ 2𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ ([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] − 𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃))∣ ≤
+
+> 𝑠
+
+∑
+
+> 𝑟=0
+
+2𝑛 − 𝑚 sup 
+
+> 𝜃∈Θ
+
+∣
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ [𝑓 (𝑟) 𝑡 (𝜃) − 𝔼 𝜃 [𝑓 (𝑟) 𝑡 (𝜃)]]∣ , 
+
+by linearity, the definition of the terms, the triangle inequality, upper bounding the term with the true parameter 𝜃 0 by the supremum over 𝜃 ∈ Θ of that term, and the subadditivity of the supremum. By linearity and monotonicity of expectation, it suffices to show that, for all 𝑟 = 0, 1, … , 𝑠 , we have 
+
+𝔼 ( sup 
+
+> 𝜃∈Θ
+
+∣
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ [𝑓 (𝑟) 𝑡 (𝜃) − 𝔼 𝜃 [𝑓 (𝑟) 𝑡 (𝜃)]]∣) = 𝑜(𝑛). 
+
+By Assumption 11, Θ ⊂ ℝ 𝑝 is compact, so it is totally bounded and there exists an 𝜖 -net, i.e. for every 𝜖 > 0 , there exist finitely many points 𝜃 1, … , 𝜃 𝑁(𝜖) for some 𝑁 (𝜖) ∈ ℕ , such that 
+
+Θ ⊂ ⋃
+
+> 𝑖∈[𝑁(𝜖)]
+
+𝐵 𝜖 (𝜃 𝑖 ), 
+
+where 𝐵 𝜖 (𝜃 𝑖 ) is a ball of radius 𝜖 . By adding and subtracting the same term, the triangle inequality, the definition of the 𝜖 -net for some 𝜖 > 0 and 𝑁 (𝜖) ∈ ℕ , and definition of the supremum, sup 
+
+> 𝜃∈Θ
+
+∣
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ [𝑓 (𝑟) 𝑡 (𝜃) − 𝔼 𝜃 [𝑓 (𝑟) 𝑡 (𝜃)]]∣ 
+
+> (1)
+
+≤ max 
+
+> 𝑖∈[𝑁(𝜖)]
+
+∣
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 𝑖 )⊤ [𝑓 (𝑟) 𝑡 (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝑓 (𝑟) 𝑡 (𝜃 𝑖 )]]∣ + sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∣
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+⎡⎢⎣𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ [𝑓 (𝑟) 𝑡 (𝜃) − 𝔼 𝜃 [𝑓 (𝑟) 𝑡 (𝜃)]] − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 ′)⊤ [𝑓 (𝑟) 𝑡 (𝜃 ′) − 𝔼 𝜃 ′ [𝑓 (𝑟) 𝑡 (𝜃 ′)]] ⎤⎥⎦∣ . 
+
+58 Taking the expectation 𝔼(⋅) with respect to the law of the noise inputs, we have 
+
+𝔼 ( sup 
+
+𝜃∈Θ 
+
+∣
+
+𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ [𝑓 (𝑟) 𝑡 (𝜃) − 𝔼 𝜃 [𝑓 (𝑟) 𝑡 (𝜃)]]∣) 
+
+(1) 
+
+≤ 𝔼 ( max 
+
+𝑖∈[𝑁(𝜖)] 
+
+∣
+
+𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 𝑖 )⊤ [𝑓 (𝑟) 𝑡 (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝑓 (𝑟) 𝑡 (𝜃 𝑖 )]]∣) + 𝔼 ⎡⎢⎢⎣
+
+sup 
+
+𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖 
+
+∣
+
+𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+⎡⎢⎣𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ [𝑓 (𝑟) 𝑡 (𝜃) − 𝔼 𝜃 [𝑓 (𝑟) 𝑡 (𝜃)]] − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 ′)⊤ [𝑓 (𝑟) 𝑡 (𝜃 ′) − 𝔼 𝜃 ′ [𝑓 (𝑟) 𝑡 (𝜃 ′)]] ⎤⎥⎦∣⎤⎥⎥⎦
+
+(2) 
+
+≤ ∑
+
+𝑖∈[𝑁(𝜖)] 
+
+𝔼 𝜃 𝑖 ∣
+
+𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 𝑖 )⊤ [𝑓 (𝑟) 𝑡 (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝑓 (𝑟) 𝑡 (𝜃 𝑖 )]]∣ + 𝔼 ⎡⎢⎢⎣
+
+sup 
+
+𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖 
+
+∣
+
+𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+⎡⎢⎣𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ [𝑓 (𝑟) 𝑡 (𝜃) − 𝔼 𝜃 [𝑓 (𝑟) 𝑡 (𝜃)]] − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 ′)⊤ [𝑓 (𝑟) 𝑡 (𝜃 ′) − 𝔼 𝜃 ′ [𝑓 (𝑟) 𝑡 (𝜃 ′)]] ⎤⎥⎦∣⎤⎥⎥⎦
+
+(3) 
+
+≤ ∑
+
+𝑖∈[𝑁(𝜖)] 
+
+𝔼 𝜃 𝑖 ∣
+
+𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 𝑖 )⊤ [𝑓 (𝑟) 𝑡 (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝑓 (𝑟) 𝑡 (𝜃 𝑖 )]]∣ + 𝔼 ⎡⎢⎢⎣
+
+sup 
+
+𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖 𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+∥𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 ′)∥ ∥𝑓 (𝑟) 𝑡 (𝜃) − 𝔼 𝜃 [𝑓 (𝑟) 𝑡 (𝜃)]∥ ⎤⎥⎥⎦+ 𝔼 ⎡⎢⎢⎣
+
+sup 
+
+𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖 𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+∥𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 ′)∥ ∥(𝑓 (𝑟) 𝑡 (𝜃) − 𝑓 (𝑟) 𝑡 (𝜃 ′)) − (𝔼 𝜃 [𝑓 (𝑟) 𝑡 (𝜃)] − 𝔼 𝜃 ′ [𝑓 (𝑟) 𝑡 (𝜃 ′)])∥ ⎤⎥⎥⎦
+
+(4) 
+
+≤ ∑
+
+𝑖∈[𝑁(𝜖)] 
+
+𝔼 𝜃 𝑖 ∣
+
+𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 𝑖 )⊤ [𝑓 (𝑟) 𝑡 (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝑓 (𝑟) 𝑡 (𝜃 𝑖 )]]∣ + 2 sup 
+
+𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖 𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+∥𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 ′)∥ + 2𝔼 ⎡⎢⎢⎣
+
+sup 
+
+𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖 𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+∥𝑓 (𝑟) 𝑡 (𝜃) − 𝑓 (𝑟) 𝑡 (𝜃 ′)∥ ⎤⎥⎥⎦
+
+(5) 
+
+≤ ∑
+
+𝑖∈[𝑁(𝜖)] 
+
+𝔼 𝜃 𝑖 ∣
+
+𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 𝑖 )⊤ [𝑓 (𝑟) 𝑡 (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝑓 (𝑟) 𝑡 (𝜃 𝑖 )]]∣ + 2(𝑠 + 3)𝔼 ⎡⎢⎢⎣
+
+sup 
+
+𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖 𝑛 
+
+∑
+
+𝑡=𝑚+𝜏+𝐿 
+
+∥𝑓 (𝑟) 𝑡 (𝜃) − 𝑓 (𝑟) 𝑡 (𝜃 ′)∥ ⎤⎥⎥⎦,
+
+59 by (1) the previous 𝜖 -net inequality, monotonicity of expectation, and linearity of expecta-tion, (2) upper bounding the maximum by the sum and linearity of expectation, (3) adding and subtracting the cross-term with 𝜃 and 𝜃 ′, the triangle inequality, the Cauchy-Schwarz inequality, and the subadditivity of the supremum, (4) upper bounding because the ran-dom features are bounded between −1 and 1 so the expectations must be as well, and for the last term: the triangle inequality, linearity, subadditivity of the supremum, linearity of expectation, Jensen’s inequality, and monotonicity of expectation, and (5) linearity of expectation, Jensen’s inequality, the triangle inequality, the Minkowski inequality, and subadditivity of the supremum. Next, we show both terms are 𝑜(𝑛) .
+
+Step 3.1.1. We begin with the first term. For each 𝑟 = 0, 1, … , 𝑠 , and 𝜃 ∈ Θ , denote 
+
+𝑌 (𝑟) 𝑡 (𝜃) = 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ [𝑓 (𝑟) 𝑡 (𝜃) − 𝔼 𝜃 [𝑓 (𝑟) 𝑡 (𝜃)]] , 𝑡 = 𝑚 + 𝜏 + 𝐿, … , 𝑛, 
+
+which admits the representation 
+
+𝑌 (𝑟) 𝑡 (𝜃) = 𝐻 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 𝑡 , 𝜃), 
+
+where the mapping 𝐻 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 𝑡 , 𝜃) is defined in terms of the original causal representations from Assumption 8, 
+
+𝐻 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 𝑡 , 𝜃) = 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ [𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝑚)/𝑛 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+) − 𝔼 𝜃 [𝑓 (𝑟) 𝑡 (𝜃)]] . 
+
+Analogous to Assumption 15, denote the version of 𝑌 (𝑟) 𝑡 (𝜃) with the 𝑗 -th noise input in the past replaced with its iid copy by ̃𝑌 (𝑟) 𝑡,𝑗 (𝜃) = 𝐻 (𝑛,𝑟) 𝑡/𝑛 (̃𝜺 (𝑟) 𝑡,𝑗 , 𝜃) = 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ [𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝑚)/𝑛 (̃𝜺 (𝑟) 𝑡−𝑚,𝑗−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡/𝑛 (̃𝜺 (𝑟) 𝑡,𝑗 , 𝜃)] ⊤
+
+) − 𝔼 𝜃 [𝑓 (𝑟) 𝑡 (𝜃)]] , 
+
+where for any 𝑖 ∈ ℕ we define ̃ 𝜺 (𝑟) 𝑡−𝑖,𝑗−𝑖 as 𝜺 (𝑟) 𝑡−𝑖 if 𝑗 − 𝑖 ≤ 0 . Observe that the time series 60 𝑌 (𝑟) 𝑡 (𝜃) satisfies a decaying physical dependence measure condition 
+
+∥𝑌 (𝑟) 𝑡 (𝜃) −̃ 𝑌 (𝑟) 𝑡,𝑗 (𝜃)∥ ℒ𝑞 (𝜃) (1) 
+
+= ∥𝐻 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 𝑡 , 𝜃) − 𝐻 (𝑛,𝑟) 𝑡/𝑛 (̃𝜺 (𝑟) 𝑡,𝑗 , 𝜃)∥ ℒ𝑞 (𝜃) (2) 
+
+=∥∥∥∥𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ ⎡⎢⎢⎣𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝑚)/𝑛 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)− 𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝑚)/𝑛 (̃𝜺 (𝑟) 𝑡−𝑚,𝑗−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡/𝑛 (̃𝜺 (𝑟) 𝑡,𝑗 , 𝜃)] ⊤
+
+)⎤⎥⎥⎦∥∥∥∥ℒ𝑞 (𝜃) (3) 
+
+≤ ∥𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃)∥ ∥∥∥∥𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝑚)/𝑛 (𝜺 (𝑟) 𝑡−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 (𝑟) 𝑡 , 𝜃)] ⊤
+
+)− 𝜑 ([𝐺 (𝑛,𝑟) (𝑡−𝑚)/𝑛 (̃𝜺 (𝑟) 𝑡−𝑚,𝑗−𝑚 , 𝜃), … , 𝐺 (𝑛,𝑟) 𝑡/𝑛 (̃𝜺 (𝑟) 𝑡,𝑗 , 𝜃)] ⊤
+
+)∥∥∥∥ℒ𝑞 (𝜃) (4) 
+
+≤ 𝐿 𝜑 𝑚 
+
+∑
+
+> 𝑖=0
+
+∥𝐺 (𝑛,𝑟) (𝑡−𝑖)/𝑛 (𝜺 (𝑟) 𝑡−𝑖 , 𝜃) − 𝐺 (𝑛,𝑟) (𝑡−𝑖)/𝑛 (̃𝜺 (𝑟) 𝑡−𝑖,𝑗−𝑖 , 𝜃)∥ ℒ𝑞 (𝜃) (5) 
+
+= 𝐿 𝜑 
+
+> min (𝑚,𝑗−1)
+
+∑
+
+> 𝑖=0
+
+∥𝐺 (𝑛,𝑟) (𝑡−𝑖)/𝑛 (𝜺 (𝑟) 𝑡−𝑖 , 𝜃) − 𝐺 (𝑛,𝑟) (𝑡−𝑖)/𝑛 (̃𝜺 (𝑟) 𝑡−𝑖,𝑗−𝑖 , 𝜃)∥ ℒ𝑞 (𝜃) (6) 
+
+≤ 𝐿 𝜑 
+
+> min (𝑚,𝑗−1)
+
+∑
+
+> 𝑖=0
+
+Λ𝜌 𝑗−𝑖 (7) 
+
+≤ 𝐿 𝜑 (𝑚 + 1)Λ𝜌 𝑗− min (𝑚,𝑗−1) (8) 
+
+≤ Λ 𝐻 (𝜌 𝐻 )𝑗 ,
+
+by (1) definition, (2) cancellation of terms and the linearity of the inner product, (3) the Cauchy-Schwarz inequality and linearity of expectation, (4) because the random Fourier features are bounded between −1 and 1 so the expectations must be as well, and because the random Fourier features 𝜑 are 𝐿 𝜑 -Lipschitz with Lipschitz constant given by (26), the triangle inequality, and the Minkowski inequality, (5) because the distances are zero for 
+
+𝑗 − 𝑖 ≤ 0 , so it suffices to consider the terms where 𝑗 − 𝑖 > 0 ⟺ 𝑖 ≤ 𝑗 − 1 , (6) using the bound on the physical dependence measure from Assumption 15, (7) upper bounding by 𝑚 + 1 times the largest term which is the “earliest” term because 𝜌 ∈ (0, 1) , and (8) upper bounding with an expression that satisfies exponential decay condition analogous to Assumption 15, where Λ𝐻 = 𝐿 𝜑 (𝑚 + 1)Λ > 0 and 𝜌 𝐻 = 𝜌 ∈ (0, 1) . Lemma 7 is therefore applicable to the time series 𝑌 (𝑟) 𝑡 (𝜃) .61 Let us return to the term of interest. For all 𝑖 ∈ 𝑁 (𝜖) , we have 
+
+𝔼 𝜃 𝑖 ∣
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 𝑖 )⊤ [𝑓 (𝑟) 𝑡 (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝑓 (𝑟) 𝑡 (𝜃 𝑖 )]]∣ 
+
+> (1)
+
+= 𝔼 𝜃 𝑖 ∣
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝑌 (𝑟) 𝑡 (𝜃 𝑖 )∣ 
+
+> (2)
+
+≤ 𝐶𝑛 12 Λ𝐻 ∞
+
+∑
+
+> 𝑗=1
+
+(𝜌 𝐻 )𝑗 (3) 
+
+= 𝐶𝑛 12 Λ𝐻 𝐾 𝐻 ,
+
+by (1) definition, (2) the second inequality from Lemma 7, noting that 𝔼 𝜃 [𝑌 (𝑟) 𝑡 (𝜃)] = 0 for all 𝑡 , 𝑟 , 𝜃 , by construction, applying the inequality on the physical dependence measure derived above, and further upper bounding with infinitely many terms in the summation, (3) noting that the geometric series converges and the constant 𝐾 𝐻 = 11−𝜌 𝐻 − 1 > 0 since 
+
+𝜌 𝐻 = 𝜌 ∈ (0, 1) by Assumption 15. Hence, for each fixed 𝜖 > 0 and 𝑁 (𝜖) ∈ ℕ , for all 
+
+𝑖 ∈ 𝑁 (𝜖) , we have 
+
+𝔼 𝜃 𝑖 ∣
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 𝑖 )⊤ [𝑓 (𝑟) 𝑡 (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝑓 (𝑟) 𝑡 (𝜃 𝑖 )]]∣ = 𝑂(𝑛 12 ). 
+
+Step 3.1.2. We now consider the second term. Observe that 
+
+𝔼 ⎡⎢⎢⎣
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥𝑓 (𝑟) 𝑡 (𝜃) − 𝑓 (𝑟) 𝑡 (𝜃 ′)∥ ⎤⎥⎥⎦
+
+> (1)
+
+≤ 𝐿 𝜑 𝑛 
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿 𝑚
+
+∑
+
+> 𝑗=0
+
+𝔼 ⎛⎜⎜⎜⎝
+
+sup 
+
+> 𝜃,𝜃 ′∈Θ ‖𝜃−𝜃 ′‖≤𝜖
+
+∥𝐺 (𝑛,𝑟) (𝑡−𝑗)/𝑛 (𝜺 (𝑟) 𝑡−𝑗 , 𝜃) − 𝐺 (𝑛,𝑟) (𝑡−𝑗)/𝑛 (𝜺 (𝑟) 𝑡−𝑗 , 𝜃 ′)∥ ⎞⎟⎟⎟⎠
+
+> (2)
+
+≤ 𝐿 𝜑 𝑛(𝑚 + 1)𝜂 𝐺 ,
+
+because (1) the random Fourier features 𝜑 are 𝐿 𝜑 -Lipschitz with Lipschitz constant given by (26), the triangle inequality, subadditivity of the supremum, and linearity of expectation, and (2) by upper bounding by 𝑛 times the supremum over 𝑢 ∈ [0, 1] and applying the stochastic equicontinuity-type condition from Assumption 14. By Assumption 14, 𝜂 𝐺 −→ 0 
+
+as 𝜖 − → 0 . However, taking 𝜖 − → 0 makes 𝑁 (𝜖) − → ∞ , so we must specify the rates. Previously, we showed that, for each fixed 𝜖 > 0 and 𝑁 (𝜖) ∈ ℕ , for all 𝑖 ∈ 𝑁 (𝜖) , we have 
+
+𝔼 𝜃 𝑖 ∣
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 𝑖 )⊤ [𝑓 (𝑟) 𝑡 (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝑓 (𝑟) 𝑡 (𝜃 𝑖 )]]∣ = 𝑂(𝑛 12 ). 
+
+62 Therefore, for any sequence (𝜖 𝑛 )𝑛∈ℕ , 𝜖 𝑛 −→ 0 as 𝑛 − → ∞ , such that 𝑁 (𝜖 𝑛 ) = 𝑜(𝑛 12 ), we have 
+
+∑
+
+> 𝑖∈[𝑁(𝜖)]
+
+𝔼 𝜃 𝑖 ∣
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 𝑖 )⊤ [𝑓 (𝑟) 𝑡 (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝑓 (𝑟) 𝑡 (𝜃 𝑖 )]]∣ ≤ 𝑁 (𝜖) max 
+
+> 𝑖∈[𝑁(𝜖)]
+
+𝔼 𝜃 𝑖 ∣
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃 𝑖 )⊤ [𝑓 (𝑟) 𝑡 (𝜃 𝑖 ) − 𝔼 𝜃 𝑖 [𝑓 (𝑟) 𝑡 (𝜃 𝑖 )]]∣ = 𝑜(𝑛), 
+
+and 𝜂 𝐺 = 𝜂 𝐺 (𝜖 𝑛 ) = 𝑜(1) so that the upper bound from (2) is 𝐿 𝜑 𝑛(𝑚 + 1)𝜂 𝐺 = 𝑜(𝑛) .Putting everything together, by Markov’s inequality, we have the desired result sup 
+
+> 𝜃∈Θ
+
+∣ 2𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃) ⊤ ([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] − 𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃))∣ = 𝑜 𝑝 (1). 
+
+Step 3.2. Next, we show that sup 
+
+> 𝜃∈Θ
+
+∣ 2𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+(̂𝜇 𝑡−𝐿,𝑛 (𝜃) − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃)) ⊤
+
+([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] − 𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃))∣ = 𝑜 𝑝 (1). 
+
+Observe that sup 
+
+> 𝜃∈Θ
+
+∣ 2𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+(̂𝜇 𝑡−𝐿,𝑛 (𝜃) − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃)) ⊤
+
+([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] − 𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃))∣ 
+
+> (1)
+
+≤ sup 
+
+> 𝜃∈Θ
+
+2𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥̂𝜇 𝑡−𝐿,𝑛 (𝜃) − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃)∥ ∥([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] − 𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃))∥ 
+
+> (2)
+
+≤ ( sup 
+
+> 𝜃∈Θ
+
+2𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥̂𝜇 𝑡−𝐿,𝑛 (𝜃) − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃)∥ 2
+
+)
+
+> 12
+
+(sup 
+
+> 𝜃∈Θ
+
+2𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥([𝑓 obs  
+
+> 𝑡
+
+−̄ 𝑓 sim  
+
+> 𝑡
+
+(𝜃)] − 𝜇 𝑛 
+
+> 𝑡 𝑛
+
+(𝜃))∥ 2
+
+)
+
+> 12
+> (3)
+
+≤ 𝐶 ( sup 
+
+> 𝜃∈Θ
+
+2𝑛 − 𝑚 
+
+> 𝑛
+
+∑
+
+> 𝑡=𝑚+𝜏+𝐿
+
+∥̂𝜇 𝑡−𝐿,𝑛 (𝜃) − 𝜇 𝑛 
+
+> 𝑡−𝐿 𝑛
+
+(𝜃)∥ 2
+
+)
+
+> 12
+> (4)
+
+= 𝑜 𝑝 (1), 
+
+by (1) the triangle inequality and the Cauchy-Schwarz inequality, (2) the Cauchy-Schwarz inequality, (3) the triangle inequality and the fact that the random features are bounded between −1 and 1, so we can upper bound this average by some constant 𝐶 > 0 , and (4) because this term was previously shown to be 𝑜 𝑝 (1) in Step 2.2 of the proof (25). □
+
+63 A.7 Auxiliary results 
+
+To begin, we derive the Lipschitz constant for the random Fourier features. 
+
+Lemma 1. The function 𝜑 = (𝜑 1, … , 𝜑 𝑘 ) from (2) is Lipschitz with Lipschitz constant 
+
+𝐿 𝜑 = ( 
+
+> 𝑘
+
+∑
+
+> 𝑖=1 𝑚+1
+
+∑
+
+> 𝑗=1
+
+∥Ω 𝑖,𝑗 ∥2)
+
+> 1/2
+
+. (26) 
+
+Proof: For each coordinate 𝑖 ∈ [𝑘] of 𝜑 = (𝜑 1, … , 𝜑 𝑘 ), we have, for 𝑥, 𝑦 ∈ ℝ (𝑚+1)×𝑑 ,
+
+|𝜑 𝑖 (𝑥) − 𝜑 𝑖 (𝑦)| 
+
+> (1)
+
+= ∣ cos (
+
+> 𝑚+1
+
+∑
+
+> 𝑗=1
+
+Ω𝑖,𝑗 ⋅ 𝑥 𝑗 + 𝛼 𝑖 ) − cos (
+
+> 𝑚+1
+
+∑
+
+> 𝑗=1
+
+Ω𝑖,𝑗 ⋅ 𝑦 𝑗 + 𝛼 𝑖 )∣ 
+
+> (2)
+
+≤ ∣ 
+
+> 𝑚+1
+
+∑
+
+> 𝑗=1
+
+Ω𝑖,𝑗 ⋅ (𝑥 𝑗 − 𝑦 𝑗 )∣ 
+
+> (3)
+
+≤
+
+> 𝑚+1
+
+∑
+
+> 𝑗=1
+
+∥Ω 𝑖,𝑗 ∥ ∥𝑥 𝑗 − 𝑦 𝑗 ∥
+
+> (4)
+
+≤ ( 
+
+> 𝑚+1
+
+∑
+
+> 𝑗=1
+
+∥Ω 𝑖,𝑗 ∥2)
+
+> 1/2
+
+(
+
+> 𝑚+1
+
+∑
+
+> 𝑗=1
+
+∥𝑥 𝑗 − 𝑦 𝑗 ∥2)
+
+> 1/2 (5)
+
+≤ ( 
+
+> 𝑚+1
+
+∑
+
+> 𝑗=1
+
+∥Ω 𝑖,𝑗 ∥2)
+
+> 1/2
+
+‖Vec (𝑥) − Vec (𝑦)‖ , 
+
+because (1) the definition of the random Fourier features 𝜑 , (2) cosine is 1-Lipschitz, can-celing the phase 𝛼 𝑖 , and linearity of sums and inner products, (3) the triangle inequality and the Cauchy-Schwarz inequality applied to each inner product, (4) the Cauchy-Schwarz inequality applied to the sum of products, and (5) definition of the Euclidean norm, which yields 
+
+|𝜑 𝑖 (𝑥) − 𝜑 𝑖 (𝑦)| ≤ ( 
+
+> 𝑚+1
+
+∑
+
+> 𝑗=1
+
+∥Ω 𝑖,𝑗 ∥2)
+
+> 1/2
+
+‖Vec (𝑥) − Vec (𝑦)‖ , 
+
+so squaring both sides, summing over 𝑖 = 1, … , 𝑘 , and taking square roots, yields 
+
+‖𝜑(𝑥) − 𝜑(𝑦)‖ ≤ ( 
+
+> 𝑘
+
+∑
+
+> 𝑖=1 𝑚+1
+
+∑
+
+> 𝑗=1
+
+∥Ω 𝑖,𝑗 ∥2)
+
+> 1/2
+
+‖Vec (𝑥) − Vec (𝑦)‖ . 
+
+□
+
+For 𝑡 ∈ ℕ , 𝑖 ∈ ℕ , 𝑗 ∈ ℕ 0, 𝑟 = 0, 1, … , 𝑠 , define 
+
+𝑍 (𝑖,𝑟) 𝑡 (𝜃) = [𝐺 (𝑖,𝑟) 𝑡−𝑚 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑖,𝑟) 𝑡 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+,̃ 𝑍 (𝑖,𝑟) 𝑡,𝑗 (𝜃) = [𝐺 (𝑖,𝑟) 𝑡−𝑚 (̃𝜺 (𝑟) −𝑚,𝑗 , 𝜃), … , 𝐺 (𝑖,𝑟) 𝑡 (̃𝜺 (𝑟) 0,𝑗 , 𝜃)] ⊤
+
+,
+
+64 where the definition of ̃ 𝜺 ℓ,𝑗 , ℓ ∈ ℤ , is from (11). The following result establishes that the time series of random features satisfies a physical dependence measure condition, analogous to Assumption 7. 
+
+Lemma 2. There exist Ψ𝜑 > 0 , 𝛽 𝜑 > 2 such that, for some 𝑞 𝜑 > 2 , all 𝑗 ∈ ℕ 0, all 𝑖 ∈ ℕ ,and all 𝑟 = 0, 1, … , 𝑠 , we have 
+
+sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑡∈ℕ
+
+∥𝜑 (𝑍 (𝑖,𝑟) 𝑡 (𝜃)) − 𝜑 (̃𝑍 (𝑖,𝑟) 𝑡,𝑗 (𝜃))∥ ℒ𝑞 𝜑 (𝜃) ≤ Ψ 𝜑 (𝑗 ∨ 1) −𝛽 𝜑 
+
+,
+
+sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑡∈ℕ
+
+∥𝜑 (𝑍 (𝑖,𝑟) 𝑡 (𝜃))∥ ℒ𝑞 𝜑 (𝜃) ≤ Ψ 𝜑 .
+
+Proof: The result follows by the fact that 𝜑 is Lipschitz with Lipschitz constant 𝐿 𝜑 
+
+from (26), the triangle inequality and Minkowski inequality, and applying the bounds from Assumption 7. The same line of reasoning is used in the proof of Theorem 2, so the details are omitted. 
+
+□
+
+The following result presents Theorem 3.2 from Mies and Steland (2023) using our notation. 
+
+Lemma 3. (Law of Large Numbers (Mies and Steland, 2023)). For 𝑟 = 0, 1, … , 𝑠 
+
+and 𝜃 ∈ Θ , suppose a time series 𝑋 (𝑟) 𝑡 (𝜃) , 𝑡 = 1, … , 𝑛 , is generated as 
+
+𝑋 (𝑟) 𝑡 (𝜃) = 𝐺 (𝑛,𝑟) 𝑡 (𝜺 𝑡 , 𝜃). 
+
+Suppose for all 𝑖 ∈ ℕ and 𝑟 = 0, 1, … , 𝑠 , there exists a 𝑞 > 2 , such that 
+
+sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑡∈ℕ
+
+∥𝐺 (𝑖,𝑟) 𝑡 (𝜺 0, 𝜃)∥ ℒ𝑞 (𝜃) < ∞. 
+
+For some 2 ≤ ℎ ≤ 𝑞 < ∞ , define the physical dependence measure at time 𝑡 and sample size 𝑛 as 
+
+𝜂 (𝑛,𝑟) 𝑡,𝑗,𝑞,ℎ (𝜃) = 𝔼 𝜃 (∥𝐺 (𝑛,𝑟) 𝑡 (𝜺 𝑡 , 𝜃) − 𝐺 (𝑛,𝑟) 𝑡 (̃𝜺 𝑡,𝑗 , 𝜃)∥ 𝑞 ℎ)1/𝑞 
+
+.
+
+There exists a constant 𝐶 = 𝐶(𝑞, ℎ, 𝜃) , such that for all 𝑟 = 0, 1, … , 𝑠 , 𝜃 ∈ Θ , and 𝑛 ∈ ℕ ,we have 
+
+(𝔼 𝜃 [max  
+
+> ℓ≤𝑛
+
+∥
+
+> ℓ
+
+∑
+
+> 𝑡=1
+
+(𝑋 (𝑟) 𝑡 (𝜃) − 𝔼 𝜃 [𝑋 (𝑟) 𝑡 (𝜃)])∥ 
+
+> 𝑞 ℎ
+
+]) 
+
+> 1𝑞
+
+= (𝔼 𝜃 [max  
+
+> ℓ≤𝑛
+
+∥
+
+> ℓ
+
+∑
+
+> 𝑡=1
+
+(𝐺 (𝑛,𝑟) 𝑡 (𝜺 𝑡 , 𝜃) − 𝔼 𝜃 [𝐺 (𝑛,𝑟) 𝑡 (𝜺 𝑡 , 𝜃)])∥ 
+
+> 𝑞 ℎ
+
+]) 
+
+> 1𝑞
+
+≤ 𝐶𝑛 12 − 1𝑞 
+
+> ∞
+
+∑
+
+> 𝑗=1
+
+(
+
+> 𝑛
+
+∑
+
+> 𝑡=1
+
+(𝜂 (𝑛,𝑟) 𝑡,𝑗,𝑞,ℎ (𝜃)) 𝑞 )
+
+> 1𝑞
+
+≤ 𝐶𝑛 12
+
+> ∞
+
+∑
+
+> 𝑗=1
+
+max  
+
+> 𝑡≤𝑛
+
+𝜂 (𝑛,𝑟) 𝑡,𝑗,𝑞,ℎ (𝜃), 
+
+65 and in the special case of ℎ = 2 , the inequality may be improved to 
+
+(𝔼 𝜃 [max  
+
+> ℓ≤𝑛
+
+∥
+
+> ℓ
+
+∑
+
+> 𝑡=1
+
+(𝑋 (𝑟) 𝑡 (𝜃) − 𝔼 𝜃 [𝑋 (𝑟) 𝑡 (𝜃)])∥ 
+
+> 𝑞 2
+
+]) 
+
+> 1𝑞
+
+= (𝔼 𝜃 [max  
+
+> ℓ≤𝑛
+
+∥
+
+> ℓ
+
+∑
+
+> 𝑡=1
+
+(𝐺 (𝑛,𝑟) 𝑡 (𝜺 𝑡 , 𝜃) − 𝔼 𝜃 [𝐺 (𝑛,𝑟) 𝑡 (𝜺 𝑡 , 𝜃)])∥ 
+
+> 𝑞 2
+
+]) 
+
+> 1𝑞
+
+≤ 𝐶 
+
+> ∞
+
+∑
+
+> 𝑗=1
+
+(𝑗 ∧ 𝑛) 12 − 1𝑞 (
+
+> 𝑛
+
+∑
+
+> 𝑡=1
+
+(𝜂 (𝑛,𝑟) 𝑡,𝑗,𝑞,2 (𝜃)) 𝑞 )
+
+> 1𝑞
+
++ 𝐶 
+
+> 𝑛
+
+∑
+
+> 𝑗=1
+
+(
+
+> 𝑛
+
+∑
+
+> 𝑡=1
+
+(𝜂 (𝑛,𝑟) 𝑡,𝑗,2,2 (𝜃)) 2)
+
+> 12
+
+.
+
+Proof: See the proof of Theorem 3.2 in Mies and Steland (2023). □
+
+For 𝑢 ∈ [0, 1] , 𝑖 ∈ ℕ , 𝑗 ∈ ℕ 0, 𝑟 = 0, 1, … , 𝑠 , define 
+
+𝑍 (𝑖,𝑟) 𝑢 (𝜃) = [𝐺 (𝑖,𝑟) 𝑢 (𝜺 (𝑟) −𝑚 , 𝜃), … , 𝐺 (𝑖,𝑟) 𝑢 (𝜺 (𝑟) 0 , 𝜃)] ⊤
+
+,̃ 𝑍 (𝑖,𝑟) 𝑢,𝑗 (𝜃) = [𝐺 (𝑖,𝑟) 𝑢 (̃𝜺 (𝑟) −𝑚,𝑗 , 𝜃), … , 𝐺 (𝑖,𝑟) 𝑢 (̃𝜺 (𝑟) 0,𝑗 , 𝜃)] ⊤
+
+,
+
+where the definition of ̃ 𝜺 ℓ,𝑗 , ℓ ∈ ℤ , is from (11). The next result shows that the time series of random features satisfies a physical dependence measure condition, analogous to Assumption 15. 
+
+Lemma 4. There exist constants 𝜌 𝜑 ∈ (0, 1) , Λ𝜑 > 0 , such that, for some 𝑞 𝜑 > 2 , all 
+
+𝑗 ∈ ℕ 0, all 𝑖 ∈ ℕ , and all 𝑟 = 0, 1, … , 𝑠 , we have 
+
+sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑢∈[0,1]
+
+∥𝜑 (𝑍 (𝑖,𝑟) 𝑢 (𝜃)) − 𝜑 (̃𝑍 (𝑖,𝑟) 𝑢,𝑗 (𝜃))∥ ℒ𝑞 𝜑 (𝜃) ≤ Λ 𝜑 (𝜌 𝜑 )𝑗 ,
+
+sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑢∈[0,1]
+
+∥𝜑 (𝑍 (𝑖,𝑟) 𝑢 (𝜃))∥ ℒ𝑞 𝜑 (𝜃) ≤ Λ 𝜑 .
+
+Proof: The result follows by the fact that 𝜑 is Lipschitz with Lipschitz constant 𝐿 𝜑 
+
+from (26), the triangle inequality and Minkowski inequality, and applying the bounds from Assumption 15. The same line of reasoning is used in the proof of Theorem 5, so the details are omitted. 
+
+□
+
+The following result establishes that the time series of random features satisfies a nonsta-tionarity condition, analogous to Assumption 16. 
+
+Lemma 5. For some 𝑞 𝜑 > 2 , some 𝜅 𝜑 ∈ [1, 4) , all 𝑖 ∈ ℕ , and all 𝑟 = 0, 1, … , 𝑠 , the constant Λ𝜑 > 0 from Lemma 4 also satisfies 
+
+sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑢∈[0,1]
+
+∥𝜑 (𝑍 (𝑖,𝑟) 𝑢 (𝜃))∥ ℒ𝑞 𝜑 (𝜃) + sup 
+
+> 𝜃∈Θ
+
+∥(𝜑 (𝑍 (𝑖,𝑟) 𝑢 (𝜃))) 𝑢 ∥𝜅 𝜑 -var ,ℒ 𝑞 𝜑 (𝜃) 
+
+≤ Λ 𝜑 .
+
+66 Proof: The result follows by the fact that 𝜑 is Lipschitz with Lipschitz constant 𝐿 𝜑 
+
+from (26), the triangle inequality and Minkowski inequality, and applying the bounds from Assumption 16. The same line of reasoning is used in the proof of Theorem 5, so the details are omitted. 
+
+□
+
+For all times 𝑡 = 𝑚+1, … , 𝑛 , simulation indices 𝑟 = 0, 1, … , 𝑠 , and parameter values 𝜃 ∈ Θ ,recall the 𝑟 -th random feature 𝑓 (𝑟) 𝑡 (𝜃) at time 𝑡 based on 𝜃 as in (3). The time series of random features satisfies a decaying autocovariance condition, analogous to Proposition 1 from Mies (2024). For the following result, denote the trace norm of a matrix 𝐴 ∈ ℝ 𝑘×𝑘 by 
+
+‖𝐴‖ tr = tr ((𝐴 ⊤𝐴) 12 ).
+
+Lemma 6. There exist constants 𝐶 𝜑 ≡ 𝐶 𝜑 (𝜌 𝜑 , Λ 𝜑 ) > 0 , 𝐾 𝜑 ≡ 𝐾 𝜑 (𝜌 𝜑 , Λ 𝜑 ) > 1 depending on the constants 𝜌 𝜑 ∈ (0, 1) , Λ𝜑 > 0 from Lemmas 4 and 5 such that, for all 𝑡 = 𝑚+1, … , 𝑛 
+
+and 𝑟 = 0, … , 𝑠 , we have 
+
+sup 
+
+> 𝜃∈Θ
+
+∥Cov (𝑓 (𝑟) 𝑡 2 (𝜃), 𝑓 (𝑟) 𝑡 1 (𝜃))∥ tr ≤ 𝐶 𝜑 (|𝑡 2 − 𝑡 1| + 1) −𝐾 𝜑 
+
+.
+
+Proof: Lemma 4 states that, uniformly over the parameter values, the physical dependence measure of the time series of random features decays exponentially. In particular, this im-plies a (slower) polynomial decay of the physical dependence measure of the random features as in Assumption A.2 of Mies (2024). That is, there exist constants 𝐴 𝜑 ≡ 𝐴 𝜑 (𝜌 𝜑 , Λ 𝜑 ) > 0 ,
+
+𝐾 𝜑 ≡ 𝐾 𝜑 (𝜌 𝜑 , Λ 𝜑 ) > 1 such that, for some 𝑞 𝜑 > 2 , all 𝑗 ∈ ℕ 0, all 𝑖 ∈ ℕ , and all 
+
+𝑟 = 0, 1, … , 𝑠 , we have sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑢∈[0,1]
+
+∥𝜑 (𝑍 (𝑖,𝑟) 𝑢 (𝜃)) − 𝜑 (̃𝑍 (𝑖,𝑟) 𝑢,𝑗 (𝜃))∥ ℒ𝑞 𝜑 (𝜃) ≤ 𝐴 𝜑 (𝑗 + 1) −𝐾 𝜑 
+
+.
+
+Proposition 1 in Mies (2024) proves that a polynomial decay of the physical dependence measure is sufficient to imply a decay of the trace norm of the autocovariance matrix of a time series. The same arguments used to prove Proposition 1 in Mies (2024) can be applied to the time series of random features for each parameter value, i.e. for all 𝑡 = 𝑚 + 1, … , 𝑛 ,
+
+𝑟 = 0, … , 𝑠 , and 𝜃 ∈ Θ we have 
+
+∥Cov (𝑓 (𝑟) 𝑡 2 (𝜃), 𝑓 (𝑟) 𝑡 1 (𝜃))∥ tr ≤ 𝐶 𝜑 (|𝑡 2 − 𝑡 1| + 1) −𝐾 𝜑 
+
+.
+
+Since the suprema over all 𝜃 ∈ Θ of the upper bounds are always finite, the Θ-uniform inequality from the Lemma hold by basic properties of the supremum. □
+
+The following result is Theorem 3.2 from Mies and Steland (2023) using our notation, which is possible because the triangle array framework of Mies and Steland (2023) nests the locally stationary time series setting; see Examples 2 and 3 therein. 
+
+Lemma 7. (Law of Large Numbers (Mies and Steland, 2023)). For 𝑟 = 0, 1, … , 𝑠 
+
+and 𝜃 ∈ Θ , suppose a time series 𝑋 (𝑟) 𝑡 (𝜃) , 𝑡 = 1, … , 𝑛 , is generated as 
+
+𝑋 (𝑟) 𝑡 (𝜃) = 𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 𝑡 , 𝜃). 
+
+67 Suppose for all 𝑖 ∈ ℕ and 𝑟 = 0, 1, … , 𝑠 , there exists a 𝑞 > 2 , such that 
+
+sup 
+
+> 𝜃∈Θ
+
+sup 
+
+> 𝑢∈[0,1]
+
+∥𝐺 (𝑖,𝑟) 𝑢 (𝜺 0, 𝜃)∥ ℒ𝑞 (𝜃) < ∞. 
+
+For some 2 ≤ ℎ ≤ 𝑞 < ∞ , define the physical dependence measure at time 𝑡 and sample size 𝑛 as 
+
+𝜂 (𝑛,𝑟) 𝑡,𝑗,𝑞,ℎ (𝜃) = 𝔼 𝜃 (∥𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 𝑡 , 𝜃) − 𝐺 (𝑛,𝑟) 𝑡/𝑛 (̃𝜺 𝑡,𝑗 , 𝜃)∥ 𝑞 ℎ)1/𝑞 
+
+.
+
+There exists a constant 𝐶 = 𝐶(𝑞, ℎ, 𝜃) , such that for all 𝑟 = 0, 1, … , 𝑠 , 𝜃 ∈ Θ , and 𝑛 ∈ ℕ ,we have 
+
+(𝔼 𝜃 [max  
+
+> ℓ≤𝑛
+
+∥
+
+> ℓ
+
+∑
+
+> 𝑡=1
+
+(𝑋 (𝑟) 𝑡 (𝜃) − 𝔼 𝜃 [𝑋 (𝑟) 𝑡 (𝜃)])∥ 
+
+> 𝑞 ℎ
+
+]) 
+
+> 1𝑞
+
+= (𝔼 𝜃 [max  
+
+> ℓ≤𝑛
+
+∥
+
+> ℓ
+
+∑
+
+> 𝑡=1
+
+(𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 𝑡 , 𝜃) − 𝔼 𝜃 [𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 𝑡 , 𝜃)])∥ 
+
+> 𝑞 ℎ
+
+]) 
+
+> 1𝑞
+
+≤ 𝐶𝑛 12 − 1𝑞 
+
+> ∞
+
+∑
+
+> 𝑗=1
+
+(
+
+> 𝑛
+
+∑
+
+> 𝑡=1
+
+(𝜂 (𝑛,𝑟) 𝑡,𝑗,𝑞,ℎ (𝜃)) 𝑞 )
+
+> 1𝑞
+
+≤ 𝐶𝑛 12
+
+> ∞
+
+∑
+
+> 𝑗=1
+
+max  
+
+> 𝑡≤𝑛
+
+𝜂 (𝑛,𝑟) 𝑡,𝑗,𝑞,ℎ (𝜃), 
+
+and in the special case of ℎ = 2 , the inequality may be improved to 
+
+(𝔼 𝜃 [max  
+
+> ℓ≤𝑛
+
+∥
+
+> ℓ
+
+∑
+
+> 𝑡=1
+
+(𝑋 (𝑟) 𝑡 (𝜃) − 𝔼 𝜃 [𝑋 (𝑟) 𝑡 (𝜃)])∥ 
+
+> 𝑞 2
+
+]) 
+
+> 1𝑞
+
+= (𝔼 𝜃 [max  
+
+> ℓ≤𝑛
+
+∥
+
+> ℓ
+
+∑
+
+> 𝑡=1
+
+(𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 𝑡 , 𝜃) − 𝔼 𝜃 [𝐺 (𝑛,𝑟) 𝑡/𝑛 (𝜺 𝑡 , 𝜃)])∥ 
+
+> 𝑞 2
+
+]) 
+
+> 1𝑞
+
+≤ 𝐶 
+
+> ∞
+
+∑
+
+> 𝑗=1
+
+(𝑗 ∧ 𝑛) 12 − 1𝑞 (
+
+> 𝑛
+
+∑
+
+> 𝑡=1
+
+(𝜂 (𝑛,𝑟) 𝑡,𝑗,𝑞,2 (𝜃)) 𝑞 )
+
+> 1𝑞
+
++ 𝐶 
+
+> 𝑛
+
+∑
+
+> 𝑗=1
+
+(
+
+> 𝑛
+
+∑
+
+> 𝑡=1
+
+(𝜂 (𝑛,𝑟) 𝑡,𝑗,2,2 (𝜃)) 2)
+
+> 12
+
+.
+
+Proof: See the proof of Theorem 3.2 in Mies and Steland (2023). □
+
+# B Additional experiments 
+
+B.1 More experiments with time-average estimator 
+
+Gaussian model. For 𝑡 = 1, … , 𝑛 , we observe 
+
+𝑋 𝑡 = 𝜇 + 𝜀 𝑡 ,
+
+68 where each 𝜀 𝑡 
+
+> iid
+
+∼ 𝑁 (0, 1) . The unknown parameter is 𝜇 , so we use 2𝑝 + 1 = 3 random features. We aim to estimate 
+
+𝜇 0 = 0.5. 2 1 0 1 2 3
+
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> Density
+> n = 100
+> n = 1000
+> True value
+
+Figure 8: Gaussian model. Density of estimates using 3 random features. 
+
+B.2 More experiments with rolling-window estimator 
+
+Lotka–Volterra model. Lotka (1925); Volterra (1926) introduced a model to describe predator–prey population dynamics. For time horizon 𝑇 = 20 , let (𝑍 (1) (𝑣), 𝑍 (2) (𝑣)) 𝑣∈[0,𝑇 ] 
+
+be defined by the system of ODEs 
+
+𝑑𝑍 (1) 
+
+𝑑𝑣 (𝑣) = 𝛼𝑍 (1) (𝑣) − 𝛽𝑍 (1) (𝑣)𝑍 (2) (𝑣), 𝑑𝑍 (2) 
+
+𝑑𝑣 (𝑣) = 𝛿𝑍 (1) (𝑣)𝑍 (2) (𝑣) − 𝛾𝑍 (2) (𝑣), 
+
+where 𝑍 (1) (𝑣) and 𝑍 (2) (𝑣) represent the prey and predator population densities (i.e. the number of individuals per unit area) at time 𝑣 ∈ [0, 𝑇 ] , respectively. The known initial values are 𝑍 (1) (0) = 21 and 𝑍 (2) (0) = 9 . The components of the parameter are the prey growth rate 𝛼 > 0 , predation rate 𝛽 > 0 , predator growth rate 𝛿 > 0 , and predator death rate 𝛾 > 0 . For 𝑡 = 1, … , 𝑛 , we observe 
+
+𝑋 (1) 𝑡 = 𝑍 (1) (𝑇 𝑡/𝑛) + 𝜎 (1) 𝜀 (1) 𝑡 ,𝑋 (2) 𝑡 = 𝑍 (2) (𝑇 𝑡/𝑛) + 𝜎 (2) 𝜀 (2) 𝑡 ,
+
+where each 𝜀 (1) 𝑡 , 𝜀 (2) 𝑡 
+
+> iid
+
+∼ 𝑁 (0, 1) and 𝜎 (1) , 𝜎 (2) control the noise level. We aim to estimate 
+
+𝛼 0 = 0.8, 𝛽 0 = 0.08, 𝛿 0 = 0.06, 𝛾 0 = 1.2, 𝜎 (1) 0 = 0.13, 𝜎 (2) 0 = 0.19. 
+
+# C Additional discussions 
+
+We provide an review of additional related topics. 69 0.0 0.2 0.4 0.6 0.8 1.0                       
+
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> 3.0
+> 3.5
+> 4.0
+> Density
+> 0.00 0.05 0.10 0.15 0.20
+> 0.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> 20.0
+> 0.00 0.05 0.10 0.15 0.20
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 0.0 0.5 1.0 1.5 2.0
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> n = 100
+> n = 1000
+> True value
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> 3.0
+> 3.5
+> Density
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> 3.0
+> 3.5
+> 4.0
+
+Figure 9: Lotka–Volterra model. Density of estimates using 13 random features. 
+
+Random features in machine learning. 
+
+Rahimi and Recht (2007) originally proposed using random features to approximate kernel-based predictors. Following up on this work, Rahimi and Recht (2008 a,b) showed that smooth functions can be well-approximated by a linear combination of randomly chosen basis functions. Since then, researchers have explored using random features for a variety of statistical tasks, such as measuring dependence (Lopez-Paz et al., 2013), testing for independence (Zhang et al., 2018), and testing for conditional independence (Strobl et al., 2019). 
+
+Embeddings in nonlinear dynamics. 
+
+Packard et al. (1980) initiated the “geometry from a time series” research program, which seeks to reconstruct the attractor of a deterministic dynamical system from an observed signal. They propose concatenating a finite number of lags of the observed signal into a vector, known as a time-delay embedding, and analyzing the resulting space. This idea inspired many subsequent developments in nonlinear dynamics (Kantz and Schreiber, 2003). Takens (1981) shows that the time-delay embedding space is topologically equivalent to the underlying 𝑝 -dimensional state space, once 2𝑝 + 1 lags are used for the time-delay embedding. In fact, the minimal embedding dimension is often less, and depends on the box-counting dimension of the attractor (Sauer et al., 1991). Sontag (2003) shows that a generic set of 2𝑝 + 1 experiments suffices to distinguish two different 𝑝 -dimensional parameters in analytically parametrized dynamical systems. Aeyels (1981 a,b) shows that only 2𝑝+1 exact measurements at random times are needed for the observability of 𝑝 -dimensional dynamical systems. The foundation of these 2𝑝+1 results is the classical Whitney embedding theorem (Whitney, 1936). We use a probabilistic version of this embedding theorem from Sauer et al. (1991) to establish the theoretical results for our estimators. 70 Limit theorems for stochastic processes. 
+
+Although our theory is based on (extensions of) the physical dependence measure of Wu (2005), numerous central limit theorems (CLTs) and laws of large numbers (LLNs) have been established under different regularity conditions. We emphasize that the physical dependence measure conditions we use imply and are implied by 𝛽 -mixing and strong mixing conditions under certain regularity conditions (Hill, 2025; Heinrichs, 2026). In what follows, we review existing CLTs and LLNs for mixing processes, mixingales, and Markov chains. Many CLTs and LLNs have been proven under mixing conditions, which control the decay of temporal dependence so that observations far apart in time become asymptotically inde-pendent. For a comprehensive overview on CLTs for strongly mixing processes; see Bradley (2005) and Chapter 4 of Rio (2017). A seminal result by Rosenblatt (1956) showed that stationary processes satisfying a strong mixing condition admit a CLT. Subsequently, Ibrag-imov (1975) demonstrated stationary 𝜌 -mixing processes satisfy a CLT. Regarding LLNs for mixing processes, Blum et al. (1963) and Berbee (1987) proved strong LLNs for mixing processes (cf. Chapter 3 of Rio (2017)). We now discuss mixingales, which are a generalization of mixing processes and martingale difference sequences. McLeish (1974, 1975) introduced a CLT and LLN for mixingales. Chapter 2 of Hall and Heyde (1980) discusses how martingale difference sequences, strongly mixing sequences, and certain linear processes are all examples of mixingales. We also mention the foundational work of Gordin (1969), who developed a CLT for stationary processes using a martingale approximation technique. Next, we discuss Markov chains. Jones (2004) provides sufficient conditions for a CLT to hold for Markov chains, and also discusses relationships to results for mixing processes. Kip-nis and Varadhan (1986) prove a CLT for reversible Markov chains with a finite limiting variance. Wu and Shao (2004) provide a CLT for iterated random functions; see Diaconis and Freedman (1999). Regarding LLNs, Breiman (1960) shows that a strong LLN holds for Markov chains. For more discussion of CLTs and LLNs for geometrically ergodic Markov chains; see Chapter 17 of Meyn and Tweedie (2009). 
+
+# References 
+
+Aeyels, D. (1981 a), ‘Generic observability of differentiable systems’, SIAM Journal on Control and Optimization 19 (5), 595–603. Aeyels, D. (1981 b), ‘On the number of samples necessary to achieve observability’, Systems and Control Letters 1(2), 92–94. Berbee, H. (1987), ‘Convergence rates in the strong law for bounded mixing sequences’, 
+
+Probability Theory and Related Fields 74 (2), 255–270. Blum, J. R., Hanson, D. L. and Koopmans, L. H. (1963), ‘On the strong law of large numbers for a class of stochastic processes’, Zeitschrift für Wahrscheinlichkeitstheorie und Verwandte Gebiete 2, 1–11. 71 Bradley, R. C. (2005), ‘Basic properties of strong mixing conditions. a survey and some open questions’, Probability Surveys 2, 107–144. Breiman, L. (1960), ‘The strong law of large numbers for a class of markov chains’, The Annals of Mathematical Statistics 31 (3), 801–803. Diaconis, P. and Freedman, D. (1999), ‘Iterated random functions’, SIAM Review 41 (1), 45– 76. Gordin, M. I. (1969), ‘The central limit theorem for stationary processes’, Soviet Mathe-matics Doklady 10 , 1174–1176. Hall, P. and Heyde, C. C. (1980), Martingale Limit Theory and its Application , Academic Press, New York, NY. Heinrichs, F. (2026), ‘A note on physical dependence and mixing conditions for triangular arrays’. arXiv preprint arXiv:2602.04250. Hill, J. B. (2025), ‘Mixingale and physical dependence equality with applications’, Statistics and Probability Letters 221 (110380). Ibragimov, I. A. (1975), ‘A note on the central limit theorem for dependent random vari-ables’, Theory of Probability and Its Applications 20 (1), 135–141. Jones, G. L. (2004), ‘On the markov chain central limit theorem’, Probability Surveys 
+
+1, 299–320. Kantz, H. and Schreiber, T. (2003), Nonlinear Time Series Analysis , Cambridge University Press, Cambridge, England. Kipnis, C. and Varadhan, S. R. S. (1986), ‘Central limit theorem for additive functionals of reversible markov processes and applications to simple exclusions’, Communications in Mathematical Physics 104 (1), 1–19. Lopez-Paz, D., Hennig, P. and Schölkopf, B. (2013), ‘The randomized dependence coeffi-cient’, Advances in Neural Information Processing Systems 26 .Lotka, A. J. (1925), Elements of Physical Biology , Williams & Wilkins, Baltimore. McLeish, D. L. (1974), ‘Dependent central limit theorems and invariance principles’, Annals of Probability 2(4), 620–628. McLeish, D. L. (1975), ‘A maximal inequality and dependent strong laws’, Annals of Prob-ability 3(5), 829–839. Meyn, S. P. and Tweedie, R. L. (2009), Markov Chains and Stochastic Stability , 2 edn, Cambridge University Press, Cambridge, England. Mies, F. (2024), ‘Strong gaussian approximations with random multipliers’, Workshop on Stochastic Models, Statistics and their Application pp. 3–18. Mies, F. and Steland, A. (2023), ‘Sequential gaussian approximation for nonstationary time series in high dimensions’, Bernoulli 29 (4), 3114–3140. 72 Packard, N. H., Crutchfield, J. P., Farmer, J. D. and Shaw, R. S. (1980), ‘Geometry from a time series’, Physical Review Letters 45 (9), 712–716. Pakes, A. and Pollard, D. (1989), ‘Simulation and the asymptotics of optimization estima-tors’, Econometrica 57 (5), 1027–1057. Rahimi, A. and Recht, B. (2007), ‘Random features for large-scale kernel machines’, Ad-vances in Neural Information Processing Systems 20 .Rahimi, A. and Recht, B. (2008 a), ‘Uniform approximation of functions with random bases’, 
+
+Annual Allerton Conference on Communication, Control, and Computing 46 , 555–561. Rahimi, A. and Recht, B. (2008 b), ‘Weighted sums of random kitchen sinks: replacing min-imization with randomization in learning’, Advances in Neural Information Processing Systems 21 .Rio, E. (2017), Asymptotic Theory of Weakly Dependent Random Processes , Springer, New York, NY. Rosenblatt, M. (1956), ‘A central limit theorem and a strong mixing condition’, Proceedings of the National Academy of Sciences 42 (1), 43–47. Sauer, T., Yorke, J. A. and Casdagli, M. (1991), ‘Embedology’, Journal of Statistical Physics 65 (3), 579–616. Sontag, E. D. (2003), ‘For differential equations with 𝑟 parameters, 2𝑟 + 1 experiments are enough for identification’, Journal of Nonlinear Science 12 (6), 553–583. Strobl, E. V., Zhang, K. and Visweswaran, S. (2019), ‘Approximate kernel-based condi-tional independence tests for fast non-parametric causal discovery’, Journal of Causal Inference 7(1). Takens, F. (1981), ‘Detecting strange attractors in turbulence’, Symposium on Dynamical Systems and Turbulence, Warwick 1980 pp. 366–381. Volterra, V. (1926), ‘Fluctuations in the abundance of a species considered mathematically’, 
+
+Nature 118 (2972), 558–560. Whitney, H. (1934), ‘Analytic extensions of differentiable functions defined in closed sets’, 
+
+Transactions of the American Mathematical Society 36 (1), 63–89. Whitney, H. (1936), ‘Differentiable manifolds’, Annals of Mathematics 37 (3), 645–680. Wu, W. B. (2005), ‘Nonlinear system theory: another look at dependence’, Proceedings of the National Academy of Sciences 102 (40), 14150–14154. Wu, W. B. and Shao, X. (2004), ‘Limit theorems for iterated random functions’, Journal of Applied Probability 41 (2), 425–436. Zhang, Q., Filippi, S., Gretton, A. and Sejdinovic, D. (2018), ‘Large-scale kernel methods for independence testing’, Statistics and Computing 28 (1), 113–130. 73

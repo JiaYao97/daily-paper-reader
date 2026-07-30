@@ -1,0 +1,1416 @@
+Title: Physics-informed token transformer methodology for nonlinear balance laws. I. Schwarzschild–Burgers fluid flows
+
+URL Source: https://arxiv.org/pdf/2607.23143v1
+
+Published Time: Tue, 28 Jul 2026 00:32:32 GMT
+
+Number of Pages: 34
+
+Markdown Content:
+# Physics-informed token transformer methodology for nonlinear balance laws. I. Schwarzschild–Burgers fluid flows 
+
+# Philippe G. LeFloch and Shuyang Xiang Laboratoire Jacques-Louis Lions and Centre National de la Recherche Scientifique, Sorbonne Université, 4 Place Jussieu, 75252 Paris, France. Emails: contact@philippelefloch.org, vanillaxiangshuyang@gmail.com .July 28, 2026 
+
+Abstract 
+
+We introduce a Physics-Informed Token Transformer (PITT) methodology for nonlinear hyperbolic balance laws in one space dimension, using piecewise steady-state profiles for the representation of approx-imate weak solutions. The method combines symbolic equation tokenization, a Fourier neural operator encoder, an explicit Rankine–Hugoniot law for shock motion, and a learned correction term. For clar-ity, we present it here for the relativistic Schwarzschild–Burgers equation, a scalar model for spherically symmetric fluid flows on a Schwarzschild background. For this model the steady-state invariant and the generalized Riemann solutions are explicit, and they can therefore be built into the neural evolution. In particular, the leading discontinuities are advanced by the analytical jump condition, while the learned part reconstructs smooth regions, rarefaction fans, geometric dependence, and finite-resolution effects. The method is designed to locate wave fronts accurately and to preserve the relevant steady states. We test our PITT method on moving shocks, stationary shocks, rarefaction waves, and compare it with a standard high-order finite-volume approximation. We also analyze the standard Burgers limit (when the Schwarzschild mass tends to zero). The Rankine–Hugoniot prior plays the dominant role in these tests, while equation tokenization gives a systematic additional gain. The method is relevant for problems involving geometric effects and/or complex shock-wave dynamics, and is used here to study the long-time dynamics of perturbations of steady-state solutions. In particular, we exhibit an asymptotic law of propagation for the shock location of perturbed steady-state flows. 
+
+# Contents 
+
+1 Introduction 2
+
+1.1 Main purpose . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21.2 Main results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31.3 Organization of this paper . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+
+2 The Schwarzschild–Burgers model and its steady-state structure 5
+
+2.1 The model of interest . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 52.2 A steady-state invariant . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 62.3 Approximation of general solutions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+
+3 A shock-aware PITT method for Schwarzschild–Burgers flows 9
+
+3.1 Equation tokenization . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 93.2 Encoding the initial field and the geometry with an FNO . . . . . . . . . . . . . . . . . . . . . . . . . 11 3.3 Parameter encoder and global conditioning . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12 3.4 Physics-informed update blocks . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12 3.5 RH-guided shock evolution and field reconstruction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13 3.6 Architecture summary . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13 
+
+1arXiv:2607.23143v1 [math.NA] 25 Jul 2026 4 Numerical methodology and implementation 14 
+
+4.1 Objective of this section . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14 4.2 Dataset and data generation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14 4.3 Baseline . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15 4.4 Implementation details . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16 4.5 Evaluation metrics . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17 
+
+5 Numerical validation 18 
+
+5.1 Comparison with the numerical baseline . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18 5.2 Ablation study . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19 5.3 Non-relativistic limit: standard Burgers equation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21 
+
+6 Long-time convergence toward steady states 22 
+
+6.1 Piecewise steady-state solutions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22 6.2 Asymptotic behavior of solutions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23 
+
+7 Mass conservation and shock displacement for perturbed steady shocks 26 
+
+7.1 Mass balance for perturbed steady shocks . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26 7.2 Displacement law . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27 7.3 Numerical experiments . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28 
+
+8 Concluding remarks 30 A Machine learning terminology 32 
+
+# 1 Introduction 
+
+# 1.1 Main purpose 
+
+Discontinuities and admissibility 
+
+Learning discontinuous solutions of nonlinear hyperbolic conservation laws and balance laws remains a ma-jor challenge for machine learning techniques, especially when one seeks accurate wave-front locations and physically admissible weak solutions with complex structure. Neural operators and PINN-type models 1 are effective for many smooth evolution problems, but shock waves, contact discontinuities, and rarefaction fans require additional structure from the theory of weak solutions [16, 17, 6, 18], including Rankine–Hugoniot jump relations, entropy admissibility criteria, and Riemann problems. Without imposing such structure, smooth neural approximations tend to smear jumps, misplace shock fronts, or violate conservation near dis-continuities; in balance laws, they may also confuse genuine dynamics with source-driven or geometric effects. Fourier neural operators [26] and DeepONets [34] are designed to learn mappings between function spaces, within the broader neural-operator viewpoint [15], while transformer-based architectures introduce global 
+
+interactions between spatial tokens [42, 3]. These representations are useful, but they do not by themselves encode the admissibility mechanisms that determine discontinuous solutions of hyperbolic problems. 
+
+Equation tokenization as physics conditioning 
+
+The Physics-Informed Token Transformer approach introduced by Lorsung et al. [32], hereafter abbreviated as PITT, provides a natural way to inject the structure of a partial differential equation (PDE) into a neural update operator, not only through a residual loss but also through the internal representation used by the model. Its main idea is to represent differential operators, unknowns, parameters, and boundary or initial data through symbolic equation tokens processed by a Transformer. The resulting physics representation imposes restrictions on the learned time evolution and improves generalization across equations and param-eter regimes; namely, the network receives both sampled solution data and a structured description of the equation that produced them. In the present work we retain this tokenization principle, but adapt it to a substantially different regime: nonlinear hyperbolic balance laws whose physically relevant solutions contain 
+
+> 1The reader not familiar with the machine learning terminology can refer to Appendix A.
+
+2shocks and other discontinuities, so that the symbolic representation must be coupled with admissibility and wave-propagation mechanisms from the theory of weak solutions. 
+
+A Rankine–Hugoniot prior for shock motion 
+
+At the numerical level, the main point is to couple the tokenized equation to an explicit Rankine–Hugoniot law and to equilibrium variables adapted to describe steady-state solutions to the underlying balance law. The shock speed is not learned from data: it is computed from the analytical jump condition associated with the flux structure, using the left and right traces selected by the steady-state parametrization. The network is then used for the remaining part of the evolution, namely the smooth or piecewise smooth field reconstruction, the dependence on physical and geometric parameters, and a correction for finite-resolution nonlinear and geometric effects. Thus the motion of the discontinuity is separated from the neural field approximation while the training data are used to resolve the regular part of the solution. 
+
+A class of fluid models with complex structure 
+
+The approach is intended for nonlinear balance laws arising in classical and relativistic fluid dynamics, especially when the difficulty comes from curved geometry, non-trivial equilibria, systems with several wave families, or interacting discontinuities. The scalar Schwarzschild–Burgers equation proposed by LeFloch et al. [19, 20] is used here as a model problem for developing our PITT methodology: it admits explicit steady-state invariants and generalized Riemann solutions, while retaining source terms, stationary shocks, moving shocks, and long-time relaxation. These exact structures are incorporated directly into the representation, so that stationary solutions and stationary discontinuities are treated as part of the model rather than as features to be captured numerically by an external scheme. The corresponding treatment of Schwarzschild– Euler fluid flows is deferred to a follow-up paper [25]. 
+
+Relation with physics-informed neural methods 
+
+This paper is related to the methodology of physics-informed neural networks (PINNs), such as [40], and their extensions to discontinuous solutions proposed in [35, 7, 27, 9, 36]. Recent proposals concern incorporating Godunov or Riemann information, conservative flux constraints, anti-diffusive evolution, and neural operators adapted to hyperbolic problems [4, 13, 14, 28, 29, 31, 37, 38, 43]. Time-continuous reconstruction of fluid simulations is another related learning task [39]. These methods enrich the training loss with differential residuals or modified weights near large gradients of the solutions, and have produced accurate results for Riemann problems and hydrodynamic discontinuities. Our strategy is different: the main hyperbolic constraint is imposed at the level of the rollout mechanism itself. In particular, the Rankine–Hugoniot condition is not only penalized in a loss function but is used as an explicit dynamical prior inside the architecture . The resulting method combines symbolic equation tokenization, neural operator encoding, equilibrium variables, and analytical shock dynamics in a single construction for discontinuous solutions of nonlinear hyperbolic balance laws, thereby connecting operator learning with the classical structure of front-tracking and generalized Riemann solvers. 
+
+# 1.2 Main results 
+
+A scalar geometric test model 
+
+The proposed PITT method is designed to incorporate information from both the governing equations and the underlying physics. The main objective of the present article is therefore to develop the methodology in a scalar but genuinely geometric setting, namely for Schwarzschild–Burgers fluid flows. This model is chosen because the construction can be introduced without the additional complications of a full fluid system. It already contains shocks, steady states, curved-space source terms and, as discovered earlier by the authors [22, 23, 24], it admits explicit formulas for generalized Riemann problems . The same strategy is expected to apply to more complex fluid models (even without admitting such explicit formulas); in particular, the extension of our PITT method to the Schwarzschild–Euler system is treated separately in the companion article [25]. This latter model is also considered from the standpoint of well-posed theory in [1, 30]. 3More generally, the strategy presented in this paper applies immediately to one-dimensional hyperbolic conservation laws and balance laws, of the general form 
+
+∂u ∂t + ∂∂r (F (u, r )) = S(u, r ), (1.1) where the flux term F = F (u, r ) and the source term S = S(u, r ) may depend on the unknown u = u(t, r )
+
+and on the spatial variable r. This formulation includes standard conservation laws, for which S ≡ 0, as well as geometric balance laws arising in classical or in relativistic fluid dynamics on curved backgrounds. When its steady states and local wave curves are available, one can use the same strategy to build generalized Riemann solvers and shock-aware neural rollouts. The relativistic Burgers equation on a Schwarzschild background provides one of the simplest, yet non-trivial, examples where the geometry introduces non-trivial source terms and modifies the structure of steady states. In contrast with the flat case, constant states are no longer the natural equilibria. Instead, the relevant elementary building blocks are steady-state profiles determined by geometric invariants. This motivates a representation of discontinuous solutions as piecewise steady states separated by moving or stationary shocks, and leads to a closed description of generalized Riemann solutions in terms of the left and right steady-state parameters. 
+
+From finite-volume to front-tracking to a shock-aware architecture 
+
+A standard numerical approach to compute shock solutions is based on a finite volume discretization and on the construction of numerical fluxes ensuring a well-balanced property. Our approach is different, since we use this mathematical structure to design a neural architecture in which the essential physical mechanisms are built into the model rather than inferred only from training samples. Yet, the proposed PITT con-struction borrows from this standard theory of finite-volume and geometry-preserving methods for balance laws going back to classical works such as [41, 12]; for developments on well-balanced schemes, we refer to the monograph [2] and the references therein. Note also that a class of well-balanced schemes for the Schwarzschild–Burgers equation was introduced earlier in [21]. The key architectural point is that the Rankine–Hugoniot shock speed can be expressed in terms of steady-state invariants defined on the two sides of the moving discontinuity. Once these left and right invariants are known, the jump condition determines the shock trajectory. The proposed PITT architecture therefore infers the relevant invariant parameters from the initial field and uses them as latent physical coordinates. These coordinates are combined with symbolic equation tokens, Fourier neural operator features, and a learned residual correction to reconstruct the full spatio-temporal evolution. The residual component is 
+
+not responsible for determining the shock speed; instead, it corrects unresolved nonlinear, geometric, and approximation effects around the analytically prescribed shock dynamics. In this way, the architecture learns a correction to a mathematically meaningful prior, instead of representing the whole discontinuous dynamics statistically. 
+
+Beyond a single Riemann problem 
+
+For general initial data, we combine the shock-aware PITT representation with a Glimm-type decomposition. The initial profile is approximated by piecewise constant or piecewise steady states, and the evolution is represented by interacting local Riemann problems. This gives a natural way of treating multiple shocks, rarefaction waves, contact discontinuities, and wave interactions. The neural component is thus guided by the same local wave structure that underlies classical front-tracking and random choice methods, while retaining the flexibility of operator learning. This provides the route used in the numerical section for initial data with many discontinuities. 
+
+Complex shock dynamics 
+
+We test the proposed method on moving shocks, stationary shocks, rarefaction waves, and we investigate the non-relativistic limit, long-time asymptotic regimes, and perturbations of steady shocks. Among our results, in Section 7 we observe numerically a mass-conservation displacement law (cf. Claim 7.1), which 4formally follows from a conservative form of the balance law, and is used here as a diagnostic for our PITT predictions. The numerical tests are designed to separate the analytical prior from the learned correction: steady-state invariants, generalized Riemann structure, and the Rankine–Hugoniot shock relation are inserted into the rollout, while the scalar model provides exact references against which learning errors can be separated from errors introduced by an external numerical solver. The companion paper [25] addresses the extension to Schwarzschild–Euler fluid flows. 
+
+# 1.3 Organization of this paper 
+
+The paper is organized as follows. In Section 2, we present analytical facts about the Schwarzschild–Burgers equation used in the course of this paper; in particular, we define the specific variables supplied to the neural model. Next, in Section 3 we present the PITT architecture, with equation tokenization, Fourier neural operator encoding, parameter conditioning, physics-informed update blocks, and the Rankine–Hugoniot shock prior. In Section 4, we describe the practical implementation: data generation, a high-order standard finite-volume baseline, implementation choices, and metrics. Next, in Section 5 we show our numerical validation, including comparisons with this baseline, ablation studies, and the flat-spacetime Burgers limit. Section 6 treats more general piecewise steady-state data and their long-time asymptotics, which leads us, in Section 7, to derive and numerically demonstrate the validity of a mass-conservation formula for the asymptotic displacement of perturbed steady shocks. Finally, Section 8 gives concluding remarks, and Appendix A provides a brief dictionary of the learning terminology used in this paper. 
+
+# 2 The Schwarzschild–Burgers model and its steady-state structure 
+
+# 2.1 The model of interest 
+
+Origin and scope of the model 
+
+We begin with the Schwarzschild–Burgers model posed on the exterior domain of a Schwarzschild black hole, which is one of the simplest, yet non-trivial, models among curved-background fluid models. This equation was derived as a relativistic Burgers equation on curved spacetimes in [19] and was then studied, both analytically and numerically, in [22, 24, 23, 21]. In the present article, the model is used as a controlled test case: it retains the essential interaction between nonlinear waves, a geometric source term, steady states, and an event horizon, while still allowing explicit formulas that can be built into the PITT architecture. 
+
+Conservative and balance-law forms 
+
+More precisely, we consider the relativistic Burgers equation on the Schwarzschild exterior r > 2M :
+
+∂t
+
+ u
+
+(1 − 2M/r )2
+
+
+
++ ∂r
+
+ u2 − 12(1 − 2M/r )
+
+
+
+= 0 , (2.1) where u = u(t, r ) ∈ [−1, 1] denotes the radial fluid velocity, the speed of light has been normalized to 1, and 
+
+M > 0 is the mass of the Schwarzschild black hole. The reduction to one space variable is obtained under spherical symmetry. In the flat limit M → 0, the metric coefficient below tends to 1, and (2.1) reduces, up to an irrelevant additive constant in the flux, to the standard inviscid Burgers equation ∂tu + ∂r (u2/2) = 0 .Equivalently, (2.1) can be written as the balance law 
+
+∂u ∂t + ∂F ∂r = S, (2.2) where 
+
+F = g(u2 − 1) 2 , S = 2Mr2 (u2 − 1) , g(r) := 1 − 2Mr . (2.3) This formulation is the one used in the sequel, since it exposes both the hyperbolic flux and the geometric source term that must be respected by a well-balanced or physics-informed method. 5Steady-state solutions 
+
+Setting ∂tu = 0 reduces (2.2) to ∂r F = S. Using F = g(u2 − 1) /2, S = g′(u2 − 1) , and g′(r) = 2 M/r 2, this stationary equation is equivalently written as 
+
+∂r
+
+ u2 − 12(1 − 2M/r )
+
+
+
+= 0 . (2.4) This ODE can be solved explicitly, giving the steady-state family 
+
+uK,ς (r) = ςp1 − K g (r) = ς
+
+s
+
+1 − K
+
+
+
+1 − 2Mr
+
+
+
+, ς ∈ {− 1, +1 }, (2.5) parameterized by a scalar K and a sign branch ς. The Schwarzschild curvature imprints a non-trivial radial profile on the flow. In the flat limit M → 0, (2.5) reduces to the constant u = ς√1 − K.The parameter K governs the global behavior of the steady state solution: 
+
+• For 0 < K ≤ 1, the solution is defined for all r > 2M satisfying |u| < 1 (subsonic flow). 
+
+• For K > 1, the solution exists only on the bounded interval 2M < r < 2M K/ (K − 1) , where |u| → 1
+
+at the right endpoint. 
+
+• For all K, as r → 2M + we have g → 0 and |u| → 1, so the steady flow approaches the speed of light at the event horizon. 
+
+Rankine–Hugoniot condition 
+
+For a shock wave with trajectory t 7 → rs(t), the jump relation, or Rankine–Hugoniot condition, associated with (2.2) is 
+
+σRH = FR − FL
+
+uR − uL
+
+, (2.6) where σRH := ddt rs(t), and (uL, F L) and (uR, F R) denote the left and right traces across the discontinuity. In this scalar setting, the source term does not enter the jump relation itself; its effect is already encoded in the spatial dependence of the flux and in the steady states used to define the left and right traces. 
+
+# 2.2 A steady-state invariant 
+
+Characteristic transport 
+
+A key feature of (2.2) is that the following quantity 
+
+K(t, r ) := 1 − u2
+
+g(r) (2.7) is conserved along the characteristics of (2.2). This conservation law is the cornerstone for the closed structure of the generalized Riemann problem and for the design of our PITT method. 
+
+Proposition 2.1 (Conservation of the steady-state invariant) . Let u be a classical solution of (2.2) on a domain D ⊂ { t > 0, r > 2M }. The characteristic curves of (2.2) are such that one has 
+
+dr dt = g(r) u, (2.8) 
+
+and along each characteristic one has ddt K t, r (t) = 0 . (2.9) 6Proof. Along a characteristic satisfying (2.8), the total time derivative of K = (1 − u2)/g (r) is 
+
+dK dt = −2u ˙u g (r) − (1 − u2) g′(r) ˙ rg(r)2 , (2.10a) where ˙u = ∂tu + ˙ r ∂ r u is the material derivative. Substituting ˙r = g(r)u and using (2.2) to write ∂tu =
+
+S − ∂r F , a direct computation gives 
+
+˙u = S − ∂r F + g(r)u ∂ r u
+
+= 2M (u2 − 1) 
+
+r2 − g′(r)( u2 − 1) 2 − g(r)u ∂ r u + g(r)u ∂ r u
+
+= ( u2 − 1) 
+
+ 2Mr2 − g′(r)2
+
+
+
+.
+
+(2.10b) Since g′(r) = 2 M/r 2, we obtain ˙u = 12 g′(r)( u2 − 1) . Substituting back and using ˙r = g(r)u, we find 
+
+dK dt = 1
+
+g(r)2
+
+h
+
+−2u · g′(r)2 (u2 − 1) · g(r) − (1 − u2) · g′(r) · g(r)u
+
+i
+
+= g′(r)g(r)ug(r)2
+
+h
+
+−(u2 − 1) − (1 − u2)
+
+i
+
+= 0 .
+
+Subluminal bound and jump relation 
+
+An immediate result is that K is transported along characteristics without change, and in particular the velocity remains bounded. 
+
+Corollary 2.2 (Subluminal property of the velocity) . Let u be a classical solution of (2.2) . Then one has 
+
+|u(t, r (t)) | ≤ 1 along any characteristic and for all t ≥ 0.Proof. By Proposition 2.1, K = (1 − u2)/g (r) is constant along characteristics. Since g(r) > 0 for r > 2M
+
+and K ≥ 0 by the initial condition |u0| ≤ 1, we have 1 − u2 = K g (r) ≥ 0, hence |u| ≤ 1 for all time. The boundedness of u ensures that the jump [u] = uR − uL across any discontinuity remains finite and nonzero as long as the two states are distinct, so the Rankine–Hugoniot condition is well-defined. More precisely, a discontinuity at rs(t) is a weak solution of (2.2) in the sense of balance laws if and only if 
+
+dr s
+
+dt [u] = [ F ], (2.12) where [u] = uR − uL and [F ] = FR − FL. Dividing by [u]̸ = 0 recovers (2.6). Equation (2.12) is the starting point for the shock ODE (2.14) in Proposition 2.3, stated below. 
+
+Closed generalized Riemann dynamics 
+
+For initial data of the piecewise steady-state form, the invariant K takes the constant value KL (resp. KR)on every characteristic to the left (resp. right) of the shock, for all time. 
+
+Proposition 2.3 (Resolution of the generalized Riemann problem) . Consider initial data of the form 
+
+u(0 , r ) = 
+
+(
+
+uKL,ς L (r), r < r 0,uKR,ς R (r), r > r 0, (2.13) 
+
+where uK,ς is defined in (2.5) , ςL, ς R ∈ {− 1, +1 }, and r0 > 2M . The full spatio-temporal evolution of this single generalized Riemann problem is determined by (KL, ς L, K R, ς R, r 0), and one has the following alternatives. 
+
+7(i) Shock case. If uKL,ς L (r0) > u KR,ς R (r0), the shock position rs(t) is such that one has 
+
+dr s
+
+dt = σRH (rs; KL, K R) := F (uKR,ς R (rs)) − F (uKL,ς L (rs)) 
+
+uKR,ς R (rs) − uKL,ς L (rs) , (2.14) 
+
+and u(t, r ) = uKL,ς L (r) for r < r s(t), uKR,ς R (r) for r > r s(t).
+
+(ii) Rarefaction case. If uKL,ς L (r0) < u KR,ς R (r0), characteristics diverge and the rarefaction fan expands between two boundary curves rL(t) ≤ rR(t). For the fan boundaries one has 
+
+dr dt = g(r) uK,ς (r) = 
+
+
+
+1 − 2Mr
+
+
+
+uK,ς (r), (2.15) 
+
+with rL(t) carrying (KL, ς L) and rR(t) carrying (KR, ς R), both initialized at r0. Inside the fan rL(t) <r < r R(t), the solution takes the form 
+
+u(t, r ) = ς(t, r )p1 − K(t, r ) g(r), (2.16) 
+
+where K(t, r ), together with the sign branch, is implicitly determined by the condition that the char-acteristic satisfying (2.15) passes through the point (t, r ). Outside the fan, u(t, r ) = uKL,ς L (r) for 
+
+r < r L(t) and u(t, r ) = uKR,ς R (r) for r > r R(t).Proof. By Proposition 2.1, K ≡ KL on all characteristics to the left of the shock, and K ≡ KR on the right. The left and right traces at the shock are therefore uKL,ς L (rs(t)) and uKR,ς R (rs(t)) for all t, and the Rankine–Hugoniot condition (2.6) reduces to the autonomous ODE (2.14). Existence and uniqueness of the shock trajectory follow from the Cauchy–Lipschitz theorem, since σRH is smooth in rs for rs > 2M , away from the degenerate case in which the two traces coincide. In the rarefaction case, by Proposition 2.1, K is constant along each characteristic. If the initial traces satisfy uKL,ς L (r0) < u KR,ς R (r0), then, since g(r0) > 0, the corresponding characteristic speeds are ordered in the same way. Hence characteristics emanating from r0 diverge and a rarefaction fan opens. Each char-acteristic inside the fan carries a fixed invariant and a fixed sign branch, which determines the intermediate profile implicitly. Outside the fan, the same conservation law gives the two original steady states. The shock trajectory given by the ODE (2.14) is precisely the quantity approximated by PITT: the analytic term σ(t) 
+
+> RH
+
+in the rollout (3.10) evaluates the right-hand side of (2.14) at the current predicted shock position, and the learned correction ∆σ(t) 
+
+> N N
+
+accounts for residual transient effects not represented by the steady-state prior. 
+
+# 2.3 Approximation of general solutions 
+
+Approximation on a computational interval 
+
+The previous construction is exact for a single generalized Riemann problem. For more general initial data, the relevant point is that piecewise steady-state profiles form a flexible local approximation class on any computational interval separated from the horizon. 
+
+Proposition 2.4 (Approximation by piecewise steady-state profiles) . Let I = [ rmin , r max ] with 2M < r min <rmax < +∞. Then one has the following density property: the set of piecewise steady-state functions of the form 
+
+u(r) = 
+
+> N
+
+X
+
+> i=1
+
+ςipmax(0 , 1 − Kig(r)) 1[ri−1,r i)(r), Ki ≥ 0, ς i ∈ {− 1, +1 }, (2.18) 
+
+is dense in the set of BV (I) profiles satisfying |u| ≤ 1, with respect to the L1(I) norm. Proof. Since g is smooth and bounded away from zero on I, the map 
+
+(K, ς, r ) 7 → ςpmax(0 , 1 − Kg (r)) (2.19a) 8is continuous on compact subsets relevant to |u| ≤ 1. Given ε > 0, choose a partition rmin = r0 < r 1 < · · · <rN = rmax fine enough that the oscillation of both u0 and g on each subinterval is small, except on a set of total L1 contribution below ε. On [ri−1, r i), choose a point ¯ri and a representative value ¯ui of u0, then set 
+
+ςi = sign(¯ ui) and Ki = (1 − ¯u2 
+
+> i
+
+)/g (¯ ri). The associated steady profile agrees with ¯ui at ¯ri and remains close to it on the whole subinterval when the mesh is small. The standard approximation of bounded-variation functions by piecewise constants therefore gives an L1(I) error bounded by Cε , where C depends only on I,
+
+M , and the total variation of u0.
+
+From local Riemann problems to front tracking 
+
+Proposition 2.4 provides the approximation-theoretic foundation for treating general initial data. Given any u0 ∈ BV , we recover the conserved invariant field K(r) = (1 − u20)/g (r) pointwise via Proposition 2.1, approximate it by a piecewise constant function with finitely many jumps, and decompose the resulting problem into independent generalized Riemann subproblems, each governed by adjacent steady branches 
+
+(Ki, ς i) and (Ki+1 , ς i+1 ).We adopt a front-tracking strategy: the position of each shock is tracked explicitly via the Rankine– Hugoniot ODE (2.14), while the smooth field between discontinuities is reconstructed from the piecewise steady-state profiles uKi,ς i . Rarefaction waves are represented by characteristic fans, while the learned residual correction in the field reconstruction (3.13) supplies a compact neural representation of the smooth fan profile on the numerical grid. The exact front-tracking description is valid up to the first wave interaction time tcoll ; beyond that time, the same decomposition becomes a structured approximation used by the PITT rollout, in the spirit of the random choice and front-tracking constructions [6, 11, 18]. 
+
+# 3 A shock-aware PITT method for Schwarzschild–Burgers flows 
+
+# 3.1 Equation tokenization 
+
+Brief presentation 
+
+We now describe the proposed PITT method, developed in this paper for the relativistic Schwarzschild– Burgers equation. In particular, our aim is to explain how the usual ingredients of a shock-capturing method are translated into a neural architecture. In a standard finite-volume scheme, one specifies the balance-law form of the equation, chooses a numerical flux or a Riemann solver, and advances cell averages in time. Here, the same physical information is used, but it is supplied to the neural model through symbolic equation tokens and through an explicit Rankine–Hugoniot shock prior . The construction uses the PITT idea of equation tokens [32], Transformer attention [42, 3], and neural-operator encodings [26, 34, 15]. We focus on the scalar balance law (2.2). The proposed architecture has four main components: an 
+
+equation tokenizer , an FNO field encoder , a parameter encoder , and a stack of physics-informed update blocks .These components are followed by an analytic shock rollout based on the Rankine–Hugoniot condition. Thus, the network is not asked to discover the shock speed from training data. In the present method, the shock motion is constrained by the jump condition from standard hyperbolic theory, while the neural part learns how to reconstruct the surrounding smooth or piecewise smooth solution and how to correct unresolved geometric and nonlinear effects. The architecture should therefore be viewed as a hybrid between a structured solver and a neural operator . The closed formulas from Section 2 provide the wave variables and the admissible shock motion, while the learned part supplies a compact representation of the spatial field and of residual effects that are not explicitly encoded by the steady-state Ansatz. The first step is to convert the governing equation into a form that can be processed by a Transformer. This is what we call equation tokenization . The idea is similar to writing the PDE as a symbolic sentence. The unknown, the independent variables, the flux, the source term, the physical parameters, and the Rankine– Hugoniot relation are all represented by elementary symbols. These symbols are then mapped to integer labels, called token IDs , and processed by a Transformer encoder. In this way, the neural model is not only given samples of the solution field; it is also given an explicit description of the equation that generated the data. 9This construction should be compared with a classical finite-volume solver as follows. A finite-volume method uses the formula for the flux and the source term directly in the update rule. In a PITT method, the formula for the flux, the source term, and the shock relation are instead encoded as a symbolic sequence .The Transformer converts this sequence into a vector representation, called the physics embedding. This embedding constrains the subsequent neural update blocks. Thus, the architecture is made aware of the governing balance law before it predicts the evolution. In particular, equation tokenization is not used here as a symbolic parser. Its role is to expose, in a uniform learnable format, the mathematical ingredients that distinguish one balance law, one geometry, or one wave configuration from another. Table 3.1: Token vocabulary. ⟨PAD ⟩: padding; ⟨SEP ⟩: section separator; ⟨NUM ⟩: numeric placeholder.                                  
+
+> Token ID
+> ⟨PAD ⟩0
+> ⟨SEP ⟩1
+> ⟨NUM ⟩2
+> ∂3
+> u4
+> t5
+> r6
+> +7
+> −8
+> ∗9Token ID
+> /10
+> =11
+> F12
+> S13
+> M14
+> K15
+> (16
+> )17
+> 218
+> 0–919–28 Token ID
+> .29
+> &30
+> R31
+> H32
+> :33
+> s34
+> [35
+> ]36
+> ,37
+> ς38
+
+Terminology and notation 
+
+It is convenient to summarize the relevant vocabulary V in Table 3.1. By design, it contains |V| = 39 tokens, covering 
+
+• special tokens denoted by ⟨PAD ⟩, ⟨SEP ⟩, and ⟨NUM ⟩;
+
+• differential operators, variables, arithmetic symbols, and physical parameters; 
+
+• digits and symbols associated with the sign branches and the Rankine–Hugoniot condition. The token ⟨PAD ⟩ is used to fill short sequences up to a fixed length, ⟨SEP ⟩ separates logical parts of the symbolic description, and ⟨NUM ⟩ may be used as a placeholder for numerical values. In the implementation described below, numerical constants are also tokenized digit by digit, which gives the network access to the actual parameter values. Given the balance law (2.2) and the Rankine–Hugoniot condition (2.6), each component is serialized into a token sequence. For example, with KL = 0 .200 , KR = 0 .400 , and M = 1 .000 , one obtains 
+
+[⟨SEP ⟩, ∂, u, /, ∂, t, +, ∂, F, /, ∂, r, =, S, &,F, =, (, 1, −, 2, ∗, M, /, r, ), ∗, (, u, 2, −, 1, ), /, 2, &,S, =, (, 2, ∗, M, /, r, 2, ), ∗, (, u, 2, −, 1, ), &,M, =, 1, ., 0, 0, 0, &, K, =, 0, ., 2, 0, 0, &, ς, =, +, &,K, =, 0, ., 4, 0, 0, &, ς, =, −, &, R, H, :, s, =, [, F, ], /, [, u, ], ⟨SEP ⟩].
+
+(3.1) Here the first line encodes the abstract balance-law structure, the next two lines encode the flux and the geometric source term, the following entries encode the physical parameters, invariant parameters, and sign branches, and the final part encodes the Rankine–Hugoniot shock-speed relation. The symbol & separates equations within the same logical block. Numeric values are tokenized digit by digit to three decimal places; for instance, 
+
+0.200 7 → [‘0’, ‘.’, ‘2’, ‘0’, ‘0’] . (3.2) 10 This is a simple way of keeping the token vocabulary small while still allowing the Transformer to distinguish different parameter values. The full token sequence is then padded or truncated to a fixed length L, so that all samples in a batch have the same input size. Each token is mapped to a learnable dmodel -dimensional embedding. A learnable positional encoding of the same dimension is added in order to preserve the order of the symbols, since the meaning of a formula depends on the order in which its tokens appear. The resulting sequence T ∈ NB×L, where B denotes the batch size, is processed by a Transformer encoder with multi-head self-attention. Padding tokens, which have ID 0, are excluded from the attention computation by an additive mask. Thus, only the meaningful part of the symbolic equation contributes to the representation. The output of the Transformer encoder is then averaged over the sequence length to produce a global physics embedding ephys ∈ RB×dmodel . This vector should be interpreted as a learned representation of the governing balance law, the source term, the relevant parameters, and the shock relation. It is passed to the subsequent field encoder and update blocks, so that the neural evolution is conditioned by the equation itself rather than only by the sampled initial data. 
+
+# 3.2 Encoding the initial field and the geometry with an FNO 
+
+Input channels 
+
+The equation tokenizer described above produces a global representation of the governing balance law. We now describe the second input to the PITT architecture, namely the sampled initial field . In a classical finite-volume method, the initial data are represented by cell averages or nodal values on a spatial grid. Here, we use the same type of sampled information, but we lift it to a latent representation by means of a Fourier Neural Operator (FNO) [26]. The encoder receives the initial profile Uin ∈ RB×Nr , where B is the batch size and Nr is the number of grid points. This array represents the initial velocity field u(0 , ·) in (2.2) evaluated on a uniform radial grid. Since the relativistic Schwarzschild–Burgers equation depends explicitly on the background geometry, the metric coefficient g(r) = 1 − 2M/r is also provided to the encoder. In practice, g(r) is concatenated with the initial field as an additional channel. Thus, the encoder does not see only the fluid state; it also receives the geometric information that enters the flux, the source term, and the steady-state structure. 
+
+Fourier lifting and projection 
+
+The FNO block acts as a global spatial feature extractor. Given a latent field v, it applies a Fourier transform in the radial variable, keeps a prescribed number κ of low-frequency modes, multiplies these modes by learnable complex weights, and transforms the result back to physical space. At the level of one Fourier layer, this operation can be written as 
+
+(Kv)( r) = F−1
+
+Rκ · F v
+
+
+
+(r), (3.3) where F denotes the discrete Fourier transform in the spatial variable and Rκ ∈ Cκ×Cin ×Cout is a learnable complex weight tensor. The parameter κ controls the number of retained Fourier modes, while Cin and Cout 
+
+denote the input and output channel dimensions. The output of the FNO is then projected by a linear map Wproj to the common latent dimension used by the Transformer-based part of the architecture. This gives the initial latent state V(0) ∈ RB×Nr ×dmodel .The index r is still spatial: for each grid point, the model stores a dmodel -dimensional feature vector. This latent field is the neural analogue of the initial discrete state in a numerical scheme, but with additional channels encoding nonlocal spatial information and geometric dependence. 
+
+Scope of this step 
+
+The use of an FNO should not be interpreted as a replacement for the shock-capturing mechanism. Fourier representations alone may introduce oscillations or smoothing near discontinuities. In the present method, the FNO is used to encode the global shape of the initial field and its interaction with the Schwarzschild geometry, while the discontinuity motion is governed separately by the Rankine–Hugoniot prior. This division of roles 11 is essential: the FNO provides a resolution-flexible field representation, whereas the shock prior supplies the local jump information needed to propagate discontinuities accurately. 
+
+# 3.3 Parameter encoder and global conditioning 
+
+Physical parameters 
+
+In the shock-tracking regime, the additional continuous parameters supplied to the architecture are the black-hole mass M and the initial shock position r(0)  
+
+> s
+
+. The invariant parameters (KL, ς L, K R, ς R) are already represented in the equation-token stream, because they determine the left and right steady-state branches. The pair (M, r (0)  
+
+> s
+
+) is encoded by a two-layer MLP with GELU activation: 
+
+eparam = MLP param 
+
+ [M, r (0)  
+
+> s
+
+] ∈ RB×dmodel . (3.4) 
+
+Global and temporal conditioning 
+
+The base conditioning vector combines the physics and parameter embeddings, so that c(0) = ephys + eparam ,where ephys is the global physics embedding from Subsection 3.1. At each rollout step t, a learnable time embedding et ∈ Rdmodel is added, giving c(t) = c(0) + et. This ensures that both the physical structure of the PDE and the current temporal context jointly modulate every layer of the latent dynamics. In the formulas below, c(t) is broadcast over the spatial grid whenever it is added to a tensor in RB×Nr ×dmodel .
+
+# 3.4 Physics-informed update blocks 
+
+The latent field state V ∈ RB×Nr ×dmodel is iteratively refined by Nblocks stacked update blocks. Each block performs cross-attention between the spatial latent state and a compressed summary of the symbolic token sequence, followed by a residual MLP update. 
+
+Compressed token summaries 
+
+The token sequence Tseq ∈ RB×L×dmodel is compressed into ns summary tokens via chunk mean-pooling: 
+
+eTi = 1
+
+L/n siL/n s−1
+
+X
+
+> j=( i−1) L/n s
+
+Tseq ,j , eT ∈ RB×ns×dmodel , (3.5) preserving the structural segments of the token sequence: PDE body, flux F , source S, parameters, and Rankine–Hugoniot relation. This reduces the cross-attention cost from O(Nr L) to O(nsNr ) while keeping the equation-level information available to every spatial point. 
+
+Cross-attention update 
+
+Queries are projected from the spatial latent state, while keys and values are projected from the compressed token summary: 
+
+Q = WQV, Ktok = WK eT, Vtok = WV eT. (3.6) With these projections, we have Q ∈ RB×Nr ×dmodel and Ktok , V tok ∈ RB×ns×dmodel . The attention map is 
+
+A = softmax 
+
+ QK ⊤
+
+> tok
+
+√dmodel 
+
+
+
+∈ RB×Nr ×ns , (3.7) and the latent field is updated by 
+
+O = AV tok , V ← V + α MLP update 
+
+ O + c(t), (3.8) where c(t) is broadcast over the radial grid. The factor α is a fixed step size that keeps the learned correction small relative to the analytic shock and steady-state priors. 12 3.5 RH-guided shock evolution and field reconstruction 
+
+Shock trajectory 
+
+In the shock regime, the discontinuity is not reconstructed from the grid values alone. Instead, its position is an explicit variable. At each rollout step t, the shock position is advanced by 
+
+r(t+1)  
+
+> s
+
+= r(t) 
+
+> s
+
++  σ(t) 
+
+> RH
+
++ ∆ σ(t)
+
+> N N
+
+ ∆t, (3.9) where ∆t is the rollout time step. The dominant term σ(t) 
+
+> RH
+
+evaluates the right-hand side of (2.14) at the current predicted shock position: 
+
+σ(t) 
+
+> RH
+
+= FR(r(t) 
+
+> s
+
+) − FL(r(t) 
+
+> s
+
+)
+
+uR(r(t) 
+
+> s
+
+) − uL(r(t) 
+
+> s
+
+) , (3.10) with uL(r) = uKL,ς L (r) and uR(r) = uKR,ς R (r). The neural correction 
+
+∆σ(t) 
+
+> N N
+
+= ϵ tanh  Wshock ¯V(t) · γ(KL, K R) (3.11) is gated by 
+
+γ(KL, K R) = σsig 
+
+ λ (|KL − KR| − δ), (3.12) where ¯V(t) = 1
+
+> Nr
+
+P 
+
+> i
+
+V(t) 
+
+> i
+
+is the spatial mean of the latent state, ϵ controls the correction magnitude, and (λ, δ ) are gate sharpness and threshold hyperparameters. The gate γ suppresses the neural correction when |KL − KR| is small, i.e., near steady-state configurations where σRH ≈ 0. In exact generalized Riemann data, this correction is expected to remain small; its role is to absorb discretization error, finite-resolution effects, and residual mismatch in the learned latent dynamics. The shock position is clamped to 
+
+rs ∈ (2 M + ε, r max − ε) at every step. 
+
+Field reconstruction and rarefaction mode 
+
+In the shock regime, given r(t) 
+
+> s
+
+, the full spatial field is reconstructed as 
+
+u(t)(r) = uL(r) s(r) + uR(r)  1 − s(r) + μ tanh  Wfield V(t), (3.13) where s(r) = σsig 
+
+ (r(t) 
+
+> s
+
+− r)/w  is a smooth step function with transition width w. The first two terms constitute the physics prior : a sharp but differentiable approximation of the exact piecewise steady-state solution parameterized by (KL, ς L, K R, ς R). The final term is a learned residual correction, bounded in magnitude by μ, that accounts for deviations from the steady-state profiles during transient dynamics. In the rarefaction regime, no shock position is evolved. The two fan boundaries are instead advanced by the characteristic ODE (2.15), and the decoder uses the same latent field V(t) to reconstruct the smooth transition inside the fan. Thus, the architecture separates the treatment of discontinuity motion from the reconstruction of smooth or rarefaction regions. 
+
+# 3.6 Architecture summary 
+
+Forward pass 
+
+The complete PITT forward pass proceeds as follows: 1. Encode. FNO encodes (u0, g (r)) → V(0) ; the Transformer encodes the token sequence → ephys ; the MLP encodes (M, r (0)  
+
+> s
+
+) → eparam .2. Condition. Form c(t) = ephys + eparam + et for each rollout step t.3. Rollout. For t = 0 , . . . , T − 1:(a) Apply Nblocks update blocks to refine V(t).13 (b) If the initial data are of shock type, that is, uKL,ς L (r0) > u KR,ς R (r0): compute σ(t) 
+
+> RH
+
+from 
+
+(KL, ς L, K R, ς R, r (t) 
+
+> s
+
+) via (3.10), compute ∆σ(t) 
+
+> N N
+
+from ¯V(t), and advance r(t+1)  
+
+> s
+
+.(c) If the initial data are of rarefaction type, that is, uKL,ς L (r0) < u KR,ς R (r0): no shock position is tracked. The fan boundaries r(t) 
+
+> L
+
+and r(t) 
+
+> R
+
+are advanced by integrating the characteristic ODE (2.15) with u = uKL,ς L and u = uKR,ς R , respectively. (d) Reconstruct the full field u(t)(r) via (3.13), where the bounded field residual accounts for the smooth fan profile in the rarefaction case and transient deviations from the steady-state prior in the shock case. 4. Output. Return {u(t)}T −1 
+
+> t=0
+
+and {r(t) 
+
+> s
+
+}T −1 
+
+> t=0
+
+(shock case) or {r(t) 
+
+> L
+
+, r (t) 
+
+> R
+
+}T −1 
+
+> t=0
+
+(rarefaction case). 
+
+Regime-dependent outputs 
+
+The output variables therefore depend on the wave regime. For a shock sample, the model predicts both a field and a shock trajectory, and the Rankine–Hugoniot prior is directly active. For a rarefaction sample, the explicit geometric evolution is carried by the two fan boundaries, while the field decoder reconstructs the smooth fan profile. This distinction is important for the numerical tests below: the same learned latent dynamics is used in both regimes, but the analytical wave prior is adapted to the corresponding entropy solution. 
+
+# 4 Numerical methodology and implementation 
+
+# 4.1 Objective of this section 
+
+Scope of the numerical protocol 
+
+In this section we test, for the Schwarzschild–Burgers model introduced in Section 2, the PITT architecture developed in Section 3. We first specify the data generation procedure and the finite-volume reference solver (Sections 4.2–4.3), and then record the implementation choices and evaluation criteria (Sections 4.4–4.5). 
+
+Connection with the analytical wave structure 
+
+The numerical tests are organized around the three elementary regimes identified in Proposition 2.3: moving shocks, steady shocks, and rarefaction waves. This organization allows us to separate the effect of the Rankine–Hugoniot prior, the effect of the equation tokenizer, and the residual neural correction. The ablation study in Subsection 5.2 isolates these contributions, while Subsection 5.3 checks that the same architecture is consistent with the flat-spacetime limit M → 0.
+
+# 4.2 Dataset and data generation 
+
+Analytic data generation 
+
+We use the exact Riemann solver to generate training and validation data. For each sample, the black hole mass M , steady-state parameters (KL, K R), flow direction signs (ςL, ς R) ∈ {− 1, +1 }2, initial discontinuity position r0, and solution type are drawn randomly. The initial field is the piecewise steady-state profile (4.1), where ςL,R encodes the flow direction on each side: 
+
+u(0 , r ) = 
+
+(
+
+ςL
+
+pmax(0 , 1 − KL g(r)) , 2M < r < r 0,ςR
+
+pmax(0 , 1 − KR g(r)) , r > r 0. (4.1) The regimes are selected by comparing the two traces u0 
+
+> L
+
+= uKL,ς L (r0) and u0 
+
+> R
+
+= uKR,ς R (r0). Moving shocks correspond to u0 
+
+> L
+
+> u 0
+
+> R
+
+, steady shocks to KL = KR and ςL = −ςR, and rarefaction waves to 
+
+u0 
+
+> L
+
+< u 0
+
+> R
+
+. Full trajectories are generated semi-analytically: the steady branches are evaluated from the closed formulas, while a fourth-order Runge–Kutta method with step ∆t is used for (2.14) in shock cases and for the rarefaction fan boundaries in rarefaction cases. The spatial domain uses a uniform grid of Nr
+
+14 points over [rmin , r max ] with rmin = 2 M + ε. Each trajectory covers t ∈ [0 , T ] with time step ∆t, yielding 
+
+T / ∆t target frames. Solution types are sampled at fixed proportions: 40% moving shocks, 30% steady shocks, and 30% rarefaction waves. 
+
+Reproducibility parameters 
+
+Unless otherwise stated, the random seed is fixed to 2026 , the horizon offset is ε = 10 −3, and the compu-tational domain is [2 M + ε, 15] . We use Nr = 500 grid points and 100 output times with ∆t = 10 −2. For moving shocks and rarefactions, M and (KL, K R) are sampled from the ranges in Table 4.1, r0 is sampled uniformly from [2 M + 0 .5, 12] , and the four sign choices are first sampled uniformly and then rejected unless they produce the desired regime u0 
+
+> L
+
+> u 0 
+
+> R
+
+or u0 
+
+> L
+
+< u 0
+
+> R
+
+. For steady shocks we set KL = KR =: K, take 
+
+ςL = +1 and ςR = −1, and sample K and r0 from the same ranges. Samples for which the square root in (4.1) is truncated on more than 5% of the grid are rejected, so that the training set is not dominated by near-vacuum clipped states. 
+
+Code and data generation 
+
+The data are generated directly from the parameter ranges, rejection rules, and ODE solvers described in this section. For reproducibility, the implementation used for the figures records the random seed, the accepted parameter tuples, the time grid, the finite-volume CFL history, and the trained model parameters. Since the sampling includes rejection steps, the accepted parameter tuples are part of the reproducibility data; a random seed alone is not a complete description if implementation details are changed. The scripts producing the training set, test set, tables, and figures will be archived with the submitted version of the article, so that the numerical results can be regenerated from the information specified here. 
+
+Dataset splits 
+
+The dataset is divided into three splits summarized in Table 4.1. Training and validation sets use analytic generation. The test set is generated with fresh random parameters. For every test trajectory we compute the analytic reference solution and, on the same grid and time interval, the finite-volume solution described below. All reported MAE values are measured against the analytic reference; the finite-volume computation is reported as the standard numerical baseline. The validation and test sets cover parameter ranges partially out-of-distribution relative to training, assessing generalization to unseen physical configurations. Table 4.1: Dataset splits. Train and validation use analytic generation. For the test set, both the analytic reference and the numerical baseline are computed on the same trajectories. Split Generation Trajectories M range (KL, K R) range Train Analytic 300 [0 .8, 1.2] [0 .1, 0.8] 
+
+Validation Analytic 60 [1 .2, 1.5] [0 .4, 0.6] 
+
+Test Analytic + numerical 30 [0 .8, 1.5] [0 .1, 0.8] 
+
+# 4.3 Baseline 
+
+As a reference solver we use a finite-volume scheme combining third-order strong-stability-preserving Runge– Kutta (SSP-RK3) time integration, MUSCL reconstruction with the van Leer limiter [41], and an HLL numerical flux [12]. The scheme solves (2.2) on a uniform spatial grid with CFL-controlled adaptive time stepping and outflow boundary conditions at the right boundary. This choice is consistent with the geometry-preserving finite-volume strategy developed for balance laws with sources [5, 20, 8, 10]; we verify below that the resulting scheme is in fact well-balanced to machine precision outside the black hole horizon. 
+
+Finite-volume discretization 
+
+The baseline is a standard shock-capturing finite-volume method. Its role is to provide a conservative reference computation on the same spatial domain, with numerical viscosity localized near discontinuities 15 and with stable time integration under the CFL restriction. In all comparisons we use the same spatial grid as for PITT, take CFL number 0.45 , reconstruct the source term at cell centers, and impose no boundary condition at the horizon side since the characteristic speed vanishes there. 
+
+Role in the comparisons 
+
+The finite-volume baseline used above already achieves well-balanced behavior to machine precision at interior grid points and at the right (far-field) boundary, since the MUSCL reconstruction and the source-term discretization share the same geometric coefficient g at each interface. Near the horizon boundary, this property is conditional on the boundary treatment, reflecting the coordinate singularity of the Schwarzschild metric at r = 2 M rather than a limitation of the discretization. A sharper numerical comparison would still benefit from schemes explicitly designed and validated for Schwarzschild–Burgers steady states across the full domain, including near the horizon [2, 21], as well as the geometry-preserving and convergence-oriented methods developed for curved backgrounds more broadly [5, 20, 8, 10]. 
+
+# 4.4 Implementation details 
+
+Architecture hyperparameters 
+
+The Token Transformer uses Nlayers = 2 encoder layers, 8 attention heads, and feedforward dimension 512 ,with dmodel = 128 . The FNO encoder retains κ = 32 Fourier modes with hidden width 64 . The number of update blocks is Nblocks = 4 . The physics correction magnitude is ϵ = 0 .002 , the gate parameters are 
+
+λ = 500 and δ = 0 .015 , and the field residual bound is μ = 0 .05 . The smooth shock transition width follows a scheduled annealing: w = 0 .01 for the first 30% of training epochs, w = 0 .005 for epochs 30% –70% , and 
+
+w = 0 .003 thereafter, progressively sharpening the reconstructed shock front. The spatial grid has Nr = 500 
+
+points over r ∈ [rmin , 15 .0] , and each trajectory spans T = 100 output steps with ∆t = 0 .01 . All linear layers use Xavier initialization, biases are initialized to zero, and the activation function in the MLP blocks is GELU. The training loss is averaged first over the grid and then over the rollout times, so that changing 
+
+Nr or T does not change the relative weights in (4.2). 
+
+Loss function 
+
+The total training objective combines three terms: 
+
+L = LL1 + λss Lsteady + λRH LRH , (4.2) with λss = 0 .01 and λRH = 0 .001 . The primary term is the mean absolute error over all rollout steps: 
+
+LL1 = 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+u(t)pred − u(t)target 1. (4.3) The steady-family regularizer penalizes deviations of the predicted field from the signed steady-state family 
+
+{uK,ς } by measuring the spatial variance of the inferred invariant K(r) = (1 − u2)/g (r) at the final rollout step: 
+
+Lsteady = Var r
+
+ 1 − (u(T ))2
+
+g(r)
+
+
+
+. (4.4) The RH regularizer penalizes discrepancies between the predicted shock velocity and the analytically com-puted RH speed: 
+
+LRH = 1
+
+T − 1 
+
+> T−1
+
+X
+
+> t=1
+
+r(t+1)  
+
+> s
+
+− r(t)
+
+> s
+
+∆t − σ(t)
+
+> RH
+
+!2
+
+. (4.5) Both Lsteady and LRH are applied only to samples whose reference solution contains a shock. They are suppressed inside rarefaction fans, for which the correct solution is not a two-branch steady profile separated by a single interface. 16 Optimization 
+
+The model is trained with AdamW [33] at learning rate 2×10 −4 and weight decay 0. A ReduceLROnPlateau scheduler halves the learning rate when the validation loss fails to improve for 5 consecutive epochs. Gradients are clipped to a maximum ℓ2 norm of 0.1. Training runs for at most 150 epochs with early stopping (patience 
+
+30 ). On 300 analytic training trajectories with batch size 4, the model converges after approximately 143 
+
+epochs, reaching a best validation loss of 6.20 × 10 −4.
+
+# 4.5 Evaluation metrics 
+
+Field error 
+
+We evaluate the model first by the field MAE , the mean absolute error between the predicted and reference fields, averaged over time steps and spatial points: 
+
+Efield = 1
+
+T N rTX
+
+> t=1
+
+ˆu(t) − u(t)
+
+> 1
+
+. (4.6) 
+
+Interface errors 
+
+The second diagnostic measures the geometric error in the predicted wave location. For moving shocks, the 
+
+shock position error is the mean absolute error in the predicted shock trajectory: 
+
+Eshock = 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+ˆr(t) 
+
+> s
+
+− r(t) 
+
+> s
+
+, (4.7) where r(t) 
+
+> s
+
+is obtained from the analytic solution, or detected as the point of maximum spatial gradient for numerical test cases. For rarefaction samples, an analogous fan-boundary error can be monitored by comparing the predicted left and right fan edges with the characteristic boundaries of the exact Riemann solution; unless otherwise stated, the tables below report only the field MAE and the shock-position MAE. 
+
+Structural diagnostics 
+
+In addition to the errors reported in the tables, we monitor three structure-preservation diagnostics. They measure the violation of the subluminal bound, the drift of the steady-state invariant, and the defect in the conservative density u/g (r)2. For a predicted trajectory ˆu, we use 
+
+Dsub := max 
+
+> t,i
+
+  |ˆu(t) 
+
+> i
+
+| − 1 
+
+> +
+
+, DK := 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+Var i
+
+"
+
+1 − (ˆ u(t) 
+
+> i
+
+)2
+
+g(ri)
+
+#
+
+,
+
+Dm := 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+X
+
+> i
+
+ˆu(t) 
+
+> i
+
+− ˆu(0) 
+
+> i
+
+g(ri)2 ∆r .
+
+(4.8) The first quantity must remain close to zero for physically admissible velocities. The second is evaluated on regions expected to remain on a single steady-state branch: for shock samples, we exclude a ±5-grid-point band around the predicted interface, consistent with the merging criterion used in Subsection 6.1, since a single grid point crossing u ≈ 0 inside the transition band causes K ≈ 1/g (r) to become large and would otherwise dominate the variance without physical significance. The third is intended for finite windows where boundary fluxes are negligible or prescribed. We find Dsub = 0 on all test trajectories: the predicted velocity never exceeds the speed of light, so the subluminal constraint of Corollary 2.2 is enforced exactly. After excluding the transition band, DK =2.20 × 10 −5 ± 1.50 × 10 −5 for steady shocks and 5.75 × 10 −5 ± 7.17 × 10 −5 for moving shocks, comparable in magnitude across both regimes; this confirms that PITT maintains the steady-state invariant with small drift away from the shock transition. This behavior is architectural rather than exact: the physics prior 
+
+uL(r), u R(r) in (3.13) lies on the steady-state manifold by construction, and the residual correction — the 17 only term without an analytical constraint — is only softly penalized by Lsteady during training; the small measured values of DK indicate that this soft constraint is effective in practice. DK is not applicable to rarefaction samples, since the solution does not remain on a single steady branch inside the fan. The unmodified Dm is dominated by the same type of artifact as the unmodified DK : the 1/g (r)2
+
+weight in the conservative density diverges as r → 2M , so a handful of grid points closest to the horizon — where g(r) can fall below 10 −3 — can amplify small prediction residuals by several orders of magnitude and dominate the mass integral. Excluding a sufficiently wide band near rmin , analogous to the transition-band exclusion used for DK , reduces Dm to O(10 −4) for all three solution types, comparable in magnitude to DK .A 20 -grid-point band ( 4% of the domain) suffices for moving shocks and rarefactions; steady shocks, whose interfaces in our test set lie closer to the horizon, require an 80 -grid-point band ( 16% of the domain) to clear the shock transition itself. In every case the reduction is a sharp, order-of-magnitude drop as the exclusion band widens, rather than convergence to a nonzero plateau, which indicates a geometric amplification artifact rather than a genuine violation of mass conservation. These diagnostics do not replace the field error, but they separate small pointwise errors from possible violations of the geometry-preserving structure. 
+
+# 5 Numerical validation 
+
+# 5.1 Comparison with the numerical baseline 
+
+Table 5.1 reports Efield on the test set, separated by solution type. Figure 5.1 shows representative predicted trajectories for each regime, and Figure 5.2 summarizes the benchmark comparison. The emphasis on wave-front location, entropy-compatible propagation, and conservative or Riemann-informed structure is shared by recent learning approaches for hyperbolic problems, including PINN-based methods [40, 35, 27, 9], weak or entropy formulations [7, 36], Godunov- and Riemann-informed networks [4, 37, 38, 43], neural flux or neural-operator methods [14, 28, 29, 31], and time-continuous fluid reconstruction [39]. Table 5.1: Test set field MAE by solution type (mean ± std over 30 test trajectories, lower is better). Method Moving Steady Rarefaction Overall PITT (full) 1.11 e-4 1.97 e-3 9.14 e-5 7.25 e-4   
+
+> ±4.8e-5±1.9e-4±3.5e-5±8.9e-4
+
+Numerical (RK3+HLL) 2.80 e-3 2.02 e-3 1.41 e-3 2.08 e-3   
+
+> ±7.9e-4±6.2e-4±4.3e-4±8.5e-4
+
+Overall accuracy 
+
+PITT gives an overall MAE of 7.25 × 10 −4, while the numerical baseline gives 2.08 × 10 −3. The gain is not uniform across solution types, and its structure reflects the role of the RH prior established in Proposition 2.3. 
+
+Moving shocks 
+
+The most pronounced improvement occurs for moving shocks, where PITT reduces the MAE by a factor of 
+
+25 (1.11 × 10 −4 vs 2.80 × 10 −3). By evaluating the exact RH speed σ(t) 
+
+> RH
+
+analytically at each rollout step via (2.14), PITT tracks the shock trajectory with high precision, while the numerical scheme accumulates positional error due to numerical diffusion across the discontinuity. 
+
+Steady shocks 
+
+For steady shocks ( σRH = 0 ), the two methods perform comparably ( 1.97 × 10 −3 vs 2.02 × 10 −3). Since the shock does not move, the numerical solver does not need to track a trajectory, and numerical diffusion near the stationary discontinuity affects both methods similarly. The gate γ suppresses the neural correction in this regime, so PITT’s output reduces to the physics prior evaluated at the fixed shock position. 18 Rarefaction waves 
+
+PITT gives a smaller error than the numerical solver on rarefaction waves ( 9.14 × 10 −5 vs 1.41 × 10 −3), despite the piecewise steady-state prior being an approximation in this case. The learned residual correction accounts for the smooth fan structure, compensating for the mismatch between the sharp-transition prior and the continuous rarefaction profile. 
+
+Figure 5.1: Predicted velocity profiles at t ∈ { 0.05 , 0.10 , 0.15 , 0.20 }s for three representative test cases (M = 1 .0, r0 = 4 .0). Solid lines: exact solution; dashed lines: PITT-Full. Left: moving shock ( KL = 0 .2,
+
+KR = 0 .5, ςL = ςR = +1 ); center: steady shock ( KL = KR = 0 .3, ςL = −ςR = +1 ); right: steady state (KL = KR = 0 .3, ςL = ςR = +1 ). In all cases the two curves are visually indistinguishable. 
+
+Figure 5.2: Benchmark summary for the test set. The figure compares the PITT prediction with the finite-volume baseline across the regimes used in Table 5.1. 
+
+# 5.2 Ablation study 
+
+We compare the full model against the following three variants. PITT-AblA removes the RH prior from the forward pass, replacing σ(t) 
+
+> RH
+
+with a purely learned shock speed. PITT-AblB disables the equation tokenizer by zeroing ephys and the token cross-attention context. PITT-AblC removes the shock-width annealing schedule, training instead with a fixed w = 0 .003 throughout. Because some of these variants turn out to be sensitive to the random initialization, we report results directly across three seeds ( 2026 , 1,
+
+42 ) rather than for a single run. Table 5.2 reports the overall field MAE for every variant and every seed, Table 5.3 summarizes the cross-seed mean and standard deviation, and Table 5.4 breaks these results down by solution type. 
+
+Effect of the RH prior 
+
+Removing the RH prior causes a large degradation at two of the three seeds: the overall MAE increases by 
+
+117% and 143% relative to PITT-full at seeds 2026 and 1 respectively, with the sharpest relative impact on 19 Table 5.2: Overall field MAE for each variant under three random seeds. Model seed 2026 seed 1 seed 42 
+
+PITT (full) 2.88 e-4 2.88 e-4 3.12 e-4
+
+PITT-AblA 6.24 e-4 6.99 e-4 2.91 e-4
+
+PITT-AblB 3.17 e-4 3.07 e-4 2.99 e-4
+
+PITT-AblC 2.85 e-4 1.75 e-3 2.91 e-4
+
+Table 5.3: Cross-seed variation of the overall field MAE (mean ± std across three seeds). AblC and AblA show large relative variation; AblB is nearly insensitive to the seed over these three runs. Model Cross-seed mean ± std Relative variation Worst seed / mean PITT (full) 2.96 e-4 ± 1.14 e-5 4% 1.05 ×
+
+PITT-AblA 5.38 e-4 ± 1.77 e-4 33% 1.30 ×
+
+PITT-AblB 3.08 e-4 ± 7.40 e-6 2% 1.03 ×
+
+PITT-AblC 7.76 e-4 ± 6.91 e-4 89% 2.26 ×
+
+rarefaction waves and moving shocks. At the third seed ( 42 ), AblA performs close to PITT-full. Without the analytic prior provided by Proposition 2.3, the model must infer the shock speed from training data, which is substantially harder given only 300 training trajectories, and the resulting optimization problem is more sensitive to initialization. 
+
+Effect of the equation tokenizer 
+
+Removing the tokenizer produces a smaller but consistent degradation across all three seeds: the overall MAE increases by 7–10% , with the largest relative impact on rarefaction waves and moving shocks. The FNO encoder and the analytic RH prior together provide a strong inductive bias that partially compensates for the absence of symbolic encoding, but the full model remains more accurate at every seed, confirming that symbolic equation tokenization contributes a measurable, if secondary and seed-independent, signal. 
+
+Effect of the shock-width annealing schedule 
+
+At two of the three seeds, PITT-AblC (fixed w = 0 .003 throughout training) performs essentially as well as PITT-full, or even slightly better. At the remaining seed, however, training converges to a solution that is worse than PITT-full by roughly an order of magnitude across every solution type simultaneously – moving shocks, steady shocks, and rarefaction waves all degrade together (Table 5.4), rather than one wave regime being selectively affected. This across-the-board collapse indicates a genuine optimization failure rather than a regime-specific weakness, and parallels the behavior of PITT-AblA: the annealing schedule is not primarily an accuracy-improving component, but a mechanism that removes a failure mode in which the (initially very sharp) transition-width optimization problem can converge to a poor local optimum depending on initialization. 
+
+Summary 
+
+Taken together, these results separate the three architectural components into two groups. The RH prior (AblA) and the shock-width annealing schedule (AblC) primarily affect training robustness: removing either one leaves the optimization problem vulnerable, under some initializations, to a substantially worse local optimum, while under other initializations the variant performs close to the full model. The equation tokenizer (AblB) instead affects accuracy in a consistent, seed-independent way, contributing a modest but reliable gain. A single-seed ablation study would not be sufficient to assess the role of the RH prior and could miss the annealing schedule. A more complete ablation program could also compare the present architecture with variants in which the FNO encoder, the residual field correction, or the steady-state variable K are removed separately, and could extend the cross-seed analysis above to a larger number of seeds to better characterize the failure probability associated with removing the RH prior or the annealing schedule. 20 Table 5.4: Field MAE by solution type for each variant, across three random seeds (mean ± std over test trajectories). Model Seed Moving Steady Rarefaction PITT (full) 2026 1.11 e-4 ± 1.22 e-4 8.28 e-4 ± 3.61 e-4 5.63 e-5 ± 3.71 e-5
+
+PITT (full) 1 1.11 e-4 ± 1.22 e-4 8.28 e-4 ± 3.62 e-4 5.62 e-5 ± 3.75 e-5
+
+PITT (full) 42 1.39 e-4 ± 1.24 e-4 8.52 e-4 ± 3.61 e-4 7.48 e-5 ± 3.78 e-5
+
+PITT-AblA 2026 4.39 e-4 ± 2.09 e-4 1.13 e-3 ± 3.66 e-4 4.41 e-4 ± 1.13 e-4
+
+PITT-AblA 1 5.71 e-4 ± 1.59 e-4 1.21 e-3 ± 3.78 e-4 4.06 e-4 ± 8.47 e-5
+
+PITT-AblA 42 1.16 e-4 ± 1.22 e-4 8.30 e-4 ± 3.61 e-4 5.86 e-5 ± 3.75 e-5
+
+PITT-AblB 2026 1.41 e-4 ± 1.22 e-4 8.58 e-4 ± 3.60 e-4 8.57 e-5 ± 3.69 e-5
+
+PITT-AblB 1 1.31 e-4 ± 1.22 e-4 8.46 e-4 ± 3.62 e-4 7.55 e-5 ± 3.76 e-5
+
+PITT-AblB 42 1.23 e-4 ± 1.22 e-4 8.40 e-4 ± 3.61 e-4 6.80 e-5 ± 3.70 e-5
+
+PITT-AblC 2026 1.08 e-4 ± 1.22 e-4 8.25 e-4 ± 3.61 e-4 5.38 e-5 ± 3.76 e-5
+
+PITT-AblC 1 1.51 e-3 ± 1.08 e-3 2.28 e-3 ± 1.19 e-3 1.66 e-3 ± 1.05 e-3
+
+PITT-AblC 42 1.14 e-4 ± 1.23 e-4 8.30 e-4 ± 3.61 e-4 5.92 e-5 ± 3.75 e-5
+
+# 5.3 Non-relativistic limit: standard Burgers equation 
+
+Flat-spacetime reduction 
+
+Taking the limit as the black-hole mass M → 0, equation (2.1) reduces to the standard inviscid Burgers equation 
+
+∂tu + ∂r
+
+ u2
+
+2
+
+
+
+= 0 . (5.1) The Rankine–Hugoniot condition gives the shock speed σRH = ( uL + uR)/2, and the steady states reduce to the constants uK,ς = ς√1 − K. This limit is recovered exactly in the PITT prior: when g(r) = 1 −2M/r → 1,the flux reduces to F = ( u2 − 1) /2 and the RH condition gives 
+
+σRH = [F ][u] = u2 
+
+> R
+
+− u2
+
+> L
+
+2( uR − uL) = uR + uL
+
+2 , (5.2) identically. 
+
+Numerical check 
+
+We verify this numerically by running PITT for M ∈ { 10 −4, 10 −5, 10 −6}. Table 5.5 reports the full results. The field MAE remains essentially constant across these values of M , while the shock-speed discrepancy decreases linearly with M , as expected from the expansion of the Schwarzschild metric coefficient g(r).Table 5.5: Standard Burgers validation ( M = 10 −6, T = 0 .5). PITT vs RK3+MUSCL+HLL numerical baseline. Case σRH |∆σ| PITT MAE Numerical MAE Moving shock ( uL = 0 .8, uR = 0 .3) 0.550 1.31 × 10 −7 3.5 × 10 −3 4.8 × 10 −3
+
+Rarefaction ( uL = 0 .3, uR = 0 .8) — — 1.9 × 10 −3 1.16 × 10 −2
+
+Steady shock ( uL = 0 .5, uR = −0.5) 0 0 6.9 × 10 −3 9.5 × 10 −3
+
+For the moving shock case, the predicted shock speed exhibits empirical first-order convergence to the standard Burgers RH value as M → 0:
+
+|∆σ| ≈ 1.3 × 10 −1 · M, (5.3) 21 as confirmed by the measurements 
+
+M = 10 −4 : |∆σ| = 1 .28 × 10 −5,M = 10 −5 : |∆σ| = 1 .26 × 10 −6,M = 10 −6 : |∆σ| = 1 .31 × 10 −7.
+
+(5.4) 
+
+# 6 Long-time convergence toward steady states 
+
+# 6.1 Piecewise steady-state solutions 
+
+Algorithm for general solutions 
+
+Given the initial condition u0(r), we proceed as follows. 1. Compute K(r) = (1 − u20)/g (r) pointwise. 2. Detect discontinuities of K by thresholding |∂r K| > τ ; detections within 5 grid points are merged to avoid double-counting. 3. For each segment [ri−1, r i), set Ki to the segment mean of K(r) and ςi to the sign of the segment mean of u0.4. For each adjacent pair (Ki, ς i), (Ki+1 , ς i+1 ), solve the corresponding generalized Riemann problem: shock interfaces are advanced by (2.14), while rarefaction interfaces are advanced by the associated fan characteristics. 5. Reconstruct the full field by piecewise evaluation of uKi,ς i (r), with sigmoid transitions of width w at shock locations and smooth fan reconstruction in rarefaction regions. This procedure follows the spirit of the Glimm method based on generalized Riemann problems [24, 22]: at each time step ∆t, the field is decomposed into piecewise steady-state segments via the invariant K(r)
+
+and the sign branch ς. Each interface generates a local Riemann subproblem, and the local solutions are reassembled before the next step. To keep the pre-interaction regime unambiguous within one time step, we impose the CFL condition ∆t
+
+∆r ≤ 1sup 
+
+> r∈[rmin ,r max ]
+
+g(r) = 1
+
+g(rmax ) , (6.1) which is sufficient here since characteristic speeds are bounded by g(r)|u| ≤ g(r) and |u| ≤ 1 by Corollary 2.2. Under this condition, wave interactions are handled by re-decomposition at successive time steps, in agree-ment with the front-tracking and generalized Riemann-solver theory developed by LeFloch and Xiang [22]. 
+
+Numerical results for general solutions 
+
+All experiments in this section use T = 0 .2 with ∆t = 0 .01 and ∆r = ( rmax − rmin )/N r , satisfying (6.1). Table 6.1 reports the field MAE and shock position MAE for three test cases with M = 1 .0, and Figure 6.1 shows the corresponding velocity profiles and shock trajectories. Table 6.1: PITT-General: field MAE and shock position MAE for general bounded-variation initial data (M = 1 .0, T = 0 .2, pre-collision regime). Shock MAE is reported per discontinuity. Case K values Field MAE Shock MAE 2-disc (0 .2 | 0.5 | 0.7) 1.03 e-4 3.84 e-3 / 4.60 e-3
+
+3-disc (0 .2 | 0.4 | 0.6 | 0.8) 1.48 e-4 3.89 e-3 / 4.81 e-3 / 4.81 e-3
+
+Smooth IC K ≈ 0.35 + perturbation |δu | < 0.02 4.58 e-3 —Two observations follow from Table 6.1 and Figure 6.1. First, the field MAE for the 2- and 3-discontinuity cases ( 1.03 ×10 −4 and 1.48 ×10 −4) is comparable to the single-discontinuity result in Table 5.1 ( 1.11 ×10 −4). 22 Thus, at this resolution and before wave interaction, the decomposition into local generalized Riemann problems does not visibly degrade the accuracy of the single-interface solver. Second, for the smooth initial condition, consisting of a steady-state profile perturbed by |δu | < 0.02 , the field MAE is 4.58 ×10 −3 = O(|δu |).This error reflects the initial projection of a genuinely smooth perturbation onto a reduced steady-state description, rather than an instability of the PITT rollout. These tests for rather general solutions should be interpreted as interaction tests of the local generalized Riemann decomposition. The more stringent regime is the post-collision evolution, in which two or more fronts interact and the steady-state parameters must be reselected after the interaction. This regime is numerically accessible with the same decomposition strategy, but it requires a separate error study because the dominant error is then no longer only the single-front propagation error. We regard this post-interaction regime as the next necessary benchmark for extending the method from isolated generalized Riemann prob-lems to fully general flows, as noted among the limitations discussed in Section 8. 
+
+Figure 6.1: PITT-General on general bounded-variation initial data ( M = 1 .0). Left: two-discontinuity case (K = 0 .2 | 0.5 | 0.7); solid lines are the exact solution, dashed lines are PITT. Center: three-discontinuity case ( K = 0 .2 | 0.4 | 0.6 | 0.8); solid lines are the exact solution, dashed lines are PITT. In both cases the two curves are visually indistinguishable (field MAE ∼ 10 −4); vertical dotted lines mark the initial discontinuity positions. Right: smooth initial condition (steady-state K ≈ 0.35 with small perturbation |δu | < 0.02 ); the field MAE of 4.58 × 10 −3 is O(|δu |), attributable to the initial approximation rather than the PITT rollout. 
+
+# 6.2 Asymptotic behavior of solutions 
+
+Purpose of the asymptotic tests 
+
+We now study the late-time behavior of solutions to the relativistic Burgers equation (2.1) on a Schwarzschild background, providing numerical support for the asymptotic regimes described in [23]. All experiments use 
+
+M = 1 , r ∈ [2 , 4] , N = 256 , and the finite-volume scheme of Subsection 4.3, which is well-balanced to machine precision away from the horizon. For perturbed steady shocks, the limiting shock location depends on the mass displaced by the perturbation; this motivates the separate conservation-based discussion in Section 7. 
+
+Perturbed smooth steady state 
+
+We take the steady state u∗(r) = −p1 − K g (r) with K = 0 .5 as initial data, and add a compactly supported sinusoidal perturbation on r ∈ [2 .2, 2.8] . Figure 6.2 shows the evolution at t ∈ { 0.2, 0.5, 2, 4}. The perturbation is gradually absorbed toward the black-hole horizon, and the solution converges back to the same steady state. 23 Perturbed steady shock 
+
+We take the steady shock with K = 0 .5 and r0 = 2 .5 as initial data, with compactly supported perturba-tions added on both sides of the discontinuity. Figure 6.3 shows the evolution at t ∈ { 0.1, 2, 5, 10 }. The perturbation dissipates and the solution converges to a steady shock with the same K value, possibly at a shifted location r1̸ = r0, consistent with Conclusion 6.1 of [23]. 
+
+General data with horizon trace u0(2 M ) = 1 
+
+We prescribe a piecewise initial velocity with u0(2 M ) = 1 and u0(+ ∞) = 1 . Figure 6.4 shows the evolution at t ∈ { 0.1, 1, 5, 8, 10 , 40 }. The solution develops a single shock connecting the left state u = 1 to the escape velocity profile u−∗ (r) = −p2M/r , consistent with Claim 1.2(1) of [23]. The relatively large L1 distance (5.0 × 10 −1 at T = 40 ) reflects the contribution of the left region where u ≈ 1, not a failure of convergence. 
+
+General data with positive far-field trace 
+
+We prescribe u0(r) = 0 .5 + δ(r) for r < 3 and u0(r) = 0 .08 for r > 3, where δ is a small cosine bump on 
+
+[2 .0, 2.6] . Figure 6.5 shows the evolution at t ∈ { 0.1, 1, 4, 10 , 15 , 20 }. Since u0(2 M ) < 1 and u0(+ ∞) = 0 .08 >
+
+0, the solution converges to the escape velocity profile u−∗ (r) = −p2M/r , consistent with Claim 1.2(2) of [23]. At T = 20 the L1 distance is 1.57 × 10 −2, showing significantly faster convergence than in the case 
+
+u0(2 M ) = 1 .
+
+Figure 6.2: Asymptotic behavior: perturbed smooth steady state ( K = 0 .5, M = 1 ). Blue: perturbed solution; green: unperturbed reference; red dashed: analytical steady state. The perturbation is absorbed toward the horizon and the solution returns to the steady state. 
+
+Figure 6.3: Asymptotic behavior: perturbed steady shock ( K = 0 .5, r0 = 2 .5, M = 1 ). The perturbation dissipates and the solution converges to a steady shock at a possibly shifted location r1̸ = r0.24 Figure 6.4: Asymptotic behavior: general initial data with u0(2 M ) = 1 and u0(+ ∞) = 1 (M = 1 , T = 40 ). The solution converges to a single shock connecting the left state u = 1 to the escape velocity profile 
+
+u−∗ (r) = −p2M/r (red), consistent with Claim 1.2(1) of [23]. 
+
+Figure 6.5: Asymptotic behavior: general initial data with u0(2 M ) < 1 and u0(+ ∞) = 0 .08 > 0 (M = 1 ,
+
+T = 20 ). The solution converges to the escape velocity profile u−∗ (r) = −p2M/r (red), consistent with Claim 1.2(2) of [23]. L1 distance at T = 20 : 1.57 × 10 −2.25 General data with nonpositive far-field trace 
+
+We prescribe u0(r) = 0 .6 + 0 .02 cos(2 π(r − 2)) for r ∈ [2 , 3] and u0(r) = −0.6 + 0 .02 cos(3 π(r − 3)) for 
+
+r ∈ [3 , 4] , with u∞ 
+
+> 0
+
+= −0.6 ≤ 0. Figure 6.6 shows the evolution at t ∈ { 0.1, 1, 4, 8, 10 , 20 }. The solution converges to 
+
+u∗(r) = −
+
+q
+
+1 − (1 − (u∞ 
+
+> 0
+
+)2) g(r) = −p1 − 0.64 g(r), (6.2) consistent with Claim 1.2(3) of [23]. The convergence is rapid: the L1 distance at T = 20 is 1.05 × 10 −5.
+
+Figure 6.6: Asymptotic behavior: general initial data with u0(2 M ) < 1 and u0(+ ∞) = −0.6 ≤ 0 (M = 1 ,
+
+T = 20 ). The solution converges to u∗(r) = −p1 − 0.64 g(r) (red), consistent with Claim 1.2(3) of [23]. L1
+
+distance at T = 20 : 1.05 × 10 −5.
+
+# 7 Mass conservation and shock displacement for perturbed steady shocks 
+
+# 7.1 Mass balance for perturbed steady shocks 
+
+Question addressed in this section 
+
+We now isolate one asymptotic question suggested by the numerical experiments above. Consider a steady shock for the Schwarzschild–Burgers equation, and perturb it by a compactly supported disturbance. If the solution relaxes as t → ∞ to another steady shock in the same steady-state family, we seek what determines the limiting shock position. LeFloch, Parés, and Pimentel [21] observed numerically that, for small perturbations, the displacement is approximately linear in the perturbation amplitude. We show here that the underlying relation follows directly from the conservative form of the equation and can be used as a sharp diagnostic for PITT predictions. 26 Conservative density 
+
+Equation (2.2) was introduced as a balance law with source term S, but it is equivalently written in the conservative form 
+
+∂t
+
+ ug(r)2
+
+
+
++ ∂r
+
+ u2 − 12g(r)
+
+
+
+= 0 . (7.1) Thus the conserved density is not u itself, but the weighted density u/g (r)2. On a finite computational interval [a, b ], with boundary fluxes either prescribed or negligible over the relaxation window, the weighted mass provides the scalar constraint that determines the final shock location. 
+
+Perturbed steady shock 
+
+To match the notation used in Figure 7.1, we write κ0 = K20 for the steady-state parameter in this subsection and set Uκ0 (r) := p1 − κ0g(r). The reference steady shock is 
+
+u0(r) = 
+
+(
+
+Uκ0 (r), 2M < r < r 0,
+
+−Uκ0 (r), r > r 0. (7.2) We perturb u0 by a compactly supported disturbance δ(r), and write the initial field as u0 + δ. If the perturbed solution converges to a steady shock in the same κ0-family, with shock position r1, then (7.1) gives the exact identity Z ba
+
+u0(r)
+
+g(r)2 dr +
+
+Z ba
+
+δ(r)
+
+g(r)2 dr =
+
+Z ba
+
+u∞(r)
+
+g(r)2 dr, (7.3) where u∞ denotes the limiting steady shock profile. Since u0 and u∞ agree away from the interval between 
+
+r0 and r1, and have opposite signs on that interval, (7.3) reduces to a single scalar equation for r1.
+
+# 7.2 Displacement law 
+
+Implicit formula Claim 7.1 (Mass-conservation displacement law) . Let u0 be the steady shock (7.2) and let δ be a compactly supported perturbation with ∆m := R δ(r)/g (r)2 dr . If the perturbed solution converges as t → ∞ to a steady shock in the same κ0-family with shock position r1, then r1 satisfies the exact implicit equation; more precisely, one has Z r1
+
+> r0
+
+2 Uκ0 (r)
+
+g(r)2 dr = ∆ m. (7.4) 
+
+For small |∆m|, the displacement is linear to leading order: 
+
+r1 − r0 ≈ g(r0)2
+
+2 Uκ0 (r0) ∆m. (7.5) 
+
+Proof. Immediate from (7.3) and the sign structure of the two steady shocks described above; (7.5) follows by linearizing the left-hand side of (7.4) in r1 − r0.
+
+Width of the linear regime Claim 7.2 (Dependence of the linear regime on κ0). Let h(r) = 2 Uκ0 (r)/g (r)2 denote the integrand in (7.4) .For the relative variation of h at r0, one has 
+
+h′(r0)
+
+h(r0) = − g′(r0)2 Uκ0 (r0)
+
+ κ0
+
+Uκ0 (r0) + 4 Uκ0 (r0)
+
+g(r0)
+
+
+
+. (7.7) 
+
+Consequently the characteristic displacement window on which the linear approximation (7.5) remains accu-rate is of order 
+
+|r1 − r0| ≲ h(r0)
+
+|h′(r0)| . (7.8) 27 Equivalently, the corresponding weighted-mass window is of order |∆m| ≲ h(r0)2/|h′(r0)|. For fixed M and 
+
+r0, this window decreases as κ0 increases. Proof. Differentiating Uκ0 (r) = p1 − κ0g(r) gives U ′ 
+
+> κ0
+
+(r) = −κ0g′(r)/(2 Uκ0 (r)) . Therefore, we obtain 
+
+h′(r)
+
+h(r) = U ′ 
+
+> κ0
+
+(r)
+
+Uκ0 (r) − 2g′(r)
+
+g(r) = − κ0g′(r)2Uκ0 (r)2 − 2g′(r)
+
+g(r) , (7.9a) which is equivalent to (7.7). Expanding (7.4) about r1 = r0 gives 
+
+∆m = h(r0)( r1 − r0) + 12 h′(r0)( r1 − r0)2 + O(( r1 − r0)3), (7.9b) so the relative size of the first nonlinear correction is controlled by |h′(r0)|/h (r0). Finally, Uκ0 (r0)2 =1 − κ0g(r0) decreases with κ0, and κ0/U κ0 (r0)2 is increasing on the admissible range. Hence |h′(r0)/h (r0)|
+
+increases with κ0, which shrinks the linear window. 
+
+# 7.3 Numerical experiments 
+
+Sampling protocol 
+
+Each training sample is drawn by sampling M ∼ U (0 .8, 1.2) , κ0 = K20 ∼ U (0 .2, 0.8) , and r0 ∼ U (2 .4, 5.0) ,subject to r0 > 2M + 0 .3. The steady shock (7.2) is represented on r ∈ [2 M + 0 .001 , 8.0] with N = 512 
+
+points. The perturbation is a Gaussian bump 
+
+δ(r) = A exp − 12
+
+ r − rc
+
+σ
+
+2!
+
+, (7.10) where A ∼ U (−0.7, 0.7) and σ ∼ U (0 .05 , 0.4) . The center rc is drawn, with equal probability, from either 
+
+[2 M + 3 σ, r 0 − 3σ] or [r0 + 3 σ, 8.0 − 3σ]. The perturbed profile is clipped to [−1, 1] , and samples whose numerical evolution does not converge by Tmax = 25 are discarded. The resulting validation set contains 100 
+
+samples, with ∆m ∈ [−22 .2, 7.4] .
+
+Residual diagnostic 
+
+To compare different candidates for the limiting location r1, we substitute each candidate into the exact identity (7.4). This gives the relative equation residual 
+
+ε(r1) := |H(r1) − ∆m||∆m| , H(r1) = 
+
+Z r1
+
+> r0
+
+2Uκ0 (r)
+
+g(r)2 dr. (7.11) We evaluate this residual for three candidates: the linear approximation (7.5), the PITT prediction, and the finite-volume long-time simulation rsim 1 reported in [21]. The results are summarized in Table 7.1, after binning the samples according to |∆m|.Table 7.1: Relative equation residual ε(r1) for three candidates, stratified by |∆m|.
+
+|∆m| bin Linear PITT Numerical sim 
+
+< 1 1.55% 7.56% 12 .83% [1 , 5) 6.46% 3.69% 4.70% 
+
+≥ 5 diverges 18 .32% 60 .34% 
+
+28 Figure 7.1: Asymptotic shock displacement r1 − r0 vs. weighted perturbation mass ∆m = R δ(r)/g (r)2 dr ,at M = 1 , r 0 = 4 .0, for K20 = 0 .25 (in-distribution), 0.5, and 0.75 . Each panel shows ∆m ∈ [−4, 2] , well within the regime where the mass-conservation formula (7.4) admits a solution. 
+
+Interpretation of the residuals 
+
+Three observations follow. First, the linear approximation’s residual diverges for |∆m| ≥ 5. Second, and most notably, the simulation’s own residual reaches 60 .34% for |∆m| ≥ 5 – substantially larger than at small |∆m|. Because this column uses only rsim 1 (no model prediction at all), it is not measuring prediction error; it is measuring how far the actual long-time simulation outcome deviates from the same-κ0-branch assumption underlying Claim 7.1. A residual this large is evidence that, for large perturbations, the perturbed solution may no longer be relaxing to a steady shock within the original κ0-family at all, consistent with the regime-switching phenomenon flagged in Remark 7.1. Third, PITT’s residual is smaller than the numerical simulation’s residual in every bin ( 7.56% vs. 12 .83% , 3.69% vs. 4.70% , and 18 .32% vs. 60 .34% ). 
+
+Remark 7.1 (Domain validity and branch switching) . When ∆m is large enough that (7.4) has no solution within the admissible domain Dκ0 , the assumption that the system relaxes to a shock within the same κ0-family breaks down; the perturbed solution then transitions to a qualitatively different asymptotic branch, consistent with the regime-change phenomena reported in [21]. We flag such cases explicitly (Figure 7.1, crimson markers) rather than extrapolating (7.4) outside its range of validity. 
+
+Effect of the steady-state parameter 
+
+Table 7.2 evaluates (7.7) for the three values of K20 = κ0 used in Figure 7.1. The characteristic window 
+
+1/|h′(r0)/h (r0)| over which (7.5) remains accurate shrinks monotonically as κ0 increases, consistent with the increasing curvature of the displacement curve across the three panels. The mechanism is that larger κ0
+
+pushes Uκ0 (r0) closer to zero, so the same weighted mass perturbation produces a larger nonlinear response. This is the same sensitivity that shrinks the outward threshold ∆mmax in the last column of Table 7.2; both effects reflect proximity to the boundary of Dκ0 and are quantified by Proposition 7.2. Table 7.2: Nonlinearity rate (7.7), characteristic linear-regime window, and outward displacement threshold 
+
+∆mmax (Remark 7.1), all at M = 1 , r 0 = 4 .0, for the three values of K20 shown in Figure 7.1. The linear slope column matches the values already used to construct Figure 7.1, confirming consistency with the earlier computation. 
+
+K20 Uκ0 (r0) Linear slope (7.5) |h′(r0)/h (r0)| Linear window 1/|h′/h | ∆mmax 
+
+0.25 0.935 0.1336 0.518 1.93 17.84 0.50 0.866 0.1443 0.542 1.85 16.06 0.75 0.791 0.1581 0.575 1.74 14.04 29 8 Concluding remarks 
+
+We have developed a shock-aware PITT method for the Schwarzschild–Burgers equation, using the explicit steady-state structure and Rankine–Hugoniot dynamics of the model inside the neural rollout. The numerical tests indicate that this analytical prior has the dominant role in accuracy near moving shocks, while equation tokenization and learned corrections account for geometric and finite-resolution effects. 
+
+The scalar nonlinear hyperbolic model studied here is simple from the viewpoint of hyperbolic theory, but it does contain the features needed for the present purpose: a non-trivial geometry, steady states, moving and stationary discontinuities, rarefaction waves, and long-time relaxation. It therefore gives a useful test case for PITT methods applied to fluid models with complex geometry or complex dynamics. The present results should also be read with their natural limitations. The training data use the exact generalized Riemann structure of a scalar balance law, and the numerical validation is mainly focused on single-front dynamics and pre-interaction data. While the finite-volume baseline used here already exhibits well-balanced behavior to machine precision away from the horizon (Subsection 4.3), a complete assessment of the method will require comparison with solvers validated specifically near the horizon, post-interaction tests, and repeated runs with several random seeds. These points are not obstacles to the construction proposed here; rather, they identify the next benchmarks needed before the method can be regarded as a general-purpose solver for hyperbolic balance laws. The companion article [25] will treat the corresponding Schwarzschild–Euler fluid flows, and pursue the development of our PITT method. That problem requires handling a genuine system, several wave families, and interactions between geometry, characteristic structure, and shock dynamics. 
+
+Acknowledgments PLF was supported by the project ANR-23-CE40-0010-02 funded by the Agence Na-tionale de la Recherche, and the MSCA Staff Exchange Project 101131233 funded by the European Research Council. 
+
+# References 
+
+[1] Bakhtin Y. and LeFloch P.G., Ergodicity and Hopf–Lax–Oleinik formula for fluid flows evolving around a black hole under a random forcing, Stoch PDE: Anal. Comp. 6 (2018), 746–785. [2] Bouchut F., Nonlinear stability of finite volume methods for hyperbolic conservation laws and well-balanced schemes for sources, Frontiers in Mathematics, Birkhäuser, Basel, 2004. [3] Cao S., Choose a transformer: Fourier or Galerkin, in Advances in Neural Information Processing Systems , Vol. 34, Curran Associates, Inc., 2021, pp. 24924–24940. [4] Cassia R.G. and Kerswell R.R., Godunov loss functions for modelling of hyperbolic conservation laws, 
+
+Comput. Methods Appl. Mech. Engrg. 437 (2025), article 117782. [5] Ceylan T., LeFloch P.G., and Okutmustur B., A finite volume method for the relativistic Burgers equation on a FLRW background spacetime, Commun. Comput. Phys. 23 (2018), 500–519. [6] Dafermos C.M., Hyperbolic conservation laws in continuum physics, Grundlehren der Mathematischen Wissenschaften, Vol. 325, 5th ed., Springer Verlag, Berlin, 2026. [7] De Ryck T., Mishra S., and Molinaro R., wPINNs: Weak physics-informed neural networks for approx-imating entropy solutions of hyperbolic conservation laws, SIAM J. Numer. Anal. 62 (2024), 811–841. [8] Dong S. and LeFloch P.G., Convergence of the finite volume method on a Schwarzschild background, 
+
+ESAIM Math. Model. Numer. Anal. 53 (2019), 1459–1476. [9] Ferrer-Sánchez A., Martín-Guerrero J.D., Ruiz de Austri-Bazan R., Torres-Forné A., and Font J.A., Gradient-annihilated PINNs for solving Riemann problems: Application to relativistic hydrodynamics, 
+
+Comput. Methods Appl. Mech. Engrg. 424 (2024), article 116906. 30 [10] Giesselmann J. and LeFloch P.G., Formulation and convergence of the finite volume method for con-servation laws on spacetimes with boundary, Numer. Math. 144 (2020), 751–785. [11] Glimm J., Solutions in the large for nonlinear hyperbolic systems of equations, Comm. Pure Appl. Math. 
+
+18 (1965), 697–715. [12] Harten A., Lax P.D., and van Leer B., On upstream differencing and Godunov-type schemes for hyper-bolic conservation laws, SIAM Rev. 25 (1983), 35–61. [13] Huang H., Yang V., and Liu Y., Neural networks with local converging inputs (NNLCI) for solving conservation laws, Part I: 1D problems, Commun. Comput. Phys. 34 (2023), 290–317. [14] Kim T. and Kang M., Approximating numerical fluxes using Fourier neural operators for hyperbolic conservation laws, Commun. Comput. Phys. 37 (2025), 420–456. [15] Kovachki N., Li Z., Liu B., Azizzadenesheli K., Bhattacharya K., Stuart A., and Anandkumar A., Neural operator: Learning maps between function spaces with applications to PDEs, J. Mach. Learn. Res. 24 (2023), article 89, 1–97. [16] Lax P.D., Hyperbolic systems of conservation laws. II, Comm. Pure Appl. Math. 10 (1957), 537–566. [17] Lax P.D., Hyperbolic systems of conservation laws and the mathematical theory of shock waves, SIAM, Philadelphia, 1973. [18] LeFloch P.G., Hyperbolic systems of conservation laws: The theory of classical and nonclassical shock waves, Lectures in Mathematics ETH Zürich, Birkhäuser, Basel, 2002. [19] LeFloch P.G., Makhlof H., and Okutmustur B., Relativistic Burgers equations on curved spacetimes. Derivation and finite volume approximation, SIAM J. Numer. Anal. 50 (2012), 2136–2158. [20] LeFloch P.G. and Makhlof H., A geometry-preserving finite volume method for compressible fluids on Schwarzschild spacetime, Commun. Comput. Phys. 15 (2014), 827–852. [21] LeFloch P.G., Parés C., and Pimentel-García E., A class of well-balanced algorithms for relativistic fluids on a Schwarzschild background, J. Sci. Comput. 89 (2021), no. 1, article 3, 43 pp. [22] LeFloch P.G. and Xiang S., Weakly regular fluid flows with bounded variation on the domain of outer communication of a Schwarzschild black hole spacetime, J. Math. Pures Appl. 106 (2016), 1038–1090. [23] LeFloch P.G. and Xiang S., A numerical study of the relativistic Burgers and Euler equations on a Schwarzschild black hole exterior, Commun. Appl. Math. Comput. Sci. 13 (2018), 271–301. [24] LeFloch P.G. and Xiang S., Weakly regular fluid flows with bounded variation on the domain of outer communication of a Schwarzschild black hole spacetime. II, J. Math. Pures Appl. 122 (2019), 272–317. [25] LeFloch P.G. and Xiang S., Physics-informed token transformer (PITT) methods for nonlinear balance laws. II. Schwarzschild–Euler fluid flows, in preparation. [26] Li Z., Kovachki N., Azizzadenesheli K., Liu B., Bhattacharya K., Stuart A., and Anandkumar A., Fourier neural operator for parametric partial differential equations, in Proceedings of the 9th International Conference on Learning Representations , OpenReview.net, 2021. [27] Liu L., Liu S., Xie H., Xiong F., Yu T., Xiao M., Liu L., and Yong H., Discontinuity computing using physics-informed neural networks, J. Sci. Comput. 98 (2024), no. 1, article 22, 38 pp. [28] Liu L., Li T., Gelb A., and Lee Y., Entropy-stable conservative flux-form neural networks, J. Sci. Comput. 107 (2026), no. 1, article 3. [29] Liu L., Zhang L., and Gelb A., Neural entropy-stable conservative flux-form neural networks for learning hyperbolic conservation laws, J. Comput. Phys. 553 (2026), article 114719. 31 [30] Liu Y., Miao S., and Wei C., On classification of dynamics for dust fluid under spherical symmetry in Schwarzschild spacetime, Preprint arXiv:2606.28375, 2026. [31] Lorin E. and Novruzi A., Non-diffusive neural network method for hyperbolic conservation laws, J. Comput. Phys. 513 (2024), article 113161. [32] Lorsung C., Li Z., and Barati Farimani A., Physics informed token transformer for solving partial differential equations, Mach. Learn.: Sci. Technol. 5 (2024), article 015032. [33] Loshchilov I. and Hutter F., Decoupled weight decay regularization, in Proceedings of the 7th Interna-tional Conference on Learning Representations , OpenReview.net, 2019. [34] Lu L., Jin P., Pang G., Zhang Z., and Karniadakis G.E., Learning nonlinear operators via DeepONet based on the universal approximation theorem of operators, Nat. Mach. Intell. 3 (2021), 218–229. [35] Mao Z., Jagtap A.D., and Karniadakis G.E., Physics-informed neural networks for high-speed flows, 
+
+Comput. Methods Appl. Mech. Engrg. 360 (2020), article 112789. [36] Oubarka I., Kissami I., Boubekeur M., Benkhaldoun F., Madrane A., and Saadi Z., Weak and entropy physics-informed neural networks for conservation laws, Preprint arXiv:2603.24819, 2026. [37] Patsatzis D.G., di Bernardo M., Russo L., and Siettos C., GoRINNs: Godunov–Riemann informed neural networks for learning hyperbolic conservation laws, J. Comput. Phys. 534 (2025), article 114002. [38] Peyvan A., Oommen V., Jagtap A.D., and Karniadakis G.E., RiemannONets: Interpretable neural operators for Riemann problems, Comput. Methods Appl. Mech. Engrg. 426 (2024), article 116996. [39] Pronk J., Porth O., and Davelaar J., Fill the gaps: Continuous in time interpolation of fluid dynamical simulations, Preprint arXiv:2511.08239, 2025. [40] Raissi M., Perdikaris P., and Karniadakis G.E., Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations, 
+
+J. Comput. Phys. 378 (2019), 686–707. [41] van Leer B., Towards the ultimate conservative difference scheme. V. A second-order sequel to Godunov’s method, J. Comput. Phys. 32 (1979), 101–136. [42] Vaswani A., Shazeer N., Parmar N., Uszkoreit J., Jones L., Gomez A.N., Kaiser Ł., and Polosukhin I., Attention is all you need, in Advances in Neural Information Processing Systems , Vol. 30, Curran Associates, Inc., 2017, pp. 5998–6008. [43] Wang C., Luo H., Wang K., Zhu G., and Luo M., Solving Euler equations with multiple discontinuities via Separation-Transfer Physics-Informed Neural Networks, Preprint arXiv:2505.20361, 2025. 
+
+# A Machine learning terminology 
+
+This appendix recalls a few machine learning-related terms used in the paper. 
+
+PINN. Physics-informed neural network s were introduced as a way to train neural networks while penal-izing the residual of a differential equation. They are now a standard tool in scientific machine learning, especially for PDE problems and inverse problems, when sufficient smoothness is available. For discontinuous 
+
+solutions to nonlinear hyperbolic problems, plain residual minimization is often insufficient, which is why the present article uses analytical shock information (based on steady states) inside the architecture. 
+
+Neural operator. A neural operator is a learning architecture designed to approximate maps between function spaces, rather than maps between finite-dimensional vectors alone. This viewpoint became promi-nent in the last decade and is well adapted to parametrized PDEs, where the input may be an initial condition, a coefficient, or a forcing term, and the output is a solution field. In this article, the PITT methodology follows these lines but with additional structure (see next) from hyperbolic balance laws. 32 FNO. The Fourier neural operator is a neural-operator architecture based on global Fourier modes . It became a standard reference architecture for learning solution operators of PDEs on grids. FNO layers are useful because they encode nonlocal spatial information efficiently, although Fourier representations alone can be delicate near shocks . Here the FNO component encodes the sampled field and the geometry, while 
+
+shock motion is handled separately. 
+
+Transformer. A Transformer is a neural architecture built around attention mechanisms. It was first de-veloped in natural language processing and later became standard across many domains involving structured sequences. In PDE learning, the sequence may encode spatial points, equation tokens, or latent variables. In this paper, the Transformer processes symbolic equation tokens and supplies conditioning information to the rollout. 
+
+Token and equation tokenization. A token is a discrete symbol used as an elementary input to a Transformer. Equation tokenization means representing the mathematical expression of a PDE, its variables, coefficients, parameters, and structural relations as a sequence of such symbols. This idea is recent in scientific machine learning and aims to let the network distinguish equations by their structure. Here tokenization records the balance law, the geometry, and the shock relation. 
+
+Embedding and latent representation. An embedding is a learned vector representation of an object such as a token, a parameter, or a sampled field value. A latent representation is an internal set of variables used by the neural network, not necessarily meant to coincide with a physical variable. These notions are standard in modern machine learning. In this article, they are used to store information about the equation, the field, and the Schwarzschild geometry during the rollout. 
+
+Self-attention and cross-attention. Self-attention lets elements of the same sequence exchange infor-mation; cross-attention lets one representation query another representation. These mechanisms are now standard in Transformer architectures. In the present method, token summaries carry equation-level infor-mation, while the spatial latent field carries solution-level information. Cross-attention transfers the former into the latter at each update stage. 
+
+PITT. PITT stands for physics-informed token transformer. The idea is recent and combines equation tokenization with Transformer-style processing of the symbolic representation of a PDE. In the present article, PITT is adapted to a setting with shock waves by adding a Rankine–Hugoniot prior and steady-state profiles . Thus the method is not only data-driven; it is also guided by the analytical structure of the balance law. 
+
+Encoder and decoder. An encoder maps raw input data into latent variables, while a decoder maps latent variables back to an output quantity of interest. This terminology is standard in machine learning and appears in many architectures beyond PDE learning. In the present setting, the field encoder processes the initial profile and geometry, while the reconstruction stage plays the role of a decoder for the predicted solution field. 
+
+Residual correction. A residual correction is a learned term added to a prescribed analytical or numerical structure. This idea is common in hybrid scientific machine learning, where a reliable model supplies the leading behavior and the network learns what remains. In this paper, the Rankine–Hugoniot and steady-state priors determine the dominant wave structure, while bounded neural corrections account for discretization and unresolved effects. 
+
+Ablation study. An ablation study removes or disables selected components of a model in order to measure their individual effect. This practice is standard in machine learning, where architectures often contain several interacting modules. In this article, ablations are used to compare the full PITT model with variants without the Rankine–Hugoniot prior or without equation tokenization. The results quantify which pieces of physics are most useful. 33 Training, validation, and test sets. These three datasets serve different roles in the learning protocol. The training set is used to optimize the network parameters, the validation set is used to tune choices and monitor generalization during training, and the test set is reserved for final evaluation. This terminology is standard in machine learning. In the present article, the split is chosen to test generalization across physical parameters and solution regimes. 
+
+Out-of-distribution generalization. Out-of-distribution generalization refers to the behavior of a learned model on parameters, geometries, or data regimes not fully represented during training. The notion is central in modern machine learning because good interpolation on a training distribution does not automatically imply reliable extrapolation. For PDE applications, it is especially relevant when the model is tested at new physical parameters or new wave configurations. The present experiments include such tests for the Schwarzschild–Burgers setting. 34

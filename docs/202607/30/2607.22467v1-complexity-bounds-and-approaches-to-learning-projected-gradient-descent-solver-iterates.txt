@@ -1,0 +1,476 @@
+Title: Complexity Bounds and Approaches to Learning Projected Gradient Descent Solver Iterates
+
+URL Source: https://arxiv.org/pdf/2607.22467v1
+
+Published Time: Mon, 27 Jul 2026 00:56:55 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# Complexity Bounds and Approaches to Learning Projected Gradient Descent Solver Iterates 
+
+Anjian Li 1 and Ryne Beeson 2 
+
+> 1
+
+Department of Electrical and Computer Engineering  
+
+> 2
+
+Department of Mechanical and Aerospace Engineering Princeton University, Princeton, NJ 08544, USA 
+
+anjianl@princeton.edu and ryne@princeton.edu 
+
+Abstract. Data scarcity poses a fundamental challenge in training gen-erative models to produce initial guesses for parametric optimization problems that are otherwise numerically expensive to solve. We therefore study a k-neighborhood data collection strategy that augments datasets of converged solutions with intermediate solver iterates, increasing the amount of training data without additional solver runs. To understand the benefits of this approach, we derive a generalization bound based on Rademacher complexity that reveals the role of the k-neighborhoods and related parameters. To achieve this result, we focus on one-sided box-constrained quadratic programs solved by projected gradient descent. We illustrate the behavior of this solver on two examples. The approach proposed in this paper enables a more capable DDDAS paradigm by improving the efficiency of the data-model-optimization loop. We finish by discussing two views of learning solver-iterate data and connect our analysis with GLENS, a new data-efficient global search method. 
+
+Keywords: Generative machine learning · Rademacher complexity ·
+
+Projected gradient descent · DDDAS · Dynamic Data Driven Applications Systems · InfoSymbiotic Systems 
+
+## 1 Introduction 
+
+Data-driven global search aims to find a large collection of high-quality initial guesses for a family of parametric optimization problems. A numerical solver can then refine these initial guesses toward local optima in a few iterations. Generative models are useful in this setting because they can represent a distribution over multiple locally optimal solutions rather than a single deterministic solution. Once trained, they can quickly generate diverse initial guesses for a new prob-lem instance. Prior work has used variational auto-encoders [9, 2] and diffusion models [7, 8, 6, 3, 4] for this purpose in non-convex trajectory optimization. The main limitation is the cost of collecting good training data. Existing approaches generally keep only the final converged solution from each offline solver run. Thus, producing a large dataset requires solving many problem instances with various initial guesses. However, every solver run also produces a path of arXiv:2607.22467v1 [cs.LG] 24 Jul 2026 2 A. Li and R. Beeson 
+
+intermediate iterates, which is normally discarded. These iterates are suboptimal but contain information about the local neighborhood of the optimum and require no additional cost to collect. We therefore seek to leverage solver iterates to reduce the data requirement of generative learning. Solver iterates may be viewed as points along a path toward an optimum or as one path embedded in a higher-dimensional space. Because iterates from the same solver run are correlated, the analysis must account for their dependence, local spread, and convergence behavior. This paper makes three contributions. First, we formalize a definition of 
+
+k-neighborhood data collection, in which the last k + 1 iterates from each solver run are retained. Second, for box-constrained quadratic programs (QPs), we show that projected gradient descent (PGD) contracts toward the optimum and use this behavior to derive a generalization bound with Rademacher complexity. We illustrate this behavior when the optimum is interior or an upper bound is active. Third, we discuss how these results inform methods that learn paths of solver data and their connection to the data-efficient global search method GLENS [10]. From a DDDAS perspective, the solver supplies dynamically evolving data that is incorporated into a generative model that not only learns the behavior of the parameterized optimization problems and the dynamics of the numerical solver, but also provides accelerated future optimization and decision making. The paper is organized as follows. Section 2 introduces the problem setting and background. Section 3 defines the k-neighborhood and establishes the PGD con-traction behavior. Section 4 develops the generalization bound with Rademacher complexity for box-constrained QPs, with examples shown in Section 5. Section 6 discusses learning from solver iterates and GLENS. Section 7 concludes the paper. 
+
+## 2 Problem Setup and Background 
+
+2.1 Parametric Optimization and Projected Gradient Descent 
+
+We consider a family of parametric continuous optimization problems with the continuous decision variable x ∈ Rd and problem parameter θ ∈ Rc,
+
+minimize 
+
+> x∈Rd
+
+f (x; θ) subject to g(x; θ) ≤ 0, h(x; θ) = 0 .
+
+The objective function f and constraint functions g and h have fixed forms across the problem family, while their values depend on θ.To solve this optimization problem, a numerical solver starts from an initial guess x0 and produces a sequence of iterates xq that converges to a nearby locally optimal solution. In this paper, we consider the one-sided box-constrained QP: 
+
+min 
+
+> x∈Rd
+
+f (x; θ) := 12 xT Qx − bT x subject to x ≤ u, (1) where Q ∈ Rd×d ⪰ 0, b ∈ Rd, and u ∈ Rd denotes the upper bounds. The problem parameter is θ = Flatten (Q, b, u) ∈ Rd2+2 d. The feasible set C = {x ∈
+
+Rd | x ≤ u} is closed and convex, so problem (1) has a unique minimizer x∗(θ).Complexity Bounds for Learning Solver Iterates 3
+
+For problem (1) , PGD uses the single-step operator Tθ (x) := PC (x−η∇f (x; θ)) ,where η > 0 is the step size and PC is the Euclidean projection onto C. Starting from an initial guess x0 ∈ C , PGD generates the sequence xq = T q 
+
+> θ
+
+(x0) for q =0, 1, . . . . Let ϵtol > 0 be a prescribed convergence tolerance. We say that the solver converges after n steps when the residual satisfies ∥T n−1 
+
+> θ
+
+(x0) − T n 
+
+> θ
+
+(x0)∥2 ≤ ϵtol .
+
+2.2 Generative Learning Framework 
+
+The existing generative learning framework [9, 2] uses a conditional generative model to learn the distribution of solutions x given θ. Offline data collection produces converged solution–parameter pairs {(x∗ 
+
+> i
+
+, θi)}Ni=1 , where x∗ 
+
+> i
+
+:= x∗(θi) is from solver run i. Then, the generative model is trained to sample initial guesses that the solver refines to locally optimal solutions for a new problem parameter. In this paper, we use a denoising diffusion probabilistic model (DDPM) [5] as an example because it has shown effectiveness in data-driven trajectory optimization [7, 8]. Let t ∈ { 1, . . . , T } denote the diffusion step, let (αt)Tt=1 with 
+
+αt ∈ (0 , 1) be a noise schedule, and define ¯αt = Qtq=1 αq . At diffusion step t, the clean solution x is perturbed as √¯αtx+√1 − ¯αtϵ, where ϵ ∼ N (0 , I d) is Gaussian noise. We define the model input z ∈ Rd+c+e as z = ( √¯αtx + √1 − ¯αtϵ, θ, τ t),where τ t ∈ Re is a bounded embedding of the diffusion step. A vector-valued noise predictor gϕ : Rd+c+e → Rd, parameterized by ϕ, is trained with the loss 
+
+ℓ(x, θ, ϵ, t ; ϕ) = ∥gϕ(z) − ϵ∥2. (2) We assume that gϕ belongs to the following two-layer neural network (NN) class: 
+
+G =
+
+(
+
+z 7 →
+
+> m
+
+X
+
+> s=1
+
+asψ(wTs z) : X
+
+> s
+
+∥as∥2 ≤ A, ∥ws∥2 ≤ W
+
+)
+
+, (3) where m is the number of hidden units, as ∈ Rd and ws ∈ Rd+c+e are network weights with bounds A > 0 and W > 0. The activation function ψ : R → [0 , 1] 
+
+satisfies ψ(0) = 0 and is Lipschitz with constant L1 > 0. Hence ∥gϕ(z)∥2 ≤ A.
+
+## 3 Analysis of Solver-Iterate Data 
+
+We define a k-neighborhood to describe the solver iterates near a final converged solution, using the solver operator Tθ and convergence tolerance ϵtol from Sec. 2. 
+
+Definition 1 (k-neighborhood, radius, and path). For a problem parameter 
+
+θ, a solver operator Tθ , and k ∈ N+, the k-neighborhood is defined as the set of feasible initial points that converge after at most k applications of Tθ :
+
+N kTθ := x ∈ C : ∥T k−1 
+
+> θ
+
+(x) − T k 
+
+> θ
+
+(x)∥2 ≤ ϵtol . (4) 
+
+We quantify its size by the radius rk(θ), which is the maximum distance of the iterates to the corresponding optimum x∗(θ) and is assumed to be finite: 
+
+rk(θ) := sup  
+
+> x∈N kTθ
+
+∥x − x∗(θ)∥2. (5) 4 A. Li and R. Beeson 
+
+Suppose solver run i first satisfies the convergence criterion after ni ≥ k steps. The k-neighborhood path Ssolver  
+
+> k,i
+
+is defined as the ordered sequence containing the final converged solution T ni 
+
+> θi
+
+(x0 
+
+> i
+
+) and the preceding k intermediate iterates: 
+
+Ssolver  
+
+> k,i
+
+:=  (T ni−j 
+
+> θi
+
+(x0 
+
+> i
+
+), θi)kj=0 . (6) We next characterize the contraction behavior of PGD for box-constrained QPs. Let λmax ≥ λmin > 0 be the largest and smallest eigenvalues of Q, and choose the step size as 
+
+η = 2
+
+λmax + λmin 
+
+. (7) 
+
+Theorem 1 (Contractive behavior). The PGD iterates for problem (1) con-tract toward the optimum: 
+
+∥Tθ (x) − x∗(θ)∥2 ≤ ρ∥x − x∗(θ)∥2, ρ = λmax − λmin 
+
+λmax + λmin 
+
+< 1. (8) 
+
+Proof. The optimum satisfies the PGD fixed-point condition x∗(θ) = PC (x∗(θ) −
+
+η∇f (x∗(θ); θ)) . By the non-expansiveness of projection onto a closed convex set, 
+
+∥Tθ (x) − x∗(θ)∥2 ≤ ∥ (x − x∗(θ)) − η(∇f (x; θ) − ∇ f (x∗(θ); θ)) ∥2 (9) 
+
+= ∥(Id − ηQ )( x − x∗(θ)) ∥2 ≤ ∥ Id − ηQ ∥2∥x − x∗(θ)∥2. (10) With (7) , ∥Id − ηQ ∥2 = ρ. Let ρi denote the contraction factor for prob-lem instance i. Consider Ssolver  
+
+> k,i
+
+, whose earliest collected intermediate iterate is 
+
+T ni−k 
+
+> θi
+
+(x0 
+
+> i
+
+). Since this point belongs to N kTθi
+
+, Definition 1 gives ∥T ni−k 
+
+> θi
+
+(x0 
+
+> i
+
+) −
+
+x∗(θi)∥2 ≤ rk(θi). Applying the contraction bound for the next k − j steps yields 
+
+∥T ni−j 
+
+> θi
+
+(x0 
+
+> i
+
+) − x∗(θi)∥2 ≤ ρk−ji rk(θi), j = 0 , . . . , k. (11) Thus, all points in Ssolver  
+
+> k,i
+
+lie in regions around the optimum bounded by rk(θi).
+
+## 4 Generalization Bounds Based on Rademacher Complexity 
+
+Generalization bounds quantify the difference between training and expected per-formance. PAC-Bayes theory evaluates the Kullback–Leibler divergence between a prior and posterior distribution over predictors (e.g., the NN [12]). Conformal prediction provides uncertainty quantification after training with finite-sample guarantees and without any assumptions about the distribution [1]. However, our goal is to analyze how solver-iterate data affects the complexity of learning. Rademacher complexity measures how well a function class can fit random signs on the observed sample [13]. It allows the input radius induced by the solver to appear in the bound and is therefore the most natural choice for our analysis. Complexity Bounds for Learning Solver Iterates 5
+
+We first present a standard Rademacher complexity result, and then extend it to k-neighborhood paths. Let s = ( x, θ, ϵ, t ) ∼ D denote one training sample, and define ℓϕ(s) := ℓ(x, θ, ϵ, t ; ϕ) using (2) . The corresponding loss function class is L := {s 7 → ℓϕ(s) : gϕ ∈ G} , where G is the NN class in (3) . For N independent samples S = {si}Ni=1 drawn from D, we define the empirical and true risks as 
+
+bE(ϕ) := 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+ℓϕ(si), E(ϕ) := Es∼D [ℓϕ(s)] . (12) The empirical Rademacher complexity of L on S is 
+
+bRS (L) = Eσ
+
+"
+
+sup 
+
+> ℓϕ∈L
+
+1
+
+N
+
+> N
+
+X
+
+> i=1
+
+σiℓϕ(si)
+
+#
+
+, σi
+
+> i.i.d.
+
+∼ Uniform {− 1, +1 }. (13) 
+
+Theorem 2 (Standard Rademacher generalization bound [13]). Assume that ℓϕ(s) ∈ [0 , B ℓ] for every ℓϕ ∈ L . For any δ ∈ (0 , 1) , with probability at least 
+
+1 − δ over the draw of S ∼ D N ,
+
+sup 
+
+> ϕ
+
+ E(ϕ) − bE(ϕ) ≤ 2 bRS (L) + 3 Bℓ
+
+r log(2 /δ )2N . (14) For the theoretical analysis, the diffusion noise is assumed to satisfy ∥ϵ∥2 ≤ √d
+
+almost surely. Since ∥gϕ(zi)∥2 ≤ A, the triangle inequality gives Bℓ = A + √d.Let Rx := max i∥xi∥2, Rθ := max i∥θi∥2, and Rτ := max i∥τ ti ∥2. Then the model inputs satisfy ∥zi∥2 ≤ Rz , where Rz := Rx + Rθ + Rτ + √d. The map y 7 →∥y −ϵi∥2 is 1-Lipschitz, so the vector-contraction inequality [11, Corollary 4] gives 
+
+bRS (L) ≤ √2 
+
+> N
+
+Eσir 
+
+h
+
+sup gϕ∈G 
+
+PNi=1 
+
+Pdr=1 σir gϕ,r (zi)
+
+i
+
+, where σir are independent Rademacher variables and gϕ,r is the rth component of gϕ. The weight bound in (3) together with scalar contraction, the Efron–Stein inequality, and Jensen’s inequality bounds the Rademacher complexity as 
+
+bRS (L) ≤ √12 AL 1W
+
+√d
+
+√N Rz . (15) For the box-constrained QP in (1) with diffusion models in Sec. 2, the jth iterate in Ssolver  
+
+> k,i
+
+becomes zi,j := 
+
+√¯αti T ni−j 
+
+> θi
+
+(x0 
+
+> i
+
+) + √1 − ¯αti ϵi,j , θi, τ ti
+
+
+
+, with the training data Strain  
+
+> k,i
+
+:=  zi,j 
+
+kj=0 . We then define the discounted average loss: 
+
+Ji(ϕ) = 1
+
+k + 1 
+
+> k
+
+X
+
+> j=0
+
+γj ℓ(T ni−j 
+
+> θi
+
+(x0 
+
+> i
+
+), θi, ϵi,j , t i; ϕ), 0 < γ ≤ 1. (16) The diffusion noise ϵi,j is associated with iterate j, and ti is the sampled diffusion step. γ < 1 gives smaller weights to earlier iterates. The k-neighborhood path loss class is defined as J := {S train  
+
+> k,i
+
+7 → Ji(ϕ) : gϕ ∈ G} . In the empirical and true 6 A. Li and R. Beeson 
+
+risk definitions in (12) , each sample si is replaced by Strain  
+
+> k,i
+
+and each pointwise loss ℓϕ is replaced by Ji. The path loss is bounded by BJ := Bℓ.Let Rx∗ = max i∥x∗(θi)∥2, Rθ = max i∥θi∥2, and Rτ = max i∥τ ti ∥2. Let 
+
+rk = max i rk(θi) and let ρ = max i ρi < 1 be a uniform contraction factor. The contraction bound (11) and the triangle inequality give ∥T ni−j 
+
+> θi
+
+(x0 
+
+> i
+
+)∥2 ≤
+
+Rx∗ + ρk−j rk. Define Rz,j := max i∥zi,j ∥2. The jth input to the diffusion model satisfies 
+
+Rz,j ≤ R0 + ρk−j rk, where R0 := Rx∗ + Rθ + Rτ + √d. (17) 
+
+Theorem 3 (PGD generalization bound). Let the k-neighborhood paths collected in training be i.i.d. Assume that ni ≥ k for all i, ∥ϵi,j ∥2 ≤ √d for all i
+
+and j, rk < ∞, and ρ < 1. For any δ ∈ (0 , 1) , with probability at least 1 − δ,
+
+sup 
+
+> ϕ
+
+ E(ϕ) − bE(ϕ) ≤ 2 bRStrain  
+
+> k
+
+(J ) + 3 BJ
+
+r log(2 /δ )2N , (18) 
+
+bRStrain  
+
+> k
+
+(J ) ≤ √12 AL 1W
+
+√d
+
+√N
+
+ 1
+
+k + 1 
+
+> k
+
+X
+
+> j=0
+
+γj  R0 + ρk−j rk
+
+ . (19) 
+
+Here, Strain  
+
+> k
+
+:= {S train  
+
+> k,i
+
+}Ni=1 is the collection of k-neighborhood paths used for training. Proof. Apply Theorem 2 to the N independent k-neighborhood path samples with loss class J and bound BJ . By subadditivity of empirical Rademacher complexity, the complexity of the average in (16) is at most the average complexity of its k + 1 
+
+component losses. For each j, we apply (15) , scale by γj , and substitute (17) .Summing over j = 0 , . . . , k gives (19). The bound scales as O(N −1/2) and improves as we increase the number of independent solver runs. The value of k enters through the average radius and discount terms, while ρk−j rk captures the larger variation of earlier iterates. This bound can be conservative because it uses a norm-bounded NN, the worst-case radius rk, and a uniform contraction factor. 
+
+## 5 Examples of PGD Trajectories 
+
+We illustrate PGD solver iterates with different upper bounds using two instances of the two-dimensional box-constrained QP in (1) . Both instances use Q = [ 4 1.51.5 1 ],
+
+b = (2 , 1.5) T , and the initial guess x0 = ( −1.5, −1) T , but use different upper bounds u. We set η = 2 /(λmax + λmin ) = 0 .4 as in (7) and ϵtol = 10 −5.Figure 1(a) uses u = (4 , 4) T , for which the optimum lies in the interior of the feasible set. The iterates alternate across the optimum while contracting toward it. Figure 1(b) uses u = (0 .5, 0.8) T , for which the second upper bound is active at the optimum. Projection first maps the iterate to the boundary, after which the remaining iterates contract along the boundary toward the optimum. Thus, box constraints can change the path of solver iterates, but later iterates always lie in smaller regions around the optimum as described in Sec. 3. Complexity Bounds for Learning Solver Iterates 7−1 0 1 2 3         
+
+> x1
+> −1
+> 0
+> 1
+> 2
+> x2
+> u= (4 .0,4.0) 80 steps
+> (a) Interior optimum
+> −10
+> x1
+> −1.0
+> −0.5
+> 0.0
+> 0.5
+> 1.0
+> x2
+> u= (0 .5,0.8) 24 steps
+> (b) Active upper bound
+> Solver iterates Initial guess x0Optimum x∗
+
+Fig. 1. PGD solver iterates for the same QP objective and initial guess under two upper box constraints. The markers show the solver iterates, the dashed lines indicate the upper bounds, and the shaded region is infeasible. The inset in (b) shows the refinement along the active boundary near the optimum. 
+
+## 6 Discussion on Learning from Solver Iterates 
+
+Training data augmented with intermediate solver iterates can reduce the data requirements of generative learning for global search. These iterates can be viewed in two ways: as individual points along an ordered k-neighborhood path or as one path embedded in a higher-dimensional space. The pointwise view can condition on the iteration index or distance to the converged solution, while the pathwise view can learn the dependence among iterates in the same solver run. These views motivate our work GLENS (Global Search via Learning from Solver Iterates) [10], which learns from k-neighborhood paths using diffusion models with two components. The neighborhood structure model learns the local geometry around converged solutions, while the solver behavior model learns refinement directions that guide generated samples toward nearby optima during diffusion sampling. The presented generalization bound based on Rademacher complexity provides a theoretical foundation for GLENS, the corresponding method for more data-efficient global search. 
+
+## 7 Conclusion 
+
+To reduce the data requirements of generative learning for global search, we propose the k-neighborhood as the iterates near final converged solutions and establish the contraction behavior of PGD for one-sided box-constrained QPs. A generalization bound with Rademacher complexity is derived that captures how the number of solver runs, contraction factor, neighborhood radius, and discount factor affect the learning performance. With the pointwise and pathwise views of learning solver iterates, our work builds a foundation for the data-efficient 8 A. Li and R. Beeson 
+
+global search method GLENS [10]. Together, these results connect solver data, numerical optimization, and generative learning within the DDDAS paradigm. Future work will develop tighter NN bounds, directly model dependence of solver iterates, and extend the analysis to unbounded Gaussian diffusion noise. 
+
+Acknowledgments. The authors acknowledge partial support during the course of this effort from the Princeton Laboratory for Artificial Intelligence’s [PLI/AI 2/NAM] initiative and the Air Force Office of Scientific Research under Grant #FA9550-25-1-0100. The authors thank Bartolomeo Stellato for a number of helpful conversations regarding the projected gradient descent algorithm during the course of the work. 
+
+## References 
+
+1. Angelopoulos, A.N., Bates, S.: Conformal prediction: A gentle introduction. Foun-dations and Trends in Machine Learning 16 (4), 494–591 (2023) 2. Beeson, R., Li, A., Sinha, A.: Global search of optimal spacecraft trajectories using amortization and deep generative models. arXiv preprint arXiv:2412.20023 (2024) 3. Graebner, J., Beeson, R.: Global search for optimal low thrust spacecraft trajectories using diffusion models and the indirect method. The Journal of the Astronautical Sciences 72 (6), 62 (2025). https://doi.org/10.1007/s40295-025-00535-1 4. Graebner, J., Beeson, R.: Transfer learning of multiobjective indirect low-thrust trajectories using diffusion models and markov chain monte carlo (5 2026). https://doi.org/10.48550/arXiv.2605.09125 5. Ho, J., Jain, A., Abbeel, P.: Denoising diffusion probabilistic models. Advances in neural information processing systems 33 , 6840–6851 (2020) 6. Li, A., Beeson, R.: Aligning diffusion model with problem constraints for trajectory optimization. In: Blasch, E., Darema, F., Metaxas, D. (eds.) Handbook of Dynamic Data-Driven Applications Systems, vol. 4. Springer, Cham (2025), preprint available as arXiv:2504.00342 7. Li, A., Ding, Z., Dieng, A.B., Beeson, R.: DiffuSolve: Diffusion-based solver for non-convex trajectory optimization. In: Ozay, N., Balzano, L., Panagou, D., Abate, A. (eds.) Proceedings of the 7th Annual Learning for Dynamics & Control Conference. Proceedings of Machine Learning Research, vol. 283, pp. 45–58. PMLR (4–6 June 2025) 8. Li, A., Ding, Z., Dieng, A.B., Beeson, R.: Constraint-aware diffusion models for trajectory optimization. In: Blasch, E., Darema, F., Metaxas, D. (eds.) Dynamic Data Driven Applications Systems. pp. 308–316. Springer Nature Switzerland, Cham (2026) 9. Li, A., Sinha, A., Beeson, R.: Amortized global search for efficient preliminary trajectory design with deep generative models. In: AAS/AIAA Astrodynamics Specialist Conference. Big Sky, MT (August 2023), paper AAS 23-352 10. Li, A., Stellato, B., Beeson, R.: Glens: Global search via learning from solver iterates with diffusion models. arXiv preprint arXiv:2606.00366 (2026) 11. Maurer, A.: A vector-contraction inequality for rademacher complexities. In: Inter-national Conference on Algorithmic Learning Theory. pp. 3–17. Springer (2016) 12. McAllester, D.A.: Some pac-bayesian theorems. In: Proceedings of the eleventh annual conference on Computational learning theory. pp. 230–234 (1998) 13. Mohri, M., Rostamizadeh, A., Talwalkar, A.: Foundations of Machine Learning. MIT Press, Cambridge, MA, 2 edn. (2018)
