@@ -1,0 +1,568 @@
+Title: Retrospective Orthogonal Design: Response-Surface Reconstruction from Observational Data
+
+URL Source: https://arxiv.org/pdf/2607.26219v1
+
+Published Time: Thu, 30 Jul 2026 00:08:38 GMT
+
+Number of Pages: 30
+
+Markdown Content:
+# Retrospective Orthogonal Design: Response-Surface Reconstruction from Observational Data 
+
+Lawrence V. Fulton ∗
+
+Applied Analytics, Boston College and Christopher P. Fulton United States Air Force Test Pilot School, Edwards Air Force Base and Arvind Sharma Applied Analytics, Boston College and Aleksandar Tomić Applied Analytics, Boston College July 30, 2026 
+
+Abstract 
+
+Regression estimates from observational data can depend on specification under multicollinearity, while sequential sums of squares (SS) depend on term order. We introduce Retrospective Orthogonal Design (ROD), which reconstructs conditional mean surfaces on a probability-balanced lattice. ROD preserves observed cell means, completes unsupported cells, applies weighted tensor-product contrasts, and evalu-ates the reconstructed surface through piecewise-affine interpolation over Freudenthal polyhedra. Resolution and completion are selected jointly by validation among rank-admissible candidates, followed by refitting and evaluation on an untouched test set. For an admissible lattice, X⊤WX = 𝑐 I, yielding specification-invariant contrast ef-fects and unique, order-independent SS within the retained contrast space. Response-free projection calibration maps the fixed reconstruction onto a declared scientific basis and corrects finite-resolution recovery loss. Across 6,480 simulation conditions spanning nine data-generating processes, ROD matched or exceeded polynomial re-gression in five processes and performed strongest on threshold, sign-interaction, and localized surfaces. For the quadratic-interaction process, mean out-of-sample 𝑅 2
+
+> ∗
+
+Corresponding author. This research received no external funding. 
+
+1arXiv:2607.26219v1 [stat.ME] 28 Jul 2026 differed by only 0.0001 , while calibrated coefficient bias remained small across pre-specified targets. A Rao-based information adjustment provides dependence-aware sample-size guidance for ROD planning. In a weighted Mincer application, ROD produced the highest out-of-sample 𝑅 2 point estimate, with substantial interval over-lap with polynomial regression, and provided exhaustive SS allocations invariant to term-entry order. 
+
+Keywords: response-surface reconstruction; observational data; retrospective design diag-nostics; variance decomposition; simulation sensitivity analysis 21 Introduction 
+
+Regression and ANOVA are special cases of the general linear model, y = X𝛽 + 𝜀 , but differ in how their design matrices are constructed. In a balanced experimental design with a full-rank orthogonal contrast basis, X⊤X = D, diagonal, or X⊤X = 𝑐 I under common-norm scaling (Montgomery 2019). Orthogonality yields additive, order-invariant sums of squares (SS), and retained coefficients are unchanged when additional orthogonal terms enter. Under independent homoskedastic errors and a fixed design, orthogonal estimators are uncorrelated and Gaussian estimators independent, although sampling independence, unlike algebraic orthogonality, still depends on the reconstruction-error covariance (Wu & Hamada 2021, Christensen 2020, Lin & Stufken 2025). Observational studies rarely possess this structure: correlated predictors make X⊤X non-diagonal, so attribution, unique vari-ance, and precision depend on the retained specification and predictor distribution (Belsley et al. 1980). Adding controls or choosing among defensible specifications can materially alter estimated effects (Lenz & Sahn 2021, Ratkovic 2023, Girardi et al. 2024), while poly-nomial and interaction expansions induce further dependence among lower-order terms, products, and powers (Wurm & Reitan 2025). Existing remedies address parts of this problem without recovering an interpretable orthog-onal response surface. Principal components regression (PCR) rotates correlated predictors into orthogonal components, gaining stability at the cost of interpretation in the original variables (Chan et al. 2022). Orthogonal polynomial contrasts separate trends within a predictor but do not remove cross-predictor dependence (Kutner et al. 2005, Rayner & Livingston 2024, Granziol et al. 2025). Centering and scaling do not remove substantive collinearity (Wurm & Reitan 2025), while coarsening methods target covariate balance rather than orthogonal surface reconstruction (Ghosh & Wang 2026). Nonparametric al-ternatives face related tradeoffs: regressograms and multivariate histogram regression esti-3mate conditional means over partitions (Nobel 1996, Györfi et al. 2002), regression trees use response-adaptive partitions (Breiman et al. 2017), orthogonal-series estimators ap-proximate the conditional mean in a finite or expanding basis (Newey 1997), and GAMs or tensor-product splines estimate regularized smooth components (Hastie & Tibshirani 1986, Wood 2006). These methods can flexibly represent nonlinear structure, but their global attribution remains dependent on partition, basis, knots, smoothing, or the empirical pre-dictor distribution, and exact empirical orthogonality is generally not preserved. Hoeffding decompositions, functional ANOVA, and Sobol methods provide the closest the-oretical precedent for orthogonal variance attribution by decomposing a response function under a specified input measure (Hoeffding 1948, Hooker 2007, Saltelli et al. 2010). Clas-sical formulations typically use the product measure 𝑑𝜇( x) = ∏ 𝑘 𝑗=1 𝑑𝜇 𝑗 (𝑥 𝑗 ), under which component functions are mutually orthogonal and variance decomposes additively. Pre-dictor dependence breaks this construction: the analyst must either impose an indepen-dent reference measure, so attribution refers to a declared distribution rather than the observed joint distribution, or adopt a dependent-input generalization that sacrifices ex-act orthogonality. Propensity-score weighting, entropy balancing, and stable balancing similarly alter the predictor distribution, but for causal or missing-data estimands rather than conditional-mean reconstruction or orthogonal variance decomposition (Rosenbaum & Rubin 1983, Hainmueller 2012, Imai & Ratkovic 2014, Zubizarreta 2015). The distinc-tion matters because weighting for covariate balance and weighting for response-surface reconstruction serve different estimands. Classical regression represents 𝑓( x) through coefficients attached to a chosen basis (My-ers et al. 2016). Retrospective Orthogonal Design (ROD) instead approximates 𝑓( x) on a probability-balanced tessellation and treats coefficients, marginal effects, and variance decompositions as projections of the reconstructed surface. ROD combines probability-4scale discretization, orthonormal contrast coding, normalization weighting, cell completion, and piecewise-affine evaluation to construct an admissible balanced cell-mean lattice. Al-though each component has precedent, their integration yields exact contrast orthogonal-ity, cell-level provenance, unique conditional SS attribution, continuous evaluation, and response-free recovery calibration within one reconstruction framework. Like product-measure decompositions, ROD uses an independent reference measure to se-cure exact orthogonality under dependent predictors, but makes it explicit and fixed rather than allowing attribution to vary with observed covariate density. For an admissible re-construction, X⊤WX = 𝑐 I, yielding exact algebraic orthogonality, specification-invariant contrast effects, and order-independent SS within the retained contrast space. Sampling independence remains conditional on reconstruction-error covariance. When a structural basis is declared, response-free calibration maps the reconstructed surface to those coor-dinates without changing its native orthogonal decomposition. An operational Python implementation provides reconstruction, completion, validation, interpolation, calibration, projection, and diagnostic procedures developed here, with software and source code avail-able at https://github.com/dustoff06/ROD. ROD is not derived from an observation-level Gaussian residual model and does not orthog-onalize the observed predictors. Its estimand is the reconstructed conditional mean surface under the declared reference measure, and its finite-sample behavior depends on support, completion, conditioning, orthogonality, and provenance. Native contrasts and SS charac-terize that reconstruction, while calibrated projections provide structural summaries when a target basis is declared. The simulations therefore evaluate both predictive and struc-tural recovery while tracking completion burden, rank admissibility, and reconstruction performance. 51. Designate predictors 
+
+Partition predictors into grid predictors and any auxiliary block predictors. 
+
+2. Remap predictors to a common reference scale 
+
+Transform predictors to a probability-balanced scale for reference-grid construction. 
+
+3. Specify the reference grid 
+
+Select lattice resolution 𝐿 by validation for the designated 𝑘 grid predictors. 
+
+4. Assign cells and normalize 
+
+Assign observations to reference-grid cells and compute normalization weights. 
+
+5. Identify occupied and empty cells 
+
+Retain weighted means for occupied cells and identify cells requiring completion. 
+
+6. Complete the lattice 
+
+Preserve occupied-cell means and complete empty cells using the selected rule. 
+
+7. Reconstruct, evaluate, and project 
+
+Apply the orthogonal reconstruction, evaluate the surface through piecewise-affine interpolation over Freudenthal polyhedra, and project onto a declared structural basis when one is known. 
+
+8. Calibrate to the target basis 
+
+When a structural basis is declared, correct raw projections using a response-free calibration matrix derived from predictor geometry alone. 
+
+> estimation, projection, and calibration  reconstruction design
+
+Figure 1: Overview of the ROD workflow. 
+
+# 2 ROD Model 
+
+Figure 1 summarizes the ROD workflow. Steps 1–5 construct the probability-balanced ref-erence lattice and identify occupied and empty cells, while Steps 6–8 complete, reconstruct, evaluate, project, and calibrate the surface. In Steps 1–2, predictors are partitioned into grid predictors, whose discretized levels define the factorial contrast space, and block predictors, which enter through standard indicator or effect coding without participating in lattice construction. Ordinal predictors may be treated as grid predictors when their ordering is meaningful. Each grid predictor is mapped to a probability scale before discretization. Let 𝑟 𝑗 = 𝐹 𝑗 (𝑥 𝑗 ) ∈ (0, 1) , where 𝐹 𝑗 is the 6empirical distribution function of 𝑥 𝑗 using mid-ranks to accommodate ties, and define 𝑧 𝑗 =2𝑎𝑟 𝑗 − 𝑎 , with default 𝑎 = 3 . This transformation requires no distributional assumption, reduces sparse tail cells, and places marginal occupancy on a comparable scale. Estimation and interpretation remain on the original predictor scale through the inverse mapping. In Step 3, ROD selects lattice resolution 𝐿 ∗ using separate fitting, validation, and test subsets, with allocations specified for each analysis. For candidate 𝐿 ∈ ℒ , the grid con-tains 𝐿 𝑘 cells and retains either the full contrast basis or contrasts through order 𝑟 , with 
+
+𝑝 𝐿 = ∑ 𝑟 𝑗=1 (𝑘 𝑗 )(𝐿 − 1) 𝑗 . Candidates are completed before reconstruction, and only rank-admissible retained contrast systems are eligible for validation-based selection. The admis-sible candidate with the best validation performance is selected, while the test subset is reserved for final reporting. In Steps 4–5, each probability-scaled predictor is partitioned into 𝐿 ∗ equal-population bins represented by equally spaced points on 𝑧 𝑗 = 2𝑎𝑟 𝑗 − 𝑎 , and observations are assigned to the nearest grid point in every dimension. If 𝑠 𝑖 is the observation’s base weight and 𝑛 ∗ = 𝑛/𝐿 ∗𝑘 
+
+is the target total weight per cell, observation 𝑖 in cell 𝑐(𝑖) receives reconstruction weight 
+
+𝑤 𝑖 = 𝑛 ∗𝑠 𝑖 / ∑ ℎ∈𝑐(𝑖) 𝑠 ℎ, reducing in the unweighted case to 𝑤 𝑖 = 𝑛 ∗/𝑛 𝑐(𝑖) . Equalization across lattice cells defines the balanced product reference measure under which native contrasts and SS allocations are interpreted. Occupied cells retain their weighted observed means, while empty cells are passed to Step 6 for completion. Step 6 completes the lattice without altering occupied-cell means. Let 𝒮 denote the oc-cupied cells, with weighted means y𝒮 and weights W𝒮 . Each empty cell 𝑔 ∉ 𝒮 receives ̃𝑦 𝑔 = 𝒞(𝑔; 𝒮) , where 𝒞 is either a global main-effects WLS surface or a local neighbor-based completion rule. In the simulation, (𝐿, 𝒞) is selected jointly by cross-validation. For the selected 𝐿 ∗, Step 7 constructs the orthogonal reconstruction and evaluates it through Freudenthal–Kuhn piecewise-affine interpolation (Freudenthal 1942, Kuhn 1960). 7Let ̃ y𝐿 denote the observed and completed cell means, X𝐿 the retained contrast matrix, and W𝐿 the reconstruction weights. The contrast coefficients are ̂ 𝛽 𝐿 = 𝑐 −1 𝐿 X⊤𝐿 W𝐿 ̃ y𝐿 ,where X⊤𝐿 W𝐿 X𝐿 = 𝑐 𝐿 I. Within simplex 𝑠 , with vertices 𝑣 0, … , 𝑣 𝑘 , the surface is ̂𝑚( x) = ∑𝑘 𝑟=0 𝜆 𝑟 (x)̂𝑦 𝑣 𝑟 , where 𝜆 𝑟 (x) ≥ 0 and ∑𝑘 𝑟=0 𝜆 𝑟 (x) = 1 . The interpolant is continuous, parameter-free, exact at lattice vertices, and evaluable in 𝑂(𝑘 log 𝑘) time (Davies 1996); it does not alter the contrast coefficients, realized orthogonality, or SS decomposition. Step 8 projects the reconstructed surface onto a declared structural basis, when one is known, and corrects finite-resolution recovery loss. Let 𝜙(𝑋) denote the target basis and ̂ 𝛽 raw its raw projection. The response-free calibration matrix ̂ C𝐿,𝑘,𝑋 is constructed by passing each pseudo-response 𝑦 (𝑗) 𝑖 = 𝜙 𝑗 (𝑋 𝑖 ) through the fixed selected ROD pipeline while holding the mappings, lattice, completion rule, interpolation scheme, and projection points unchanged. When ̂ C𝐿,𝑘,𝑋 is full rank, ̂ 𝛽 =̂ C−1 𝐿,𝑘,𝑋 ̂ 𝛽 raw , with projected predictions ̂𝑚 𝜙 (𝑋) = 𝜙(𝑋) ⊤̂ 𝛽 . Calibration depends only on predictor geometry, lattice construction, interpolation, and the declared basis, not on the observed response. 83 2 1 0 1 2 3
+
+x1
+
+3
+
+2
+
+1
+
+0
+
+1
+
+2
+
+3
+
+> x2
+
+y = 3 x1 + 2 x2 + 1.5 x1x2 +
+
+n = 5,000 (500 shown) 
+
+(A) Raw observational data 
+
+10.0 
+
+7.5 
+
+5.0 
+
+2.5 
+
+0.0 
+
+2.5 
+
+5.0 
+
+7.5 
+
+10.0 
+
+> Response (y)
+
+-2.4 -1.2 -0.0 1.2 2.4 
+
+x1
+
+-2.4 
+
+-1.2 
+
+-0.0 
+
+1.2 
+
+2.4 
+
+> x2
+
+(B) L * = 5 discretized cell means, size = weight wc
+
+w=0.92 
+
+w=0.44 
+
+w=0.20 
+
+w=0.57 
+
+w=0.42 
+
+w=0.60 
+
+w=1.00 
+
+w=0.99 
+
+w=0.33 
+
+w=0.23 
+
+w=0.57 
+
+w=0.61 
+
+w=0.40 
+
+w=0.75 
+
+w=0.50 
+
+w=0.32 
+
+w=0.90 
+
+w=0.71 
+
+w=0.27 
+
+w=0.90 
+
+w=0.68 
+
+w=0.46 
+
+w=0.85 
+
+w=0.67 
+
+w=0.71 
+
+10.0 
+
+7.5 
+
+5.0 
+
+2.5 
+
+0.0 
+
+2.5 
+
+5.0 
+
+7.5 
+
+10.0 
+
+> Cell mean  yc
+
+3 2 1 0 1 2 3
+
+x1 3
+
+2
+
+1
+
+0
+
+1
+
+2
+
+3
+
+> x2
+
+10.0 
+
+7.5 
+
+5.0 
+
+2.5 
+
+0.0 
+
+2.5 
+
+5.0 
+
+7.5 
+
+10.0 
+
+> m(x)
+
+Height = cell mean yc
+
+(C) ROD native reconstruction (cellwise / step) 
+
+> 10.0
+> 7.5
+> 5.0
+> 2.5
+> 0.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+
+3 2 1 0 1 2 3
+
+x1 3
+
+2
+
+1
+
+0
+
+1
+
+2
+
+3
+
+> x2
+
+10.0 
+
+7.5 
+
+5.0 
+
+2.5 
+
+0.0 
+
+2.5 
+
+5.0 
+
+7.5 
+
+10.0 
+
+> mP(x)
+
+Vertices = cell means 
+
+(D) ROD-P reconstruction (polyhedral) 
+
+> 10.0
+> 7.5
+> 5.0
+> 2.5
+> 0.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+
+(C) Completed orthogonal reconstruction lattice 
+
+Height = completed cell mean 
+
+> Cell mean
+
+(D) ROD piecewise-affine surface 
+
+Vertices = completed cell means 
+
+> ROD surface
+
+(B) Probability-balanced cell-mean lattice (L* = 5; size = cell weight w_c) 
+
+> ỹ_c
+> m̂(x)
+
+Figure 2: Visualization of ROD for a low-dimensional interaction surface. The same reconstructed surface may be projected onto alternative declared bases, each with its own response-free calibration operator, providing a sensitivity analysis of competing structural representations and effect hierarchies. When many effects or bases are tested, inference may proceed hierarchically (Wu & Hamada 2009) with false-discovery control within stages (Benjamini & Hochberg 1995). 93 Theoretical Properties 
+
+The theoretical properties of ROD arise from the interaction between a balanced refer-ence lattice and a mapped observational reconstruction. The framework yields algebraic orthogonality, specification-invariant attribution (within a fixed reconstruction’s retained contrast space), order-independent SS, and a geometric representation of the reconstructed response surface. 
+
+Theorem 1 (Reference-Lattice Orthogonality) . Let X ∈ ℝ 𝐿 𝑘 ×(𝐿 𝑘 −1) be the full nonin-tercept tensor-product ROD contrast matrix on a full, balanced 𝐿 𝑘 lattice, with all cells retained at common total weight 𝑛 ∗ > 0 . If the one-dimensional nonconstant contrasts are orthonormal and each interaction-order-𝑑 𝑗 column is scaled by 𝐿 (𝑑 𝑗 −1)/2 , then W = 𝑛 ∗I𝐿 𝑘 
+
+and X⊤WX = 𝑛 ∗𝐿 𝑘−1 I = 𝑐 I. Proof: A full, balanced lattice gives W = 𝑛 ∗I. Tensor products of orthonormal one-dimensional contrasts are mutually orthogonal, so X⊤X is diagonal. An order-𝑑 𝑗 column has unscaled squared norm 𝐿 𝑘−𝑑 𝑗 ; scaling by 𝐿 (𝑑 𝑗 −1)/2 makes every diagonal entry equal to 𝐿 𝑘−1 . Hence X⊤WX = 𝑛 ∗𝐿 𝑘−1 I = 𝑐 I. ■
+
+Theorem 1 gives the reference identity underlying ROD. The weighted Gram matrix has condition number one, and interaction-order normalization prevents higher-order contrast columns from receiving a different scale solely because they contain more nonconstant tensor factors. 
+
+Corollary 1 (Specification and SS Invariance) . Under Theorem 1, with the weighted in-tercept fitted separately, any retained contrast block X𝐽 has ̂ 𝛽 𝐽 = 𝑐 −1 X⊤𝐽 Wy , independent of the other retained contrasts. Its Type I, Type II, and Type III SS coincide and equal 
+
+𝑆𝑆 𝐽 = 𝑐 −1 ‖X⊤𝐽 Wy ‖22. Proof: Every retained subset inherits X⊤𝑆 WX 𝑆 = 𝑐 I. Because the contribution of X𝐽 is unaffected by entry order or adjustment for other orthogonal blocks, its Type I, Type II, and Type III SS coincide. ■
+
+10 Theorem 1 establishes orthogonality for the full tensor-product basis. Any retained subset 
+
+X𝐽 ⊆ X inherits X⊤𝐽 WX 𝐽 = 𝑐 I, so exact orthogonality, specification-invariant coefficients, and order-independent SS hold within any chosen contrast space. 
+
+Proposition 1 (Conditional Lattice Error Representation) . Let the completed admissible lattice satisfy X⊤WX = 𝑐 I, and write ̃ y =̃ 𝜇 +̃ 𝜀 . If 𝛽 ∗ = 𝑐 −1 X⊤W̃ 𝜇 , then ̂ 𝛽 − 𝛽 ∗ =𝑐 −1 X⊤W̃ 𝜀 . Thus, conditional on the selected lattice, completion rule, provenance, and weights, coefficient error is determined by the reconstructed lattice errors. Proof: Substitute ̃
+
+y =̃ 𝜇 +̃ 𝜀 into ̂ 𝛽 = 𝑐 −1 X⊤W̃ y. ■
+
+Proposition 2 (Pure-Error Invariance and Unbiasedness) . For fixed cell assignments, let 
+
+𝑆𝑆 𝐸 = ∑ 𝑐∶𝑛 𝑐 >1 ∑𝑛 𝑐 
+
+> 𝑖=1
+
+(𝑦 𝑖𝑐 −̄ 𝑦 𝑐 )2, 𝜈 𝐸 = ∑ 𝑐∶𝑛 𝑐 >1 (𝑛 𝑐 − 1) , and 𝑀𝑆 𝐸 = 𝑆𝑆 𝐸 /𝜈 𝐸 , with 
+
+𝜈 𝐸 > 0 . Then 𝑀𝑆 𝐸 is invariant to the retained contrast specification. If 𝑦 𝑖𝑐 = 𝜇 𝑐 +𝜀 𝑖𝑐 with independent mean-zero errors of variance 𝜎 2, then 𝐸(𝑀 𝑆 𝐸 ) = 𝜎 2. This result applies only to observed replicated cells and does not quantify uncertainty from completion, calibration, or lattice selection. Proof: 𝑆𝑆 𝐸 depends only on within-cell deviations. Under the stated error model, 𝐸(𝑆𝑆 𝐸 ) = 𝜈 𝐸 𝜎 2, so 𝐸(𝑀𝑆 𝐸 ) = 𝜎 2. Singleton cells contribute no within-cell degrees of freedom. ■
+
+Fixing the admissible lattice and completed cell means gives ROD a dual identity: an orthogonal contrast system and a reconstructed response surface. When a structural basis is declared, calibrated projection provides an additional finite-dimensional representation of that fixed surface. 
+
+Proposition 3 (Exact recovery and calibration stability) . Fix the reconstruction pipeline and let ℛ ∶ ℝ 𝑚 → ℝ 𝑝 denote the resulting linear raw-recovery operator evaluated at 𝑚 
+
+projection points. Let Φ ∈ ℝ 𝑚×𝑝 contain the declared basis functions evaluated at those points, and define the calibration matrix C = ℛΦ . If C is nonsingular, the calibrated projection is ̂ 𝛽 = C−1 ℛy. If the noiseless response lies in the declared basis, y = Φ𝛽 , then 
+
+11 ̂𝛽 = 𝛽 . More generally, if y = Φ𝛽 + 𝜀 , then ̂ 𝛽 − 𝛽 = C−1 ℛ𝜀 and ‖̂𝛽 − 𝛽‖ ≤ ‖ C−1 ‖‖ℛ𝜀‖ .
+
+Proof: Because C = ℛΦ ,̂ 𝛽 = C−1 ℛΦ𝛽 = 𝛽 under the declared basis. Substitution of 
+
+y = Φ𝛽 + 𝜀 gives the error identity, and the norm bound follows from submultiplicativity. 
+
+Proposition 3 shows that response-free calibration removes the deterministic recovery dis-tortion induced by a fixed reconstruction pipeline when the surface lies in the declared basis. Calibration does not eliminate reconstruction, completion, approximation, or sampling er-ror, and poor conditioning of C can amplify the projection error. Structural coefficients and marginal effects are derived summaries of the reconstructed surface, whereas SS arise from its native orthogonal contrasts. Projection does not alter the reconstructed lattice, cell provenance, orthogonality, or SS decomposition. 
+
+# 4 Simulation 
+
+A simulation assessed whether finite-sample ROD preserves reference-grid orthogonality, predictive competitiveness, and original-scale coefficient recovery under a deployed pipeline selector. Each condition used a 60%/20%/20% train-validation-test split. Resolution and completion, (𝐿 ∗, 𝒞 ∗), were selected by validation performance among rank-admissible candi-dates using mappings, cell assignments, and completion estimated from the training subset only. The selected pipeline was then refit on the combined training and validation subsets and evaluated once on an untouched test set; neither test predictors nor test responses entered pipeline fitting or selection. The simulation crossed 𝑘 ∈ {3, 4, 5, 6} , 𝑛 ∈ {0.5, 2.5, 10, 50, 150, 500} thousand observa-tions, 𝜌 ∈ {0.0, 0.4, 0.8} , nine data-generating processes (DGPs; Table 1), and 𝑅 = 10 repli-cations, producing 6,480 conditions. Candidate resolutions 𝐿 ∈ {3, … , 8} were evaluated within each condition using two prespecified completion rules: a global main-effects surface and local inverse-distance weighting. ROD retained all one-dimensional contrasts and all 12 two-factor tensor-product contrasts, corresponding to interaction order 𝑟 = 2 , throughout the simulation. Within each condition, observations were generated independently with x𝑖 ∼ 𝑁 𝑘 (0, Σ 𝜌 ).The covariance matrix had unit variances and off-diagonal correlations 𝜌, 𝜌(0.5), 𝜌(0.5) 2, … ,assigned to predictor pairs in the order (1, 2), (1, 3), … , (𝑘 − 1, 𝑘) and verified to be pos-itive semidefinite across the full simulation grid. Unless stated otherwise, 𝜀 𝑖 ∼ 𝑁 (0, 1) 
+
+independently of x𝑖 . For the hurdle DGP, 𝑢 𝑖 ∼ Uniform (0, 1) and 𝜂 𝑖 , 𝜀 𝑖 ∼ 𝑁 (0, 1) 
+
+were mutually independent and independent of x𝑖 . Because 𝐸[ exp (0.30𝜂 𝑖 − 0.045)] = 1 ,
+
+𝐸(𝑦 𝑖 ∣ x𝑖 ) = 𝑝 +,𝑖 𝜇 +,𝑖 . The simulation was implemented in Python (Python Software Foundation 2024). Table 1: Data-generating processes used in the main simulation study. 
+
+Process Response model 
+
+Linear (LINEAR) 𝑦 = 3𝑥 1 + 2𝑥 2 + 𝜀 
+
+Quadratic + Interaction (QUAD) 𝑦 = 3𝑥 1 + 2𝑥 2 + 1.5 𝑥 1𝑥 2 + 1.0 𝑥 21 + 𝜀 
+
+Log saturation (LOGSAT) 𝑦 = 3 softplus (𝑥 1) + 2 softplus (𝑥 2) + 0.5𝑥 3 + 𝜀 
+
+Exponential growth (EXP) 𝑦 = 2 exp (0.35𝑥 1) + 1.5 exp (0.25𝑥 2) + 0.5𝑥 3 + 𝜀 
+
+Piecewise linear (PIECEWISE) 𝑦 = 1.5𝑥 1 + 2.5 max (𝑥 1 − 0.5, 0) − 1.0 max (−𝑥 2 − 0.25, 0) + 0.5𝑥 3 + 𝜀 
+
+Strong threshold (THRESHOLD) 𝑦 = 3.0 1(𝑥 1>0) + 2.5 1(𝑥 2>0) + 2.0 1(𝑥 1>0) 1(𝑥 2>0) + 𝜀 
+
+Two-part hurdle (HURDLE) 𝑝 + = logit −1 (𝑥 1 − 0.75𝑥 2 + 0.5𝑥 3), 𝑑 = 1(𝑢 < 𝑝 +)𝑦 = 𝑑 𝜇 + exp (0.30𝜂 − 0.045) + 0.25𝜀, 𝜇 + = exp (0.50 + 0.55𝑥 1 + 0.25𝑥 2)
+
+XOR interaction (XOR) 𝑦 = 4.0 ⋅ 1{sign (𝑥 1) = sign (𝑥 2)} − 2.0 + 0.5𝑥 3 + 𝜀 
+
+Bump (BUMP) 𝑦 = 5.0 exp (− (𝑥 1−1) 2+(𝑥 2+1) 2 
+
+> 0.5
+
+) + 0.5𝑥 3 + 𝜀      
+
+> softplus (𝑡) = log (1 + exp (𝑡)) , logit −1 (𝑡) = [1 + exp (−𝑡)] −1 , and 1(⋅) denotes the indicator function.
+
+13 4.1 Reconstruction Admissibility, Completion, and Resolution 
+
+Across all 6,480 planned conditions, every condition produced an estimable reconstruction, with no computational errors or unintended skips. Resolution selection was constrained to 
+
+𝐿 ∗ = {3 … 8} to control computational complexity. The most frequently selected resolution was 𝐿 ∗ = 8 , which occurred in 2,838 conditions (43.8%), followed by 𝐿 ∗ = 4 in 1,490 
+
+conditions (23.0%), 𝐿 ∗ = 6 in 653 conditions (10.1%), 𝐿 ∗ = 7 in 648 conditions (10.0%), 
+
+𝐿 ∗ = 5 in 456 conditions (7.0%), and 𝐿 ∗ = 3 in 395 conditions (6.1%). Validation selected global main-effects completion in 4,624 conditions ( 71.4% ) and local inverse-distance weighting (IDW), which fills an empty cell using a distance-weighted av-erage of nearby occupied-cell means, in 1,856 conditions ( 28.6% ). Exact validation ties occurred in 2,211 conditions ( 34.1% ) and were resolved by the deterministic selection rule. IDW selection ranged from 3.3% for LINEAR to 70.0% for QUAD. 
+
+4.2 Prediction Performance 
+
+For predictive comparisons, ROD was evaluated on the same declared structural basis as the parametric comparator when prespecified. Accordingly, the LINEAR and QUAD DGPs use calibrated ROD projections onto the OLS-ME and POLY bases, respectively, while the remaining DGPs use predictions from ROD’s surface. Table 2 reports mean out-of-sample 
+
+𝑅 2 by DGP. OLS-ME is included as a naive baseline, quantifying the cost of ignoring nonlinear or interaction structure. For the LINEAR DGP, calibrated ROD and OLS-ME produced nearly identical mean performance. ROD exceeded POLY by a mean Δ𝑅 2 = 0.0005 (stratified paired bootstrap 95% CI: 0.0004 to 0.0006 ) and achieved higher 𝑅 2 in 69.7% of matched conditions (exact paired sign test, Holm-adjusted 𝑝 < .001 ). For QUAD, calibrated ROD and POLY were practically indistinguishable, with a mean difference of only Δ𝑅 2 = 0.0001 , although 14 ROD achieved higher 𝑅 2 in 55.7% of matched conditions (Holm-adjusted exact sign-test 
+
+𝑝 = .003 ). ROD substantially outperformed POLY for THRESHOLD, XOR, and BUMP, with mean 𝑅 2 gains of 0.2201 , 0.3163 , and 0.0933 , respectively, and the proportion favoring ROD exceeding 92% . POLY performed better for PIECEWISE, LOGSAT, EXP, and HURDLE, for which ROD’s mean 𝑅 2 differences ranged from −0.0399 to −0.0870 .Table 2: Mean out-of-sample 𝑅 2 and paired ROD–POLY differences by DGP. Difference intervals use a stratified paired bootstrap over (𝑛, 𝑘, 𝜌) cells; sign-test 𝑝 -values are Holm– Bonferroni adjusted.                                                                                   
+
+> DGP OLS-ME POLY ROD Mean Δ𝑅 2(95% CI) %Δ𝑅 2> 0 (𝑝 , Holm) QUAD 0.6831 (0.6800, 0.6862) 0.9579 (0.9575, 0.9583) 0.9580 ∗(0.9576, 0.9584) +0.0001 (> 0.0000, 0.0002) 55.7% (0.003) LINEAR 0.9438 (0.9434, 0.9441) 0.9433 (0.9429, 0.9437) 0.9438 ∗(0.9434, 0.9441) +0.0005 (+0.0004, +0.0006) 69.7% ( < 0.001 )THRESHOLD 0.6009 (0.5992, 0.6025) 0.6051 (0.6032, 0.6070) 0.8252 (0.8239, 0.8265) +0.2201 (+0.2185, +0.2217) 100.0% ( < 0.001 )PIECEWISE 0.8172 (0.8161, 0.8184) 0.8631 (0.8620, 0.8641) 0.8200 (0.8185, 0.8215) −0.0430 (−0.0444, −0.0417) 1.1% ( < 0.001 )LOGSAT 0.7802 (0.7789, 0.7815) 0.8336 (0.8323, 0.8347) 0.7893 (0.7880, 0.7907) −0.0442 (−0.0454, −0.0432) 0.3% ( < 0.001 )XOR 0.0468 (0.0450, 0.0486) 0.2868 (0.2836, 0.2898) 0.6030 (0.6008, 0.6052) +0.3163 (+0.3132, +0.3195) 99.4% ( < 0.001 )EXP 0.5488 (0.5465, 0.5510) 0.5648 (0.5624, 0.5671) 0.5249 (0.5224, 0.5273) −0.0399 (−0.0411, −0.0386) 2.8% ( < 0.001 )HURDLE 0.3422 (0.3393, 0.3450) 0.4517 (0.4467, 0.4565) 0.3647 (0.3614, 0.3680) −0.0870 (−0.0908, −0.0832) 5.1% ( < 0.001 )BUMP 0.2396 (0.2370, 0.2422) 0.2682 (0.2648, 0.2716) 0.3615 (0.3586, 0.3644) +0.0933 (+0.0911, +0.0956) 92.2% ( < 0.001 )
+
+* ROD calibrated to the prespecified basis. Mean Δ𝑅 2: stratified paired bootstrap. 
+
+As a robustness check, mean 𝑅 2 was also examined disaggregated by 𝑘 ∈ {3, 4, 5, 6} and 
+
+𝜌 ∈ {0, 0.4, 0.8} . Neither dimension produced a substantively meaningful effect: across all DGP–model combinations, the largest observed half-range in mean 𝑅 2 across 𝑘 was 
+
+0.047 (ROD, XOR interaction), and the largest across 𝜌 was 0.081 (ROD, XOR interac-tion), against an 𝑅 2 scale of [0, 1] . The proportion of individual conditions in which ROD outperformed POLY was similarly stable across 𝜌 for most DGPs, with two exceptions: for XOR interaction and Bump, ROD’s 𝑅 2 performance declined moderately as 𝜌 increased (XOR interaction: 100.0% , 99.2% , 99.2% at 𝜌 = 0, 0.4, 0.8 ; Bump: 98.8% , 96.7% , 81.2% ), while remaining decisively above chance throughout. 15 4.3 Recovery of Prespecified Structural Coefficients 
+
+Coefficient recovery was evaluated for four DGPs with prespecified structural targets. Lin-ear and Quadratic+Interaction used continuous polynomial bases, while Strong Threshold and XOR used positive-indicator and sign-interaction bases. These bases were introduced only after predictive fitting, and ROD coefficients were recovered using the Step 8 calibra-tion operator. Table 3 shows that calibrated ROD bias remained near zero and dispersion comparatively stable across targets and dimensions. OLS and POLY are reported only when their specifi-cations contain the corresponding structural term; the Strong Threshold and XOR results therefore assess conditional recovery under a prespecified nonlinear basis, not functional-form discovery. For Quadratic+Interaction 𝑋 1𝑋 2, POLY bias changed from +0.002 at 
+
+𝑘 = 3 to −0.031 at 𝑘 = 6 , while its SD increased from 0.046 to 0.124 ; ROD bias remained near zero and its SD increased only from 0.042 to 0.067 .Table 3: ROD coefficient bias and standard deviation by 𝑘 with parametric benchmarks where available.                                                   
+
+> 𝑘
+> Target (method) 3456Linear 𝑋 1(ROD) +0.004 (0.031) −0.001 (0.034) +0.003 (0.036) +0.002 (0.030) Linear 𝑋 1(OLS) +0.001 (0.025) −0.001 (0.028) +0.003 (0.034) +0.003 (0.032) Quadratic+Interaction 𝑋 1𝑋 2(ROD) −0.002 (0.042) −0.003 (0.043) −0.001 (0.042) +0.001 (0.067) Quadratic+Interaction 𝑋 1𝑋 2(POLY) +0.002 (0.046) +0.013 (0.079) −0.027 (0.122) −0.031 (0.124) Strong Threshold 𝑋 1𝑋 2(ROD) +0.014 (0.132) +0.002 (0.127) +0.003 (0.106) −0.022 (0.138) XOR 𝑋 1𝑋 2(ROD) −0.002 (0.028) −0.001 (0.032) +0.001 (0.032) 0.000 (0.026)
+
+OLS and POLY are reported only where their declared specifications contain the same structural coefficient as ROD. 
+
+16 4.4 Analyst Operating Envelope and Sample-Size Guidance 
+
+Under independence, the structural ROD sample-size benchmark is Rao’s lower bound for an equal-level strength-four orthogonal array (Rao 1947), 𝑁 𝑅 = 1 + 𝑘(𝐿 − 1) + ( 𝑘 2)(𝐿 − 1) 2. Let 𝑀 Σ = 𝐸 Σ{𝜙(𝑋)𝜙(𝑋) ⊤} denote the information matrix for the retained contrast basis and let 𝑀 0 denote the corresponding information matrix under independence. The dependence-adjusted sample size is defined by requiring the dependent design to provide at least the Rao benchmark information in every retained direction, 𝑛𝑀 Σ ⪰ 𝑁 𝑅 𝑀 0, where 
+
+⪰ denotes the Loewner ordering (Pukelsheim 2006). Defining the relative information matrix 𝑅 Σ = 𝑀 −1/2 0 𝑀 Σ𝑀 −1/2 0 , this condition is equivalent to 𝑛𝜆 min (𝑅 Σ) ≥ 𝑁 𝑅 , yielding 
+
+𝑁 𝑅,Σ = ⌈𝑁 𝑅 /𝜆 min (𝑅 Σ)⌉ . Under independence and orthonormal contrast coding, 𝑀 0 = 𝐼 ,so the adjustment reduces to 𝑁 𝑅 . For the reduced case in which 𝜙(𝑋) contains standardized linear main effects only, 𝑀 Σ = Σ , giving 𝑁 𝑅,Σ = ⌈𝑁 𝑅 /𝜆 min (Σ)⌉ . The minimum relative eigenvalue is also the E-optimality criterion and represents the least-supported retained information direction. This construction is an information-matching adjustment to Rao’s combinatorial lower bound for planning purposes, not a new Rao bound or an orthogonal-array existence result. See Table 4 for sample-size considerations. 17 Table 4: Rao-based ROD sample-size benchmarks for structural order 𝑟 = 2 . Resolution V values are shown first with Resolution IV in parentheses; dependence adjustment uses 
+
+1/(1 −̄ 𝜌) .                                                                                        
+
+> 𝑘 𝐿 𝑁 𝑅 ̄𝜌 = .25̄ 𝜌 = .50̄ 𝜌 = .75 1.00× 1.33× 2.00× 4.00×
+> 55181 (85) 242 (114) 362 (170) 724 (340) 510 856 (370) 1142 (494) 1712 (740) 3424 (1480) 515 2031 (855) 2708 (1140) 4062 (1710) 8124 (3420) 520 3706 (1540) 4942 (2054) 7412 (3080) 14824 (6160) 10 5761 (185) 1015 (247) 1522 (370) 3044 (740) 10 10 3736 (820) 4982 (1094) 7472 (1640) 14944 (3280) 10 15 8961 (1905) 11948 (2540) 17922 (3810) 35844 (7620) 10 20 16436 (3440) 21915 (4587) 32872 (6880) 65744 (13760) 15 51741 (285) 2322 (380) 3482 (570) 6964 (1140) 15 10 8641 (1270) 11522 (1694) 17282 (2540) 34564 (5080) 15 15 20791 (2955) 27722 (3940) 41582 (5910) 83164 (11820) 15 20 38191 (5340) 50922 (7120) 76382 (10680) 152764 (21360) 20 53121 (385) 4162 (514) 6242 (770) 12484 (1540) 20 10 15571 (1720) 20762 (2294) 31142 (3440) 62284 (6880) 20 15 37521 (4005) 50028 (5340) 75042 (8010) 150084 (16020) 20 20 68971 (7240) 91962 (9654) 137942 (14480) 275884 (28960)
+
+4.5 Software Implementation 
+
+ROD is implemented as an operational Python software package that executes the recon-struction procedure described above. The implementation includes probability-balanced lattice construction, preservation of supported weighted cell means, completion of unsup-ported cells, tensor-product orthogonal contrast construction, validation-based joint se-lection of lattice resolution and completion rule, Freudenthal piecewise-affine evaluation, response-free projection calibration, weighted estimation, categorical adjustment and strat-ification, and numerical diagnostics for rank and conditioning. The implementation sepa-rates the user-facing ROD estimator from the simulation and empirical-analysis code used 18 in this paper. The version used to validate the implementation is ROD 0.4. The package source code, in-stallation materials, tests, examples, and empirical golden-equivalence validation are main-tained at https://github.com/dustoff06/ROD. Manuscript-specific simulation, bootstrap, and empirical-analysis code and the generated results are maintained in the same repos-itory as replication materials. Thus, the software implementation of ROD and the code used to evaluate the method in this study are independently identifiable but reproducible from a versioned repository. 
+
+# 5 Empirical Illustration: The Mincer Earnings Equa-tion 
+
+We illustrate ROD using the Mincer earnings equation (Mincer 1974), ln (earnings 𝑖 ) = 𝛽 0 + 𝛽 1schooling 𝑖 + 𝛽 2experience 𝑖 + 𝛽 3experience 2𝑖 + 𝜀 𝑖 . Schooling and potential experience define the two-dimensional ROD grid. The sample is restricted to male, married, White respondents with positive annual wage and salary income to maintain a homogeneous illus-trative subgroup. The analysis uses the 2018 CPS Annual Social and Economic Supplement from IPUMS CPS (Flood et al. 2024), with 𝑛 = 21,226 observations after restriction. All probability mappings, estimation, model selection, and evaluation use the person weight ASECWT , normalized to mean one. The outcome is log annual wage and salary income, and potential experience equals age minus schooling minus six, truncated at zero. An 80%/20% split reserves 4,245 
+
+observations for testing. The remaining 16,981 observations are split 80%/20% for training and validation, with 𝐿 ∗ chosen to maximize weighted validation 𝑅 2 among rank-admissible candidates. 19 Under the Step 2 probability-scale mapping with mid-rank handling of ties, the 14 school-ing levels occupied eight columns under the CV-selected 𝐿 ∗ = 19 , leaving 11 structurally unsupported schooling columns ( 209 of 361 cells) in Figure 3. These cells were completed using the Step 6 local rule, specialized to linear interpolation along schooling between brack-eting occupied cells, while occupied cells retained their ASECWT -weighted means. The same completion rule was used during CV and refit on the non-test sample. After completion and equalization of reconstruction weight across lattice cells, the reconstruction yielded 
+
+𝜅 = 1.000 and max | offdiag (X⊤WX )| = 1.16 × 10 −6 , confirming orthogonal construction. 6.9 11.5 12.1 12.7 13.3 14.2 15.4 16.6 17.7 19.6    
+
+> Schooling (years) 5.1
+> 11.5
+> 16.2
+> 20.7
+> 24.9
+> 29.3
+> 33.6
+> 37.9
+> 42.5
+> 51.3
+> Potential experience (years)
+> 9.5
+> 10.0
+> 10.5
+> 11.0
+> 11.5
+> 12.0
+> Fitted log earnings
+> Lifted Freudenthal Surface ( L*= 19, completed lattice)
+> 10.00
+> 10.25
+> 10.50
+> 10.75
+> 11.00
+> 11.25
+> 11.50
+> 11.75
+> Fitted log earnings
+
+Figure 3: ROD reconstruction of the Mincer schooling–experience surface. Table 5 reports weighted out-of-sample 𝑅 2 with conditional 95% bootstrap confidence in-tervals (CI), computed from 5,000 paired resamples of the 4,245 held-out test observations while retaining their survey weights. OLS-ME fits schooling and experience without cur-vature or interaction terms. OLS-Mincer adds the conventional quadratic experience term. POLY fits the full second-order polynomial, adding schooling squared and the schooling-by-experience interaction. ROD reports predictions from the native piecewise-affine recon-20 struction without requiring a declared structural basis. ROD produced the highest weighted out-of-sample 𝑅 2 point estimate, followed by POLY. Their estimates differed by only 0.0025 , and their confidence intervals overlapped substan-tially. Both outperformed the conventional OLS-Mincer specification in point estimates, while OLS-ME provided the expected lower-dimensional baseline. Table 5: Weighted out-of-sample predictive performance.           
+
+> Method 𝑅 2
+> test 95% CI OLS-ME (schooling + experience) 0.1141 (0.0913, 0.1375)
+> OLS-Mincer (schooling + experience + experience squared) 0.1586 (0.1345, 0.1840)
+> POLY (linear, squared, and interaction terms) 0.1799 (0.1555, 0.2053)
+> ROD (native reconstructed surface) 0.1824 (0.1548, 0.2104)
+
+Table 6 compares directly estimated OLS coefficients with POLY and calibrated ROD projections onto the Mincer basis. The POLY and ROD projections use the same equally weighted Freudenthal facet centroids. All three imply positive schooling effects and concave experience profiles. Table 6: Mincer-basis coefficients for OLS, POLY, and ROD. NOTE: Peak experience computed from unrounded coefficients.                 
+
+> Method Schooling Exp. Exp. 2Peak Exp. OLS (linear + squared term) 0.0974 0.0576 −0.00109 26.51 POLY (linear + squared + interaction) 0.1083 0.0661 −0.00125 26.43 ROD (Mincer basis declared) 0.1136 0.0620 −0.00117 26.56
+
+Table 7 compares ROD’s order-invariant unique SS shares with the ranges of sequential 21 SS allocations obtained across all 3! = 6 OLS orderings and 5! = 120 POLY orderings. ROD orthogonality makes the five effect-family allocations non-overlapping and exhaustive, whereas the OLS and POLY allocations vary with term-entry order. Table 7: Order-invariant ROD unique SS shares and order-dependent sequential SS ranges for the weighted CPS Mincer example, 𝐿 ∗ = 19 .
+
+Effect family ROD unique share OLS sequential range POLY sequential range Schooling (linear) 58.19% 61.04–70.39% 0.00–64.28% Schooling (nonlinear) 2.86% — 0.46–65.83% Experience (linear) 0.71% 1.06–24.21% 0.09–45.65% Experience (nonlinear) 27.40% 5.39–32.54% 4.91–64.27% Schooling × experience 10.84% — 0.38–52.22% 
+
+> SS Shares describe within-model allocation only. ROD nonlinear includes all higher-order orthogonal contrasts; OLS and POLY entries represent squared terms.
+
+The illustration distinguishes the native ROD surface, its calibrated coefficient projection, and the OLS and POLY comparators. ROD does not replace the Mincer equation or resolve causal identification concerns such as ability bias (Card 1999). Its contribution is an interpretable reconstruction with orthogonal attribution, explicit structural diagnostics, competitive out-of-sample performance, and substantively plausible projected coefficients. 
+
+# 6 Discussion 
+
+ROD’s main contribution is stable attribution under correlated observational predictors. Once an admissible reference lattice and retained contrast space are fixed, X⊤WX = 𝑐 I
+
+yields specification-invariant contrasts and unique, order-independent SS under the de-clared reference measure (Montgomery 2019). Attribution therefore becomes a reproducible 22 property of the reconstruction rather than a consequence of term order or the inclusion of other retained orthogonal effects. Interpolation affects only between-lattice evaluation, while calibration expresses the reconstructed surface in a declared scientific basis without altering its orthogonality or SS decomposition. The simulations show that this stability does not require sacrificing predictive performance uniformly, but neither does ROD dominate conventional regression. ROD was essentially equivalent to POLY for linear and quadratic-interaction surfaces, performed substantially better for threshold, sign-interaction, and localized structures, and performed worse for several smoother or distributionally complex processes. These results suggest that ROD is most useful when flexible surface reconstruction and stable attribution are both important. Its advantage is not universal predictive superiority, but the ability to recover interpretable structure without making attribution depend on a conventional regression specification. Calibrated coefficient recovery further showed that the reconstructed surface can be mapped accurately to prespecified structural bases, although such recovery is conditional on the basis being declared rather than discovered automatically. The CPS illustration makes this distinction concrete. ROD and POLY produced similar predictive performance and similar Mincer-basis projections, so the empirical result is not evidence of a decisive forecasting advantage. The difference lies in attribution: sequen-tial OLS and POLY SS allocations varied substantially with term order despite identical fitted models, whereas ROD produced a single non-overlapping and exhaustive allocation under the declared reconstruction. ROD therefore changes the interpretive question from which specification or ordering receives credit to how variation is allocated within a defined reference surface. That reference surface is central to interpretation. ROD defines attribution under a bal-anced product reference measure rather than the empirical predictor distribution, making 23 the measure explicit and reproducible across samples and replications. Completion is part of the estimator rather than a computational repair, since incomplete support requires interpolation, extrapolation, pooling, or omission in any response-surface method. ROD makes these choices visible through preserved observed-cell means, provenance, completion diagnostics, and validation-based pipeline selection. Exact orthogonality does not imply that completed cells equal their unobserved population means, so support, completion bur-den, conditioning, and provenance remain essential diagnostics. ROD is therefore most compelling when interpretive stability, reproducibility, and auditable attribution matter alongside prediction, and less so when prediction alone is the objective or a low-dimensional parametric model is sufficient. It remains representational rather than causal and does not resolve identification problems such as ability bias in the Mincer application (Card 1999). 
+
+# 7 Conclusion 
+
+ROD reframes analysis of correlated observational predictors as a reconstruction problem rather than an attempt to recover orthogonality from the observed design matrix. By con-structing an admissible balanced reference surface first, ROD makes attribution a property of a declared reconstruction rather than of term order or a particular regression specifi-cation. The resulting contrasts and SS therefore provide a common basis for comparing effects across specifications, samples, and analysts, while interpolation and calibrated pro-jection allow the same reconstructed surface to support prediction and interpretation in scientifically meaningful coordinates. The empirical and simulation results show that this interpretive stability need not come at the expense of useful predictive performance, but prediction is not ROD’s primary advantage. Conventional parametric models remain effective when their functional form is appropriate, while ROD becomes more valuable when nonlinear structure, interactions, 24 incomplete support, or correlated predictors make attribution sensitive to modeling choices. Its contribution is therefore not that it universally predicts better, but that it separates surface reconstruction from subsequent attribution and structural interpretation, making those steps explicit, reproducible, and auditable. That transparency also defines the limits of the method. ROD’s conclusions are conditional on the declared reference measure, available support, completion rule, retained contrast space, and structural basis used for projection. Orthogonality cannot create information where observations are absent, and completion remains an assumption about the unob-served surface rather than a substitute for data. Within those boundaries, ROD provides a practical framework for observational analyses in which prediction alone is insufficient and scientific conclusions require stable, comparable, and traceable explanations of variation. 
+
+# 8 Disclosure statement 
+
+This research received no external funding. The authors declare no conflicts of interest. 
+
+# 9 Data Availability Statement 
+
+The operational Python implementation of ROD and manuscript replication materials are available at https://github.com/dustoff06/ROD. Upon acceptance, the versioned software, analysis code, and frozen results will be archived there; public empirical datasets are cited in the manuscript with access instructions provided in the repository. 
+
+Acknowledgments. The authors acknowledge the use of large language model (LLM) systems, including ChatGPT 5.5 (OpenAI) and Claude Sonnet 5 (Anthropic), as interactive research and writing assistants during manuscript development. 
+
+Author Contributions. L.V.F., C.P.F., A.S., and A.T. contributed to conceptualization, 25 methodology, validation, formal analysis, investigation, resources, and manuscript review and editing. All authors read and approved the manuscript. 
+
+Disclaimer. The views expressed are those of the authors and do not necessarily reflect those of their affiliated institutions. Generative artificial intelligence systems are not au-thors, and responsibility for the manuscript rests solely with the authors. 
+
+# References 
+
+Belsley, D. A., Kuh, E. & Welsch, R. E. (1980), Regression Diagnostics: Identifying Influ-ential Data and Sources of Collinearity , Wiley, New York, NY, USA. Benjamini, Y. & Hochberg, Y. (1995), ‘Controlling the false discovery rate: A practical and powerful approach to multiple testing’, Journal of the Royal Statistical Society, Series B 
+
+57 (1), 289–300. Breiman, L., Friedman, J. H., Olshen, R. A. & Stone, C. J. (2017), Classification and Regression Trees , 1st edn, CRC Press. Card, D. (1999), The causal effect of education on earnings, in O. C. Ashenfelter & D. Card, eds, ‘Handbook of Labor Economics’, Vol. 3, Elsevier, chapter 30, pp. 1801–1863. Chan, J. Y.-L., Leow, S. M. H., Bea, K. T., Cheng, W. K., Phoong, S. W., Hong, Z.-W. & Chen, Y.-L. (2022), ‘Mitigating the multicollinearity problem and its machine learning approach: A review’, Mathematics 10 (8), 1283. Christensen, R. (2020), Plane Answers to Complex Questions: The Theory of Linear Models ,5 edn, Springer, Cham. Davies, S. (1996), Multidimensional triangulation and interpolation for reinforcement learn-ing, in ‘Advances in Neural Information Processing Systems 9’, pp. 1005–1011. 26 Flood, S., King, M., Rodgers, R., Ruggles, S., Warren, J. R., Backman, D., Chen, A., Cooper, G., Richards, S., Schouweiler, M. & Westberry, M. (2024), ‘Integrated public use microdata series, current population survey: Version 12.0’. Dataset. Freudenthal, H. (1942), ‘Simplizialzerlegungen von beschränkter flachheit’, Annals of Math-ematics 43 (3), 580–582. Ghosh, D. & Wang, L. (2026), ‘Generalized coarsened confounding for causal effects: A large-sample framework’, Journal of Causal Inference 14 (1), 1–21. Girardi, P., Vesely, A., Lakens, D., Altoè, G., Pastore, M., Calcagnì, A. & Finos, L. (2024), ‘Post-selection inference in multiverse analysis (PIMA): An inferential framework based on the sign flipping score test’, Psychometrika 89 , 542–568. Granziol, U., Rabe, M., Gallucci, M., Spoto, A. & Vidotto, G. (2025), ‘Not another post hoc paper: A new look at contrast analysis and planned comparisons’, Advances in Methods and Practices in Psychological Science 8(1), 1–23. Györfi, L., Kohler, M., Krzyżak, A. & Walk, H. (2002), A Distribution-Free Theory of Nonparametric Regression , Springer Series in Statistics, Springer, New York. Hainmueller, J. (2012), ‘Entropy balancing for causal effects: A multivariate reweight-ing method to produce balanced samples in observational studies’, Political Analysis 
+
+20 (1), 25–46. Hastie, T. & Tibshirani, R. (1986), ‘Generalized additive models’, Statistical Science 
+
+1(3), 297–310. Hoeffding, W. (1948), ‘A class of statistics with asymptotically normal distribution’, The Annals of Mathematical Statistics 19 (3), 293–325. Hooker, G. (2007), ‘Generalized functional ANOVA diagnostics for high-dimensional 27 functions of dependent variables’, Journal of Computational and Graphical Statistics 
+
+16 (3), 709–732. Imai, K. & Ratkovic, M. (2014), ‘Covariate balancing propensity score’, Journal of the Royal Statistical Society: Series B (Statistical Methodology) 76 (1), 243–263. Kuhn, H. W. (1960), ‘Some combinatorial lemmas in topology’, IBM Journal of Research and Development 4(5), 518–524. Kutner, M. H., Nachtsheim, C. J., Neter, J. & Li, W. (2005), Applied Linear Statistical Models , 5 edn, McGraw-Hill/Irwin, Boston, MA, USA. Lenz, G. S. & Sahn, A. (2021), ‘Achieving statistical significance with control variables and without transparency’, Political Analysis 29 (3), 356–369. Lin, C. D. & Stufken, J. (2025), ‘Orthogonal arrays: A review’, WIREs Computational Statistics 17 (2), e70029. Mincer, J. (1974), Schooling, Experience, and Earnings , National Bureau of Economic Research, New York, NY, USA. 
+
+URL: https://eric.ed.gov/?id=ED103621 
+
+Montgomery, D. C. (2019), Design and Analysis of Experiments , 10 edn, John Wiley & Sons, Hoboken, NJ. Myers, R. H., Montgomery, D. C. & Anderson-Cook, C. M. (2016), Response Surface Methodology: Process and Product Optimization Using Designed Experiments , 4 edn, Wiley, Hoboken, NJ, USA. Newey, W. K. (1997), ‘Convergence rates and asymptotic normality for series estimators’, 
+
+Journal of Econometrics 79 (1), 147–168. 28 Nobel, A. B. (1996), ‘Histogram regression estimation using data-dependent partitions’, 
+
+The Annals of Statistics 24 (3), 1084–1105. Pukelsheim, F. (2006), Optimal Design of Experiments , Society for Industrial and Applied Mathematics. Python Software Foundation (2024), ‘Python programming language’. Version 3.12.3. 
+
+URL: https://www.python.org 
+
+Rao, C. R. (1947), ‘Factorial experiments derivable from combinatorial arrangements of arrays’, Journal of the Royal Statistical Society, Supplement 9(1), 128–139. Ratkovic, M. (2023), ‘Relaxing assumptions, improving inference: Integrating machine learning and the linear regression’, American Political Science Review 117 (3), 1053– 1069. Rayner, J. C. & Livingston, G. C. (2024), ‘Orthogonal contrasts for both balanced and unbalanced designs and both ordered and unordered treatments’, Statistica Neerlandica 
+
+78 (1), 68–78. Rosenbaum, P. R. & Rubin, D. B. (1983), ‘The central role of the propensity score in observational studies for causal effects’, Biometrika 70 (1), 41–55. Saltelli, A., Annoni, P., Azzini, I., Campolongo, F., Ratto, M. & Tarantola, S. (2010), ‘Variance based sensitivity analysis of model output: Design and estimator for the total sensitivity index’, Computer Physics Communications 181 (2), 259–270. Wood, S. N. (2006), ‘Low-rank scale-invariant tensor product smooths for generalized ad-ditive mixed models’, Biometrics 62 (4), 1025–1036. Wu, C. F. J. & Hamada, M. S. (2009), Experiments: Planning, Analysis, and Optimization ,2 edn, Wiley, Hoboken, NJ, USA. 29 Wu, C. F. J. & Hamada, M. S. (2021), Experiments: Planning, Analysis, and Optimization ,3 edn, Wiley, Hoboken, NJ. Wurm, L. H. & Reitan, M. (2025), ‘Mean centering is not necessary in regression analy-ses, and probably increases the risk of incorrectly interpreting coefficients’, Frontiers in Psychology 16 , 1634152. Zubizarreta, J. R. (2015), ‘Stable weights that balance covariates for estimation with incom-plete outcome data’, Journal of the American Statistical Association 110 (511), 910–922. 30

@@ -1,0 +1,931 @@
+Title: Optimization of time-consuming experimental conditions using pseudo-experimental data guided by adaptive polynomial regression
+
+URL Source: https://arxiv.org/pdf/2607.22238v1
+
+Published Time: Mon, 27 Jul 2026 00:42:39 GMT
+
+Number of Pages: 41
+
+Markdown Content:
+# Optimization of time-consuming experimental conditions using pseudo-experimental data guided by adaptive polynomial regression 
+
+## Hirotaka Sugawara 1 , Yujin Taguchi 1 , Kei Minagawa 1,Yusuke Hiki 1,2 , Takashi Morikura 1 , Akira Funahashi 1,2,∗
+
+> 1
+
+Graduate School of Science and Technology, Keio University, Kanagawa, Japan 
+
+> 2
+
+Department of Biosciences and Informatics, Keio University, Kanagawa, Japan 
+
+> ∗
+
+funa@bio.keio.ac.jp 
+
+# Abstract 
+
+Bayesian optimization (BO) is an optimization method that sequentially proposes the next candidate explainable variables for optimizing target variables by balancing exploration and exploitation. BO is often used under a limited evaluation budget, such as hyperparameter tuning of deep learning. Despite its effectiveness, conventional BO may have poor convergence in practical experimental science where each evaluation is often costly and time-consuming. Recently, BO methods have been proposed that accelerate optimization by using pseudo-experimental data that simulate experimental data. However, when only a limited number of experimental data are available, the generated pseudo-experimental data may be of insufficient quality. In this study, we developed PolyBO to improve optimization time by generating high-quality pseudo-experimental data even when the number of trials is limited. PolyBO performs BO efficiently by generating pseudo-experimental data with an adaptively updated versatile parametric model. This low-capacity polynomial regression model is intended to enable efficient BO even with limited experimental data. PolyBO updates the BO surrogate model with a combined dataset consisting of experimental data and pseudo-experimental data and then performs optimization. Using synthetic benchmark functions with diverse landscapes, we found that PolyBO reduced the optimization time by a median of 42%. For a real-world material composition optimization problem, PolyBO reduced the optimization time by a median of 96% compared with conventional methods. Overall, PolyBO achieves efficient optimization in settings where each experiment requires a long time. 1arXiv:2607.22238v1 [cs.LG] 24 Jul 2026 Introduction 
+
+Optimization of experimental conditions, including material composition, has contributed to the discovery and design of new materials [1, 2, 3]. In particular, computational optimization of the development of biomaterials, which usually requires time-consuming experiments, has accelerated biological insights and applications across various biological fields, ranging from protein engineering [4] to cellular agriculture [5] and biopharmaceutical manufacturing [6, 7]. In the optimization of experimental conditions, the goal is to search for those that maximize the value of the objective function within a search space defined by the explainable variables of the target system. Response surface methodology is a traditional design-of-experiments optimization method that approximates the objective function with a polynomial function and searches for optimal experimental conditions by sampling uniformly across the search space [8]. For example, using this approach, Skrivergaard et al. [9] have optimized the concentrations of three serum-free medium components, fibroblast growth factor 2, fetuin, and bovine serum albumin, and formulated a medium that exceeds the cell-proliferation performance of a conventional medium containing 10% fetal bovine serum. However, (i) accurate modeling of target-system behavior is difficult because nonlinear interactions among explainable variables are intertwined [1, 10, 11], and (ii) the relationship between explainable variables and objective values is a black-box relationship, and experiments for evaluating it are time- and resource-intensive [12, 13]. To handle complex nonlinear responses and efficiently identify promising experimental conditions with a limited number of experiments, an alternative method is needed. In biology, Bayesian optimization (BO) [14, 15] meets these requirements [16, 17, 18]. In BO, a surrogate model approximates the objective function, and selection of the next experimental condition is based on its predictive mean and uncertainty. Because BO balances exploration of unobserved conditions and exploitation of past experimental results, it efficiently searches for and proposes experimental conditions [19]. However, vanilla BO faces two challenges when applied to time-consuming experiments such as biological experiments. First, often > 10 
+
+explainable variables are involved [5, 7, 10, 11, 20], and BO is particularly inefficient in such high-dimensional spaces [19, 21, 22]. Latent-space Bayesian optimization (LSBO) is a major strategy for addressing this challenge [22, 23, 24]. LSBO performs BO in a d-dimensional latent space, which is obtained by strongly reducing the dimensionality of a D-dimensional search space. A variational autoencoder (VAE) is used mainly for the dimensionality reduction [25]. Although LSBO mitigates the curse of dimensionality, its search performance depends on whether the latent space appropriately reflects the properties of the search space [22, 23, 24]. If the limited amount of data available for constructing the latent space is insufficient for VAE training, the BO performance is reduced. Second, if a long time is required for each biological experiment, the number of iterations needed for optimization cannot be performed within a practical timeframe. For example, a single testicular tissue culture experiment takes up to 5 weeks [26]. BO often requires dozens of experiments to obtain sufficient improvement; in this case, 50 experiments would take as long as 250 weeks. In short-term experiments (minutes to days), the total time is often acceptable: BO for 30–100 iterations has been performed in experimental systems where each iteration took only 6–20 min [27, 28, 29]. Together, high dimensionality and long duration of experiments can hinder the convergence of optimization. 2One solution is to augment the dataset with pseudo-experimental data. Yin et al. [30] introduced teacher– student-based semi-supervised learning into LSBO and proposed Teacher–Student Bayesian Optimization (TSBO), in which a teacher model assigns objective values as pseudo-labels to explainable variables sampled in the latent space, and a student model is trained with this information. By correcting the teacher model predictions through feedback from the student model, TSBO improves the quality of pseudo-experimental data and performs LSBO while updating the surrogate model using a combined dataset of experimental and pseudo-experimental data. The effectiveness of TSBO depends on how well the latent representation preserves the structure of the search space because TSBO assumes the LSBO framework. In particular, as mentioned above, insufficient VAE training may degrade BO search performance. This limitation motivates the development of a method that generates pseudo-experimental data in the search space rather than in the latent space. Qian et al. [31] have proposed a BO method (BOPP) that generates pseudo-experimental data around acquired experimental data and updates the surrogate model using a combined dataset of experimental data and pseudo-experimental data. Assuming that nearby explainable variables have close objective values, BOPP uses the objective values of experimental data to assign those to the generated nearby pseudo-experimental data. Because BOPP generates pseudo-experimental data only around experimental data, its effectiveness is limited in regions where the objective function changes drastically. Thus, pseudo-experimental data–based methods still need substantial improvement for application to small experimental datasets. In this study, to improve BO performance with small datasets, we propose PolyBO, a BO method that gener-ates pseudo-experimental data from an adaptively updated versatile parametric model retrained whenever new experimental data are acquired. PolyBO generates pseudo-experimental data in the original search space without relying on latent representations, whose training can become unstable if data are limited. PolyBO assigns objective values to explainable variables sampled from the search space using a polynomial regression model, and it updates the surrogate model with a combined dataset of experimental and pseudo-experimental data. PolyBO design was based on the hypothesis that, in small-dataset settings, polynomial regression shortens optimization time, quan-tified here as the number of optimization iterations. Polynomial regression is more flexible than a linear model but has lower capacity than deep learning models such as the multilayer perceptron used as the teacher model in TSBO; however, its capacity is sufficient to regress a broad range of functions. To evaluate whether the PolyBO can reduce the optimization time, we used it to optimize 24 synthetic benchmark functions from Black-Box Opti-mization Benchmarking (BBOB) [32] and compared the time required for PolyBO and vanilla BO to reach the same performance. In high-dimensional setting ( D = 20 ), PolyBO demonstrated its effectiveness in a high-dimensional setting by achieving a median 42% reduction in optimization time compared with vanilla BO. To examine whether PolyBO can be applied to a real-world optimization problem, we used it to optimize composition of a material. PolyBO demonstrated its effectiveness in this setting by reaching the performance level achieved by conventional methods in a median 96% shorter optimization time. 3Materials and Methods 
+
+## Problem setting 
+
+We consider an optimization problem in which experimental conditions x ∈ X are varied within the experi-mentally allowable search space X ⊂ RD to search for the parameter x∗ that maximizes the experimental result, represented as the objective function f : X → R.
+
+x∗ = argmax 
+
+> x
+
+f (x) (1) 
+
+## PolyBO algorithm 
+
+PolyBO aims to improve the BO efficiency when each experiment requires a long time; pseudo-experimental data generated from polynomial regression accelerate convergence. In comparison with vanilla BO (Fig. 1a), three steps are added in PolyBO (Fig. 1b). In vanilla BO, a Gaussian process regression model is used as a surrogate model and is trained using experimental data. Using the trained model, an acquisition function is calculated to select the next experimental condition that maximizes the acquisition function, and the next experiment is conducted under the selected condition. The acquisition function proposes the next experimental conditions by balancing exploration of unobserved regions and exploitation of previously observed objective values. Expected Improvement (EI) (Eq. 2) [33] and GP-UCB (Eq. 3) [34] have been proposed as representative acquisition functions. EI calculates the expected improvement over the known best value f (x+),whereas GP-UCB calculates an upper confidence bound from the posterior mean μ(x) and standard deviation σ(x)
+
+of the trained Gaussian process regression. 
+
+αEI (x) = 
+
+
+
+(μ(x) − f (x+))Φ( Z) + σ(x)ϕ(Z) σ(x) > 00 σ(x) = 0 
+
+, Z = μ(x) − f (x+)
+
+σ(x) (2) 
+
+αGP-UCB (x) = μ(x) + pβσ (x) (3) Here, α denotes the acquisition function; ϕ and Φ are the probability density function and cumulative distribution function, respectively, of the standard normal distribution; Z is the standardized variable, and β is a hyperparameter that controls the exploration–exploitation balance. In PolyBO, a polynomial regression model is trained using experimental data, pseudo-experimental data are generated by sampling from the trained polynomial regression model, and the Gaussian process regression model is trained using the combined experimental and pseudo-experimental data, which are treated equally in the same format as pairs of explainable variables and objective values. The acquisition function is then calculated as in vanilla BO, and the next experiment is conducted under the condition that maximizes it. 4The pseudocode of the PolyBO algorithm is shown in Algorithm 1. At iteration t = 0 , an initial experimental dataset of size k, D0:0 = {(x(t=0)  
+
+> i
+
+, y (t=0)  
+
+> i
+
+)}ki=1 , is prepared for training the Gaussian process regression model. Here, 
+
+k is the initial dataset size, and the index i = 1 , . . . , k enumerates the samples in the initial dataset. The experimental data consist of explainable variables x(0)  
+
+> i
+
+randomly sampled from the search space and the corresponding objective values y(0)  
+
+> i
+
+. The set consisting of the initial data and the experimental data obtained up to iteration t − 1 is denoted as D0: t−1 = D0:0 ∪ { (x(τ ), y (τ ))}t−1 
+
+> τ=1
+
+. Here, τ = 1 , . . . , t − 1 indexes the experimental data sequentially acquired after the initial dataset. When t = 1 , {(x(τ ), y (τ ))}t−1  
+
+> τ=1
+
+is the empty set, and therefore D0: t−1 = D0:0 .The pth -degree polynomial regression model fp(x) is trained using the experimental data D0: t−1. Polynomial regression expands the explainable variables x into a new feature vector ϕ(x) and then applies linear regression; 
+
+ϕ(x) includes not only power terms up to degree p for each explainable variable but also interaction terms, expressed as products of different explainable variables. Let Φ be the design matrix constructed by stacking ϕ(x)⊤ for each training sample and y = [ y(0) 1 , . . . , y (0)  
+
+> k
+
+, y (1) , . . . , y (t−1) ]⊤ be the corresponding objective values; the model weight parameter w is then analytically obtained by solving the normal equation (Eq. 4). 
+
+w = ( Φ⊤Φ)−1Φ⊤y (4) The number of parameters in a model that includes all power and interaction terms is 
+
+D + pp
+
+
+
+= (D + 1)( D + 2) · · · (D + p)
+
+p! .
+
+Pseudo-experimental data D′ 
+
+> t
+
+= {(x′(t) 
+
+> j
+
+, y ′(t) 
+
+> j
+
+)}m′ 
+
+> j=1
+
+are generated using the trained model fp(x). Here, m′ is the pseudo-experimental dataset size, and j is the sample index. The pseudo-experimental data consist of explainable variables x′(t) 
+
+> j
+
+randomly sampled from the search space and objective values y′(t) 
+
+> j
+
+= fp(x′(t) 
+
+> j
+
+) calculated by sub-stituting them into the trained model fp. The posterior distribution is predicted by Gaussian process regression using D0: t−1 ∪ D ′
+
+> t
+
+, which combines the pseudo-experimental data D′ 
+
+> t
+
+and experimental data D0: t−1, and then the acquisition function is calculated. When using EI as the acquisition function, PolyBO uses pseudo-experimental data only as auxiliary information for constructing the Gaussian process posterior and defines the incumbent value f (x+) in Eq. 2 solely from the experimental data D0: t−1. This design prevents pseudo-experimental objective values potentially affected by regression error from directly determining the EI improvement baseline. A limited-memory Broyden–Fletcher–Goldfarb–Shanno algorithm with bound constraints [35] was used to numerically find the maximum of the acquisition function. The explainable variable x(t) that maximizes the acquisition function is obtained, and then the experiment is conducted. Using the experimental result y(t) as the objective value, the experimental data are updated as D0: t = D0: t−1 ∪ { (x(t), y (t))}, and then the iteration proceeds. PolyBO optimizes experimental conditions by repeating the above process. At every iteration, the update mechanism in PolyBO replaces the pseudo-experimental dataset with a newly generated dataset D′ 
+
+> t
+
+of size m′ and discards pseudo-experimental data generated in the previous iterations. This prevents low-quality pseudo-experimental data generated when only a few experimental data are available from degrading convergence performance in the middle and later stages of optimization. 5Algorithm 1 PolyBO algorithm  
+
+> 1:
+
+Set initial dataset D0:0 = {(x(0)  
+
+> i
+
+, y (0)  
+
+> i
+
+)}ki=1 , where x(0)  
+
+> i
+
+are randomly sampled from the search space and y(0)  
+
+> i
+
+are obtained from experiments.  
+
+> 2:
+
+for t = 1 , 2, . . . do  
+
+> 3:
+
+Train pth -degree polynomial regression model fp(x) with dataset D0: t−1. 
+
+> 4:
+
+Sample m′ explainable variables {x′(t) 
+
+> j
+
+}m′ 
+
+> j=1
+
+randomly from the search space.  
+
+> 5:
+
+for j = 1 , 2, . . . , m ′ do  
+
+> 6:
+
+Compute y′(t) 
+
+> j
+
+= fp(x′(t) 
+
+> j
+
+). 
+
+> 7:
+
+end for  
+
+> 8:
+
+Set D′ 
+
+> t
+
+= {(x′(t) 
+
+> j
+
+, y ′(t) 
+
+> j
+
+)}m′
+
+> j=1
+
+. 
+
+> 9:
+
+Update the Gaussian process regression model with D0: t−1 ∪ D ′
+
+> t
+
+. 
+
+> 10:
+
+Compute the acquisition function α(x) using the updated Gaussian process regression model.  
+
+> 11:
+
+Select the next point x(t) = argmax x α(x). 
+
+> 12:
+
+Conduct an experiment at x(t) to obtain y(t). 
+
+> 13:
+
+Update the dataset D0: t = D0: t−1 ∪ { (x(t), y (t))}. 
+
+> 14:
+
+end for 
+
+## Numerical experiments using synthetic benchmark functions 
+
+To evaluate the performance of PolyBO, we optimized 24 BBOB functions [32]. These functions are contin-uous, with diverse landscapes defined on [−5, 5] D for arbitrary dimensionality D, and they can be regarded as broadly simulating biological phenomena with high-dimensional and complex responses. These functions were implemented using COmparing Continuous Optimizers (COCO) [36]; we selected D = 2 and 5 as low-dimensional settings and D = 10 and 20 as high-dimensional settings. For each function, we searched for optimal conditions using different initial conditions generated from random numbers based on the Philox algorithm [37] with 30 random seeds and evaluated the optimization process. Because PolyBO aims to improve optimization efficiency when the amount of data is small, the initial dataset size was set to two. Algorithms were compared using simple regret (Eq. 5), defined as the difference between the instance-specific reference optimal value f (x∗), predefined by the benchmark, and the maximum value found after n searches. simple regret = f (x∗) − max   
+
+> i=1 ,··· , n
+
+f (xi) (5) A smaller simple regret indicates a more optimal value. EI (Eq. 2) was used as the acquisition function. All methods were implemented on the basis of BoTorch [38], and the source code and data are available at https://github.com/funalab/PolyBO .6Performance comparison with vanilla BO 
+
+We compared PolyBO with vanilla BO, random sampling, and BOPP [31], as well as with TSBO [30], the latter only in the highest-dimensional setting ( D = 20 ). The maximum number of all searches from the initial conditions was set to 100. We used the evaluation metric I50 [39], which is the number of iterations required for the compared method to reach the simple regret reached by vanilla BO after 50 optimization iterations. I50 < 50 indicates a shorter optimization time than that of vanilla BO, and small I50 indicates high optimization performance. 
+
+## Analysis of the optimization process 
+
+To compare the optimization process between vanilla BO and PolyBO, the sampled points at each iteration were visualized in a reduced-dimensional space. As dimensionality-reduction algorithms, we used t-distributed Stochastic Neighbor Embedding (t-SNE) [40], which emphasizes the preservation of the local neighborhood struc-ture, and Uniform Manifold Approximation and Projection (UMAP) [41], which tends to preserve global structures such as inter-cluster distances more accurately than t-SNE. To sufficiently cover the entire high-dimensional search space, 40,000 explainable variables were obtained by Latin hypercube sampling [42], and dimensionality was reduced on these variables together with all sampled points from vanilla BO and PolyBO. We also quantified optimization behavior to support the dimensionality reduction–based assessment. As evaluation metrics, we used Observation Entropy (OE) (Eq. 6) [43] and Proposed-point Entropy (PE) (Eq. 7), which we devised, and compared them between vanilla BO and PolyBO. 
+
+OE t = Dt
+
+> t
+
+X
+
+> i=1
+
+log ϵki + ψ(t) − ψ(1) + log VD (6) 
+
+PE t = −
+
+Z
+
+p(y | x(t), D0: t−1 ∪ D ′
+
+> t
+
+) log p(y | x(t), D0: t−1 ∪ D ′
+
+> t
+
+) dy = 12 log 
+
+
+
+2πe σ 2 
+
+> t
+
+(x(t))
+
+
+
+. (7) Here, ϵki is the distance from point x(i) to its kth nearest neighbor, VD = πD/ 2/Γ(1 + D/ 2) is the volume of a 
+
+D-dimensional unit ball, Γ is the gamma function, and ψ is the digamma function. Following Papenmeier et al. [43], we set k = log( t).OE quantifies the density of explainable variables among the sampled points obtained up to iteration t, whereas PE quantifies the predictive variance at the explainable variable proposed at iteration t. In BO, it is important to consider both explainable variables and objective values. OE focuses on explainable variables and PE on objective values, i.e. these metrics quantify complementary aspects of uncertainty. For both metrics, higher values indicate a more exploration-oriented method. 7Robustness analysis of hyperparameters and acquisition functions 
+
+The PolyBO-specific hyperparameters are the pseudo-experimental dataset of size m′ and the maximum polyno-mial degree p. We assessed how changes in the hyperparameters affect PolyBO performance (sensitivity analysis). At D = 20 , one hyperparameter was fixed, while the other was varied. We measured I50 at p = 4 and m′ varied over {1, 5, 10 , 15 , 20 , 25 , 40 , 80 , 100 , 200 }, and at m′ = 10 and p varied over {1, 2, 3, 4, 5, 6, 7, 8}.To examine whether the optimization performance of PolyBO depends on the EI acquisition function (Eq. 2), we compared the optimization process with that obtained using GP-UCB (Eq. 3). The hyperparameter β affects the optimization strategy and was fixed at β = 1 as in [44, 45]; it was also used by Papenmeier et al. [43] because β has no marked bias toward exploratory or exploitative behavior. 
+
+## Ablation study of the update mechanism 
+
+The update mechanism of PolyBO (i) discards past pseudo-experimental data and (ii) maintains a constant pseudo-experimental dataset size. To clarify the effect of the former on optimization performance, we evaluated how a mechanism that does not discard pseudo-experimental data and uses all such previously generated data (the without-reset mechanism) affects optimization performance. To clarify the effect of the latter, we evaluated the m′-scaling mechanism, which does not retain pseudo-experimental data from previous iterations but instead generates a fresh pseudo-experimental dataset of size t × m′ at iteration t.
+
+## Application to a real-world material composition optimization problem 
+
+Simulated material composition results generated by a neural-network predictor for high-entropy alloys (alloys formed by mixing five or more elements in similar proportions; HEAs) [46, 47] were used as a proxy for experimental results. This simulation model maps composition parameters of up to 10 elements to key mechanical properties: yield strength ( σY ), ultimate tensile strength ( σU ), and elongation ( ε). Although HEAs are not the biomaterials that are the main target of this study, we selected them as a representative example of an expensive-to-evaluate optimization problem because, like biomaterials, their synthesis requires a long time. We optimized composition parameters for 10 elements. For evaluation, we used the HEA figure of merit (FOM HEA ) (Eq. 8). FOM HEA represents the inherent strength–ductility trade-off as a weighted combination of the three normalized properties. As in Xian et al. [46], we evaluated FOM HEA against Experimental Iteration, which is the number of actual experiments performed. 
+
+FOM HEA = 13
+
+ σY
+
+σY N 
+
++ σU
+
+σU N 
+
++ εεN
+
+
+
+(8) The subscript N indicates the normalized value of the corresponding property. We compared PolyBO with BO-EI and the reinforcement-learning method RL-DQN [46]. A search for optimal conditions using different initial conditions was based on 30 random seeds (the HEA NN predictor for PolyBO and BO-EI) or 24 random seeds (RL-DQN). We used the same 20 initial conditions for PolyBO as for BO-EI. The upper 8limit of the number of searches was set to 1500, including the initial data. EI (Eq. 2) was used as the acquisition function. Because this was a discrete and constrained optimization problem, we extended PolyBO to handle this search space (Supplementary Algorithm 1). Following BO-EI, we developed an algorithm in which the atomic fraction xi
+
+of each element is restricted to a discrete grid with step size δ and simultaneously satisfies the equality constraint 
+
+Pdi=1 xi = 1 as well as the lower and upper bound constraints li ≤ xi ≤ ui for each element. We generated pseudo-experimental data under the constraint that the sampled explainable variables were drawn uniformly from the discrete grid Gδ , which satisfied the above constraints. This sampling scheme generated pseudo-experimental data in the same space as experimental data and was expected to provide a more appropriate training-data distribution for Gaussian process regression than sampling from the corresponding continuous constrained space. We quantified PolyBO performance using the number of iterations it required to reach the FOM HEA attained by RL-DQN after 1500 optimization iterations ( I1500 ). 9Results 
+
+## Performance of PolyBO on synthetic benchmark functions 
+
+To evaluate PolyBO, we compared it with conventional BO, random sampling, and BOPP, which generates pseudo-experimental data around acquired experimental data [31]. At D = 20 , we also compared PolyBO with TSBO, which incorporates semi-supervised learning [30]. Across the 24 benchmark functions, PolyBO tended to achieve lower simple regret earlier than vanilla BO at D = 10 and D = 20 , but not at D = 2 or D = 5 (Fig. 2, Supplementary Figs. 1–4). At D = 20 , PolyBO decreased I50 for all benchmark functions except F05, F13, F16, F21, and F23. This indicated that PolyBO required fewer iterations for optimization (Table 1). The median rate of increase was 12% at D = 2 ,whereas the median rates of reduction were 6% at D = 5 , 31% at D = 10 , and 42% at D = 20 . At D = 5 , the value could not be calculated for any benchmark functions other than F04, F05, F06, and F16 because the reference simple regret was not reached within 100 iterations. These results indicated that the optimization performance of PolyBO was low in low-dimensional settings, particularly at D = 5 , but was high in high-dimensional settings. 
+
+## Analysis of the optimization process 
+
+We visualized optimization processes for different functions at various dimensionalities using scatter plots. As representative examples, the optimization processes for F04 and F06 ( D = 20 ) are shown in Figure 3 (t-SNE) and Supplementary Figures 5 (UMAP), 6 ( D = 2 ), and 7 ( D = 5 ). The entire search spaces for F04 and F06 are shown in Supplementary Fig. 8. At D = 20 , the tendency of PolyBO to explore a broader region of the search space than vanilla BO (Fig. 3 and Supplementary Fig. 5) indicated that PolyBO is an exploration-oriented method. The t-SNE and UMAP results showed little difference in the global trends, supporting this interpretation. At D = 2 and D = 5 ,little difference was found in the extent of the search space covered by PolyBO and vanilla BO (Supplementary Figs. 6 and 7). At D = 20 , PolyBO found promising regions near the global optimum between iterations 20 and 40 for F04 and between iterations 0 and 20 for F06. We quantified optimization behavior using OE for uncertainty in the input space and PE for predictive un-certainty in objective values (Fig. 4, Supplementary Figs. 9 and 10). At D = 2 , 5, and 20 , both metrics showed that PolyBO was more exploration-oriented than vanilla BO. These quantitative results supported the qualitative results from the search-space visualization for high-dimensional settings but not for low-dimensional settings. 
+
+## Robustness analysis of hyperparameters and acquisition functions 
+
+To evaluate the robustness of the PolyBO-specific hyperparameters m′ and p, we assessed the effects of their variation on PolyBO performance through sensitivity analysis (Tables 2 and 3). To examine whether the optimiza-tion performance of PolyBO depends on the EI acquisition function, we compared it with that obtained using GP-UCB (Fig. 5). 10 At a maximum of 100 iterations, PolyBO had better optimization performance than vanilla BO over the tested range of pseudo-experimental dataset sizes up to 200 (Table 2). This suggests that PolyBO is unlikely to underper-form vanilla BO even when the pseudo-experimental dataset size is increased. Optimization was maximized at 
+
+m′ = 5 –25 . This suggests a nonlinear relationship between optimization performance and m′.At p̸ = 1 , PolyBO had better optimization performance than vanilla BO (Table 3). The median optimization performance, ranked from best to worst, was achieved at p = 4 , 8, 6, 7, 2, 5, 3, 1. The suggestion was that even 
+
+p values (2 , 4, 6, 8) tended to result in higher optimization performance than the odd values (1 , 3, 5, 7) .For benchmark functions other than F05, F21, and F22, vanilla BO (EI) and vanilla BO (GP-UCB) showed similar trends, as did PolyBO (EI) and PolyBO (GP-UCB) (Fig. 5). For F05, F21, and F22, vanilla BO (GP-UCB) outperformed vanilla BO (EI), and PolyBO (GP-UCB) outperformed PolyBO (EI); PolyBO (GP-UCB) optimization performance was comparable to or higher than that of vanilla BO (GP-UCB). These results indicate that the performance improvement of PolyBO depends little on differences in acquisition functions. 
+
+## Ablation study of the update mechanism 
+
+We analyzed the two components of the update mechanism, namely discarding pseudo-experimental data and maintaining constant m′ (Fig. 6). Optimization performance was higher in the model with the update mechanism than in those with the without-reset mechanism or the m′-scaling mechanism, which does not maintain constant 
+
+m′; the difference was greater in the former than in the latter case. These results show that both discarding pseudo-experimental data and maintaining constant m′ are important and contribute to performance improvement, especially through the update mechanism that discards pseudo-experimental data generated in previous iterations and updates the pseudo-experimental dataset at each iteration. 
+
+## Application to a real-world material composition optimization problem 
+
+We optimized material composition and compared the optimization processes (Fig. 7). The optimization time was shorter for PolyBO than for the conventional methods. The median value of the metric I1500 was 59. This indicated that PolyBO reached the performance level achieved by RL-DQN with a 96% shorter optimization time. This result suggests that PolyBO can accelerate optimization when applied not only to synthetic benchmark functions but also to experimentally grounded, real-world search spaces. 11 Discussion 
+
+We developed PolyBO, an optimization method that uses regression-based pseudo-experimental data to reduce the optimization time. In PolyBO, BO is conducted with augmented data from an adaptively updated versatile parametric model, and these pseudo-experimental data accelerate convergence even when each experiment requires a long time (Fig. 1). In high-dimensional search spaces, PolyBO found more optimal parameters in fewer iterations than did conventional methods (Figs. 2 and 7) and reached comparable conditions in fewer iterations (Table 1). These results demonstrate that PolyBO improves optimization performance in high-dimensional settings. Although this study did not directly evaluate biomaterials, PolyBO may also be applicable to time-consuming biological experiments. By reducing the optimization time, PolyBO can enable searches for experimental conditions that were previously difficult to conduct in time-consuming experimental systems, such as testicular tissue culture, where a single experiment takes up to 5 weeks [26]. Visualization of the optimization process showed that PolyBO found promising regions near the global optimum by emphasizing exploration in the early phase (Fig. 3). The high performance of PolyBO on the F04 and F06 functions (Table 1, Supplementary Fig. 4) can be attributed to its exploration-oriented behavior that allowed it to find promising regions earlier than did vanilla BO. Thus, in high-dimensional settings with broad search spaces, the stronger exploratory behavior of PolyBO may have improved optimization performance by enabling earlier discovery of promising regions. In low-dimensional settings, the discrepancy between the qualitative results from scatter-plot visualization of the optimization process (Fig. 3) and the quantitative results from OE and PE (Fig. 4) arises from the different aspects of optimization behavior: the scatter-plots show the search range of sampled points, whereas OE evaluates density from inter-point distances, and PE evaluates the predictive uncertainty of proposed points. In low-dimensional settings, the search space is relatively small, so vanilla BO can cover a broad search range with fewer sampled points than in high-dimensional settings. As a result, differences between PolyBO and vanilla BO are not obvious in the scatter-plots. However, even when the search range of sampled points is comparable between PolyBO and vanilla BO, PolyBO may select sparse regions far from existing sampled points or points with high predictive uncertainty more frequently than vanilla BO, and these differences may have been reflected in OE and PE. Sensitivity analysis provided guidance for selecting the maximum polynomial degree p. When p = 1 , the convergence performance of PolyBO was low (Table 3). This was likely because the polynomial regression model has only 21 parameters and low model expressiveness when p = 1 , preventing the regression model from capturing complex benchmark-function landscapes. When p was varied from 1 to 8, the only benchmark function for which 
+
+p = 1 showed the highest optimization performance was F05, whose search space is mostly linear (Table 3). Alinear regression model ( p = 1 ) is advantageous when the response of the objective function to the explainable variables is expected to be linear, whereas nonlinear regression models ( p̸ = 1 ) are advantageous for nonlinear responses. For F08, F09, F10, and F20, optimization performance was equal to or higher at even degrees ( p = 2 , 4, 6, 8) than 12 at odd degrees ( p = 1 , 3, 5, 7) (Table 3). F08 and F09 have bent valleys, F10 has a curvature structure with strong ill-conditioning, F20 has a complex global structure near the boundary [32], and pseudo-experimental data generated by even-degree polynomials may be more advantageous for optimization than asymmetric pseudo-experimental data that can arise from odd-degree polynomials. In the ablation study, optimization performance was lower with the without-reset mechanism and with the 
+
+m′-scaling mechanism than with the update mechanism. The data in Table 2 supported this result: optimization performance was maximized when the pseudo-experimental dataset size was 5–25; because the m′-scaling mecha-nism increases this size to t × m′ at iteration t, it exceeds this favorable range after the early iterations when m′ = 10 ,explaining the reduced optimization performance shown in Fig. 6. In low-dimensional settings, particularly at D = 5 , PolyBO optimization performance was low. The suggestion was that it depends on the balance between the size of the search space and the regression error of the pseudo-experimental data. At D = 2 , the exploration-enhancing property of PolyBO may not have contributed substantially because the search space was small, and vanilla BO could easily reach promising regions. In low-dimensional settings, the expectation that the regression error of the polynomial regression model will be relatively small makes it less likely that pseudo-experimental data strongly impede optimization; consequently, PolyBO performance remained comparable to that of vanilla BO or was lower only in limited cases. At D = 5 , vanilla BO may already have sufficient convergence performance, whereas its broader search space than at D = 2 makes the influence of pseudo-experimental data non-negligible. To evaluate the memory complexity of the PolyBO algorithm, we measured peak memory usage required to solve the normal equation (Eq. 4) while increasing the maximum degree p from 1 to 9 at D = 20 , and we observed exponential growth (Supplementary Fig. 11a). As the maximum degree p increases, the number of parameters increases as O D+pp
+
+ (Supplementary Fig. 11b), and the memory usage for solving the normal equation (Eq. 4) in polynomial regression theoretically increases as O
+
+ D+pp
+
+2
+
+. Although the optimal maximum degree differs among benchmark functions (Table 3), increasing the maximum degree p exponentially increases memory complexity, and the optimal degree must therefore be determined while considering hardware specifications. Our data indicate that an optimal pseudo-experimental dataset size rather than addition of a large amount of pseudo-experimental data (Table 2) and its sequential updating are important for maximizing optimization performance (Fig. 6). It is thus important to incorporate the low-fidelity source provided by the polynomial regression model into the surrogate model with an appropriate strength and to update this source as iterations proceed. This approach is similar to that used in multi-fidelity Bayesian optimization (MFBO) [48, 49, 50], which improves the efficiency of optimizing a high-fidelity objective function by using multiple information sources with different evaluation costs and accuracies. If the pseudo-experimental dataset size is too small, enhancement of exploration is insufficient; if it is too large, there is a risk that the surrogate model becomes biased by over-reliance on pseudo-experimental data. In future work, it will be important to extend PolyBO to a framework that sequentially controls the influence of pseudo-experimental data according to regression uncertainty and consistency with experimental data, rather than fixing the size of the pseudo-experimental dataset. Because the fidelity of pseudo-13 experimental data in PolyBO changes as iterations proceed and many existing MFBO methods assume fixed fidelity for each information source [48, 49, 50], extending MFBO to model iteration-dependent fidelity will be an important direction for future work. 14 References 
+
+[1] Hanchen Wang, Tianfan Fu, Yuanqi Du, Wenhao Gao, Kexin Huang, Ziming Liu, Payal Chandak, Shengchao Liu, Peter Van Katwyk, Andreea Deac, et al. Scientific discovery in the age of artificial intelligence. Nature ,620(7972):47–60, 2023. [2] Turab Lookman, Prasanna V. Balachandran, Dezhen Xue, and Ruihao Yuan. Active learning in materials science with emphasis on adaptive sampling using uncertainties for targeted design. npj Computational Materials ,5(1):21, 2019. [3] Gary Tom, Stefan P. Schmid, Sterling G. Baird, Yang Cao, Kourosh Darvish, Han Hao, Stanley Lo, Sergio Pablo-García, Ella M. Rajaonson, Marta Skreta, Naruki Yoshikawa, Samantha Corapi, Gun Deniz Akkoc, Felix Strieth-Kalthoff, Martin Seifrid, and Alán Aspuru-Guzik. Self-Driving Laboratories for Chemistry and Materials Science. Chemical Reviews , 124(16):9633–9732, 2024. [4] Frances H Arnold. Directed evolution: bringing new chemistry to life. Angewandte Chemie (International Ed. in English) , 57(16):4143, 2017. [5] Jun Ping Quek, Azra Anwar Gaffoor, Yu Xuan Tan, Tessa Rui Min Tan, Yu Feng Chua, Dawn Sow Zong Leong, Alif Sufiyan Ali, and Say Kong Ng. Exploring cost reduction strategies for serum free media development. 
+
+npj Science of Food , 8(1):107, 2024. [6] Gary Walsh and Eithne Walsh. Biopharmaceutical benchmarks 2022. Nature Biotechnology , 40(12):1722–1760, 2022. [7] Takamasa Hashizume, Yuki Ozawa, and Bei-Wen Ying. Employing active learning in the optimization of culture medium for mammalian cells. npj Systems Biology and Applications , 9(1):20, 2023. [8] Marcos Almeida Bezerra, Ricardo Erthal Santelli, Eliane Padua Oliveira, Leonardo Silveira Villar, and Lu-ciane Amélia Escaleira. Response surface methodology (RSM) as a tool for optimization in analytical chemistry. 
+
+Talanta , 76(5):965–977, 2008. [9] Stig Skrivergaard, Jette Feveile Young, Navid Sahebekhtiari, Cameron Semper, Meenakshi Venkatesan, Alexei Savchenko, Peter J. Stogios, Margrethe Therkildsen, and Martin Krøyer Rasmussen. A simple and robust serum-free media for the proliferation of muscle cells. Food Research International , 172:113194, 2023. [10] Zachary Cosenza, Raul Astudillo, Peter I. Frazier, Keith Baar, and David E. Block. Multi-information source Bayesian optimization of culture media for cellular agriculture. Biotechnology and Bioengineering , 119(9):2447– 2458, 2022. [11] Takamasa Hashizume and Bei-Wen Ying. Challenges in developing cell culture media using machine learning. 
+
+Biotechnology Advances , 70:108293, 2024. 15 [12] Nelson Ndahiro, Edward Ma, Tom Bertalan, Marc Donohue, Yannis Kevrekidis, and Michael Betenbaugh. Integration of Bayesian optimization and solution thermodynamics to optimize media design for mammalian biomanufacturing. iScience , 28(8):112944, 2025. [13] Hua Zheng, Wei Xie, Ilya O Ryzhov, and Dongming Xie. Policy optimization in dynamic Bayesian network hybrid models of biomanufacturing processes. INFORMS Journal on Computing , 35(1):66–82, 2023. [14] Harold J. Kushner. A New Method of Locating the Maximum Point of an Arbitrary Multipeak Curve in the Presence of Noise. J. Basic Eng. , 86(1):97–106, 1964. [15] Roman Garnett. Bayesian optimization . Cambridge University Press, 2023. [16] Kevin K. Yang, Zachary Wu, and Frances H. Arnold. Machine-learning-guided directed evolution for protein engineering. Nature Methods , 16(8):687–694, 2019. [17] Ruyun Hu, Lihao Fu, Yongcan Chen, Junyu Chen, Yu Qiao, and Tong Si. Protein Engineering via Bayesian Optimization-Guided Evolutionary Algorithm and Robotic Experiments. Briefings in Bioinformat-ics , 24(1):bbac570, 2022. [18] Florian Gisperg, Robert Klausser, Mohamed Elshazly, Julian Kopp, Eva Přáda Brichtová, and Oliver Spa-diut. Bayesian Optimization in Bioprocess Engineering—Where Do We Stand Today? Biotechnology and Bioengineering , 122(6):1313–1325, 2025. [19] Xilu Wang, Yaochu Jin, Sebastian Schmitt, and Markus Olhofer. Recent Advances in Bayesian Optimization. 
+
+ACM Comput. Surv. , 55(13s), 2023. [20] Harini Narayanan, Joshua A. Hinckley, Rachel Barry, Brendan Dang, Lenna A. Wolffe, Adel Atari, Yuen-Yi Tseng, and J. Christopher Love. Accelerating cell culture media development using Bayesian optimization-based iterative experimental design. Nature Communications , 16(1):6055, 2025. [21] Kirthevasan Kandasamy, Jeff Schneider, and Barnabas Poczos. High Dimensional Bayesian Optimisation and Bandits via Additive Models. In Francis Bach and David Blei, editors, Proceedings of the 32nd International Conference on Machine Learning , volume 37 of Proceedings of Machine Learning Research , pages 295–304, Lille, France, 2015. PMLR. [22] Austin Tripp, Erik Daxberger, and José Miguel Hernández-Lobato. Sample-efficient optimization in the latent space of deep generative models via weighted retraining. In H. Larochelle, M. Ranzato, R. Hadsell, M.F. Balcan, and H. Lin, editors, Advances in Neural Information Processing Systems , volume 33, pages 11259–11272. Curran Associates, Inc., 2020. [23] Rafael Gómez-Bombarelli, Jennifer N. Wei, David Duvenaud, José Miguel Hernández-Lobato, Benjamín Sánchez-Lengeling, Dennis Sheberla, Jorge Aguilera-Iparraguirre, Timothy D. Hirzel, Ryan P. Adams, and Alán 16 Aspuru-Guzik. Automatic Chemical Design Using a Data-Driven Continuous Representation of Molecules. 
+
+ACS Central Science , 4(2):268–276, 2018. [24] Antoine Grosnit, Rasul Tutunov, Alexandre Max Maraval, Ryan-Rhys Griffiths, Alexander I Cowen-Rivers, Lin Yang, Lin Zhu, Wenlong Lyu, Zhitang Chen, Jun Wang, et al. High-dimensional Bayesian optimisation with variational autoencoders and deep metric learning. arXiv preprint arXiv:2106.03609 , 2021. [25] Diederik P Kingma and Max Welling. Auto-encoding variational bayes. arXiv preprint arXiv:1312.6114 , 2013. [26] Maki Kamoshita, Hiroki Shirai, Hiroko Nakamura, Tetsuya Kishimoto, Yuki Hatanaka, Daisuke Mashiko, Katsuhiro Esashika, Jingjing Yang, Satoshi Yamasaki, Takehiko Ogawa, Hiroshi Kimura, and Masahito Ikawa. Development of the membrane ceiling method for in vitro spermatogenesis. Scientific Reports , 15(1):625, Jan 2025. [27] B. P. MacLeod, F. G. L. Parlane, T. D. Morrissey, F. Häse, L. M. Roch, K. E. Dettelbach, R. Moreira, L. P. E. Yunker, M. B. Rooney, J. R. Deeth, V. Lai, G. J. Ng, H. Situ, R. H. Zhang, M. S. Elliott, T. H. Haley, D. J. Dvorak, A. Aspuru-Guzik, J. E. Hein, and C. P. Berlinguette. Self-driving laboratory for accelerated discovery of thin-film materials. Science Advances , 6(20):eaaz8867, 2020. [28] Neal Munyebvu, Steve Dunn, and Philip D. Howes. Multiobjective platform for autonomous property targeting and optimization of colloidal lead halide perovskite quantum dots. Chem. Mater. , 37(17):6629–6641, 2025. [29] Anirudh M. K. Nambiar, Christopher P. Breen, Travis Hart, Timothy Kulesza, Timothy F. Jamison, and Klavs F. Jensen. Bayesian optimization of computer-proposed multistep synthetic routes on an automated robotic flow platform. ACS Cent. Sci. , 8(6):825–836, 2022. [30] Yuxuan Yin, Yu Wang, and Peng Li. High-Dimensional Bayesian Optimization via Semi-Supervised Learning with Optimized Unlabeled Data Sampling. In International Conference on Machine Learning , pages 57085–57100. PMLR, 2024. [31] Chao Qian, Hang Xiong, and Ke Xue. Bayesian optimization using pseudo-points. In Proceedings of the Twenty-Ninth International Conference on International Joint Conferences on Artificial Intelligence , pages 3044–3050, 2021. [32] Nikolaus Hansen, Steffen Finck, Raymond Ros, and Anne Auger. Real-Parameter Black-Box Optimization Benchmarking 2009: Noiseless Functions Definitions. [Research Report] RR-6829, INRIA. inria-00362633v2, 16p., 2009. [33] J. Močkus. On Bayesian Methods for Seeking the Extremum , pages 400–404. Springer Berlin Heidelberg, Berlin, Heidelberg, 1975. 17 [34] Niranjan Srinivas, Andreas Krause, Sham Kakade, and Matthias Seeger. Gaussian process optimization in the bandit setting: no regret and experimental design. In Proceedings of the 27th International Conference on International Conference on Machine Learning , volume 1015–1022. Omnipress, 2010. [35] Richard H Byrd, Peihuang Lu, Jorge Nocedal, and Ciyou Zhu. A limited memory algorithm for bound constrained optimization. SIAM Journal on scientific computing , 16(5):1190–1208, 1995. [36] N. Hansen, A. Auger, R. Ros, O. Mersmann, T. Tušar, and D. Brockhoff. COCO: A Platform for Comparing Continuous Optimizers in a Black-Box Setting. Optim. Methods and Softw. , 36:114–144, 2021. [37] John K. Salmon, Mark A. Moraes, Ron O. Dror, and David E. Shaw. Parallel random numbers: as easy as 1, 2, 3. In Proceedings of 2011 International Conference for High Performance Computing, Networking, Storage and Analysis , SC ’11, New York, NY, USA, 2011. Association for Computing Machinery. [38] Maximilian Balandat, Brian Karrer, Daniel R. Jiang, Samuel Daulton, Benjamin Letham, Andrew Gordon Wilson, and Eytan Bakshy. BoTorch: A Framework for Efficient Monte-Carlo Bayesian Optimization. In 
+
+Advances in Neural Information Processing Systems 33 , 2020. [39] Yujin Taguchi, Yusuke Shibuya, Yusuke Hiki, Takashi Morikura, Takahiro G. Yamada, and Akira Funahashi. Asynchronous batch Bayesian optimization with pipelining evaluations in experimental equipment-limited situations. SLAS Technology , 37:100396, 2026. [40] Laurens van der Maaten and Geoffrey Hinton. Visualizing data using t-SNE. Journal of machine learning research , 9(Nov):2579–2605, 2008. [41] Leland McInnes, John Healy, and James Melville. Umap: Uniform manifold approximation and projection for dimension reduction. arXiv preprint arXiv:1802.03426 , 2018. [42] Haoming Liang, Fuqing Zhao, Tianpeng Xu, and Jianlin Zhang. A Deep Learning-Driven Black-Box Benchmark Generation Method via Exploratory Landscape Analysis. Applied Sciences , 15(15), 2025. [43] Leonard Papenmeier, Nuojin Cheng, Stephen Becker, and Luigi Nardi. Exploring Exploration in Bayesian Optimization. In The 41st Conference on Uncertainty in Artificial Intelligence , 2025. [44] Jenna Fromer, Runzhong Wang, Mrunali Manjrekar, Austin Tripp, José Miguel Hernández-Lobato, and Con-nor W. Coley. Batched Bayesian optimization with correlated candidate uncertainties, 2025. [45] Jiayu Zhao, Renyu Yang, Shenghao Qiu, and Zheng Wang. Unleashing the Potential of Acquisition Functions in High-Dimensional Bayesian Optimization. Transactions on Machine Learning Research , 2024. [46] Yuehui Xian, Xiangdong Ding, Xue Jiang, Yumei Zhou, Jun Sun, Dezhen Xue, and Turab Lookman. Unlocking the black box beyond Bayesian global optimization for materials design using reinforcement learning. npj Computational Materials , 11(1):143, 2025. 18 [47] Jaemin Wang, Hyeonseok Kwon, Hyoung Seop Kim, and Byeong-Joo Lee. A neural network model for high entropy alloy design. npj Computational Materials , 9(1):60, 2023. [48] Kirthevasan Kandasamy, Gautam Dasarathy, Junier Oliva, Jeff Schneider, and Barnabas Poczos. Multi-fidelity gaussian process bandit optimisation. Journal of Artificial Intelligence Research , 66:151–196, 2019. [49] Zahra Zanjani Foumani, Mehdi Shishehbor, Amin Yousefpour, and Ramin Bostanabad. Multi-fidelity cost-aware Bayesian optimization. Computer Methods in Applied Mechanics and Engineering , 407:115937, 2023. [50] Bach Do and Ruda Zhang. Multifidelity Bayesian Optimization: A Review. AIAA Journal , 63(6):2286–2322, 2025. 
+
+# Code availability 
+
+The source code of this study is available from https://github.com/funalab/PolyBO .
+
+# Acknowledgements 
+
+The research was funded by JST CREST, Japan Grant Number JPMJCR21N1 to A.F. We are grateful to Asst. Prof. Yuki TSUKADA for helpful discussions. 
+
+# Author contributions 
+
+H. S. : Data curation, Formal analysis, Investigation, Methodology, Software, Validation, Visualization, Writing– original draft, Writing–review & editing. Y. T. : Formal analysis, Methodology, Software, Visualization. K. M. : 
+
+Formal analysis, Methodology, Software. Y. H. : Formal analysis, Writing–review & editing. T. M. : Conceptu-alization, Formal analysis, Methodology, Supervision, Visualization, Writing–review & editing. A. F. : Concep-tualization, Formal analysis, Funding acquisition, Methodology, Project administration, Resources, Supervision, Visualization, Writing–review & editing. 
+
+# Competing Interests 
+
+The authors declare no competing interests. 19 Experiment  Observed experimental data 
+
+x
+
+> f(x)
+> Observed experimental data
+
+x
+
+> f(x)
+
+## x
+
+> f(x)
+
+# x
+
+> f(x)
+
+# x
+
+> 獲得関数値
+
+Next experimental 
+
+conditions for t+1 iteration x x
+
+> f(x)
+
+## x
+
+> 獲得関数値
+
+(1) Training 
+
+# Regression model 
+
+x
+
+> f(x)
+
+(2)Sampling 
+
+Regression model 
+
+Pseudo-data 
+
+Pseudo-data  
+
+> generated by the regression model
+> Experimental conditions
+
+x
+
+> f(x)
+
+(3)Combining 
+
+Experimental data 
+
+for t iteration 
+
+x  
+
+> f(x)
+> Experimental conditions x
+> Acquisition
+> function
+> Acquisition
+> function
+> Objective function
+> Experimental data
+> Posterior variance
+> Posterior mean
+> Acquisition function
+> Experimental conditions
+
+x   
+
+> Experimental conditions x
+> Experimental conditions x
+> Experimental conditions x
+
+## (a) 
+
+## (b) 
+
+> f(x)
+
+Figure 1. Overview of this study 
+
+Schematic illustration of vanilla BO and PolyBO. (a) Vanilla BO trains a Gaussian process regression model using only the experimental data up to iteration t and calculates the acquisition function. Optimization is then performed by proposing one condition that maximizes the acquisition function, conducting an experiment under that condition, and obtaining the experimental data at iteration t + 1 . (b) PolyBO combines vanilla BO with generation of regression-based pseudo-experimental data. The regression model is trained using the experimental data up to iteration t, and pseudo-experimental data are generated using the trained model. The pseudo-experimental data are pairs of explainable variables randomly sampled from the search space, and objective values are calculated by substituting the explainable variables into the regression model. The experimental data up to iteration t and the pseudo-experimental data are treated equally and combined into a dataset to train a Gaussian process regression model and calculate the acquisition function. Optimization is then performed as above. 20 F04: Büche-Rastrigin  F08: Rosenbrock  F13: Sharp Ridge  F15: Rastrigin, rotated  F20:Schwefel 
+
+> D=2
+> D=5
+> D=10
+> D=20
+> Iteration
+> Simple regret
+> Random search
+> Vanilla BO
+> BOPP
+> PolyBO
+> TSBO
+
+Figure 2. Optimization processes using PolyBO and conventional methods 
+
+The median (lines) and interquartile range (shading) of 30 runs of optimization from different initial conditions are shown for each method. D, dimensions; function IDs (F) are shown for 5 functions selected from the 24 functions. m′ = 10 , p = 4 ; TSBO was used only at D = 20 .21 Table 1. The number of iterations required for optimization by PolyBO and vanilla BO 
+
+ID Benchmark function D = 2 D = 5 D = 10 D = 20 
+
+F01 Sphere 17 (8) – – 49 (12) 
+
+F02 Separable ellipsoidal – – – 39 (18) 
+
+F03 Rastrigin, original 48 (58) – 27 (22) 23 (9) 
+
+F04 Büche–Rastrigin 65 ( –) 76 ( –) 30 (38) 19 (19) 
+
+F05 Linear Slope 8 (7) 16 (9) 44 (13) 74 ( –)
+
+F06 Attractive sector 87 ( –) 24 (29) 35 (33) 28 (16) 
+
+F07 Step ellipsoidal 32 (52) – 71 ( –) 29 (14) 
+
+F08 Rosenbrock, original 59 (18) – 73 ( –) 26 (7) 
+
+F09 Rosenbrock, rotated 57 (25) – 27 (28) 22 (13) 
+
+F10 Ellipsoidal 91 ( –) – 68 ( –) 39 (34) 
+
+F11 Discus 90 ( –) – 41 (66) 45 (58) 
+
+F12 Bent cigar 46 (34) – – 24 (14) 
+
+F13 Sharp ridge 67 (45) – 65 ( –) 50 (9) 
+
+F14 Different Powers 62 (37) – 72 ( –) 30 (11) 
+
+F15 Rastrigin, rotated 48 (36) – 28 (21) 13 (13) 
+
+F16 Weierstrass – 70 ( –) 64 ( –) 94 ( –)
+
+F17 Schaffer’s F7 59 (48) – 32 (20) 15 (21) 
+
+F18 Schaffer’s F7, moderately ill-conditioned – – 26 (21) 16 (20) 
+
+F19 Composite Griewank–Rosenbrock function F8F2 31 (44) – 33 (37) 10 (9) 
+
+F20 Schwefel 42 (46) – 31 (46) 30 (11) 
+
+F21 Gallagher’s Gaussian 101-me peaks 54 (58) – 36 (–) 74 ( –)
+
+F22 Gallagher’s Gaussian 21-hi peaks 56 (43) – 52 ( –) 47 (53) 
+
+F23 Katsuura 58 (75) – 26 (36) 63 ( –)
+
+F24 Lunacek bi-Rastrigin 47 (62) – 26 (21) 12 (16) 
+
+Median 56.0 47.0 34.5 29.0 To quantify the reduction in optimization time, we calculated the number of iterations required for PolyBO to reach the simple regret reached by vanilla BO at 50 iterations. Each value is the median number of iterations at which PolyBO reached the reference simple regret, and the values in parentheses indicate the interquartile range. Values < 50 are in bold, and values ≥ 50 are in plain font. The maximum number of iterations was set to 100; – indicates that the value could not be calculated because the reference simple regret was not reached within 100 iterations. m′ = 10 , p = 4 .22 F04: Büche-Rastrigin (D=20)  
+
+> F06:Attractive Sector (D=20)
+> (a)
+> (b)
+> (c)
+> (d) PolyBO PolyBO
+
+Figure 3. t-SNE visualization of optimization processes for F04 and F06 at D = 20 
+
+Circles indicate all sampled points used in the optimization, including the initial experimental points and the candidate points x(t) selected by each method at subsequent iterations. Color indicates the value of the objective function. A symlog scale was used for the color bar, and the threshold for the linear region was set to 10 −3 of the maximum absolute plotted value of the objective function. Red stars indicate the locations of the global optima. All results are shown for m′ = 10 and p = 4 .23 Iteration 
+
+> OE
+
+Iteration 
+
+> OE
+
+F04: Büche-Rastrigin (D=20)  F06:Attractive Sector (D=20) 
+
+(a)  (b)  
+
+> Vanilla BO PolyBO
+
+Iteration 
+
+> PE
+
+Iteration 
+
+> PE
+
+(c)  (d) Figure 4. Quantification of optimization behavior for F04 and F06 at D = 20 using OE and PE 
+
+The median (lines) and interquartile range (shading) of 30 runs of optimization from different initial conditions are shown for each method. m′ = 10 , p = 4 .24 Table 2. Sensitivity analysis of the pseudo-experimental dataset size m′ in PolyBO 
+
+ID m′ = 1 m′ = 5 m′ = 10 m′ = 15 m′ = 20 m′ = 25 m′ = 40 m′ = 80 m′ = 100 m′ = 200 
+
+F01 53 (8) 52 (14) 49 (12) 56 (10) 50 (10) 59 (22) 57 (25) 97 ( –) – –F02 43 (20) 46 (17) 39 (18) 41 (24) 42 (24) 42 (26) 42 (25) 55 (40) 58 (46) 60 (51) 
+
+F03 31 (17) 29 (17) 23 (9) 25 (16) 23 (7) 25 (8) 29 (11) 28 (18) 34 (27) 42 (43) 
+
+F04 36 (16) 19 (20) 19 (19) 17 (18) 18 (18) 18 (17) 16 (10) 14 (14) 12 (15) 12 (14) 
+
+F05 65 (40) 69 (40) 74 ( –) – – – – – – –F06 39 (18) 28 (11) 28 (16) 31 (14) 27 (9) 27 (14) 31 (20) 35 (19) 39 (19) 47 (59) 
+
+F07 36 (27) 31 (12) 29 (14) 30 (13) 33 (13) 33 (13) 37 (17) 35 (26) 37 (19) 34 (17) 
+
+F08 39 (11) 34 (9) 26 (7) 25 (13) 25 (9) 24 (12) 28 (15) 27 (22) 45 (59) 62 ( –)
+
+F09 37 (12) 25 (6) 22 (13) 19 (14) 15 (8) 14 (10) 10 (7) 8 (3) 8 (4) 5 (5) 
+
+F10 45 (23) 49 (42) 39 (34) 42 (23) 59 (42) 46 (36) 52 (35) 73 ( –) 58 ( –) –F11 65 ( –) 56 (78) 45 (58) 71 ( –) 68 ( –) 81 ( –) 76 ( –) 66 ( –) 94 ( –) 50 (74) 
+
+F12 37 (21) 26 (12) 24 (14) 23 (8) 18 (11) 19 (10) 15 (10) 19 (14) 19 (7) 18 (14) 
+
+F13 47 (7) 45 (13) 50 (9) 51 (15) 48 (15) 49 (10) 54 (22) 85 (33) 91 ( –) –F14 39 (16) 29 (15) 30 (11) 29 (6) 32 (13) 33 (10) 31 (16) 35 (27) 42 (21) 50 (52) 
+
+F15 24 (24) 12 (10) 13 (13) 13 (9) 13 (15) 13 (11) 12 (10) 17 (15) 15 (14) 14 (10) 
+
+F16 50 (62) 67 ( –) 94 ( –) 55 ( –) – – – – – –F17 26 (22) 18 (20) 15 (21) 15 (23) 13 (23) 14 (11) 12 (14) 10 (12) 14 (9) 11 (8) 
+
+F18 26 (29) 21 (23) 16 (20) 15 (28) 18 (13) 13 (17) 13 (13) 15 (14) 14 (12) 12 (16) 
+
+F19 15 (14) 10 (10) 10 (9) 9 (7) 10 (12) 8 (6) 9 (8) 9 (9) 8 (8) 6 (10) 
+
+F20 43 (11) 31 (10) 30 (11) 28 (9) 29 (11) 29 (9) 35 (14) 45 (35) 63 ( –) –F21 48 (–) 38 (–) 74 ( –) 82 ( –) 94 ( –) 56 ( –) 85 ( –) – 74 ( –) –F22 69 ( –) 63 ( –) 47 (53) 52 (72) 56 (54) 54 (46) 42 (46) 65 (48) 58 (32) 69 (24) 
+
+F23 38 (42) 70 ( –) 63 ( –) 61 ( –) 60 ( –) 36 (61) 44 (–) 35 (51) 51 ( –) 41 (–)
+
+F24 31 (36) 16 (25) 12 (16) 14 (12) 10 (7) 11 (15) 12 (15) 10 (12) 9 (13) 5 (8) 
+
+Median 38.5 30.8 29.0 29.0 28.0 27.8 30.8 34.5 38.5 34.0 
+
+We calculated the number of iterations required for PolyBO to reach the simple regret reached by vanilla BO at 50 iterations. Each value is the median number of iterations at which PolyBO reached the reference simple regret, and the values in parentheses indicate the interquartile range. Values < 50 are in bold, and values ≥ 50 are in plain font. The maximum number of iterations was set to 100; – indicates that the value could not be calculated because the reference simple regret was not reached within 100 iterations. D = 20 , p = 4 .25 Table 3. Sensitivity analysis of the maximum polynomial degree p in PolyBO 
+
+ID p = 1 p = 2 p = 3 p = 4 p = 5 p = 6 p = 7 p = 8 
+
+F01 72 (9) 48 (6) – 49 (12) 48 (6) 63 (36) – –F02 55 (22) 43 (19) 67 (39) 39 (18) 43 (19) 39 (19) 48 (33) 50 (28) 
+
+F03 38 (8) 30 (10) 30 (16) 23 (9) 30 (10) 21 (18) 22 (14) 27 (15) 
+
+F04 48 (46) 26 (19) 36 (36) 19 (19) 26 (19) 19 (22) 24 (23) 19 (18) 
+
+F05 55 (7) 71 (25) 73 ( –) 74 ( –) 71 (25) 78 ( –) 75 ( –) 79 ( –)
+
+F06 43 (5) 38 (15) 32 (14) 28 (16) 38 (15) 30 (16) 30 (21) 31 (16) 
+
+F07 45 (11) 37 (18) 32 (25) 29 (14) 37 (18) 32 (18) 32 (13) 32 (16) 
+
+F08 52 (17) 32 (9) 45 (19) 26 (7) 32 (9) 28 (11) 41 (36) 29 (20) 
+
+F09 – 26 (7) 38 (18) 22 (13) 26 (7) 22 (11) 26 (16) 17 (13) 
+
+F10 83 ( –) 53 (39) 100 ( –) 39 (34) 53 (39) 38 (23) 57 ( –) 44 (46) 
+
+F11 84 ( –) 73 ( –) 74 ( –) 45 (58) 73 ( –) 52 ( –) 84 ( –) –F12 38 (12) 28 (12) 24 (13) 24 (14) 28 (12) 24 (12) 23 (13) 24 (10) 
+
+F13 70 (8) 47 (8) 72 (26) 50 (9) 47 (8) 52 (14) – 82 ( –)
+
+F14 53 (21) 34 (15) 39 (26) 30 (11) 34 (15) 31 (13) 39 (21) 36 (25) 
+
+F15 32 (13) 13 (15) 17 (12) 13 (13) 13 (15) 10 (12) 11 (11) 9 (5) 
+
+F16 83 ( –) – – 94 ( –) 91 ( –) 47 (59) 93 ( –) 63 (61) 
+
+F17 23 (19) 21 (17) 14 (17) 15 (21) 17 (14) 19 (16) 10 (16) 14 (15) 
+
+F18 23 (16) 21 (22) 10 (18) 16 (20) 13 (14) 15 (17) 11 (20) 20 (31) 
+
+F19 42 (9) 28 (22) 16 (13) 10 (9) 10 (8) 10 (11) 9 (7) 8 (7) 
+
+F20 61 (17) 35 (14) 41 (16) 30 (11) 39 (15) 28 (12) 47 (31) 37 (18) 
+
+F21 41 (–) 32 (18) 53 ( –) 74 ( –) 40 (–) 44 (–) 41 (–) 44 (69) 
+
+F22 52 (58) 51 (36) 77 ( –) 47 (53) 48 (48) 51 (75) 31 (42) 38 (41) 
+
+F23 70 ( –) 35 (84) 52 ( –) 63 ( –) 38 (86) 58 ( –) 46 (76) 29 (54) 
+
+F24 37 (30) 24 (26) 40 (27) 12 (16) 13 (11) 12 (16) 14 (14) 10 (10) 
+
+Median 51.5 33.5 39.3 29.0 37.3 30.3 31.3 30.0 We calculated the number of iterations required for PolyBO to reach the simple regret reached by vanilla BO at 50 iterations. Each value is the median number of iterations at which PolyBO reached the reference simple regret, and the values in parentheses indicate the interquartile range. Values < 50 are in bold and values ≥ 50 are in plain font. The maximum number of iterations was set to 100; – indicates that the value could not be calculated because the reference simple regret was not reached within 100 iterations. D = 20 , m′ = 10 .26 Iteration     
+
+> Simple regret
+> Random search Vanilla BO (EI) PolyBO (EI) Vanilla BO (GP-UCB) PolyBO (GP-UCB)
+
+Figure 5. Sensitivity analysis of the acquisition function in PolyBO 
+
+EI or GP-UCB was used as the acquisition function. The median (lines) and interquartile range (shading) of 30 runs of optimization from different initial conditions are shown for each method. D = 20 , m′ = 10 , and p = 4 .27 Iteration   
+
+> Simple regret
+> PolyBO (w/o reset) PolyBO PolyBO ( scaling) m′
+
+Figure 6. Ablation study of the update mechanism 
+
+The update mechanism was ablated by either not discarding previously generated pseudo-experimental data (w/o reset) or increasing the pseudo-experimental dataset size ( m′-scaling). The median (lines) and interquartile range (shading) of 30 runs of optimization from different initial conditions are shown for each PolyBO variant. 
+
+D = 20 , m′ = 10 , and p = 4 .28 Experimental Iteration 
+
+> FOM HEAs  (a.u.)
+
+## BO-EI PolyBO  RL-DQN Figure 7. Real-world material composition optimization with PolyBO and two conventional methods 
+
+The median (lines) and interquartile range (shading) are shown. The results of 30 (PolyBO and BO-EI) or 24 (RL-DQN) independent runs with different initial conditions are shown. The initial conditions in PolyBO were the same 20 conditions as used in BO-EI by Xian et al. [46]. The results of BO-EI and RL-DQN were obtained by reproducing the published code [46]. D = 10 , m′ = 10 , and p = 4 .29 Iteration    
+
+> Simple regret
+> Random search Vanilla BO BOPP PolyBO
+
+Supplementary Figure 1. Optimization processes for 24 benchmark functions at D = 2 
+
+The median (lines) and interquartile range (shading) of 30 runs of optimization from different initial conditions are shown for each method. Problem setting: m′ = 10 , p = 4 .30 Iteration    
+
+> Simple regret
+> Random search Vanilla BO BOPP PolyBO
+
+Supplementary Figure 2. Optimization processes for 24 benchmark functions at D = 5 
+
+The median (lines) and interquartile range (shading) of 30 runs of optimization from different initial conditions are shown for each method. Problem setting: m′ = 10 , p = 4 .31 Iteration    
+
+> Simple regret
+> Random search Vanilla BO BOPP PolyBO
+
+Supplementary Figure 3. Optimization processes for 24 benchmark functions at D = 10 
+
+The median (lines) and interquartile range (shading) of 30 runs of optimization from different initial conditions are shown for each method. Problem setting: m′ = 10 , p = 4 .32 Iteration    
+
+> Simple regret
+> Random search Vanilla BO BOPP PolyBO TSBO
+
+Supplementary Figure 4. Optimization processes for 24 benchmark functions at D = 20 
+
+The median (lines) and interquartile range (shading) of 30 runs of optimization from different initial conditions are shown for each method. Problem setting: m′ = 10 , p = 4 .33 F04: Büche-Rastrigin (D=20)  
+
+> F06:Attractive Sector (D=20)
+> (a)
+> (b)
+> (c)
+> (d) PolyBO PolyBO
+
+Supplementary Figure 5. UMAP visualization of optimization processes for F04 and F06 at D = 20 
+
+Circles indicate all sampled points used in the optimization, including the initial experimental points and the candidate points x(t) selected by each method at subsequent iterations. Color indicates the value of the objective function. A symlog scale was used for the color bar, and the threshold for the linear region was set to 10 −3 of the maximum value of the absolute plotted objective function. Red stars indicate the locations of the global optima. 
+
+m′ = 10 , p = 4 .34 F04: Büche-Rastrigin (D=2)  
+
+> F06:Attractive Sector (D=2)
+> (a)
+> (b)
+> (c)
+> (d) PolyBO PolyBO
+
+Supplementary Figure 6. t-SNE visualization of optimization processes for F04 and F06 at D = 2 
+
+Circles indicate all sampled points used in the optimization, including the initial experimental points and the candidate points x(t) selected by each method at subsequent iterations. Color indicates the value of the objective function. A symlog scale was used for the color bar, and the threshold for the linear region was set to 10 −3 of the maximum absolute plotted objective function value. Red stars indicate the locations of the global optima. 
+
+m′ = 10 , p = 4 .35 F04: Büche-Rastrigin (D=5)  
+
+> F06:Attractive Sector (D=5)
+> (a)
+> (b)
+> (c)
+> (d) PolyBO PolyBO
+
+Supplementary Figure 7. t-SNE visualization of optimization processes for F04 and F06 at D = 5 
+
+Circles indicate all sampled points used in the optimization, including the initial experimental points and the candidate points x(t) selected by each method at subsequent iterations. Color indicates the value of the objective function. A symlog scale was used for the color bar, and the threshold for the linear region was set to 10 −3 of the maximum absolute plotted objective function value. Red stars indicate the locations of the global optima. 
+
+m′ = 10 , p = 4 .36 F04: Büche-Rastrigin (D=20) 
+
+F06:Attractive Sector (D=20) 
+
+(a) 
+
+(b) Supplementary Figure 8. Entire search space after dimensionality reduction using t-SNE 
+
+A symlog scale was used for the color bar, and the threshold for the linear region was set to 10 −3 of the value of the maximum absolute plotted objective function. Color indicates the value of the objective function. Red stars indicate the locations of the global optima. m′ = 10 , p = 4 .37 Iteration 
+
+> OE
+
+Iteration 
+
+> OE
+
+F04: Büche-Rastrigin (D=2)  F06:Attractive Sector (D=2) 
+
+(a)  (b)  
+
+> Vanilla BO PolyBO
+
+Iteration 
+
+> PE
+
+Iteration 
+
+> PE
+
+(c)  (d) Supplementary Figure 9. Quantification of optimization behavior for F04 and F06 at D = 2 using OE and PE 
+
+The median (lines) and interquartile range (shading) of 30 runs of optimization from different initial conditions are shown for each method. m′ = 10 , p = 4 .38 Iteration 
+
+> OE
+
+Iteration 
+
+> OE
+
+F04: Büche-Rastrigin (D=5)  F06:Attractive Sector (D=5) 
+
+(a)  (b)  
+
+> Vanilla BO PolyBO
+
+Iteration 
+
+> PE
+
+Iteration 
+
+> PE
+
+(c)  (d) Supplementary Figure 10. Quantification of optimization behavior for F04 and F06 at D = 5 using OE and PE 
+
+The median (lines) and interquartile range (shading) of 30 runs of optimization from different initial conditions are shown for each method. m′ = 10 , p = 4 .39 Supplementary Algorithm 1 PolyBO algorithm for a discrete constrained search space 
+
+Require: Discrete grid interval δ, bounds [li, u i] ( i = 1 , . . . , d ) for each variable, equality constraint Pdi=1 xi = 1  
+
+> 1:
+
+Uniformly sample k explainable variables from the discrete grid set Gδ satisfying Pdi=1 xi = 1 and li ≤ xi ≤ ui,and construct the initial experimental dataset D0:0 = {(x(0)  
+
+> i
+
+, y (0)  
+
+> i
+
+)}ki=1 . 
+
+> 2:
+
+for t = 1 , 2, . . . do  
+
+> 3:
+
+Train pth degree polynomial regression model fp(x) using dataset D0: t−1. 
+
+> 4:
+
+Uniformly sample m′ explainable variables {x′(t) 
+
+> j
+
+}m′ 
+
+> j=1
+
+from the discrete grid set Gδ . 
+
+> 5:
+
+Compute y′(t) 
+
+> j
+
+= fp(x′(t) 
+
+> j
+
+) for j = 1 , . . . , m ′, and construct pseudo-experimental data D′ 
+
+> t
+
+= {(x′(t) 
+
+> j
+
+, y ′(t) 
+
+> j
+
+)}m′
+
+> j=1
+
+. 
+
+> 6:
+
+Update the Gaussian process regression model with D0: t−1 ∪ D ′
+
+> t
+
+. 
+
+> 7:
+
+Compute the acquisition function α(x) using the updated Gaussian process regression model.  
+
+> 8:
+
+Optimize α(x) in a continuous space under the constraint Pdi=1 xi = 1 using the SLSQP method from multiple initial conditions.  
+
+> 9:
+
+For each continuous optimum, enumerate adjacent lower and upper discrete grid points in each dimension, and extract only combinations satisfying Pdi=1 xi = 1 as discrete candidates.  
+
+> 10:
+
+Re-evaluate α(x) for all discrete candidates and select the unobserved candidate with the maximum value as x(t). 
+
+> 11:
+
+Conduct an experiment at x(t) to obtain y(t). 
+
+> 12:
+
+Update the dataset D0: t = D0: t−1 ∪ { (x(t), y (t))}. 
+
+> 13:
+
+end for 
+
+40 (a)  (b) Supplementary Figure 11. Peak memory usage and number of parameters at different maximum polynomial degrees 
+
+Peak memory usage (a) was measured to evaluate memory complexity. 41
