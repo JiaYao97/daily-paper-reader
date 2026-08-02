@@ -6,89 +6,89 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-31
-- 运行时间：2026-07-31 03:03:50 UTC
+- 最新运行日期：2026-08-02
+- 运行时间：2026-08-02 21:33:37 UTC
 - 运行状态：成功
 - 本次总论文数：23
 - 精读区：9
 - 速读区：14
 
 ### 今日简报（AI）
-今日精读聚焦湍流工程问题与热流体场图神经网络训练，另有14篇速读覆盖多相流基准测试与归一化流重建等主题。最值得关注的是两篇9分精读：湍流的log(Re)-cost形式化框架，以及无标签有限体积残差训练注意力图神经网络的方法。建议普通读者优先浏览Neptuna多相流框架，可快速了解复杂流动的机器学习评测基准。
-- 详情：[/202607/31/README](/202607/31/README)
+今日精读9篇、速读14篇，核心聚焦航天器热防护与降阶建模稳定性。最值得关注DIII-D托卡马克热屏蔽实验（9.0分）及降阶建模“双下降”成因与缓解（9.0分）。建议普通读者优先把握物理约束在AI建模中的关键作用。
+- 详情：[/202608/02/README](/202608/02/README)
 
 ### 精读区论文标签
-1. [A formal log(Re)-cost framework for the engineering turbulence problem](/202607/31/2607.20199v1-a-formal-logre-cost-framework-for-the-engineering-turbulence-problem)  
+1. [Spacecraft heat shield study in the DIII-D tokamak](/202608/02/2607.23895v2-spacecraft-heat-shield-study-in-the-diii-d-tokamak)  
+   标签：评分：9.0/10、query:sfc
+   evidence：模拟大气进入极端热流的热防护屏烧蚀与剥蚀实验平台
+2. [Origins and mitigation of double descent in reduced order modeling](/202608/02/2607.26414v1-origins-and-mitigation-of-double-descent-in-reduced-order-modeling)  
    标签：评分：9.0/10、query:flow-pred
-   evidence：物理约束多保真数据驱动框架用于湍流预测
-2. [Label-Free Finite-Volume-Residual Training of Attention Graph Neural Networks for Coupled Thermo-Fluid Fields](/202607/31/2607.20321v1-label-free-finite-volume-residual-training-of-attention-graph-neural-networks-for-coupled-thermo-fluid-fields)  
+   evidence：稀疏感知与基于少量局部测量的全状态重构
+3. [Comparison of a Parametric Physics-Informed Neural Network and a Tensorial Reduced-Order Model for the Shallow-Water Dam-Break Problem](/202608/02/2607.27433v1-comparison-of-a-parametric-physics-informed-neural-network-and-a-tensorial-reduced-order-model-for-the-shallow-water-dam-break-problem)  
    标签：评分：9.0/10、query:flow-pred
-   evidence：基于无标签有限体积残差训练的图神经网络实现数据驱动流场预测
-3. [Label-Free Finite-Volume-Residual Training of Attention Graph Neural Networks for Coupled Thermo-Fluid Fields](/202607/31/2607.20321v2-label-free-finite-volume-residual-training-of-attention-graph-neural-networks-for-coupled-thermo-fluid-fields)  
-   标签：评分：9.0/10、query:flow-pred
-   evidence：基于有限体积残差的无标签图神经网络训练用于热流场预测
-4. [Optimization of time-consuming experimental conditions using pseudo-experimental data guided by adaptive polynomial regression](/202607/31/2607.22238v1-optimization-of-time-consuming-experimental-conditions-using-pseudo-experimental-data-guided-by-adaptive-polynomial-regression)  
-   标签：评分：9.0/10、query:small-reg
-   evidence：受限实验数据下的自适应多项式回归与伪数据优化
-5. [A Multi-stage Constrained Optimization Framework for Data-driven Problems](/202607/31/2607.23480v1-a-multi-stage-constrained-optimization-framework-for-data-driven-problems)  
-   标签：评分：9.0/10、query:pc-latent
-   evidence：使用VAE潜在空间和约束的多阶段优化框架
-6. [No Free Lunch in Flow Surrogates under Time-Varying Boundary Conditions: A Two-Regime Study](/202607/31/2607.23667v1-no-free-lunch-in-flow-surrogates-under-time-varying-boundary-conditions-a-two-regime-study)  
-   标签：评分：9.0/10、query:flow-pred
-   evidence：评估八种代理模型在时变边界条件下对瞬态流场的预测
-7. [Physics-Guided Generative AI for Property-Targeted 3D Porous Media Design](/202607/31/2607.24274v1-physics-guided-generative-ai-for-property-targeted-3d-porous-media-design)  
-   标签：评分：9.0/10、query:pc-latent
-   evidence：通过VAE与扩散模型学习满足物理约束的潜在空间并用于逆向设计
-8. [Bayesian finite element regression for vascular flow reconstruction with quantified uncertainty](/202607/31/2607.20224v1-bayesian-finite-element-regression-for-vascular-flow-reconstruction-with-quantified-uncertainty)  
+   evidence：直接比较用于预测浅水溃坝流场的数据驱动参数化模型
+4. [Variational Boosting for Physics-Informed Neural Networks](/202608/02/2607.23940v1-variational-boosting-for-physics-informed-neural-networks)  
    标签：评分：8.0/10、query:flow-pred
-   evidence：从噪声欠分辨观测重建速度与压力场，直接对应稀疏流场重建
-9. [Neural operator discovery from heterogeneous trajectories](/202607/31/2607.23337v1-neural-operator-discovery-from-heterogeneous-trajectories)  
+   evidence：变分提升改善物理信息神经网络求解微分方程的优化，是数据驱动流场预测的直接方法
+5. [Capacity-Aware Deep Learning for Generalizable Traffic Volume Estimation Across Links and Cities](/202608/02/2607.24056v1-capacity-aware-deep-learning-for-generalizable-traffic-volume-estimation-across-links-and-cities)  
    标签：评分：8.0/10、query:flow-pred
-   evidence：从轨迹中发现神经算子，可直接用于流体动力学算子学习
+   evidence：利用深度学习从稀疏传感器测量中估计空间场，可泛化到新位置，方法与稀疏传感器流场重建高度相通
+6. [Optimizing Efficiency and Convergence in MMRM: Practical Considerations for Longitudinal Data Analysis](/202608/02/2607.26362v1-optimizing-efficiency-and-convergence-in-mmrm-practical-considerations-for-longitudinal-data-analysis)  
+   标签：评分：8.0/10、query:small-reg
+   evidence：面向小样本混合模型回归的效率与收敛优化
+7. [From Classification to Regression: Using a Fruitfly to Solve Equations](/202608/02/2607.27196v1-from-classification-to-regression-using-a-fruitfly-to-solve-equations)  
+   标签：评分：8.0/10、query:small-reg
+   evidence：提出基于局部模式库的回归框架，面向受限科学数据
+8. [Adaptive Nyström for Gaussian Process Regression](/202608/02/2607.27427v1-adaptive-nystrm-for-gaussian-process-regression)  
+   标签：评分：8.0/10、query:small-reg
+   evidence：高斯过程回归中的自适应地标选择与超参数优化，直接属于回归模型优化技术
+9. ["Anomalous Solid Solution" in Ultra-High Melting Point Oxides: A New Strategy for Developing Ultra-High Temperature Thermal Protection Coatings](/202608/02/2607.28258v1-anomalous-solid-solution-in-ultra-high-melting-point-oxides-a-new-strategy-for-developing-ultra-high-temperature-thermal-protection-coatings)  
+   标签：评分：8.0/10、query:sfc
+   evidence：通过异常固溶发展超高温热防护涂层
 
 ### 速读区论文标签
-1. [Neptuna: A Comprehensive Machine Learning Framework for Benchmarking Complex Multiphase Flows](/202607/31/2607.22280v1-neptuna-a-comprehensive-machine-learning-framework-for-benchmarking-complex-multiphase-flows)  
+1. [Rotational equivariance and locality in data-driven subgrid-scale closures](/202608/02/2607.26850v1-rotational-equivariance-and-locality-in-data-driven-subgrid-scale-closures)  
    标签：评分：8.0/10、query:flow-pred
-   evidence：构建大规模激波驱动可压缩多相流基准，为机器学习代理模型提供数据与评估框架
-2. [Neptuna: A Comprehensive Machine Learning Framework for Benchmarking Complex Multiphase Flows](/202607/31/2607.22280v2-neptuna-a-comprehensive-machine-learning-framework-for-benchmarking-complex-multiphase-flows)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：面向激波驱动多相流的机器学习代理模型基准
-3. [Normalizing Flows to Reconstruct Pseudo-PDFs](/202607/31/2607.25282v1-normalizing-flows-to-reconstruct-pseudo-pdfs)  
-   标签：评分：8.0/10、query:pc-latent
-   evidence：用高斯过程先验与可逆神经网络学习受限数据下的后验分布，并保持物理约束，属于带物理约束的潜变量模型
-4. [From Deterministic to Generative Deep Learning for Urban Air Quality Reconstruction from Sparse Observations](/202607/31/2607.25687v1-from-deterministic-to-generative-deep-learning-for-urban-air-quality-reconstruction-from-sparse-observations)  
-   标签：评分：8.0/10、query:flow-pred
-   evidence：从稀疏监测站用深度生成模型重建空气污染全场
-5. [Retrospective Orthogonal Design: Response-Surface Reconstruction from Observational Data](/202607/31/2607.26219v1-retrospective-orthogonal-design-response-surface-reconstruction-from-observational-data)  
-   标签：评分：8.0/10、query:small-reg
-   evidence：面向观测数据的回顾性正交设计响应面重建，与小样本回归相关。
-6. [Harnessing Heterogeneous Data for Conditional Optimization via Optimal Transport](/202607/31/2607.19761v1-harnessing-heterogeneous-data-for-conditional-optimization-via-optimal-transport)  
-   标签：评分：7.0/10、query:small-reg
-   evidence：在目标联合数据稀缺时，利用最优传输整合多个有偏异质源数据，提升条件分布学习与小样本回归能力
-7. [Adaptive deep nonparametric regression from dependent data under covariate shift](/202607/31/2607.20309v1-adaptive-deep-nonparametric-regression-from-dependent-data-under-covariate-shift)  
-   标签：评分：7.0/10、query:small-reg
-   evidence：用于非参数回归的稀疏惩罚深度神经网络估计器
-8. [Energy Manifold Natural Gradient Descent: Riemannian Optimization for Neural PDE Solvers](/202607/31/2607.22004v1-energy-manifold-natural-gradient-descent-riemannian-optimization-for-neural-pde-solvers)  
+   evidence：研究了数据驱动亚网格闭合中的旋转等变性与局部性，应用于LES湍流通道流动，属于数据驱动流场建模的核心问题。
+2. [Operator Neural Jump ODEs: $L^2$-optimal prediction in function spaces](/202608/02/2607.23110v1-operator-neural-jump-odes-l2-optimal-prediction-in-function-spaces)  
    标签：评分：7.0/10、query:flow-pred
-   evidence：用于物理信息神经PDE求解器的黎曼优化
-9. [Soft-Constrained Optimization of Latent Space in Variational Autoencoders](/202607/31/2607.23751v1-soft-constrained-optimization-of-latent-space-in-variational-autoencoders)  
+   evidence：通过算子学习进行函数空间预测，可迁移到流场预测
+3. [Self-consistent orbital-free nuclear density functional theory with a physics-constrained learned nonlocal kinetic energy functional](/202608/02/2607.23328v1-self-consistent-orbital-free-nuclear-density-functional-theory-with-a-physics-constrained-learned-nonlocal-kinetic-energy-functional)  
    标签：评分：7.0/10、query:pc-latent
-   evidence：变分自编码器中潜在空间的软约束优化，与约束式潜在空间学习直接相关，可迁移到物理约束
-10. [DAP-Pose: Deep Temporal Alignment and Physics-aware Cross-modal Sensor Fusion for Robust Pose Estimation](/202607/31/2607.23755v1-dap-pose-deep-temporal-alignment-and-physics-aware-cross-modal-sensor-fusion-for-robust-pose-estimation)  
+   evidence：学习满足物理约束的非局域动能泛函并保持自洽，属于物理约束学习核心方法
+4. [Soft-Constrained Optimization of Latent Space in Variational Autoencoders](/202608/02/2607.23751v1-soft-constrained-optimization-of-latent-space-in-variational-autoencoders)  
    标签：评分：7.0/10、query:pc-latent
-   evidence：在潜在空间中对齐异步流并引入物理感知约束，属于带物理约束的潜空间方法
-11. [From Scalars to Time Series: Rethinking Implicit Neural Representations for Time-Varying Volumetric Data](/202607/31/2607.20970v1-from-scalars-to-time-series-rethinking-implicit-neural-representations-for-time-varying-volumetric-data)  
-   标签：评分：6.0/10、query:flow-pred
-   evidence：面向时变体积数据的序列级隐式神经表示训练方法，可应用于流场预测。
-12. [CASC: Causal Adversarial Subspace Clustering for Multivariate Spatiotemporal Data](/202607/31/2607.21088v1-casc-causal-adversarial-subspace-clustering-for-multivariate-spatiotemporal-data)  
+   evidence：变分自编码器中潜在空间的软约束优化，与物理约束自编码器训练相关
+5. [Inferring Missing Trajectory Data with Temporal Convolutional Networks](/202608/02/2607.25147v1-inferring-missing-trajectory-data-with-temporal-convolutional-networks)  
+   标签：评分：7.0/10、query:flow-pred
+   evidence：基于深度学习的缺失轨迹重建，类似于从稀疏观测重建流场
+6. [Physics-Informed Broad Learning System: An Efficient Backpropagation-Free Framework for Solving Partial Differential Equations](/202608/02/2607.25608v1-physics-informed-broad-learning-system-an-efficient-backpropagation-free-framework-for-solving-partial-differential-equations)  
+   标签：评分：7.0/10、query:flow-pred
+   evidence：提出物理信息宽度学习系统求解PDE，可作流场预测的数据驱动替代模型
+7. [Schrödinger's Cat: Probabilistic Representation and Prediction of Potential Scene Kinematics](/202608/02/2607.25984v1-schrdingers-cat-probabilistic-representation-and-prediction-of-potential-scene-kinematics)  
+   标签：评分：7.0/10、query:pc-latent
+   evidence：面向未来运动学预测的概率潜在表示，支持稀疏约束
+8. [On a joint simultaneous learning of relevant feature subsets and subspaces in regression-like problems](/202608/02/2607.28080v1-on-a-joint-simultaneous-learning-of-relevant-feature-subsets-and-subspaces-in-regression-like-problems)  
+   标签：评分：7.0/10、query:flow-pred
+   evidence：面向混沌与流体动力学预测的回归方法（Lorenz-96）
+9. [Variance-Preserving Orthogonal Selection (VPOS): Greedy Feature Selection via Orthogonal Deflation in PCA Loading Space](/202608/02/2607.23198v2-variance-preserving-orthogonal-selection-vpos-greedy-feature-selection-via-orthogonal-deflation-in-pca-loading-space)  
+   标签：评分：6.0/10、query:small-reg
+   evidence：通过正交去偏进行无监督特征选择，适用于小样本回归
+10. [Exact Generalization Error Curves of Kernel Ridge Regression for Functional Moment Estimation](/202608/02/2607.23666v1-exact-generalization-error-curves-of-kernel-ridge-regression-for-functional-moment-estimation)  
+   标签：评分：6.0/10、query:small-reg
+   evidence：函数型数据核岭回归在小样本下的精确误差分析
+11. [Distributional Split Criteria for Random Forests: Extensions, Shrinkage, and the Robustness of Mean Splitting](/202608/02/2607.23721v1-distributional-split-criteria-for-random-forests-extensions-shrinkage-and-the-robustness-of-mean-splitting)  
+   标签：评分：6.0/10、query:small-reg
+   evidence：研究诚实随机森林的分布型分裂准则与收缩，能在有限样本上提升回归精度
+12. [Smooth Learning with Hard Constraints via Legendre-Regularized Policies](/202608/02/2607.24007v1-smooth-learning-with-hard-constraints-via-legendre-regularized-policies)  
    标签：评分：6.0/10、query:pc-latent
-   evidence：时空数据中的演化潜在状态与长程时间动态
-13. [Double screening in the training dynamics of variational physics-informed neural networks for heterogeneous coupled parabolic systems](/202607/31/2607.21352v1-double-screening-in-the-training-dynamics-of-variational-physics-informed-neural-networks-for-heterogeneous-coupled-parabolic-systems)  
+   evidence：潜在参数可微且满足硬约束的策略学习
+13. [Differential Equation-Constrained Exponential-Type Local Polynomial Regression Under Model Misspecification](/202608/02/2607.25248v1-differential-equation-constrained-exponential-type-local-polynomial-regression-under-model-misspecification)  
+   标签：评分：6.0/10、query:small-reg
+   evidence：用微分方程等结构约束强化回归模型，缓解模型误设定，对小样本回归有借鉴意义
+14. [Can Deep Generative Models Reproduce Non-Stationary Gaussian Random Fields?](/202608/02/2607.25929v1-can-deep-generative-models-reproduce-non-stationary-gaussian-random-fields)  
    标签：评分：6.0/10、query:flow-pred
-   evidence：分析耦合抛物系统中PINN的训练动力学，对数据驱动流场预测有方法学价值
-14. [PRIMS: Physics-guided Representation for Fluid Identification in Multimodal Sensing](/202607/31/2607.22422v1-prims-physics-guided-representation-for-fluid-identification-in-multimodal-sensing)  
-   标签：评分：6.0/10、query:pc-latent
-   evidence：物理指导的表示学习，与物理约束潜在表示学习相关
+   evidence：评估深度生成模型对空间场的重现能力，为数据驱动的流场重建提供可迁移的度量与方法
 
 
 <div class="dpr-home-promo-card">

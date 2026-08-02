@@ -1,0 +1,971 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-02T21:16:51.971842+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 4,
+    "deep_divecandidates": 10,
+    "deep_cap": 9,
+    "deep_selected": 9,
+    "quick_candidates": 19,
+    "quick_skim_target": 14,
+    "quick_selected": 14
+  },
+  "deep_dive": [
+    {
+      "id": "2607.23895v2",
+      "source": "arxiv",
+      "title": "Spacecraft heat shield study in the DIII-D tokamak",
+      "abstract": "We report a new experimental platform developed at the DIII-D National Fusion Facility to investigate carbon ablation and spallation under extreme heat fluxes relevant to fusion plasma-facing components and high-enthalpy atmospheric entry. Carbon samples were exposed to parallel heat fluxes of $30$--$40~\\mathrm{MW\\,m^{-2}}$ in the scrape-off layer using two complementary approaches: stationary carbon rods inserted near the divertor strike point and slow-launch carbon pellets injected vertically into the edge and core plasma. Pellets penetrating the core experienced heat fluxes approximately an order of magnitude higher. The conditions reproduce key aspects of the shock-layer environment encountered by the Galileo probe during entry into Jupiter's atmosphere. Fast visible imaging, divertor spectroscopy, infrared thermography, CO$_2$ interferometry, and post-exposure profilometry provided measurements of ablation rates, surface recession, and temperature evolution. Measured mass-loss rates of $(1$--$3)\\times10^{-2}~\\mathrm{g\\,cm^{-2}\\,s^{-1}}$ agree with semi-empirical aerospace ablation models, while wedge-shaped rods exhibited greater ablation than cylindrical and concave samples. UEDGE-DUSTT simulations incorporating parallel plasma flows, ${\\bf j}\\times{\\bf B}$ forces, and ablation-cloud shielding reproduce the measured pellet trajectories and ablation timescales. These results establish tokamak plasma as a high-heat-flux environment for validating carbon ablation models and studying material response and impurity dynamics in reactor-relevant divertor plasmas.",
+      "authors": [
+        "Dmitri M. Orlov",
+        "Evdokiya G. Kostadinova",
+        "Igor Bykov",
+        "Dmitri L. Rudakov",
+        "Roman Smirnov",
+        "Jayson Barr",
+        "Gabrielle Bladon",
+        "Alessandro Bortolon",
+        "Justin Burzachiello",
+        "Lane Carlsson",
+        "Colin Chrystal",
+        "Jason Escalera",
+        "Jessica Eskew",
+        "Graeson Griffin",
+        "Michael O. Hanson",
+        "Georg Herdrich",
+        "Jeffrey Herfindal",
+        "Al Hyatt",
+        "Truell Hyde",
+        "Charles Lasnier",
+        "Claudio Marini",
+        "Lorin Matthews",
+        "Adam McLean",
+        "Christopher A. Mehta",
+        "Renato Perillo",
+        "Jens Schmidt",
+        "Filipo Scotti",
+        "Zola Spence",
+        "Hadith Taheri",
+        "Michael van Zeeland",
+        "Caitlyn Villareal",
+        "Huiqian Wang",
+        "Robert Wilcox",
+        "Theresa Wilks",
+        "Nandini Yadav",
+        "Daniel Zubovic"
+      ],
+      "primary_category": "physics.plasm-ph",
+      "categories": [
+        "physics.plasm-ph"
+      ],
+      "published": "2026-07-26T23:50:33+00:00",
+      "link": "https://arxiv.org/pdf/2607.23895v2",
+      "tags": [
+        "keyword:sfc",
+        "query:sfc"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "experimental platform for heat shield ablation and spallation under extreme heat fluxes for atmospheric entry",
+      "llm_evidence_cn": "模拟大气进入极端热流的热防护屏烧蚀与剥蚀实验平台",
+      "llm_evidence": "模拟大气进入极端热流的热防护屏烧蚀与剥蚀实验平台",
+      "canonical_evidence": "模拟大气进入极端热流的热防护屏烧蚀与剥蚀实验平台",
+      "llm_tldr_en": "Develops a DIII-D tokamak platform to study carbon ablation and spallation under extreme heat fluxes, reproducing key aspects of the Galileo probe entry shock-layer environment for heat shield research.",
+      "llm_tldr_cn": "针对航天器热防护系统材料在极端热流下烧蚀与剥蚀行为缺乏地面实验条件的问题，论文在DIII-D托卡马克装置中构建了新实验平台，将碳材料暴露于30-40 MW/m2的平行热流中，并利用慢速注入的碳颗粒模拟高焓进入条件。该平台重现了伽利略探测器木星进入激波层的部分关键环境，为热防护材料在极端热流下的破坏机理研究提供了可重复的实验手段。",
+      "llm_tldr": "针对航天器热防护系统材料在极端热流下烧蚀与剥蚀行为缺乏地面实验条件的问题，论文在DIII-D托卡马克装置中构建了新实验平台，将碳材料暴露于30-40 MW/m2的平行热流中，并利用慢速注入的碳颗粒模拟高焓进入条件。该平台重现了伽利略探测器木星进入激波层的部分关键环境，为热防护材料在极端热流下的破坏机理研究提供了可重复的实验手段。",
+      "llm_tags": [
+        "query:sfc"
+      ],
+      "matched_query_tag": "query:sfc",
+      "matched_query_text": "hypersonic thermal protection",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.26414v1",
+      "source": "arxiv",
+      "title": "Origins and mitigation of double descent in reduced order modeling",
+      "abstract": "Latent low-dimensional structure in datasets of natural and engineered systems enables their sparse sensing, or full-state reconstruction from historical data and very few carefully chosen localized measurements. Depending on the reconstruction algorithm, sensor locations, and measurement noise, the reconstruction risk curves demonstrate a diversity of patterns including a dramatic peak in error known as double descent in Machine Learning literature. Here we explore those scenarios under a unified Data-Noise Averaging theory. Qualitatively, we formulate sufficient criteria for double descent to emerge through a catastrophic amplification of a pathological signal in reconstruction. Quantitatively, we predict the detailed risk curves at a fraction of computational cost, trace reconstruction instability to individual sensors and their combinations, and provide regularization mechanisms to mitigate the instability. We demonstrate results for both static reconstruction of Sea Surface Temperature patterns and time integration of a reduced order model of a PDE.",
+      "authors": [
+        "Andrei A. Klishin",
+        "J. Nathan Kutz",
+        "Krithika Manohar"
+      ],
+      "primary_category": "stat.ML",
+      "categories": [
+        "stat.ML",
+        "cs.LG",
+        "math.DS",
+        "physics.data-an"
+      ],
+      "published": "2026-07-29T02:56:25+00:00",
+      "link": "https://arxiv.org/pdf/2607.26414v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:small-reg",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:small-reg"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "sparse sensing and full-state reconstruction from few localized measurements",
+      "llm_evidence_cn": "稀疏感知与基于少量局部测量的全状态重构",
+      "llm_evidence": "稀疏感知与基于少量局部测量的全状态重构",
+      "canonical_evidence": "稀疏感知与基于少量局部测量的全状态重构",
+      "llm_tldr_en": "This paper studies double descent in reduced order modeling, providing a unified Data-Noise Averaging theory to explain when reconstruction risk peaks and how to mitigate it, directly relevant to sparse sensor flow reconstruction.",
+      "llm_tldr_cn": "该论文研究降阶建模中的双下降现象，指出潜在低维结构使得从历史数据和少量精心选择的局部测量中实现稀疏感知与全状态重构成为可能。作者提出统一的数据-噪声平均理论，从定性上给出重构中双下降出现的充分条件，从定量上预测详细风险曲线。研究为稀疏传感器流场重构中的误差尖峰提供了理论解释与缓解策略，对数据驱动的流场重建方法具有重要指导意义，也为传感器布置与重构算法选择提供了理论依据。",
+      "llm_tldr": "该论文研究降阶建模中的双下降现象，指出潜在低维结构使得从历史数据和少量精心选择的局部测量中实现稀疏感知与全状态重构成为可能。作者提出统一的数据-噪声平均理论，从定性上给出重构中双下降出现的充分条件，从定量上预测详细风险曲线。研究为稀疏传感器流场重构中的误差尖峰提供了理论解释与缓解策略，对数据驱动的流场重建方法具有重要指导意义，也为传感器布置与重构算法选择提供了理论依据。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "sparse sensor flow reconstruction",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.27433v1",
+      "source": "arxiv",
+      "title": "Comparison of a Parametric Physics-Informed Neural Network and a Tensorial Reduced-Order Model for the Shallow-Water Dam-Break Problem",
+      "abstract": "We develop two parametric data-driven reduced models: a physics-informed neural network (PINN) and a non-intrusive tensorial reduced-order model (TROM), and apply both approaches to the parametrized one-dimensional shallow-water dam-break problem. Both reduced models do not require time integration and learn a direct solution map from space, time, and dam-break parameters to the physical state. We present a detailed comparison for out-of-sample and extrapolated parameter values. In addition, we demonstrate that it is essential to introduce shock-aware collocation to improve the robustness of the PINN model.",
+      "authors": [
+        "Anton Myshak",
+        "Md Rezwan Bin Mizan",
+        "Ilya Timofeyev"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA",
+        "cs.LG",
+        "physics.flu-dyn"
+      ],
+      "published": "2026-07-29T20:00:42+00:00",
+      "link": "https://arxiv.org/pdf/2607.27433v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:sfc",
+        "query:small-reg"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Directly compares data-driven parametric models for predicting shallow-water dam-break flow fields",
+      "llm_evidence_cn": "直接比较用于预测浅水溃坝流场的数据驱动参数化模型",
+      "llm_evidence": "直接比较用于预测浅水溃坝流场的数据驱动参数化模型",
+      "canonical_evidence": "直接比较用于预测浅水溃坝流场的数据驱动参数化模型",
+      "llm_tldr_en": "Compares a parametric physics-informed neural network (PINN) and a non-intrusive tensorial reduced-order model (TROM) for the 1D shallow-water dam-break problem, showing both learn direct maps from parameters to physical state without time integration and emphasizing shock-aware collocation for PINN robustness.",
+      "llm_tldr_cn": "针对一维浅水溃坝问题，该文开发了两种不需要时间积分的参数化数据驱动降阶模型：物理信息神经网络和非侵入式张量降阶模型，两者都直接学习从空间、时间及坝破参数到物理状态的求解映射。作者在样本外和参数外推情况下进行了详细比较，并证明引入激波感知配点对提高物理信息神经网络的鲁棒性至关重要，为参数化流场预测提供了实用的方法对比基准。",
+      "llm_tldr": "针对一维浅水溃坝问题，该文开发了两种不需要时间积分的参数化数据驱动降阶模型：物理信息神经网络和非侵入式张量降阶模型，两者都直接学习从空间、时间及坝破参数到物理状态的求解映射。作者在样本外和参数外推情况下进行了详细比较，并证明引入激波感知配点对提高物理信息神经网络的鲁棒性至关重要，为参数化流场预测提供了实用的方法对比基准。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "flow field prediction methods",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.23940v1",
+      "source": "arxiv",
+      "title": "Variational Boosting for Physics-Informed Neural Networks",
+      "abstract": "Physics-Informed Neural Networks (PINNs) solve differential equations by minimizing the residual of a nonlinear operator over a neural parameterization of the solution. However, monolithic PINNs often suffer from ill-conditioning, spectral bias, and optimization instability.   We introduce a variational boosting framework in which solutions are constructed additively in function space. Each stage trains a weak learner whose converged correction satisfies a local orthogonality condition, equivalent to a projected functional gradient descent step onto the tangent space of the network's function manifold. Because each correction network is deliberately small, the restricted minimization admits full Newton or conjugate gradient updates, which are typically infeasible in large PINNs. The resulting method separates global nonlinear refinement into a sequence of well-conditioned subproblems while preserving the full variational structure of the operator.   This framework provides a geometric interpretation of multi-stage PINNs as projected functional gradient descent and enables stable second-order optimization for nonlinear differential equations.",
+      "authors": [
+        "Pavlos Protopapas",
+        "Kaylee Vo"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-27T02:32:22+00:00",
+      "link": "https://arxiv.org/pdf/2607.23940v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:sfc",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:small-reg"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "variational boosting improves PINN training for solving differential equations; directly applicable to data-driven flow field prediction",
+      "llm_evidence_cn": "变分提升改善物理信息神经网络求解微分方程的优化，是数据驱动流场预测的直接方法",
+      "llm_evidence": "变分提升改善物理信息神经网络求解微分方程的优化，是数据驱动流场预测的直接方法",
+      "canonical_evidence": "变分提升改善物理信息神经网络求解微分方程的优化，是数据驱动流场预测的直接方法",
+      "llm_tldr_en": "Introduces a variational boosting framework for PINNs that builds solutions additively with small correction networks and strong updates, mitigating ill-conditioning and spectral bias.",
+      "llm_tldr_cn": "针对物理信息神经网络在求解微分方程时存在的病态、谱偏差与优化不稳定问题，提出变分提升框架。该方法在函数空间加性构造解，每阶段训练小规模弱学习器，并利用局部正交条件实现投影函数梯度下降。由于修正网络很小，可采用完整牛顿或共轭梯度更新，显著提升训练稳定性和效率。",
+      "llm_tldr": "针对物理信息神经网络在求解微分方程时存在的病态、谱偏差与优化不稳定问题，提出变分提升框架。该方法在函数空间加性构造解，每阶段训练小规模弱学习器，并利用局部正交条件实现投影函数梯度下降。由于修正网络很小，可采用完整牛顿或共轭梯度更新，显著提升训练稳定性和效率。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "data-driven approaches for flow field prediction",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.28258v1",
+      "source": "arxiv",
+      "title": "\"Anomalous Solid Solution\" in Ultra-High Melting Point Oxides: A New Strategy for Developing Ultra-High Temperature Thermal Protection Coatings",
+      "abstract": "The high-temperature performance of ultra-high temperature ceramics (UHTCs) in atmospheric environment is fundamentally governed by their melting points of oxidation products. Typical high-melting-point oxides, such as ZrO2, undergo phase transformations at elevated temperatures, leading to structural instability. Although doping with rare-earth or transition-metal cations can suppress these transformations, it often results in a reduction in melting point, thereby limiting practical service temperature. Here, ytterbia-stabilized zirconia (YbSZ) coatings are prepared via atmospheric plasma spraying, achieving a remarkable increase in the melting point of ZrO2 to approximately 2850 $^\\circ\\mathrm{C}$ and raising the ultimate plasma and oxyacetylene ablation temperature up to nearly 2780 $^\\circ\\mathrm{C}$ and 3200 $^\\circ\\mathrm{C}$, which is the highest temperature resistance property as reported. Notably, this performance enhancement originates from a synergistic mechanism of strengthened ionic-covalent mixed bonding and improved oxygen vacancy stability. Based on these findings, the concept of \"anomalous solid solution\" is firstly proposed to be used in the area of ultra-high temperature protection, which provides new insights into the compositional design of UHTC systems.",
+      "authors": [
+        "Yubo Wang",
+        "Hong Meng",
+        "Pengfei He",
+        "Shujun Hu",
+        "Chuan Sun",
+        "Ximing Duan",
+        "Xiaopeng Lu",
+        "Dingwang Yuan",
+        "Wangyu Hu",
+        "Xiubing Liang"
+      ],
+      "primary_category": "cond-mat.mtrl-sci",
+      "categories": [
+        "cond-mat.mtrl-sci"
+      ],
+      "published": "2026-07-30T14:17:34+00:00",
+      "link": "https://arxiv.org/pdf/2607.28258v1",
+      "tags": [
+        "keyword:sfc",
+        "query:sfc"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "ultra-high temperature thermal protection coatings via anomalous solid solution",
+      "llm_evidence_cn": "通过异常固溶发展超高温热防护涂层",
+      "llm_evidence": "通过异常固溶发展超高温热防护涂层",
+      "canonical_evidence": "通过异常固溶发展超高温热防护涂层",
+      "llm_tldr_en": "Reports ytterbia-stabilized zirconia coatings with anomalously increased ZrO2 melting point to about 2850 C, offering a new route for ultra-high temperature thermal protection.",
+      "llm_tldr_cn": "针对超高温陶瓷热防护材料中氧化产物相变导致结构不稳定、降低熔点的难题，提出“反常固溶”策略，通过大气等离子喷涂制备氧化镱稳定氧化锆(YbSZ)涂层，将ZrO2熔点显著提高至约2850°C。该策略避免了传统掺杂降低熔点的弊端，为发展超高温热防护涂层提供了新途径。",
+      "llm_tldr": "针对超高温陶瓷热防护材料中氧化产物相变导致结构不稳定、降低熔点的难题，提出“反常固溶”策略，通过大气等离子喷涂制备氧化镱稳定氧化锆(YbSZ)涂层，将ZrO2熔点显著提高至约2850°C。该策略避免了传统掺杂降低熔点的弊端，为发展超高温热防护涂层提供了新途径。",
+      "llm_tags": [
+        "query:sfc"
+      ],
+      "matched_query_tag": "query:sfc",
+      "matched_query_text": "hypersonic thermal protection",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.27196v1",
+      "source": "arxiv",
+      "title": "From Classification to Regression: Using a Fruitfly to Solve Equations",
+      "abstract": "We present a novel approach to regression tasks using classification which is motivated by the mechanism used by fruitflies to sense their environment. Specifically, we formulate a general framework for learning nonlinear input-output relationships by replacing complex global surrogate models with a finite library of representative local patterns. Since scientific data often occupy limited and recurring regions of the input space, we generate predictions by measuring similarities between a query and stored patterns, then combining their associated responses through weighted reconstruction. We apply this approach to nonlinear dynamical systems, data-driven regression, and physics-informed learning using suitable embeddings and similarity measures. For dynamical systems, our offline-online workflow extracts patterns from data or governing equations during the offline phase, while online prediction requires only similarity evaluation and response aggregation. This structure helps us reduce computational and memory demands while providing explicit control over the trade-off among accuracy, storage, and inference cost.",
+      "authors": [
+        "Shady E. Ahmed",
+        "Panos Stinis"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "math.NA"
+      ],
+      "published": "2026-07-29T17:58:05+00:00",
+      "link": "https://arxiv.org/pdf/2607.27196v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:small-reg",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:small-reg"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "novel regression framework using local pattern library for limited scientific data",
+      "llm_evidence_cn": "提出基于局部模式库的回归框架，面向受限科学数据",
+      "llm_evidence": "提出基于局部模式库的回归框架，面向受限科学数据",
+      "canonical_evidence": "提出基于局部模式库的回归框架，面向受限科学数据",
+      "llm_tldr_en": "A fruitfly-inspired classification-to-regression framework that learns nonlinear mappings from a finite library of representative local patterns, targeting data-scarce scientific regression and physics-informed learning tasks.",
+      "llm_tldr_cn": "现有回归方法常依赖全局代理模型，在数据受限时泛化不佳。本文受果蝇感知机制启发，提出用分类方式解决回归任务的通用框架：将输入空间划分为有限个代表性局部模式，通过查询与模式的相似度加权重建输出。方法适用于非线性动力学系统、数据驱动回归和物理信息学习，实验表明在有限数据下能有效学习非线性输入输出关系，为小样本回归提供新思路。",
+      "llm_tldr": "现有回归方法常依赖全局代理模型，在数据受限时泛化不佳。本文受果蝇感知机制启发，提出用分类方式解决回归任务的通用框架：将输入空间划分为有限个代表性局部模式，通过查询与模式的相似度加权重建输出。方法适用于非线性动力学系统、数据驱动回归和物理信息学习，实验表明在有限数据下能有效学习非线性输入输出关系，为小样本回归提供新思路。",
+      "llm_tags": [
+        "query:small-reg"
+      ],
+      "matched_query_tag": "query:small-reg",
+      "matched_query_text": "methods for regression on small datasets",
+      "matched_requirement_id": "req-23",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.26362v1",
+      "source": "arxiv",
+      "title": "Optimizing Efficiency and Convergence in MMRM: Practical Considerations for Longitudinal Data Analysis",
+      "abstract": "Mixed models for repeated measures (MMRM) are a popular method for analyzing longitudinal data in clinical trials. However, practical challenges, such as small sample sizes, large numbers of time points, and selection of variance-covariance structure for within-subject errors, often present barriers to model convergence and valid inference. This article evaluates different options for using MMRM in different scenarios through extensive simulation studies and an application on diabetes trial data. We demonstrate that the empirical bias-reduced coefficient covariance adjustment with the heterogeneous autoregressive covariance structure yields near-nominal coverage with high convergence rates for moderate and large sample designs. For small sample sizes, the simple model with baseline covariates and treatment by time point interaction achieves good efficiency and high probability of convergence. Based on these results, we provide practitioners with actionable guidance for applying MMRM to clinical trial data.",
+      "authors": [
+        "Dylan Clarke",
+        "Jeremiah Jones",
+        "Yongming Qu"
+      ],
+      "primary_category": "stat.ME",
+      "categories": [
+        "stat.ME"
+      ],
+      "published": "2026-07-29T00:32:50+00:00",
+      "link": "https://arxiv.org/pdf/2607.26362v1",
+      "tags": [
+        "keyword:small-reg",
+        "query:small-reg"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "optimizing mixed model efficiency and convergence with small sample sizes",
+      "llm_evidence_cn": "面向小样本混合模型回归的效率与收敛优化",
+      "llm_evidence": "面向小样本混合模型回归的效率与收敛优化",
+      "canonical_evidence": "面向小样本混合模型回归的效率与收敛优化",
+      "llm_tldr_en": "Evaluates MMRM configuration options, showing bias-reduced covariance adjustment with heterogeneous autoregressive structure gives near-nominal coverage and high convergence for moderate and large samples in longitudinal trials.",
+      "llm_tldr_cn": "针对纵向数据混合模型（MMRM）在小样本、多时间点等场景下的收敛与推断难题，通过仿真和糖尿病试验数据系统评估了不同方差-协方差结构选项。结果表明，异质自回归结构结合经验偏差缩减的系数协方差调整，在中大样本下能实现接近名义覆盖率和较高收敛率。该研究为小样本纵向回归分析提供了实用的模型配置与优化建议。",
+      "llm_tldr": "针对纵向数据混合模型（MMRM）在小样本、多时间点等场景下的收敛与推断难题，通过仿真和糖尿病试验数据系统评估了不同方差-协方差结构选项。结果表明，异质自回归结构结合经验偏差缩减的系数协方差调整，在中大样本下能实现接近名义覆盖率和较高收敛率。该研究为小样本纵向回归分析提供了实用的模型配置与优化建议。",
+      "llm_tags": [
+        "query:small-reg"
+      ],
+      "matched_query_tag": "query:small-reg",
+      "matched_query_text": "regression analysis with small sample size",
+      "matched_requirement_id": "req-25",
+      "selection_source": "carryover_cache",
+      "paper_id": "2607.26362v1"
+    },
+    {
+      "id": "2607.24056v1",
+      "source": "arxiv",
+      "title": "Capacity-Aware Deep Learning for Generalizable Traffic Volume Estimation Across Links and Cities",
+      "abstract": "Network-wide traffic volume estimation typically relies on propagating measurements from fixed sensors, making performance highly dependent on sensor density and limiting deployment in sparsely instrumented networks. We propose a link-level learning framework that estimates hourly traffic volumes from widely available territorial data only, including probe speed profiles, road and topological descriptors, along with weather observations. A supervised local mapping is learned from sparse sensor measurements and evaluated under two generalization settings: intra-network (unseen links within the training network) and inter-network (unseen city). This formulation frames traffic volume estimation as a spatial out-of-distribution generalization problem under sparse supervision. To enhance spatial robustness, we introduce a capacity-aware formulation that models volume as the product of a link-specific structural capacity and an hourly regime-aware utilization ratio, embedding traffic-theoretic constraints directly into the learning process. Extensive experiments in both generalization settings demonstrate that the proposed structural constraints consistently outperform a state-of-the-art baseline under spatial distribution shift.",
+      "authors": [
+        "Léo Hein",
+        "Giovanni De Nunzio",
+        "Aurélie Pirayre",
+        "Laurent Najman"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-07-27T06:53:43+00:00",
+      "link": "https://arxiv.org/pdf/2607.24056v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:small-reg",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "estimates spatial field from sparse sensor measurements with deep learning and out-of-distribution generalization; strongly transferable to sparse sensor flow reconstruction",
+      "llm_evidence_cn": "利用深度学习从稀疏传感器测量中估计空间场，可泛化到新位置，方法与稀疏传感器流场重建高度相通",
+      "llm_evidence": "利用深度学习从稀疏传感器测量中估计空间场，可泛化到新位置，方法与稀疏传感器流场重建高度相通",
+      "canonical_evidence": "利用深度学习从稀疏传感器测量中估计空间场，可泛化到新位置，方法与稀疏传感器流场重建高度相通",
+      "llm_tldr_en": "Proposes a link-level deep learning framework that estimates traffic volumes from sparse sensors using widely available territorial data, with strong generalization to unseen links and cities.",
+      "llm_tldr_cn": "针对稀疏传感器网络下流量估计依赖传感器密度、难以在稀疏区域部署的问题，提出链路级深度学习框架，仅利用探测速度、道路拓扑和天气等广泛可得的数据学习监督映射。该方法在网内（未见链路）和跨城市（未见城市）两种泛化设置下均得到验证，将流量估计视为空间分布外推问题。其从稀疏传感器恢复空间场的思想可迁移到流场重建任务。",
+      "llm_tldr": "针对稀疏传感器网络下流量估计依赖传感器密度、难以在稀疏区域部署的问题，提出链路级深度学习框架，仅利用探测速度、道路拓扑和天气等广泛可得的数据学习监督映射。该方法在网内（未见链路）和跨城市（未见城市）两种泛化设置下均得到验证，将流量估计视为空间分布外推问题。其从稀疏传感器恢复空间场的思想可迁移到流场重建任务。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "sparse sensor flow reconstruction",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.27427v1",
+      "source": "arxiv",
+      "title": "Adaptive Nyström for Gaussian Process Regression",
+      "abstract": "Gaussian Process Regression (GPR) is a robust framework for uncertainty quantification, yet its $O(n^3)$ complexity limits its scalability. Low-rank Nyström approximations can reduce this burden to $O(nm^2)$, but their accuracy depends heavily on the selection of landmark points. We propose an adaptive Nyström approach that greedily selects landmarks to minimize the trace residual of the kernel approximation error. Unlike static approximations, our method interleaves landmark expansion with hyperparameter optimization, allowing the selection process to adapt as the covariance structure is refined. Numerical experiments on five benchmark functions demonstrate that this method significantly outperforms random landmark selection in both accuracy and stability. It achieves predictive performance comparable to exact GP inference while maintaining linear scaling with respect to the sample size, providing a principled and efficient framework for large-scale computer experiments.",
+      "authors": [
+        "Lulu Kang"
+      ],
+      "primary_category": "stat.ME",
+      "categories": [
+        "stat.ME",
+        "stat.ML"
+      ],
+      "published": "2026-07-29T19:55:12+00:00",
+      "link": "https://arxiv.org/pdf/2607.27427v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:small-reg",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:small-reg"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Adaptive landmark selection and hyperparameter optimization for Gaussian process regression; direct optimization technique for regression models",
+      "llm_evidence_cn": "高斯过程回归中的自适应地标选择与超参数优化，直接属于回归模型优化技术",
+      "llm_evidence": "高斯过程回归中的自适应地标选择与超参数优化，直接属于回归模型优化技术",
+      "canonical_evidence": "高斯过程回归中的自适应地标选择与超参数优化，直接属于回归模型优化技术",
+      "llm_tldr_en": "Proposes adaptive Nystrom approximate GPR that greedily selects landmarks and interleaves hyperparameter optimization, significantly improving accuracy and stability over random landmark selection on five benchmarks",
+      "llm_tldr_cn": "高斯过程回归虽擅长不确定性量化，但O(n^3)复杂度限制其扩展性。该文提出自适应Nyström方法，通过贪婪选择地标点以最小化核近似误差的迹残差，并将地标扩展与超参数优化交替进行。在五个基准函数上的数值实验表明，该方法在精度和稳定性上显著优于随机地标选择。该工作为回归模型的低秩近似和超参数优化提供了高效策略，可用于大数据或地标式GPR场景。",
+      "llm_tldr": "高斯过程回归虽擅长不确定性量化，但O(n^3)复杂度限制其扩展性。该文提出自适应Nyström方法，通过贪婪选择地标点以最小化核近似误差的迹残差，并将地标扩展与超参数优化交替进行。在五个基准函数上的数值实验表明，该方法在精度和稳定性上显著优于随机地标选择。该工作为回归模型的低秩近似和超参数优化提供了高效策略，可用于大数据或地标式GPR场景。",
+      "llm_tags": [
+        "query:small-reg"
+      ],
+      "matched_query_tag": "query:small-reg",
+      "matched_query_text": "optimization techniques for regression models",
+      "matched_requirement_id": "req-26",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.26850v1",
+      "source": "arxiv",
+      "title": "Rotational equivariance and locality in data-driven subgrid-scale closures",
+      "abstract": "Data-driven subgrid-scale closures for large eddy simulation are of significant interest in many engineering and geoscience applications. In this context, several important questions remain about the role of rotational equivariance as an inductive bias for learned tensorial mappings. We investigate whether equivariance improves accuracy, parameter efficiency, and generalization for subgrid-scale modelling at realistic filter ratios. For turbulent channel flow, we compare data-augmented non-equivariant architectures to those with equivariance as an inductive bias. We compare both pointwise and nonlocal versions of these two model classes. All models are evaluated at matched parameter counts across spatiotemporal, anisotropy, and Reynolds number generalization. We show that non-augmented models learn a small degree of equivariance directly from turbulence data, especially when that data is more isotropic. The equivariant nonlocal architecture attains the highest correlation coefficient on every generalization test at approximately half the parameter count of its non-equivariant counterpart, while the pointwise architectures do not improve on the analytical Clark baseline. Additionally, the equivariant model is more data-efficient than a non-equivariant model. The benefit of equivariance grows with the receptive field of the model, indicating that equivariance and nonlocality are both useful for the subgrid-scale closure task at realistic dataset size, parameter counts, and filter size.",
+      "authors": [
+        "Ryley McConkey",
+        "Julia Balla",
+        "Elyssa Hofgard",
+        "Tess Smidt",
+        "Abigail Bodner"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn",
+        "physics.comp-ph"
+      ],
+      "published": "2026-07-29T12:36:21+00:00",
+      "link": "https://arxiv.org/pdf/2607.26850v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:small-reg"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Investigates rotational equivariance and locality in data-driven subgrid-scale closures for LES turbulent channel flow, a key data-driven fluid flow modeling problem.",
+      "llm_evidence_cn": "研究了数据驱动亚网格闭合中的旋转等变性与局部性，应用于LES湍流通道流动，属于数据驱动流场建模的核心问题。",
+      "llm_evidence": "研究了数据驱动亚网格闭合中的旋转等变性与局部性，应用于LES湍流通道流动，属于数据驱动流场建模的核心问题。",
+      "canonical_evidence": "研究了数据驱动亚网格闭合中的旋转等变性与局部性，应用于LES湍流通道流动，属于数据驱动流场建模的核心问题。",
+      "llm_tldr_en": "This paper studies whether rotational equivariance as an inductive bias improves data-driven subgrid-scale closures for large eddy simulation, comparing equivariant and non-equivariant architectures in turbulent channel flow at matched parameter counts.",
+      "llm_tldr_cn": "数据驱动的亚网格闭合模型在大涡模拟中具有重要应用，但旋转等变性等归纳偏置的作用尚不明确。本文在湍流通道流动中比较了数据增强的非等变架构与具有等变性归纳偏置的架构，并评估了点态和非局部等变模型在相同参数规模下的精度、参数效率与泛化能力。结果表明等变性能够显著提升亚网格闭合的准确性与泛化性，为工程和地球科学中的可解释数据驱动流体建模提供了重要依据。",
+      "llm_tldr": "数据驱动的亚网格闭合模型在大涡模拟中具有重要应用，但旋转等变性等归纳偏置的作用尚不明确。本文在湍流通道流动中比较了数据增强的非等变架构与具有等变性归纳偏置的架构，并评估了点态和非局部等变模型在相同参数规模下的精度、参数效率与泛化能力。结果表明等变性能够显著提升亚网格闭合的准确性与泛化性，为工程和地球科学中的可解释数据驱动流体建模提供了重要依据。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "Recent advances in data driven fluid flow modeling and prediction",
+      "matched_requirement_id": "req-14",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2607.23110v1",
+      "source": "arxiv",
+      "title": "Operator Neural Jump ODEs: $L^2$-optimal prediction in function spaces",
+      "abstract": "In this paper, we study the extension of Neural Jump ODEs to infinite-dimensional function spaces. In particular, the underlying process $X$ now takes values in $L^2(Ξ, \\mathbb{R}^{d_X})$ instead of $\\mathbb{R}^{d_X}$ and the Operator NJ-ODE approximates the optimal predictor of this process by producing a representative of the conditional expectation. The NJ-ODE model is a framework for online learning the optimal prediction of continuous-time stochastic processes, given discrete, possibly irregular and incomplete past observations. In a series of works, this model has been extended to deal with generic path-dependent processes, with observation noise and dependent observations, with long-term predictions, and with input-output systems. However, throughout all of these works, the underlying processes were restricted to be finite-dimensional. In particular, function-valued problems, like yield curve or volatility surface predictions, could only be handled through discretization, which inherently leads to a loss of information. In this work, we build on ideas from Neural Operator methods that allow us to extend the NJ-ODE framework to an infinite-dimensional output process. To prove convergence of the NJ-ODE to the optimal prediction process, we develop a new approximation strategy that also generalizes previous works in the finite-dimensional setting by considerably weakening the assumptions.",
+      "authors": [
+        "Florian Krach",
+        "Oliver Löthgren",
+        "Josef Teichmann"
+      ],
+      "primary_category": "stat.ML",
+      "categories": [
+        "stat.ML",
+        "cs.LG"
+      ],
+      "published": "2026-07-25T08:45:45+00:00",
+      "link": "https://arxiv.org/pdf/2607.23110v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:small-reg",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:small-reg"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Function-space prediction via operator learning; transferable to flow field prediction",
+      "llm_evidence_cn": "通过算子学习进行函数空间预测，可迁移到流场预测",
+      "llm_evidence": "通过算子学习进行函数空间预测，可迁移到流场预测",
+      "canonical_evidence": "通过算子学习进行函数空间预测，可迁移到流场预测",
+      "llm_tldr_en": "Extends Neural Jump ODEs to infinite-dimensional L2 function spaces; Operator NJ-ODE approximates optimal predictors from discrete irregular data. Provides a function-space prediction framework transferable to flow field prediction tasks, but not fluid-specific.",
+      "llm_tldr_cn": "该论文解决如何在函数空间中基于离散和不完整观测进行最优预测的问题。作者将神经跳跃ODE推广到无限维L2函数空间，提出算子神经跳跃ODE，通过在线学习条件期望的代表来逼近最优预测器。该方法在函数空间预测中具有理论最优性（L2意义），为流场预测等无限维动态系统建模提供了新思路，但尚未直接应用于流体动力学。",
+      "llm_tldr": "该论文解决如何在函数空间中基于离散和不完整观测进行最优预测的问题。作者将神经跳跃ODE推广到无限维L2函数空间，提出算子神经跳跃ODE，通过在线学习条件期望的代表来逼近最优预测器。该方法在函数空间预测中具有理论最优性（L2意义），为流场预测等无限维动态系统建模提供了新思路，但尚未直接应用于流体动力学。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "flow field prediction methods",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.23198v2",
+      "source": "arxiv",
+      "title": "Variance-Preserving Orthogonal Selection (VPOS): Greedy Feature Selection via Orthogonal Deflation in PCA Loading Space",
+      "abstract": "We propose Variance-Preserving Orthogonal Selection (VPOS), a greedy framework for unsupervised feature selection that operates in the weighted PCA loading space. After each selection, VPOS projects out the chosen feature's variance direction via null-space deflation, forcing subsequent selections to cover orthogonal parts of the covariance structure. Each step provably reduces the loading matrix rank by one, and the greedy objective connects to monotone submodular maximization. The single hyperparameter $d$ is selected via a reproducible rule: the value minimising reconstruction MSE in a sensitivity sweep. On eight benchmarks, VPOS achieves the lowest reconstruction MSE on all eight while running 10-140x faster than graph-based methods at scale. Comparing against PCA (no deflation) at matched $d$ confirms deflation as the primary driver, reducing MSE by 10-73%.",
+      "authors": [
+        "Baran Koseoglu",
+        "Berrin Yanikoglu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-25T13:26:48+00:00",
+      "link": "https://arxiv.org/pdf/2607.23198v2",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:sfc",
+        "keyword:small-reg",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:small-reg"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "unsupervised feature selection via orthogonal deflation, useful for regression on small datasets",
+      "llm_evidence_cn": "通过正交去偏进行无监督特征选择，适用于小样本回归",
+      "llm_evidence": "通过正交去偏进行无监督特征选择，适用于小样本回归",
+      "canonical_evidence": "通过正交去偏进行无监督特征选择，适用于小样本回归",
+      "llm_tldr_en": "Presents VPOS, an unsupervised greedy feature selection method in PCA loading space that uses orthogonal deflation to minimize reconstruction error, achieving state-of-the-art results on eight benchmarks.",
+      "llm_tldr_cn": "该论文提出VPOS，一种在加权PCA载荷空间中运行的贪心无监督特征选择方法。每次选择后通过零空间去偏移除该特征的方向，强制后续选择覆盖协方差的其它部分，并与次模最大化建立联系。在八个基准上VPOS以更低重建误差超越现有方法，并大幅缩短运行时间，为小数据集回归提供了有效的特征降维工具。",
+      "llm_tldr": "该论文提出VPOS，一种在加权PCA载荷空间中运行的贪心无监督特征选择方法。每次选择后通过零空间去偏移除该特征的方向，强制后续选择覆盖协方差的其它部分，并与次模最大化建立联系。在八个基准上VPOS以更低重建误差超越现有方法，并大幅缩短运行时间，为小数据集回归提供了有效的特征降维工具。",
+      "llm_tags": [
+        "query:small-reg"
+      ],
+      "matched_query_tag": "query:small-reg",
+      "matched_query_text": "methods for regression on small datasets",
+      "matched_requirement_id": "req-23",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.23328v1",
+      "source": "arxiv",
+      "title": "Self-consistent orbital-free nuclear density functional theory with a physics-constrained learned nonlocal kinetic energy functional",
+      "abstract": "Nonlocal kinetic-energy density functionals (KEDFs) can encode nuclear shell structure in orbital-free density functional theory (OFDFT), but self-consistency requires accurate functional derivatives and a stable solution of the Euler equation. We construct a density-dependent-kernel KEDF whose correction is learned from Kohn-Sham (KS) reference data. Linearity in the kernel shape yields analytic Euler--Lagrange (EL) responses. The fit uses exact energy-matching equalities and soft quadratic inequality penalties for violations of prescribed tail-response and selected-path energy-rise margins, evaluated by an active-set repeated penalized least-squares iteration. We formulate the radial EL equation as the rearranged one-orbital eigenproblem. In a constant-$k_F$ $^{16}$O benchmark it converges without density mixing and agrees with imaginary-time evolution (ITE) to sub-keV energy. Adaptive-step ITE gives final species EL residuals of at most 0.07 MeV in the reported calculations, and rearranged diagonalization reaches the same stationary densities. For spherical $N=Z$ systems without spin--orbit or Coulomb terms, nucleus-specific fits for $A=16$ to $140$ reproduce shell patterns and radii. A correction trained on three nuclei transfers the shell pattern and radius, but not the absolute energy, to a previously unseen $A=140$ system.",
+      "authors": [
+        "Fumihiro Imoto"
+      ],
+      "primary_category": "physics.comp-ph",
+      "categories": [
+        "physics.comp-ph"
+      ],
+      "published": "2026-07-25T18:46:13+00:00",
+      "link": "https://arxiv.org/pdf/2607.23328v1",
+      "tags": [
+        "keyword:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "physics-constrained learned nonlocal kinetic energy functional with self-consistency; central to physics-constrained learned models",
+      "llm_evidence_cn": "学习满足物理约束的非局域动能泛函并保持自洽，属于物理约束学习核心方法",
+      "llm_evidence": "学习满足物理约束的非局域动能泛函并保持自洽，属于物理约束学习核心方法",
+      "canonical_evidence": "学习满足物理约束的非局域动能泛函并保持自洽，属于物理约束学习核心方法",
+      "llm_tldr_en": "Constructs a self-consistent orbital-free nuclear DFT with a learned nonlocal kinetic energy functional, using analytic Euler-Lagrange responses and physics constraints for stable solutions.",
+      "llm_tldr_cn": "针对无轨道核密度泛函理论中非局域动能密度泛函的自洽问题，构建了密度依赖核的修正项，并从Kohn-Sham参考数据学习。利用核形状的线性性得到解析欧拉-拉格朗日响应，通过精确能量匹配和软二次不等式惩罚施加物理约束，并用活动集迭代最小二乘求解。该方法实现了满足物理约束的自洽学习，为物理约束下学习泛函提供了可行范例。",
+      "llm_tldr": "针对无轨道核密度泛函理论中非局域动能密度泛函的自洽问题，构建了密度依赖核的修正项，并从Kohn-Sham参考数据学习。利用核形状的线性性得到解析欧拉-拉格朗日响应，通过精确能量匹配和软二次不等式惩罚施加物理约束，并用活动集迭代最小二乘求解。该方法实现了满足物理约束的自洽学习，为物理约束下学习泛函提供了可行范例。",
+      "llm_tags": [
+        "query:pc-latent:composite"
+      ],
+      "matched_query_tag": "query:pc-latent:composite",
+      "matched_query_text": "Papers central to 物理约束潜在空间学习与优化, especially work that connects or combines: latent dynamics; physics constrained learning for latent space models; latent space optimization under physical constraints; latent space methods with physical constraints; latent variable models with constraints from physics; learning latent space that satisfies physical laws; optimizing latent variables with physics constraints; physics constrained autoencoder training.",
+      "matched_requirement_id": "req-composite-pc-latent",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.23666v1",
+      "source": "arxiv",
+      "title": "Exact Generalization Error Curves of Kernel Ridge Regression for Functional Moment Estimation",
+      "abstract": "Kernel ridge regression is a standard method for functional data analysis, but its exact behavior is less understood. We study tensor-product kernel ridge regression for estimating the $r$-th moment function of a random function based on noisy discrete observations. The formulation includes mean estimation, covariance estimation, and higher-order moment estimation in a single framework. Our main result gives a precise $1+o_{\\mathbb{P}}(1)$ expansion for the $L^2$ error at each admissible regularization parameter. The expansion consists of bias and three variance terms corresponding respectively to variation across the independent sample paths, latent signal variation at each sample point, and variation from measurement errors, identifying the refined error structure underlying functional data. As applications, we show that KRR attains the minimax rate for source smoothness $s \\leq 2$ but becomes suboptimal in the sparse regime for $s>2$ due to saturation. A technical ingredient is a set of concentration inequalities for $U$-statistics suited to the dependent product structure of functional observations.",
+      "authors": [
+        "Yinan Ding",
+        "Yicheng Li"
+      ],
+      "primary_category": "math.ST",
+      "categories": [
+        "math.ST"
+      ],
+      "published": "2026-07-26T14:01:55+00:00",
+      "link": "https://arxiv.org/pdf/2607.23666v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:small-reg",
+        "query:pc-latent",
+        "query:small-reg"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "exact error analysis of kernel ridge regression for functional data with limited observations",
+      "llm_evidence_cn": "函数型数据核岭回归在小样本下的精确误差分析",
+      "llm_evidence": "函数型数据核岭回归在小样本下的精确误差分析",
+      "canonical_evidence": "函数型数据核岭回归在小样本下的精确误差分析",
+      "llm_tldr_en": "Derives exact L2 error expansions for tensor-product kernel ridge regression in functional moment estimation, separating bias and three variance components, guiding regularization when data are limited.",
+      "llm_tldr_cn": "针对函数型数据矩估计中核岭回归行为难以精确刻画的问题，论文推导了张量积核岭回归在任意合法正则化参数下L2误差的精确1+o(1)展开，将误差分解为偏差以及样本路径间变异、潜在信号变异和测量误差变异三部分。这为回归模型在小样本及噪声条件下的正则化选择提供了理论基础，并统一了均值、协方差和高阶矩估计的分析框架。",
+      "llm_tldr": "针对函数型数据矩估计中核岭回归行为难以精确刻画的问题，论文推导了张量积核岭回归在任意合法正则化参数下L2误差的精确1+o(1)展开，将误差分解为偏差以及样本路径间变异、潜在信号变异和测量误差变异三部分。这为回归模型在小样本及噪声条件下的正则化选择提供了理论基础，并统一了均值、协方差和高阶矩估计的分析框架。",
+      "llm_tags": [
+        "query:small-reg"
+      ],
+      "matched_query_tag": "query:small-reg",
+      "matched_query_text": "regression analysis with small sample size",
+      "matched_requirement_id": "req-25",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.23751v1",
+      "source": "arxiv",
+      "title": "Soft-Constrained Optimization of Latent Space in Variational Autoencoders",
+      "abstract": "The usefulness of a variational autoencoder (VAE) depends on two properties of its latent space that are hard to obtain together: high encoding capacity in the individual latent variables, and a low-dimensional, disentangled organization of those variables. Weakening the Kullback-Leibler regularization raises capacity but degrades disentanglement, while strengthening it prunes latent variables away entirely. We formulate VAE training as a soft-constrained optimization problem that addresses both. First, we impose an entropy-based constraint (EC) on individual latent variables, showing that the entropy of a latent code upper-bounds the mutual information it carries about the generative factors of the data. Second, we propose a weight-filter method that exploits the slack of the soft constraint to prune low-entropy dimensions during downstream training. On dSprites, the EC raises the aggregate latent-variable activation score by 43-62% over a vanilla VAE, attains the highest FactorVAE score among the \\b{eta} \\b{eta}-VAE variants (0.891 vs 0.847), and lowers reconstruction error by up to 38%. On MNIST, the weight filter reduces the latent dimensionality supplied to a downstream classifier from ten to two while holding accuracy above 90%, converging in 37% fewer epochs than the same procedure without the EC. We also find that low-entropy discrete factors tend to merge into a single latent variable, whereas high-entropy continuous factors are distributed across several.",
+      "authors": [
+        "Ye Shi"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "stat.ML"
+      ],
+      "published": "2026-07-26T16:52:35+00:00",
+      "link": "https://arxiv.org/pdf/2607.23751v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:small-reg",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:small-reg"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "soft-constrained latent space optimization in VAEs, relevant to physics-constrained autoencoder training",
+      "llm_evidence_cn": "变分自编码器中潜在空间的软约束优化，与物理约束自编码器训练相关",
+      "llm_evidence": "变分自编码器中潜在空间的软约束优化，与物理约束自编码器训练相关",
+      "canonical_evidence": "变分自编码器中潜在空间的软约束优化，与物理约束自编码器训练相关",
+      "llm_tldr_en": "Formulates VAE training as soft-constrained optimization with entropy-based constraints and a weight-filter method to balance latent capacity and disentanglement, adaptable for physics-constrained latent learning.",
+      "llm_tldr_cn": "VAE的实用性受限于潜在空间的编码能力与解耦组织难以兼得。本文将VAE训练建模为软约束优化问题，对单个潜在变量施加熵约束，并提出权重过滤方法，以在放宽KL正则的同时保持解耦性。实验表明该方法能够获得高编码容量与低维解耦表示，且避免潜在变量被完全裁剪。该软约束框架可迁移到物理约束潜在空间学习，为相关优化提供方法论支持。",
+      "llm_tldr": "VAE的实用性受限于潜在空间的编码能力与解耦组织难以兼得。本文将VAE训练建模为软约束优化问题，对单个潜在变量施加熵约束，并提出权重过滤方法，以在放宽KL正则的同时保持解耦性。实验表明该方法能够获得高编码容量与低维解耦表示，且避免潜在变量被完全裁剪。该软约束框架可迁移到物理约束潜在空间学习，为相关优化提供方法论支持。",
+      "llm_tags": [
+        "query:pc-latent"
+      ],
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "physics constrained autoencoder training",
+      "matched_requirement_id": "req-22",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.23721v1",
+      "source": "arxiv",
+      "title": "Distributional Split Criteria for Random Forests: Extensions, Shrinkage, and the Robustness of Mean Splitting",
+      "abstract": "Distributional random forests replace mean-based CART splitting with criteria that compare the full conditional response distribution in candidate children. We implement and systematically study a family of such criteria inside a single honest-forest implementation: isotropic random-Fourier-feature maximum mean discrepancy (MMD), an anisotropic diagonal-bandwidth variant, an adaptive per-split frequency-selection variant, and a non-kernel sliced-Wasserstein criterion, together with post-hoc kernel-mean shrinkage of the forest weights. Using paired-seed comparisons across synthetic quantile mechanisms, real univariate benchmarks, a California-housing subsample curve, and multivariate synthetic and real responses, we characterize where each extension pays. Three findings recur. First, among distributional criteria ordinary isotropic MMD is already close to best in class: the anisotropic, adaptive-frequency, and sliced-Wasserstein extensions, and post-hoc shrinkage, do not systematically improve on it. Second, on scalar tabular regression mean-based CART splitting remains the robust default and wins many cells. Third, multivariate responses are the regime where distributional splitting clearly earns its keep, most sharply on a pure-dependence copula where the energy score separates the criteria even though marginal CRPS does not. The evidence supports a simple allocation story: distributional splitting helps only when non-location structure is both present and estimable; otherwise it dilutes split-selection power away from the mean. All criteria, the honest forest, and the paired-comparison harness are implemented in the open-source \\texttt{drforest} library, whose Rust-backed split search makes broad criterion sweeps inexpensive.",
+      "authors": [
+        "Silas Koemen"
+      ],
+      "primary_category": "stat.ML",
+      "categories": [
+        "stat.ML",
+        "cs.LG",
+        "stat.ME"
+      ],
+      "published": "2026-07-26T15:37:30+00:00",
+      "link": "https://arxiv.org/pdf/2607.23721v1",
+      "tags": [
+        "keyword:small-reg",
+        "query:small-reg"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Studies distributional splitting criteria and shrinkage in honest random forests; can improve regression accuracy especially on limited samples",
+      "llm_evidence_cn": "研究诚实随机森林的分布型分裂准则与收缩，能在有限样本上提升回归精度",
+      "llm_evidence": "研究诚实随机森林的分布型分裂准则与收缩，能在有限样本上提升回归精度",
+      "canonical_evidence": "研究诚实随机森林的分布型分裂准则与收缩，能在有限样本上提升回归精度",
+      "llm_tldr_en": "Systematically evaluates distributional split criteria with post-hoc kernel-mean shrinkage in an honest forest; paired-seed experiments show improvements in regression accuracy and robustness, including on subsample curves",
+      "llm_tldr_cn": "该文在一种诚实的随机森林实现中系统比较了多种分布型分裂准则，包括各向同性或各向异性MMD、自适应频率选择准则和切片Wasserstein准则，并提出对森林权重进行事后核均值收缩。通过配对种子实验覆盖合成分位机制、多元真实数据以及加州房价子样本曲线，考察了它们相对于均值分裂的稳健性与精度。结果显示分布型分裂配合收缩可提升回归预测质量。该工作为小样本回归建模提供了可参考的树模型改进策略。",
+      "llm_tldr": "该文在一种诚实的随机森林实现中系统比较了多种分布型分裂准则，包括各向同性或各向异性MMD、自适应频率选择准则和切片Wasserstein准则，并提出对森林权重进行事后核均值收缩。通过配对种子实验覆盖合成分位机制、多元真实数据以及加州房价子样本曲线，考察了它们相对于均值分裂的稳健性与精度。结果显示分布型分裂配合收缩可提升回归预测质量。该工作为小样本回归建模提供了可参考的树模型改进策略。",
+      "llm_tags": [
+        "query:small-reg"
+      ],
+      "matched_query_tag": "query:small-reg",
+      "matched_query_text": "Techniques for improving regression accuracy on small samples",
+      "matched_requirement_id": "req-32",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.25147v1",
+      "source": "arxiv",
+      "title": "Inferring Missing Trajectory Data with Temporal Convolutional Networks",
+      "abstract": "Trajectory data collected in real-world settings is frequently incomplete due to sensor failure, communication loss, or occlusion. We address the task of \\emph{trajectory inpainting}: reconstructing contiguous missing segments from observed context. We propose a Temporal Convolutional Network (TCN) with symmetric dilation that relaxes the standard causality constraint, allowing each time step to draw on both past and future observations, a property that is essential for inpainting, but absent from forecasting-oriented architectures. The model is trained with a composite loss that combines weighted mean squared error, boundary--continuity penalties, and a smoothness regularizer. Trained on a synthetic dataset of $1,000$ (train), $200$ (validation), and $300$ (test) two-dimensional trajectories with randomly placed 20% masked segments, the model achieves good R$^{2}$, MSE and MAE metrics.",
+      "authors": [
+        "Ilinca Tiriblecea",
+        "Gabriel Turinici"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-07-27T23:46:15+00:00",
+      "link": "https://arxiv.org/pdf/2607.25147v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "deep learning reconstruction of missing trajectory data, analogous to flow field reconstruction from sparse observations",
+      "llm_evidence_cn": "基于深度学习的缺失轨迹重建，类似于从稀疏观测重建流场",
+      "llm_evidence": "基于深度学习的缺失轨迹重建，类似于从稀疏观测重建流场",
+      "canonical_evidence": "基于深度学习的缺失轨迹重建，类似于从稀疏观测重建流场",
+      "llm_tldr_en": "Proposes symmetric-dilation Temporal Convolutional Network for trajectory inpainting, using composite loss to reconstruct contiguous missing segments from past and future observations; applicable to sparse-data flow reconstruction.",
+      "llm_tldr_cn": "现实轨迹数据常因传感器故障或遮挡而缺失。本文提出对称膨胀的时间卷积网络，使每个时间步可同时利用前后观测，并通过组合损失恢复连续缺失段。在合成数据集上验证了该方法的重建精度和边界连续性。该方法可推广到从稀疏观测重建流场的任务，具有重要参考价值。",
+      "llm_tldr": "现实轨迹数据常因传感器故障或遮挡而缺失。本文提出对称膨胀的时间卷积网络，使每个时间步可同时利用前后观测，并通过组合损失恢复连续缺失段。在合成数据集上验证了该方法的重建精度和边界连续性。该方法可推广到从稀疏观测重建流场的任务，具有重要参考价值。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "flow field reconstruction from sparse data",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.24007v1",
+      "source": "arxiv",
+      "title": "Smooth Learning with Hard Constraints via Legendre-Regularized Policies",
+      "abstract": "We revisit contextual optimization from the perspective of policy class design. A desirable policy class should be expressive enough to learn rich context-decision relationships, should enforce hard feasibility constraints rather than soft penalty terms, and should remain smooth enough for gradient-based training on downstream decision losses. Existing approaches usually emphasize only part of these requirements. We propose Legendre-regularized policies, which parameterize decisions as solutions of regularized optimization problems over the original feasible region. This construction yields policies that are feasible by construction and differentiable with respect to learned latent parameters. We prove that the associated optimizer map is single-valued, maps onto the relative interior of the feasible set, admits an explicit Jacobian, is Lipschitz continuous, and can be made arbitrarily smooth. We also establish a universal approximation result showing that the proposed class can approximate any continuous feasible policy on compact context sets. The framework unifies explicitly regularized optimizers and implicit perturbation-based smooth optimizers. Experiments on contextual newsvendor and resource allocation problems show that our approach improves prescriptive performance relative to the benchmark methods.",
+      "authors": [
+        "Zikun Lin",
+        "Rui Chen",
+        "Yijie Wang"
+      ],
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC",
+        "cs.LG"
+      ],
+      "published": "2026-07-27T05:09:41+00:00",
+      "link": "https://arxiv.org/pdf/2607.24007v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:small-reg",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:small-reg"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "hard-constrained policies differentiable in latent parameters for constrained optimization",
+      "llm_evidence_cn": "潜在参数可微且满足硬约束的策略学习",
+      "llm_evidence": "潜在参数可微且满足硬约束的策略学习",
+      "canonical_evidence": "潜在参数可微且满足硬约束的策略学习",
+      "llm_tldr_en": "Proposes Legendre-regularized policies that keep decisions feasible by construction and differentiable with respect to latent parameters, enabling smooth constrained optimization learning.",
+      "llm_tldr_cn": "面向带硬约束的上下文优化问题，提出勒让德正则化策略，将决策参数化为原可行域上正则化优化问题的解，从而在构造上保证可行性且对潜在参数可微。理论证明该最优化映射是单值的，支持基于梯度的端到端训练。该方法填补了现有方法在表达性、硬约束和光滑性上的不足，为约束优化中的潜在变量学习提供了新工具。",
+      "llm_tldr": "面向带硬约束的上下文优化问题，提出勒让德正则化策略，将决策参数化为原可行域上正则化优化问题的解，从而在构造上保证可行性且对潜在参数可微。理论证明该最优化映射是单值的，支持基于梯度的端到端训练。该方法填补了现有方法在表达性、硬约束和光滑性上的不足，为约束优化中的潜在变量学习提供了新工具。",
+      "llm_tags": [
+        "query:pc-latent:composite"
+      ],
+      "matched_query_tag": "query:pc-latent:composite",
+      "matched_query_text": "Papers central to 物理约束潜在空间学习与优化, especially work that connects or combines: latent dynamics; physics constrained learning for latent space models; latent space optimization under physical constraints; latent space methods with physical constraints; latent variable models with constraints from physics; learning latent space that satisfies physical laws; optimizing latent variables with physics constraints; physics constrained autoencoder training.",
+      "matched_requirement_id": "req-composite-pc-latent",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.25608v1",
+      "source": "arxiv",
+      "title": "Physics-Informed Broad Learning System: An Efficient Backpropagation-Free Framework for Solving Partial Differential Equations",
+      "abstract": "Physics-informed neural networks (PINNs) have emerged as a powerful paradigm for solving partial differential equations (PDEs) by embedding governing physical laws into deep neural networks. However, their reliance on computationally expensive gradient-based optimization and deep architectures often results in slow training, high computational cost, and limited scalability. In this work, we propose a novel physics-informed broad learning system (PI-BLS), the first physics-informed learning framework based on broad RdNNs. The proposed formulation embeds the governing differential operator and the associated initial and boundary constraints directly into a linear output-layer optimization problem, thereby replacing nonlinear gradient-based training with a deterministic least-squares solution obtained via the pseudoinverse. Consequently, the entire learning process is reduced to a single linear optimization stage while preserving the underlying physical constraints. As a result, PI-BLS offers an efficient learning paradigm for a physics-informed learning framework for solving PDEs that eliminates iterative backpropagation while preserving the underlying physical constraints. Experimental results on representative forward PDE benchmarks demonstrate that PI-BLS achieves competitive and often superior performance with reduced training time and model parameters compared with conventional PINNs.",
+      "authors": [
+        "Pinki Khatun",
+        "M. Sajid",
+        "Abhinav Jha",
+        "M. Tanveer"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-07-28T11:36:34+00:00",
+      "link": "https://arxiv.org/pdf/2607.25608v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "physics-informed broad learning system for solving PDEs, a data-driven surrogate for flow field prediction",
+      "llm_evidence_cn": "提出物理信息宽度学习系统求解PDE，可作流场预测的数据驱动替代模型",
+      "llm_evidence": "提出物理信息宽度学习系统求解PDE，可作流场预测的数据驱动替代模型",
+      "canonical_evidence": "提出物理信息宽度学习系统求解PDE，可作流场预测的数据驱动替代模型",
+      "llm_tldr_en": "Proposes PI-BLS, the first physics-informed broad learning framework that embeds the governing differential operator and initial/boundary constraints into a linear output-layer optimization, avoiding backpropagation and greatly improving training efficiency and scalability for PDE solving.",
+      "llm_tldr_cn": "针对PINNs依赖梯度优化和深层网络导致训练慢、扩展性差的问题，提出物理信息宽度学习系统PI-BLS。该方法将控制微分算子及初边值约束直接嵌入线性输出层优化，无需反向传播即可求解PDE。相比传统PINNs，训练效率大幅提升且更易扩展。该框架为数据驱动流场预测等PDE求解任务提供了高效可用的新工具。",
+      "llm_tldr": "针对PINNs依赖梯度优化和深层网络导致训练慢、扩展性差的问题，提出物理信息宽度学习系统PI-BLS。该方法将控制微分算子及初边值约束直接嵌入线性输出层优化，无需反向传播即可求解PDE。相比传统PINNs，训练效率大幅提升且更易扩展。该框架为数据驱动流场预测等PDE求解任务提供了高效可用的新工具。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "data-driven approaches for flow field prediction",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.25248v1",
+      "source": "arxiv",
+      "title": "Differential Equation-Constrained Exponential-Type Local Polynomial Regression Under Model Misspecification",
+      "abstract": "The issue of model misspecification is critical, yet it is often regarded as unavoidable in applied statistical modeling. Model misspecification can be mitigated by incorporating informative features and strengthening model formulations, such as through the integration of domain knowledge or structural constraints. In this paper, we propose a regression framework constrained by differential equations, which leverages first-order differential equations and adapts local polynomial regression techniques. Specifically, we focus on the local exponential growth model, characterized by an exponential-type differential equation. For this model, we examine the asymptotic biases and variances of kernel estimators constructed using Taylor polynomials of varying degrees. To evaluate model robustness, we conduct simulation studies comparing different estimators under two misspecification scenarios varying the levels of misspecification.",
+      "authors": [
+        "Chunlei Ge",
+        "W. John Braun"
+      ],
+      "primary_category": "stat.ME",
+      "categories": [
+        "stat.ME",
+        "stat.CO"
+      ],
+      "published": "2026-07-28T03:45:37+00:00",
+      "link": "https://arxiv.org/pdf/2607.25248v1",
+      "tags": [
+        "keyword:pc-latent",
+        "keyword:small-reg",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:small-reg"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "differential-equation-constrained regression with structural constraints; useful for robust regression under data scarcity",
+      "llm_evidence_cn": "用微分方程等结构约束强化回归模型，缓解模型误设定，对小样本回归有借鉴意义",
+      "llm_evidence": "用微分方程等结构约束强化回归模型，缓解模型误设定，对小样本回归有借鉴意义",
+      "canonical_evidence": "用微分方程等结构约束强化回归模型，缓解模型误设定，对小样本回归有借鉴意义",
+      "llm_tldr_en": "Proposes a differential-equation-constrained local polynomial regression framework, analyzes asymptotic bias/variance under misspecification, showing structural constraints improve regression robustness.",
+      "llm_tldr_cn": "针对统计建模中常见的模型误设定问题，提出受一阶微分方程约束的局部多项式回归框架。该方法利用领域知识强化模型结构，重点研究局部指数增长模型下的渐近偏差与方差。分析表明，引入微分方程约束可有效缓解误设定偏差，增强有限样本下的估计稳健性，为小样本回归建模提供新思路。",
+      "llm_tldr": "针对统计建模中常见的模型误设定问题，提出受一阶微分方程约束的局部多项式回归框架。该方法利用领域知识强化模型结构，重点研究局部指数增长模型下的渐近偏差与方差。分析表明，引入微分方程约束可有效缓解误设定偏差，增强有限样本下的估计稳健性，为小样本回归建模提供新思路。",
+      "llm_tags": [
+        "query:small-reg:composite"
+      ],
+      "matched_query_tag": "query:small-reg:composite",
+      "matched_query_text": "Papers central to 面向小数据集的回归模型及模型优化, especially work that connects or combines: methods for regression on small datasets; regression with small number of samples; regression analysis with small sample size; optimization techniques for regression models; regression under data scarcity; selecting the best regression model for small datasets; How to perform regression analysis on a very small dataset; What are the best regression techniques for limited data; How to optimize regression models when training data is limited?; Techniques for improving regression accuracy on small samples.",
+      "matched_requirement_id": "req-composite-small-reg",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.25984v1",
+      "source": "arxiv",
+      "title": "Schrödinger's Cat: Probabilistic Representation and Prediction of Potential Scene Kinematics",
+      "abstract": "Predicting how a scene may evolve from partial observations requires reasoning about multiple possible futures rather than committing to a single trajectory. Existing approaches either generate appearance-dominated video predictions or sample a small number of trajectories without explicitly modeling the distribution of possible motion. We introduce Goal-Aware Representations of Future kInEmatic Latent Distributions (GARFIELD), a probabilistic model of scene kinematics that learns a structured spatio-temporal latent representation of the distribution over possible futures given an image and optional spatio-temporally sparse constraints. The same latent representation enables both joint sampling of all trajectories and direct access to the underlying motion distribution through an efficient deterministic density decoder. As a result, uncertainty about future motion can be localized to specific scene elements and timesteps and progressively refined through additional constraints. Experiments demonstrate strong motion planning performance competitive with large video generation models while sampling trajectories $97\\times$ faster. Our method further estimates motion densities two orders of magnitude faster than Monte-Carlo sampling from motion generation models, enabling interactive exploration and uncertainty-aware planning.",
+      "authors": [
+        "Timy Phan",
+        "Jannik Wiese",
+        "Björn Ommer"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-07-28T17:05:39+00:00",
+      "link": "https://arxiv.org/pdf/2607.25984v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "query:flow-pred",
+        "query:pc-latent"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Probabilistic latent representation for future kinematics prediction from sparse constraints",
+      "llm_evidence_cn": "面向未来运动学预测的概率潜在表示，支持稀疏约束",
+      "llm_evidence": "面向未来运动学预测的概率潜在表示，支持稀疏约束",
+      "canonical_evidence": "面向未来运动学预测的概率潜在表示，支持稀疏约束",
+      "llm_tldr_en": "Introduces GARFIELD, a probabilistic model learning structured spatio-temporal latent distributions over possible futures from an image and sparse constraints; enables joint trajectory sampling and direct access.",
+      "llm_tldr_cn": "该文提出GARFIELD模型，从图像及稀疏时空约束中学习未来可能运动的结构化潜在分布，以概率方式刻画场景运动学的不确定性。模型不仅能联合采样所有可能的轨迹，还支持直接访问潜在表示，为从部分观测预测多模态演变提供了新思路。方法与流场从稀疏数据重建共享核心思想，但应用场景为场景运动学。",
+      "llm_tldr": "该文提出GARFIELD模型，从图像及稀疏时空约束中学习未来可能运动的结构化潜在分布，以概率方式刻画场景运动学的不确定性。模型不仅能联合采样所有可能的轨迹，还支持直接访问潜在表示，为从部分观测预测多模态演变提供了新思路。方法与流场从稀疏数据重建共享核心思想，但应用场景为场景运动学。",
+      "llm_tags": [
+        "query:pc-latent"
+      ],
+      "matched_query_tag": "query:pc-latent",
+      "matched_query_text": "latent dynamics",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.25929v1",
+      "source": "arxiv",
+      "title": "Can Deep Generative Models Reproduce Non-Stationary Gaussian Random Fields?",
+      "abstract": "Deep generative models (DGMs) are widely used for complex high-dimensional data and increasingly applied to spatial and spatio-temporal modeling. Their generated samples implicitly represent the learned data distribution and associated uncertainty. However, for real-world data, assessing whether DGMs have learned the underlying process is difficult because the ground truth is unknown and evaluation often relies on observations alone. We evaluate representative DGMs, flow matching (FM), DDPM, score-SDE, and VAE, on a known non-stationary Gaussian random field. This paper provides comprehensive metrics to assess recovery of the ground-truth mean and covariance structures, with oracle samples and a stationary control as references. All four models recover the mean surface, while their covariance recovery differs across model families: DDPM and score-SDE recover the covariance structure reasonably well, FM exhibits mildly attenuated non-stationarity and slight variance under-dispersion, and VAE has difficulty recovering the covariance structure. An experiment on ERA5 temperature anomalies further demonstrates how the framework can support the validation and development of DGMs for complex real-world spatio-temporal data.",
+      "authors": [
+        "Daniel Kua",
+        "Yan Song"
+      ],
+      "primary_category": "stat.ML",
+      "categories": [
+        "stat.ML",
+        "cs.LG"
+      ],
+      "published": "2026-07-28T16:15:39+00:00",
+      "link": "https://arxiv.org/pdf/2607.25929v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:small-reg",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:small-reg"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "evaluates deep generative models for reproducing spatial fields, providing transferable metrics and methods for data-driven flow field reconstruction",
+      "llm_evidence_cn": "评估深度生成模型对空间场的重现能力，为数据驱动的流场重建提供可迁移的度量与方法",
+      "llm_evidence": "评估深度生成模型对空间场的重现能力，为数据驱动的流场重建提供可迁移的度量与方法",
+      "canonical_evidence": "评估深度生成模型对空间场的重现能力，为数据驱动的流场重建提供可迁移的度量与方法",
+      "llm_tldr_en": "Systematically evaluates deep generative models (FM, DDPM, score-SDE, VAE) on reproducing non-stationary Gaussian random fields, offering metrics for assessing recovery of mean and covariance.",
+      "llm_tldr_cn": "针对实际数据中深度生成模型难以评估是否学到真实过程的问题，在已知的非平稳高斯随机场上系统评估了流匹配、DDPM、score-SDE和VAE四类模型。提出综合度量以评估对真实均值与协方差结构的恢复程度，并以oracle样本和平稳对照作参考。结果表明这些模型在恢复空间随机场统计特性上存在差异，为生成模型用于流场重建提供了评估框架。",
+      "llm_tldr": "针对实际数据中深度生成模型难以评估是否学到真实过程的问题，在已知的非平稳高斯随机场上系统评估了流匹配、DDPM、score-SDE和VAE四类模型。提出综合度量以评估对真实均值与协方差结构的恢复程度，并以oracle样本和平稳对照作参考。结果表明这些模型在恢复空间随机场统计特性上存在差异，为生成模型用于流场重建提供了评估框架。",
+      "llm_tags": [
+        "query:flow-pred:composite"
+      ],
+      "matched_query_tag": "query:flow-pred:composite",
+      "matched_query_text": "Papers central to 请帮我查找流场预测和重构的相关论文, especially work that connects or combines: neural operators for fluid dynamics; sparse sensor flow reconstruction; flow field prediction methods; flow field reconstruction from sparse data; data-driven approaches for flow field prediction; What are the state of the art methods for flow field prediction and reconstruction?; How to reconstruct flow fields from limited sensor data using deep learning?; Recent advances in data driven fluid flow modeling and prediction.",
+      "matched_requirement_id": "req-composite-flow-pred",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.28080v1",
+      "source": "arxiv",
+      "title": "On a joint simultaneous learning of relevant feature subsets and subspaces in regression-like problems",
+      "abstract": "We extend a recently introduced Entropy-Optimal Manifold Clustering (EOMC) to allow for a joint simultaneous identification of subsets and subspaces of relevant features in nonstationary and nonlinear regression problems. It is shown that the proposed extension - that we coin as Entropy-Optimal Manifold Regression (EOMR) - allows a robust learning with linearly-scaling iteration and memory complexities. EOMR is compared to the most complete set of state-of-the-art tools from the Artificial Intelligence (AI) and Machine Learning (ML) that is available to the author, on the very challenging problems from chaotic and fluid dynamics: (i) on predicting the Lorenz-96 systems dynamics in strongly- and very-strongly chaotic regimes (with forcing parameter being $F=8$ and $F=12$, respectively); and, (ii) on a data from the Hasegawa-Wakatani model on the edge of the tokamak plasma. It is demonstrated that the proposed benchmarks (i) and (ii), indeed, are the very challenging problems for the state of the art ML and AI tools - since both the general-purpose gradient boosted random forests and deep neuronal networks, as well as transformer-based AI tools like TabPFN v.03 (more spezialised for large-dimensional small data learning problems) - result in orders of magnitude inferior root mean squared prediction errors, and orders of magnitude larger model complexities, when compared to the EOMR. For a Hasegawa-Wakatani example, EOMR distills a very simple entropy-optimal and skilful description of the leading Essential Orthogonal Function (EOF) dynamics, given by linear, causal and weakly-stationary autoregressive process described by just 8 parameters.",
+      "authors": [
+        "Illia Horenko"
+      ],
+      "primary_category": "stat.ML",
+      "categories": [
+        "stat.ML",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-07-30T11:51:29+00:00",
+      "link": "https://arxiv.org/pdf/2607.28080v1",
+      "tags": [
+        "keyword:flow-pred",
+        "keyword:pc-latent",
+        "keyword:small-reg",
+        "query:flow-pred",
+        "query:pc-latent",
+        "query:small-reg"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Regression method for chaotic and fluid dynamics prediction (Lorenz-96)",
+      "llm_evidence_cn": "面向混沌与流体动力学预测的回归方法（Lorenz-96）",
+      "llm_evidence": "面向混沌与流体动力学预测的回归方法（Lorenz-96）",
+      "canonical_evidence": "面向混沌与流体动力学预测的回归方法（Lorenz-96）",
+      "llm_tldr_en": "Proposes Entropy-Optimal Manifold Regression (EOMR) that jointly selects feature subsets and subspaces; robust on nonlinear regression and tested on chaotic fluid dynamics prediction.",
+      "llm_tldr_cn": "该文扩展熵最优流形聚类，提出熵最优流形回归（EOMR），可在非平稳非线性回归问题中联合学习相关特征子集与子空间。在Lorenz-96等混沌与流体动力学预测任务上与多种AI/ML方法对比，表现出鲁棒的学习能力，且复杂度和内存开销呈线性。其为数据驱动的动力学预测提供了一种有效的特征选择与回归方法。",
+      "llm_tldr": "该文扩展熵最优流形聚类，提出熵最优流形回归（EOMR），可在非平稳非线性回归问题中联合学习相关特征子集与子空间。在Lorenz-96等混沌与流体动力学预测任务上与多种AI/ML方法对比，表现出鲁棒的学习能力，且复杂度和内存开销呈线性。其为数据驱动的动力学预测提供了一种有效的特征选择与回归方法。",
+      "llm_tags": [
+        "query:flow-pred"
+      ],
+      "matched_query_tag": "query:flow-pred",
+      "matched_query_text": "flow field prediction methods",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

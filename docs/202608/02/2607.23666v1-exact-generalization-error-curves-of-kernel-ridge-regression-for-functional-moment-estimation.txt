@@ -1,0 +1,10634 @@
+Title: Exact Generalization Error Curves of Kernel Ridge Regression for Functional Moment Estimation
+
+URL Source: https://arxiv.org/pdf/2607.23666v1
+
+Published Time: Tue, 28 Jul 2026 01:26:15 GMT
+
+Number of Pages: 74
+
+Markdown Content:
+# Exact Generalization Error Curves of Kernel Ridge Regression for Functional Moment Estimation 
+
+Yinan Ding 
+
+Zhili College, Tsinghua University Haidian District, Beijing 100084, China 
+
+dingyn23@mails.tsinghua.edu.cn 
+
+Yicheng Li ∗
+
+KLATASDS-MOE, School of Statistics East China Normal University 3663 North Zhongshan Road, Shanghai 200062, China 
+
+ycli@sfs.ecnu.edu.cn 
+
+July 28, 2026 
+
+Abstract 
+
+Kernel ridge regression is a standard method for functional data analysis, but its exact behavior is less understood. We study tensor-product kernel ridge regression for estimating the r-th moment function of a random function based on noisy discrete observations. The formulation includes mean estimation, covariance estimation, and higher-order moment estimation in a single framework. Our main result gives a precise 1+ oP(1) expansion for the L2 error at each admissible regularization parameter. The expansion consists of bias and three variance terms corresponding respectively to variation across the independent sample paths, latent signal variation at each sample point, and variation from measurement errors, identifying the refined error structure underlying functional data. As applications, we show that KRR attains the minimax rate for source smoothness s ≤ 2 but becomes suboptimal in the sparse regime for s > 2 due to saturation. A technical ingredient is a set of concentration inequalities for U -statistics suited to the dependent product structure of functional observations. 
+
+Keywords: kernel ridge regression, functional data analysis, generalization error, moment estimation, U-statistics 
+
+# 1 Introduction 
+
+In recent years, functional data analysis (FDA) has become a powerful statistical framework for analyzing high-dimensional data, where the basic observation is a random function or curve rather than a finite-dimensional vector. These curves are usually observed only through noisy and dis-cretized evaluations (Ramsay and Silverman, 1997; Wang et al., 2016; Hsing and Eubank, 2015). A fundamental problem in FDA is to recover population features of the underlying random function from these discrete observations, such as the mean and covariance functions (Rice and Silverman, 1991; Yao et al., 2005; Li and Hsing, 2010). These population features are often used for downstream tasks such as functional principal component analysis (FPCA) (Hall et al., 2006) and functional regression. As one of the most popular approaches in FDA, kernel methods, particularly kernel ridge regression (KRR), have been widely studied in terms of minimax optimality for mean and covariance estimation (Cai and Yuan, 2011, 2010; Gupta and Sriperumbudur, 2026). In these works, two main 
+
+> ∗Corresponding author.
+
+1arXiv:2607.23666v1 [math.ST] 26 Jul 2026 sources of error are often identified: the finite number of independent curves and the finite number of point evaluations per curve. Consequently, a phase transition (Cai and Yuan, 2011, 2010; Zhang and Wang, 2016; Gupta and Sriperumbudur, 2026) has been established between the sparse observation regime, where each curve is observed only a few times, and the dense observation regime, where each curve is observed many times. However, such theory about optimal rates does not describe the full regularization path of a kernel estimator, and only provides an upper bound on the generalization error up to constant or logarithmic factors. It remains unknown how the generalization error changes with the regulariza-tion parameter, how bad the error can be when the regularization parameter is not optimally tuned, and how different sources of error contribute to the total error. Knowing the answers to these ques-tions would contribute to a comprehensive understanding of the behavior of KRR for functional data, and would also be useful for practical applications, such as generalized cross-validation and hyperparameter tuning. Thus, determining the exact generalization error of KRR, not merely its upper bound, is of both theoretical and practical interest. In this paper, we unify mean, covariance, and higher-order moment estimation in a single frame-work of tensor-product KRR. We provide an exact characterization of the generalization error of the KRR estimator in the form of a 1 + oP(1) expansion, which is valid for all admissible regular-ization parameters. This expansion identifies refined contributions from different sources of error, including curve-level variation, latent point variation, measurement noise, and bias. Simulation studies confirm that the expansion accurately predicts the generalization error curve. 
+
+1.1 Problem Formulation 
+
+Let I be a compact metric input space equipped with a Borel probability measure ρ, e.g., I =[0 , 1] with the Lebesgue measure. Let X(·) : I → R be a random function, and X1, . . . , X n be independent copies of X. For each curve Xi, the i.i.d. sampling locations tij ∈ I , 1 ≤ j ≤ m, are drawn from ρ, and we observe 
+
+yij = Xi(tij ) + εij , 1 ≤ i ≤ n, 1 ≤ j ≤ m, (1) where the design points and sample paths are mutually independent. The measurement errors 
+
+εij are mutually independent and are also independent of all sample paths and all design points, satisfying Eεij = 0 and Eε2 
+
+> ij
+
+= σ2.For a fixed integer r ≥ 1, the estimation target is the r-th moment function 
+
+μr(t1, . . . , t r) = E(X(t1) · · · X(tr)) , (t1, . . . , t r) ∈ I r. (2) By convention, we set μ0 = 1. We also use the covariance kernel of the r-fold product process. For 
+
+t = ( t1, . . . , t r) and s = ( s1, . . . , s r), define Σr(t; s) := Cov 
+
+> r
+
+Y
+
+> a=1
+
+X(ta),
+
+> r
+
+Y
+
+> a=1
+
+X(sa)
+
+!
+
+.
+
+Equivalently, as a function on I2r, Σ r = μ2r − μr ⊗ μr, where ( μr ⊗ μr)( t; s) = μr(t)μr(s). In particular, the mean function is given by r = 1: 
+
+m(t) = μ1(t) = EX(t).
+
+The covariance function is obtained from the first two moment functions: 
+
+C(t, s ) = Cov( X(t), X (s)) = Σ 1(t; s) = μ2(t, s ) − μ1(t)μ1(s).
+
+2Higher-order moment functions are also useful for describing distributional features of functional data beyond the mean and covariance; see, for example, recent work on functional moment regres-sion (Li et al., 2026). In terms of the generalization error, we are interested in the L2 excess risk with respect to the product measure ρ⊗r:
+
+E
+
+h
+
+∥ˆμr − μr∥2  
+
+> L2(Ir,ρ ⊗r)
+
+i
+
+= E
+
+Z 
+
+> Ir
+
+(ˆ μr(t) − μr(t)) 2 dρ⊗r(t)
+
+
+
+.
+
+1.2 Our Contributions 
+
+In this paper, we propose a unified tensor-product KRR estimator ˆ μr,λ for the r-th moment function 
+
+μr from discretely observed functional data. The estimator is built from products of observations from the same curve, with a convention that removes the diagonal noise bias (Cai and Yuan, 2010; Terada and Yara, 2026). We refer to Section 2.2 for details of the construction. Our main result provides the following deterministic equivalent. Write T := ( tij ) for the col-lection of design points. Under mild assumptions and for the regularization parameter λ in the admissible range (12), we prove that MSE r,λ (T ) := E
+
+h
+
+∥ˆμr,λ − μr∥2   
+
+> L2(Ir,ρ ⊗r)
+
+T
+
+i
+
+=(1 + oP(1)) 
+
+ 1
+
+n Vcurve (λ; Σ r) + 1
+
+mn Vpoint (λ; Σ r) + σ2
+
+mn Vnoise (λ; μ2r−2)
+
+
+
++ (1 + oP(1)) B(λ; μr)2.
+
+Here B(λ; μr) and the three V -terms are deterministic quantities, stated precisely in Section 3.1. The term B(λ; μr)2 is the squared bias; the term Vcurve captures variation across the n independent sample paths; the term Vpoint captures the fluctuation from the mn latent values Xi(tij ); the term 
+
+Vnoise accounts for the mn measurement errors. The expansion is precise even in constant factors, and it provides a complete characterization of the generalization error curve, showing how the error changes with the regularization parameter 
+
+λ. This viewpoint is related to recent learning curve analysis for KRR and spectral algorithms (Bordelon et al., 2020; Cui et al., 2022; Li et al., 2023, 2024a). These existing works focus on nonparametric regression where the observations are independent pairs with independent noise. In comparison, we study functional data, where different curves are independent but different sampling points on the same curve share the same random function and are therefore correlated. This difference leads to a substantially different and more complex error structure, which is reflected in the three variance contributions above. We formulate the source condition using the interpolation spaces [ H]s. This allows misspec-ification, namely the target need not belong to the RKHS when s < 1. Such assumptions are standard in KRR and spectral regularization theory (Caponnetto and De Vito, 2007; Lin et al., 2020; Fischer and Steinwart, 2020; Zhang et al., 2024), and have recently been used for mean and covariance estimation with spectral regularization (Gupta and Sriperumbudur, 2026). After opti-mizing λ, our expansion shows that KRR attains the minimax rate for smoothness s ≤ 2, recovering the sparse–dense phase transition known from FDA minimax theory for mean and covariance es-timation. When s > 2, it instead reveals the saturation of KRR in the sparse regime, in line with the qualification limit of Tikhonov regularization (Li et al., 2024b). The main contributions are as follows. 
+
+• We formulate general moment function estimation from discretely observed functional data as tensor-product KRR. The construction includes mean, covariance, and higher-order moment estimation in one framework. 3• We prove a 1 + oP(1) generalization error expansion for KRR. The expansion consists of four deterministic terms: the squared bias B2 and variance coefficients Vcurve , Vpoint , and Vnoise .This expansion identifies the refined error structure of functional data that was vague in the literature. 
+
+• As applications of the expansion, we show that KRR attains the minimax rate for s ≤ 2 in both the sparse and dense regimes. For s > 2, we prove its qualification-two saturation and resulting suboptimality in the sparse regime. 
+
+• On the technical side, we establish a Bernstein-type concentration inequality for operator-valued U -statistics. This inequality is of independent interest and may be useful for other problems in functional data analysis. 
+
+1.3 Related Work 
+
+Functional data and moment estimation. Functional data analysis has a broad literature; see, for example, Ramsay and Silverman (1997), Wang et al. (2016), and Hsing and Eubank (2015). A central problem is to estimate the mean and covariance functions from noisy discrete observations. Traditional approaches are often based on local smoothing or spline methods (Rice and Silverman, 1991; Yao et al., 2005; Li and Hsing, 2010). Kernel methods have also been widely used (Cai and Yuan, 2011, 2010; Gupta and Sriperumbudur, 2026). For independent design, the sparse– dense transition was made explicit for mean estimation by Cai and Yuan (2011) and for covariance estimation by Cai and Yuan (2010); related phenomena appear in FPCA and in unified sparse/dense asymptotics (Hall et al., 2006; Zhang and Wang, 2016). Later work developed covariance estimators with structural constraints such as positive semidefiniteness and low rank (Wong and Zhang, 2019; Wang et al., 2022). Gupta and Sriperumbudur (2026) studied spectral regularization for mean and covariance estimation under misspecified source conditions. More general covariance least-squares estimators have also been analyzed through oracle inequalities (Terada and Yara, 2026). These works mainly give optimized rates for mean and covariance estimators, while our target is to determine the exact generalization error for a general moment function. 
+
+KRR, misspecification, and learning curves. KRR is a central method in nonparametric regression and statistical learning (Steinwart and Christmann, 2008; Caponnetto and De Vito, 2007). It is also a basic example of spectral algorithms. Misspecified settings, where the target may lie outside the RKHS but inside an interpolation space, have been studied for KRR and spectral algorithms (Fischer and Steinwart, 2020; Lin et al., 2020; Zhang et al., 2024); for discretely observed functional data, closely related source conditions are used in Gupta and Sriperumbudur (2026). Beyond optimized rates, a more recent line of work studies learning curves, that is, how the error changes with the regularization parameter. Bordelon et al. (2020) used methods from Gaussian processes and statistical physics to derive spectrum-dependent learning curves for kernel regression and wide neural networks. Cui et al. (2022) studied KRR under Gaussian design and characterized the crossover from effectively noiseless to noisy regimes. Li et al. (2023) later gave rigorous matching asymptotic rates for the KRR learning curve. More recently, Li et al. (2024a) obtained a 1 + oP(1) deterministic equivalent for analytic spectral algorithms, which keeps the leading constant factors. Compared with these works, our main new feature is the independent-design functional-data sampling scheme. The observations are grouped by curves, and the latent signal fluctuation and measurement noise enter the learning curve in different ways; this leads to the three variance terms in the main expansion. 4U -statistic concentration. The concentration estimates needed in this paper are not for a single pooled U -statistic. A classical k-th order U -statistic based on independent observations Z1, . . . , Z N
+
+is 1
+
+ Nk
+
+ X 
+
+> 1≤i1<··· <i k≤N
+
+h(Zi1 , . . . , Z ik ).
+
+In our analysis the statistic is instead averaged first within each curve and then over curves: 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1
+
+m(m − 1) · · · (m − k + 1) 
+
+X 
+
+> j1,...,j kdistinct
+
+h(Zi,j 1 , . . . , Z i,j k ).
+
+Here h may be scalar-, vector-, or operator-valued. Classical scalar inequalities for U -statistics go back to Hoeffding (1963). Arcones (1995) used the Hoeffding decomposition to obtain Bernstein-type bounds for nondegenerate scalar U -statistics and U -processes, with the first projection playing the leading role. Terada and Yara (2026) recently used a modified Talagrand inequality for second-order scalar U -statistics to obtain oracle inequalities for covariance estimation. For Hilbert-valued U -statistics, Giraudo (2025) proved exponential inequalities by combining martingale inequalities, decoupling, and the Hoeffding decomposition. Operator-valued inequali-ties use a different set of tools. The matrix case is based on the matrix Laplace-transform method (Tropp, 2015), and Minsker (2017) extended this approach to self-adjoint operators on separable Hilbert spaces with bounds involving effective rank. By decoupling and the Hoeffding decomposi-tion, Sriperumbudur and Sterge (2022) derived a second-order operator-valued U -statistic inequal-ity, but its proof contains a gap in the derivation of the moment-generating function. Rather than relying on that result, we give an independent proof by inserting Hoeffding’s blocking representa-tion into the Tropp–Minsker matrix Laplace-transform argument, and obtain a general k-th-order inequality. 
+
+# 2 Preliminaries 
+
+2.1 RKHS 
+
+Let k : I × I → R be a continuous positive-definite kernel, and let H be its associated separable reproducing kernel Hilbert space. We write kx := k(x, ·). The reproducing property gives f (x) = 
+
+⟨f, k x⟩H , for f ∈ H , x ∈ I . Since I is compact and k is continuous, we assume that κ2 := sup x∈I k(x, x ) < ∞. Consequently, 
+
+∥f ∥L2(I,ρ ) ≤ ∥ f ∥L∞(I,ρ ) ≤ κ ∥f ∥H , f ∈ H ,
+
+so H is naturally and continuously embedded into L2(I, ρ ). The kernel integral operator T : L2(I, ρ ) → L2(I, ρ ) is defined by (T f )( x) := 
+
+Z
+
+> I
+
+k(x, x ′)f (x′) d ρ(x′). (3) It is positive, self-adjoint, compact, and trace class (Steinwart and Scovel, 2012). By Mercer’s theorem (Steinwart and Christmann, 2008), we have the eigendecomposition 
+
+T e j = λj ej , k(x, x ′) = 
+
+> ∞
+
+X
+
+> j=1
+
+λj ej (x)ej (x′), (4) 5where ( ej )j≥1 is an orthonormal system in L2(I, ρ ) chosen with continuous representatives, and the positive eigenvalues ( λj )j≥1 are repeated according to multiplicity. The latter series converges absolutely and uniformly on I × I .Following the literature (e.g. Caponnetto and De Vito, 2007; Zhang et al., 2024), we assume standard polynomial eigenvalue decay for the kernel integral operator T as follows. This assumption is satisfied by many Mat´ ern and Sobolev kernels under standard domain and design conditions, and is connected to the smoothness of the kernel and the underlying function space. 
+
+Assumption 1 (Eigenvalue Decay) . There exist β > 1 and constants 0 < c eig ≤ Ceig < ∞ such that 
+
+ceig j−β ≤ λj ≤ Ceig j−β , j ≥ 1.
+
+We further introduce the interpolation space of the RKHS (Steinwart and Scovel, 2012). For 
+
+s ≥ 0, define the fractional power 
+
+T sf =
+
+> ∞
+
+X
+
+> j=1
+
+λsj ⟨f, e j ⟩L2 ej
+
+on its natural domain. The interpolation space [ H]s is [H]s := Ran( T s/ 2) = 
+
+
+
+> ∞
+
+X
+
+> j=1
+
+aj λs/ 2 
+
+> j
+
+ej : ( aj )j≥1 ∈ ℓ2
+
+ ⊆ L2(I, ρ ).
+
+For f = P∞ 
+
+> j=1
+
+aj λs/ 2 
+
+> j
+
+ej and g = P∞ 
+
+> j=1
+
+bj λs/ 2 
+
+> j
+
+ej , define the inner product on [ H]s by 
+
+⟨f, g ⟩[H]s := 
+
+> ∞
+
+X
+
+> j=1
+
+aj bj =
+
+D
+
+T −s/ 2f, T −s/ 2g
+
+E 
+
+> L2
+
+.
+
+In particular, [ H]0 ⊆ L2(I, ρ ) and [ H]1 = H. The parameter s is the smoothness index on this interpolation scale: larger s requires faster decay of the coefficients in the eigenbasis, and therefore represents higher smoothness. To establish the precise generalization error to the greatest extent possible, we need to impose additional regularity conditions on the RKHS. We use the regular RKHS condition introduced in Li et al. (2024a). Let ( θm)m≥1 be the decreasing sequence of distinct positive eigenvalues of T and 
+
+Vm be the eigenspace associated with θm. Set dm = dim( Vm). Let km be the projection kernel onto the eigenspace Vm. Concretely, taking an orthonormal basis {em,ℓ : 1 ≤ ℓ ≤ dm} of Vm,
+
+km(x, x ′) := Pdm 
+
+> ℓ=1
+
+em,ℓ (x)em,ℓ (x′), which is independent of the chosen orthonormal basis of Vm. We make the following regularity assumption on the RKHS. 
+
+Assumption 2 (Regular RKHS) . There exists M > 0 such that, for every N ≥ 1,
+
+sup 
+
+> x∈I
+> N
+
+X
+
+> m=1
+
+km(x, x ) ≤ M
+
+> N
+
+X
+
+> m=1
+
+dm.
+
+This assumption is satisfied by many commonly used kernels. In particular, if the eigenfunctions are uniformly bounded, then the RKHS is regular. Moreover, this regularity condition is also closely connected to the embedding property of the RKHS. For α > 0, say that H has the embedding 6property of order α if [ H]α is continuously embedded into L∞(I, ρ ). Equivalently, the embedding norm Mα := ∥[H]α ,→ L∞(I, ρ )∥ is finite. The embedding index is defined as 
+
+α0 := inf {α > 0 : Mα < ∞} .
+
+It is easy to see that α = 1 satisfies the embedding property, and Fischer and Steinwart (2020, Lemma 10) has shown that α0 ≥ 1 
+
+> β
+
+. By the L∞-embedding characterization of Fischer and Stein-wart (2020, Theorem 9), the same quantity can be written as 
+
+M 2 
+
+> α
+
+=
+
+> ∞
+
+X
+
+> j=1
+
+λαj e2
+
+> j
+> L∞(ρ)
+
+= esssup 
+
+> x∈I ∞
+
+X
+
+> j=1
+
+λαj ej (x)2.
+
+According to Lemma 27, the embedding index satisfies α0 = 1 
+
+> β
+
+under Assumptions 1 and 2. It can also be found in Li et al. (2024a, Proposition 2.2). We remark that if we only have the embedding property of order α0 ≤ 1, then the error decomposition still holds but for a slightly restricted range of λ depending on α0.We next introduce a lower analogue of the regular RKHS condition, which is not needed for the proof of the main theorem but is used to obtain a lower bound for Vpoint in the noiseless case. 
+
+Assumption 3 (Lower regularity) . The spectral projection kernels satisfy 
+
+lim inf  
+
+> N→∞
+
+PNm=1 km(x, x )
+
+PNm=1 dm
+
+> 0 for ρ-a.e. x ∈ I .
+
+A uniform lower bound ei(x)2 ≥ c, valid for all sufficiently large i and all x ∈ I , immediately implies Assumption 3. We adapt the following examples from Li et al. (2024a, Examples 2.1–2.3 and Appendix B.1) to show that several broad classes of regular RKHSs also satisfy the lower regularity counterpart Assumption 3. 
+
+Example 1 (Shift-invariant periodic kernels) . Let I = Td = [ −π, π )d, and let ρ be the uni-form measure on Td. Suppose k(x, y ) = h(x − y) is shift-invariant. The Fourier basis {ϕℓ(x) = exp( √−1 ⟨ℓ, x ⟩) : ℓ ∈ Zd} gives eigenfunctions of T . Equivalently, over R, one may use the corre-sponding sine-cosine basis. For every eigenspace, the spectral projection has constant diagonal, and therefore km(x, x ) = dm for all x ∈ Td. Hence the RKHS is regular and satisfies Assumption 3. If the Fourier eigenvalues satisfy λℓ ≍ (1+ ∥ℓ∥2)−α, then H is equivalent to the Sobolev space Hα(Td),and [H]s is equivalent to Hsα (Td).
+
+Example 2 (Dot-product kernels on the sphere) . Let I = Sd be the d-dimensional sphere equipped with the uniform measure. Consider a dot-product kernel k(x, y ) = h(⟨x, y ⟩), where h is a function on [−1, 1] . By the Funk-Hecke formula (Dai and Xu, 2013, Theorem 1.2.9), the spherical harmonics of a fixed degree have a common eigenvalue under T . If dq denotes the dimension of the degree-
+
+q spherical harmonics, then dq =  q+dq
+
+ −  q−2+ dq−2
+
+ ≍ qd−1. Li et al. (2024a, Example 2.2 and Appendix B.1.1) showed that this RKHS is regular. The same formula for the spherical-harmonic projection kernels also gives Assumption 3; see Appendix E. 
+
+Example 3 (Dot-product kernels on the ball) . Let d ≥ 2, let I = Bd = {x ∈ Rd : ∥x∥ ≤ 1}, and let ρ be proportional to the classical weight W (x) = (1 − ∥ x∥2)−1/2. Consider again a dot-product kernel k(x, y ) = h(⟨x, y ⟩). The analogue of the Funk-Hecke formula on the ball (Dai and Xu, 2013, Theorem 11.1.9) shows that T acts by a scalar on the space of orthogonal polynomials of degree exactly q, whose dimension is  q+d−1
+
+> q
+
+. As in Li et al. (2024a, Example 2.3), this gives a regular RKHS. The same projection-kernel calculation also gives Assumption 3; see Appendix E. 
+
+72.2 Moment KRR Estimator 
+
+Before defining the estimator, we first introduce some notation for tensor products. For a probability measure ρ, ρ⊗r denotes the product measure on Ir. If H is a Hilbert space, H⊗r denotes its r-fold Hilbert tensor product; if A is a linear operator on H, A⊗r denotes the r-fold tensor-product operator acting on H⊗r. We use the convention H⊗0 = R and interpret an empty product as 1. The observation model is given in (1). Fix r ≥ 1, assume m ≥ r, and let μr be the moment target defined in (2). We write T = ( tij )1≤i≤n, 1≤j≤m for all design points. On Ir, we use the r-fold tensor-product RKHS 
+
+H⊗r = H ⊗ · · · ⊗ H 
+
+| {z } 
+
+> rtimes
+
+,
+
+whose reproducing kernel is (x, x′) 7 →
+
+> r
+
+Y
+
+> ℓ=1
+
+k(xℓ, x ′
+
+> ℓ
+
+), x = ( x1, . . . , x r), x′ = ( x′
+
+> 1
+
+, . . . , x ′
+
+> r
+
+).
+
+We write 
+
+K(x) := kx1 ⊗ · · · ⊗ kxr ∈ H ⊗r,
+
+so that f (x) = ⟨f, K (x)⟩H⊗r for f ∈ H ⊗r. The corresponding population tensor-product operator is 
+
+Trf (x) := 
+
+Z
+
+> Ir
+
+f (x′)
+
+> r
+
+Y
+
+> ℓ=1
+
+k(xℓ, x ′
+
+> ℓ
+
+) d ρ⊗r(x′), f ∈ H ⊗r.
+
+We denote the index set of distinct coordinates by 
+
+Irm := {(j1, . . . , j r) ∈ { 1, . . . , m }r : ja̸ = jb whenever a̸ = b}, (m)r := |Irm|.
+
+We also set I0 
+
+> m
+
+= {() } and ( m)0 = 1. For j = ( j1, . . . , j r) ∈ Irm, define the shorthand notation 
+
+tij := ( tij 1 , . . . , t ij r ), Yij := 
+
+> r
+
+Y
+
+> ℓ=1
+
+yij ℓ .
+
+Since the indices in j are distinct, the corresponding measurement errors are distinct and indepen-dent, and we have 
+
+E(Yij | T ) = μr(tij ).
+
+For f ∈ H ⊗r, define the empirical squared loss over the r-th moment observations as 
+
+L(r)
+
+> n,m
+
+(f ) := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1(m)r
+
+X
+
+> j∈Irm
+
+[Yij − f (tij )] 2 . (5) The moment KRR estimator is ˆμr,λ := arg min  
+
+> f∈H ⊗r
+
+h
+
+L(r)
+
+> n,m
+
+(f ) + λ ∥f ∥2
+
+> H⊗r
+
+i
+
+. (6) Using the representer theorem, (6) is solved explicitly as ˆμr,λ = ( ˆTr + λI )−1 ˆζr, (7) 8where ˆζr := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1(m)r
+
+X
+
+> j∈Irm
+
+Yij K(tij ) ∈ H ⊗r, (8) and ˆTr is an operator on H⊗r defined by ˆTr := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1(m)r
+
+X
+
+> j∈Irm
+
+K(tij ) ⊗ K(tij ). (9) Here u ⊗ v denotes the rank-one operator f 7 → ⟨ f, v ⟩H⊗r u. Thus ˆTr is the empirical counterpart of Tr. When r = 1 and r = 2, the estimator ˆ μr,λ corresponds to the estimation of the mean and second moment functions, respectively; the covariance function is obtained after centering (Cai and Yuan, 2011, 2010). 
+
+# 3 Main Results 
+
+We measure performance through the conditional generalization error MSE r,λ (T ) := E
+
+h
+
+∥ˆμr,λ − μr∥2   
+
+> L2(Ir,ρ ⊗r)
+
+| T 
+
+i
+
+.
+
+While this formulation is convenient for our analysis, the same results hold for the unconditional version or the high-probability version without taking expectations over T , but proving either ver-sion would involve technical complications beyond our scope. The remaining assumption concerns the regularity and nondegeneracy of the signal process. To state it, write the tensor eigen expansion of the target in L2(Ir, ρ ⊗r) as 
+
+ei := ei1 ⊗ · · · ⊗ eir , Λi := 
+
+> r
+
+Y
+
+> a=1
+
+λia , μr = X
+
+> i∈Nr
+
+ciei.
+
+Assumption 4 (Moment and Source Conditions) . There are constants s > 1/β , s1 > 1/β , and 
+
+s2 > 1/β such that the following conditions hold. 
+
+(i) For every s′ < s , μr ∈ ([ H]s′
+
+)⊗r.
+
+(ii) μr̸ = 0 . Moreover, if s < 2, then P 
+
+> Λi<λ
+
+c2 
+
+> i
+
+= Ω( λs) as λ ↓ 0.
+
+(iii) For q = 2 , 4, . . . , 2r − 4, μq is bounded by a positive number Cμq , i.e., |μq| ≤ Cμq .
+
+(iv) Σ r ∈ ([ H]s1 )⊗2r and μ2r−2 ∈ ([ H]s2 )⊗2r−2. By the embedding property, there exist 
+
+CΣr , C μ2r−2 > 0 such that |Σr| ≤ CΣr and |μ2r−2| ≤ Cμ2r−2 . Moreover, Σr̸ = 0 and 
+
+μ2r−2̸ = 0 .
+
+Remark 1 (Moment condition) . The following stronger moment condition is sufficient for As-sumption 4 (i) , (iii) , and the regularity and boundedness requirements in Assumption 4 (iv) . Suppose that there exists s > 1/β such that, for every s′ < s ,
+
+X ∈ [H]s′
+
+a.s. and E ∥X∥2r 
+
+> [H]s′
+
+< ∞.
+
+Indeed, this condition gives the source regularity of μr by taking expectations in the tensor expansion of X⊗r. It also implies the boundedness of the lower even moments in Assumption 4 (iii) through the 
+
+L∞ embedding of [H]s′
+
+for any s′ ∈ (1 /β, s ). Finally, choosing s1, s 2 ∈ (1 /β, s ) yields the regularity and boundedness of Σr and μ2r−2 required in Assumption 4 (iv) .
+
+9Example 4 (Exact power law μr). Suppose Assumption 1 holds and c2 
+
+> i
+
+≍ Λs+ 1 
+
+> β
+> i
+
+for some s > 1 
+
+> β
+
+.Then μr satisfies Assumption 4 (i) and (ii) . Similar forms are also considered in Cui et al. (2022) and Li et al. (2023). 
+
+3.1 Main Theorem 
+
+Let us define the deterministic squared bias by 
+
+B(λ; μr)2 := λ(Tr + λI )−1μr   
+
+> 2
+> L2(Ir,ρ ⊗r)
+
+, where Tr = T ⊗r. (10) The deterministic variance terms are more complicated. Write Tr,λ := Tr + λI . Let t = ( t1, . . . , t r), 
+
+t′ = ( t′
+
+> 1
+
+, . . . , t ′
+
+> r
+
+), and ˜ t = ( t1, . . . , t r−1), ˜ t′ = ( t′
+
+> 1
+
+, . . . , t ′
+
+> r−1
+
+). Denote by Eρ the expectation with respect to independent ρ-distributed random variables t1, . . . , t r, t ′
+
+> 1
+
+, . . . , t ′ 
+
+> r
+
+and ξ. Write ⟨· , ·⟩ L2 for the L2 inner product in L2(Ir, ρ ⊗r). Define the three variance terms as 
+
+Vcurve (λ; Σ r) := Eρ
+
+h
+
+Σr(t; t′)
+
+D
+
+T −1 
+
+> r,λ
+
+K(t), T −1 
+
+> r,λ
+
+K(t′)
+
+E
+
+> L2
+
+i
+
+,Vpoint (λ; Σ r) := rEρ
+
+h
+
+Σr(ξ, ˜t; ξ, ˜t′)
+
+D
+
+T −1 
+
+> r,λ
+
+K(ξ, ˜t), T −1 
+
+> r,λ
+
+K(ξ, ˜t′)
+
+E
+
+> L2
+
+i
+
+,Vnoise (λ; μ2r−2) := rEρ
+
+h
+
+μ2r−2(˜ t; ˜ t′)
+
+D
+
+T −1 
+
+> r,λ
+
+K(ξ, ˜t), T −1 
+
+> r,λ
+
+K(ξ, ˜t′)
+
+E
+
+> L2
+
+i
+
+.
+
+(11) Now, we are ready to state the main theorem of this paper. 
+
+Theorem 2. Suppose Assumptions 1, 2, and 4 hold, σ2 > 0, and λ = λ(n, m ) → 0. If 
+
+λ = Ω(( mn )−θ) for some 0 < θ < β, 
+
+
+
+log 1
+
+λ
+
+r−1
+
+= o(m), (12) 
+
+then 
+
+MSE r,λ (T ) =(1 + oP(1)) 
+
+ 1
+
+n Vcurve (λ; Σ r) + 1
+
+mn Vpoint (λ; Σ r) + σ2
+
+mn Vnoise (λ; μ2r−2)
+
+
+
++ (1 + oP(1)) B(λ; μr)2.
+
+(13) If the observations are noiseless, i.e., σ2 = 0, then the last variance term in (13) vanishes. In this case, we have the following result. 
+
+Proposition 3 (Noiseless case) . Suppose Assumptions 1–4 hold, and yij = Xi(tij ), equivalently 
+
+σ2 = 0 . If λ = λ(n, m ) → 0 satisfies (12), then 
+
+MSE r,λ (T ) = (1 + oP(1)) 
+
+ 1
+
+n Vcurve (λ; Σ r) + 1
+
+mn Vpoint (λ; Σ r)
+
+
+
++ (1 + oP(1)) B(λ; μr)2. (14) 
+
+# 4 Discussion 
+
+4.1 Consequences for Minimax Rates 
+
+Optimizing the regularization parameter λ in the deterministic equivalent (13) or (14) gives the rate achieved by moment KRR. Suppose that μr ∈ ([ H]s)⊗r for some s > 1/β , and set ˜ s := min( s, 2). By Lemma 16, the deterministic squared bias satisfies 
+
+B(λ; μr)2 = O(λ˜s).
+
+10 On the variance side, Lemmas 34 and 42 give 
+
+Vcurve (λ; Σ r) = Θ(1) , Vpoint (λ; Σ r) = O(λ−1/β ), Vnoise (λ; μ2r−2) = Θ( λ−1/β ).
+
+If σ2 > 0, the noise term contributes λ−1/β /(mn ). If σ2 = 0, Assumption 3 gives the corresponding lower bound Vpoint (λ; Σ r) ≍ λ−1/β ; see Lemma 35. Combining these estimates with (13) in the noisy case or with (14) in the noiseless case, one may choose 
+
+λ∗ so that 
+
+
+
+λ∗ ≍ (mn )−β/ (˜ sβ +1) , m ≲ n1/(˜ sβ ),m−β ≲ λ∗ ≲ n−1/˜s, m ≳ n1/(˜ sβ ).
+
+With this choice, the upper rate becomes MSE r,λ ∗ (T ) ≲P
+
+1
+
+n + ( mn )−˜sβ/ (˜ sβ +1) ≲
+
+
+
+(mn )−˜sβ/ (˜ sβ +1) , m ≲ n1/(˜ sβ ) (sparse) ,n−1, m ≳ n1/(˜ sβ ) (dense) . (15) This rate is known to be minimax optimal for r = 1 and r = 2 (Cai and Yuan, 2011, 2010), as long as s ≤ 2. Moreover, we have the following minimax lower bound for arbitrary fixed r ≥ 1. Let Pr,s (R) denote the class of probability measures P of X such that X ∈ [H]s almost surely and 
+
+EP ∥X∥2r 
+
+> [H]s
+
+≤ R2r. Write μr(P ) := EP X⊗r.
+
+Theorem 4. Suppose Assumption 1 holds. For fixed r ≥ 1, s > 1/β , R > 0, and σ2 > 0, there exists a constant c > 0 such that 
+
+inf  
+
+> bμ
+
+sup  
+
+> P∈P r,s (R)
+
+EP ∥bμ − μr(P )∥2   
+
+> L2(Ir,ρ ⊗r)
+
+≥ c
+
+ 1
+
+n + ( mn )−sβ/ (sβ +1) 
+
+
+
+for all sufficiently large n, uniformly over integers m ≥ r. The infimum is over all estimators bμ
+
+based on the discretely observed curves, and EP averages over the latent curves, design points, and Gaussian errors. 
+
+Combining Theorem 4 and (15), we see that the KRR estimator achieves the minimax rate as long as s ≤ 2. When s > 2, the KRR estimator saturates and is not optimal; see Section 4.3 for more details. We also remark that, thanks to our refined analysis, there is no logarithmic gap between the upper and lower bounds, which is often present in the literature (Cai and Yuan, 2010; Gupta and Sriperumbudur, 2026). 
+
+4.2 Deterministic Equivalent 
+
+The main result gives a deterministic equivalent for the generalization error at each regularization parameter satisfying (12). In the noisy case this is (13); in the noiseless case this is (14). The interpretation of the four terms in the expansion is as follows: 
+
+• Vcurve measures variation across the n independent random functions Xi;
+
+• Vpoint measures variation from the mn latent values Xi(tij ); 
+
+• Vnoise measures variation from the mn measurement errors εij ;
+
+• B2 is the deterministic equivalent of the squared bias. 11 0 1˜sβ 
+
+> 01˜s
+
+log m
+
+log n
+
+− log λ
+
+log n                 
+
+> sparse dense
+> bias-dominated
+> B2λ˜s
+> curve-dominated
+> 1
+> n Vcurve 1
+> n
+> sampling-dominated
+> Vpoint +σ2Vnoise
+> mn λ−1/β
+> mn
+> outside admissible range
+> λ(mn )−β/ (˜ sβ +1)
+> λn−1/˜s
+> λm−β
+> λ(mn )−β
+
+Figure 1: Phase diagram for the three leading terms in the MSE. It should be noted that Vpoint is caused by the random function Xi evaluated at the design points, rather than by the randomness of the design points alone. When r = 1, Vpoint is contributed by the diagonal covariance C(t, t ) = Cov( X(t), X (t)). For general r, it is contributed by the covariance due to one common sampling point between two product blocks. Viewed as a function of λ, the deterministic equivalent gives an asymptotically exact general-ization error curve. This curve shows how the error depends on the regularization parameter λ, the number of curves n, the number of observations per curve m, and the noise level σ2. It also shows which population objects enter the leading terms: μr through the bias, Σ r through the randomness of the underlying process X, and μ2r−2 through the measurement noise. When r = 1, the conven-tion μ0 = 1 implies that Vnoise (λ; μ0) does not depend on the latent process X, as in classical KRR (Li et al., 2023). As λ decreases, the deterministic bias term B(λ; μr)2 decreases, while the variance terms Vpoint and Vnoise grow at the same power order. Our result extends the exact generalization error results for kernel ridge regression in the classical regression setting (Li et al., 2023, 2024a), where the structure of discretely sampled functional data leads to several variance terms rather than a simple bias-variance trade-off. The deterministic equivalent gives more information than a traditional minimax-rate statement in functional data analysis (Cai and Yuan, 2011, 2010). Minimax bounds identify the best order after optimizing λ, but the leading constants and the separate variance sources are usually no longer visible. Here these constants are retained in the deterministic coefficients Vcurve , Vpoint ,
+
+Vnoise , and B. Thus the curve gives an explicit bias–variance trade-off for every admissible λ, not only the optimized rate. Moreover, existing minimax results often mix variation from latent signals 
+
+Xi(tij ) and variation from measurement errors εij into one sampling term. In comparison, our result delicately separates different sources of variation and makes the contribution of each source explicit. In particular, even when σ2 = 0, the variation from latent signals remains. 12 4.3 Saturation Effect 
+
+The saturation effect of KRR is a well-known phenomenon in the classical regression setting (Bauer et al., 2007; Li et al., 2024b): when the smoothness of the target function exceeds a certain threshold, KRR fails to achieve the minimax rate no matter how the regularization parameter is chosen. Using the deterministic equivalent, we can show that a similar phenomenon exists for discretely observed functional data. 
+
+Corollary 5 (Saturation effect) . Suppose either Assumptions 1, 2, and 4 hold with σ2 > 0, or Assumptions 1, 2, 3, and 4 hold with σ2 = 0 . Suppose also that, for some s > 2, μr ∈ ([ H]s)⊗r. If 
+
+m ≲ n1/(2 β), then for every λ = λ(n, m ) → 0 satisfying (12), 
+
+MSE r,λ (T ) = Ω P
+
+
+
+(mn )−2β/ (2 β+1) 
+
+.
+
+For s > 2, Corollary 5 limits the KRR rate to ( mn )−2β/ (2 β+1) , while the minimax lower rate in Theorem 4 remains ( mn )−sβ/ (sβ +1) . Hence KRR is no longer minimax optimal in the sparse regime when s > 2. This saturation threshold s = 2 reflects the qualification of Tikhonov regularization known in the literature (Bauer et al., 2007; Li et al., 2024b). We also note that this effect is visible only in the sparse regime, since the dense regime is governed by the parametric rate n−1.
+
+4.4 Concentration Inequalities for U-Statistics 
+
+For functional data, the KRR estimator involves empirical quantities that are averages within curves, such as (8) and (9). This naturally leads to concentration problems for U -statistics. While 
+
+U -statistics are well-studied, the existing results in the FDA literature are often too loose for our purpose of establishing a deterministic equivalent. For example, naive control of the U -statistic structure often gives a polynomial dependence on the failure probability δ, which is too coarse. Moreover, our analysis also involves operator-valued U -statistics, which are less studied in the literature. To this end, we develop a series of U -statistic concentration inequalities. The inequalities have the Bernstein form and cover scalar-valued, vector-valued, and operator-valued U -statistics of general order. See Appendix A for more details. These inequalities are of independent interest and may be useful in other problems in functional data analysis. 
+
+# 5 Simulations 
+
+In the numerical simulations, we consider the second-moment estimation problem with a one-dimensional Sobolev RKHS. We demonstrate that our theoretical prediction in Theorem 2 closely matches the empirical error curve. 
+
+Experiment Setup. The input space is I = [0 , 1] with the uniform measure. We use the Brownian kernel k(x, y ) = min( x, y ) (Hsing and Eubank, 2015), whose RKHS is the first-order Sobolev space H = f ∈ AC[0 , 1] : f (0) = 0 , f ′ ∈ L2[0 , 1] . For this kernel, the eigenvalues of the integral operator satisfy λj ≍ j−2, so β = 2. The random function is a centered rank-one Gaussian process. Let Z ∼ N (0 , 1) and set 
+
+X(t) = Zg (t), g(t) = 
+
+> ∞
+
+X
+
+> j=1
+
+λs/ 2 
+
+> j
+
+j−1/2ej (t),
+
+13 10 9 8 7 6 5 4                                      
+
+> log( )
+> 0.00
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> MSE
+> n= 100, m= 10
+> experiment
+> ±1 SE
+> theory
+> Vcurve /n
+> Vpoint /( mn )
+> 2Vnoise /( mn )
+> B2
+> 10 987654
+> log( )
+> 6
+> 5
+> 4
+> 3
+> log(MSE)
+> Vpoint slope = -0.498
+> Vnoise slope = -0.503
+> B2slope = 0.555
+> B2slope (log-corrected) = 0.706
+> n= 100, m= 10 10 987654
+> log( )
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> MSE
+> n= 10, m= 40
+> experiment
+> ±1 SE
+> theory
+> Vcurve /n
+> Vpoint /( mn )
+> 2Vnoise /( mn )
+> B2
+> 10 987654
+> log( )
+> 6
+> 5
+> 4
+> 3
+> 2
+> log(MSE)
+> Vpoint slope = -0.498
+> Vnoise slope = -0.503
+> B2slope = 0.555
+> B2slope (log-corrected) = 0.706
+> n= 10, m= 40
+
+Figure 2: Generalization error curves for second-moment estimation. The upper and lower rows correspond to the sparse and dense sampling regimes, respectively. Within each row, the left and right panels use the same setting, and the right panel displays the vertical axis on a logarithmic scale for better visualization of the slopes. where ( λj , e j )j≥1 is the Mercer system of T and s = 0 .7. The population model has μ1 = 0, and the second moment equals the covariance function 
+
+C(x, y ) = μ2(x, y ) = g(x)g(y) = 
+
+∞X
+
+i,j =1 
+
+λs/ 2
+
+i λs/ 2
+
+j (ij )−1/2ei(x)ej (y).
+
+Since s > 1/β , one can verify that X satisfies Assumption 4. Discrete noisy observations are generated according to the model in Section 2 with σ = 1. According to Lemmas 34, 35 and 42 and Example 5, 1
+
+n Vcurve ≍ 1
+
+n , 1
+
+mn Vpoint ≍ λ−1/2
+
+mn , σ2
+
+mn Vnoise ≍ λ−1/2
+
+mn , B(λ; μ2)2 ≍ λ0.7 ln 1
+
+λ .
+
+Simulation. For each repetition, we fit the estimator for all values of λ over the same training data. We use 30 regularization parameters between 5 × 10 −5 and 2 × 10 −2. The empirical L2 error is computed by Simpson’s rule. 50 repetitions are performed for each configuration of ( n, m ). We consider two sample-size configurations: ( n, m ) = (100 , 10) and ( n, m ) = (10 , 40). They reflect the sparse regime and the dense regime, respectively. The results are shown in Figure 2. The empirical error curve is U-shaped, and it is close to the deterministic curve given by Theorem 2, showing the predictive power of the asymptotically exact 14 expansion. Moreover, we fit the slopes of the log-log plots of the three variance terms and the bias term. With β = 2, both Vpoint (λ; Σ 2)/(mn ) and σ2Vnoise (λ; μ2)/(mn ) should scale as λ−1/β = λ−1/2,and the fitted slopes in the log-log plots are consistent with this prediction. For the bias, if we fit the slope of log B(λ; μ2)2 against log λ, the fitted exponent is smaller than 0 .7, because the theoretical order contains an additional logarithmic factor ln(1 /λ ). After fitting log B(λ; μ2)2 − log log(1 /λ )against log λ to remove the logarithmic factor, the fitted exponent is approximately 0 .706, matching the predicted smoothness index s = 0 .7. Comparing the two sampling regimes, we can see that the sparse sampling regime has a sharper U-shape than the dense sampling regime. In the sparse regime, the variations from the latent signal and the measurement error are both large, so the total variance is dominated by these two terms. In the dense regime, the variations from the latent signal and the measurement error are reduced, while Vcurve (λ; Σ 2)/n becomes the main variance contribution over a large range of λ.Overall, these results demonstrate that the theoretical prediction in Theorem 2 closely matches the empirical error curve. 
+
+# 6 Proofs 
+
+6.1 Proof Overview 
+
+The proof begins with the traditional bias-variance decomposition. Let ˜ζr := E[ˆζr | T ] = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1(m)r
+
+X
+
+> j∈Irm
+
+μr(tij )K(tij ), (16) ˜μr,λ := E[ˆ μr,λ | T ] = ( ˆTr + λI )−1 ˜ζr, (17) where we use E[Yij | T ] = μr(tij) on the distinct coordinates j ∈ Irm. For brevity, we write ˆTr,λ := ˆTr + λI and Tr,λ := Tr + λI . Using the reproducing property, we have ˜ζr = ˆTrμr, ˜μr,λ = ˆT −1 
+
+> r,λ
+
+ˆTrμr.
+
+Adding and subtracting ˜ μr,λ gives the conditional bias-variance decomposition MSE r,λ (T ) = E∥ˆμr,λ − ˜μr,λ ∥2  
+
+> L2(Ir)
+
+T  + ∥˜μr,λ − μr∥2 
+
+> L2(Ir)
+
+. (18) The cross term vanishes because E[ˆ μr,λ − ˜μr,λ | T ] = 0. We denote the two terms in (18) by Var( λ)and Bias( λ)2, respectively. Substituting (7), (8), (17), and (16) into (18) gives Var( λ) = E
+
+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1(m)r
+
+X
+
+> j∈Irm
+
+ Yij − μr(tij) ˆT −1 
+
+> r,λ
+
+K(tij) 
+
+> 2
+> L2(Ir)
+
+T
+
+ , (19) Bias( λ)2 = ∥λ ˆT −1 
+
+> r,λ
+
+μr∥2 
+
+> L2(Ir)
+
+. (20) The remaining proof is organized as follows. First, Section 6.2 expands the variance term Var( λ)in powers of σ2:Var( λ) = 
+
+> r
+
+X
+
+> d=0
+
+ˆVd,
+
+and shows that the terms with d ≥ 2 are higher-order and negligible. Sections 6.3 and 6.4 estimate the two leading variance terms ˆV0 and ˆV1, which represent the variance term in the noiseless case 15 and the first-order correction to the variance term due to noise, respectively. We convert ˆV0 and ˆV1 into population traces, which turns long sums into compact operator quantities and makes the variance analysis more structured. Section 6.5 summarizes the variance estimates, and Section 6.6 estimates the bias term. The appendices provide the supporting tools: Section A for U -statistic concentration, Section B for estimates associated with regular RKHSs, Sections C and D for the detailed trace bounds corresponding to ˆV0 and ˆV1, Section E for omitted arguments in the main text, and Section F for notation. 
+
+6.2 Variance Expansion in Powers of σ2
+
+We now return to the conditional variance term Var( λ) = E
+
+ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1(m)r
+
+X
+
+> j∈Irm
+
+ Yij − μr(tij) ˆT −1 
+
+> r,λ
+
+K(tij) 
+
+> 2
+> L2(Ir)
+
+T
+
+ .
+
+Expanding the square and using the independence across curves, Var( λ) = 1
+
+n2(m)2
+
+> rn
+
+X
+
+> i=1
+
+X
+
+> j,k∈Irm
+
+Ei(j, k)
+
+D ˆT −1 
+
+> r,λ
+
+K(tij), ˆT −1 
+
+> r,λ
+
+K(tik)
+
+E 
+
+> L2
+
+, (21) where 
+
+Ei(j, k) := E(Yij − μr(tij))( Yik − μr(tik)) T .
+
+Fix i, j = ( j1, . . . , j r) ∈ Irm, and k = ( k1, . . . , k r) ∈ Irm. Recall that 
+
+yij = Xi(tij ) + εij , Yij =
+
+> r
+
+Y
+
+> a=1
+
+yij a , Yik =
+
+> r
+
+Y
+
+> b=1
+
+yik b .
+
+Let 
+
+J(j) := {j1, . . . , j r}, J(k) := {k1, . . . , k r}, q(j, k) := |J(j) ∩ J(k)|.
+
+For a subset A ⊆ J(j) ∩ J(k), let 
+
+tAi, j,k
+
+denote the (2 r − 2|A|)-tuple obtained from (tij 1 , . . . , t ij r , t ik 1 , . . . , t ik r )by deleting both copies of tiℓ for every ℓ ∈ A. Because μq is symmetric in its arguments, the order of this tuple is irrelevant. Expanding the products according to the repeated noise variables gives the following formula. 
+
+Lemma 6 (Expansion of Ei(j, k)) . With the notation above, 
+
+Ei(j, k) = Σ r(tij; tik) + 
+
+> q(j,k)
+
+X
+
+> d=1
+
+σ2d X
+
+> A⊆J(j)∩J(k)
+> |A|=d
+
+μ2r−2d
+
+ tAi, j,k
+
+. (22) 16 Substituting Lemma 6 into (21), we obtain the explicit decomposition Var( λ) = 
+
+> r
+
+X
+
+> d=0
+
+ˆVd, (23) where ˆV0 := 1
+
+n2(m)2
+
+> rn
+
+X
+
+> i=1
+
+X
+
+> j,k∈Irm
+
+Σr(tij; tik)
+
+D ˆT −1 
+
+> r,λ
+
+K(tij), ˆT −1 
+
+> r,λ
+
+K(tik)
+
+E 
+
+> L2
+
+, (24) and, for 1 ≤ d ≤ r,ˆVd := σ2d
+
+n2(m)2
+
+> rn
+
+X
+
+> i=1
+
+X
+
+> j,k∈Irm
+
+X
+
+> A⊆J(j)∩J(k)
+> |A|=d
+
+μ2r−2d
+
+ tAi, j,k
+
+D ˆT −1 
+
+> r,λ
+
+K(tij), ˆT −1 
+
+> r,λ
+
+K(tik)
+
+E 
+
+> L2
+
+. (25) This is the exact meaning of the notation: ˆVd is precisely the contribution of order σ2d in the variance expansion. The leading terms of the variance will come from d = 0 and d = 1. For the terms with d ≥ 2, a rough estimate is enough. Set Cμ0 := 1. For even q with 2 ≤ q ≤ 2r −2, use the constants Cμq from Assumption 4(iii)–(iv). Now fix d ≥ 2. If q(j, k) < d , then the inner sum in (25) is empty. If q(j, k) ≥ d, then there are exactly  q(j,k)
+
+> d
+
+ subsets A ⊆ J(j) ∩ J(k) with |A| = d, so 
+
+X
+
+> A⊆J(j)∩J(k)
+> |A|=d
+
+μ2r−2d
+
+ tAi, j,k
+
+ ≤
+
+q(j, k)
+
+d
+
+
+
+Cμ2r−2d . (26) Write 
+
+N (r) 
+
+> p
+
+(λ) := 
+
+> ∞
+
+X 
+
+> i1,...,i r=1
+
+  Λi
+
+Λi + λ
+
+p, Λi := 
+
+> r
+
+Y
+
+> a=1
+
+λia ,
+
+we have the following bound, which is the empirical counterpart of Lemma 31. 
+
+Lemma 7. If vr := λ−1/β (ln 1  
+
+> λ)r
+> mn
+
+→ 0, then with probability tending to one, 
+
+sup 
+
+> t∈I r
+
+∥ ˆT −1 
+
+> r,λ
+
+K(t)∥2 
+
+> L2
+
+≤ CM rN (r)2 (λ). (27) If λ = Ω(( mn )−θ) for some θ < β , then 
+
+vr = O
+
+
+
+(mn )θ/β −1 (ln( mn )) r
+
+= o(1) ,
+
+so this condition is a convenient sufficient condition for vr → 0. Using (26) and (27) in (25), we get, for d ≥ 2, with probability tending to one, 
+
+| ˆVd| ≤ σ2dCμ2r−2d CM rN (r)2 (λ)
+
+n2(m)2
+
+> rn
+
+X
+
+> i=1
+
+X
+
+> j,k∈Irm
+
+q(j, k)
+
+d
+
+
+
+.
+
+The sum over i contributes a factor n, hence 
+
+| ˆVd| ≤ σ2dCμ2r−2d CM rN (r)2 (λ)
+
+n(m)2
+
+> r
+
+X
+
+> j,k∈Irm
+
+q(j, k)
+
+d
+
+
+
+. (28) 17 Lemma 8. For every 0 ≤ d ≤ r,
+
+X
+
+> j,k∈Irm
+
+q(j, k)
+
+d
+
+
+
+=
+
+> r
+
+X
+
+> q=d
+
+rq
+
+2
+
+q!( m)2r−q
+
+qd
+
+
+
+. (29) Since q ≥ d in every summand on the right-hand side of (29) implies ( m)2r−q ≤ (m)2r−d, this gives X
+
+> j,k∈Irm
+
+q(j, k)
+
+d
+
+
+
+≤ Cr(m)2r−d,
+
+where Cr depends only on r. Plugging this into (28) on the same high-probability event, 
+
+| ˆVd| ≤ Crσ2dCμ2r−2d M rN (r)2 (λ)
+
+n
+
+(m)2r−d
+
+(m)2
+
+> r
+
+.
+
+Now (m)2r−d
+
+(m)2
+
+> r
+
+= (m − r)r−d
+
+(m)r
+
+= 1(m)d
+
+(m − r)r−d
+
+(m − d)r−d
+
+≤ 1(m)d
+
+,
+
+so for d ≥ 2, (m)2r−d
+
+(m)2
+
+> r
+
+≤ 1
+
+m(m − 1) .
+
+Hence 
+
+| ˆVd| ≤ Crσ2dCμ2r−2d M rN (r)2 (λ)
+
+nm (m − 1) , d ≥ 2. (30) Summing (30) over d = 2 , . . . , r and using that r is fixed, 
+
+> r
+
+X
+
+> d=2
+
+| ˆVd| ≤ CrM rN (r)2 (λ)
+
+nm (m − 1) 
+
+> r
+
+X
+
+> d=2
+
+σ2dCμ2r−2d .
+
+Finally, N (r)2 (λ) ≍ λ−1/β (ln 1 
+
+> λ
+
+)r−1; see Lemma 30. Under the assumptions 
+
+vr → 0, (ln 1 
+
+> λ
+
+)r−1 = o(m),
+
+we therefore obtain rX
+
+> d=2
+
+| ˆVd| = OP
+
+λ−1/β (ln 1 
+
+> λ
+
+)r−1
+
+nm (m − 1) 
+
+!
+
+= oP
+
+λ−1/β 
+
+mn 
+
+!
+
+. (31) So the only terms that can contribute at the leading order are ˆV0 and ˆV1.
+
+6.3 Estimating the Noise-free Term ˆV0
+
+The following inequality was also used by Li et al. (2024a). 
+
+Lemma 9. Let Tr,λ := Tr + λI . If λ → 0 satisfies vr = λ−1/β (ln 1  
+
+> λ)r
+> mn
+
+→ 0, then 
+
+∥T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1/2 
+
+> r,λ
+
+∥ = OP(√vr),
+
+and, with probability tending to one, 
+
+∥T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1/2 
+
+> r,λ
+
+∥ ≤ 12 , ∥T 1/2 
+
+> r,λ
+
+ˆT −1 
+
+> r,λ
+
+T 1/2 
+
+> r,λ
+
+∥ ≤ 2.
+
+18 We now return to the coefficient of σ0 from (23). By definition, ˆV0 = 1
+
+n2(m)2
+
+> rn
+
+X
+
+> i=1
+
+X
+
+> j,k∈Irm
+
+Σr(tij; tik)
+
+D ˆT −1 
+
+> r,λ
+
+K(tij), ˆT −1 
+
+> r,λ
+
+K(tik)
+
+E 
+
+> L2
+
+.
+
+It is convenient to package the covariance kernel into an empirical operator. Define ˆG0 := 1
+
+n(m)2
+
+> rn
+
+X
+
+> i=1
+
+X
+
+> j,k∈Irm
+
+Σr(tij; tik)K(tik) ⊗ K(tij), G0 := E[ ˆG0],
+
+where u ⊗ v denotes the rank-one operator f 7 → ⟨ f, v ⟩H⊗r u.
+
+Lemma 10. The operators ˆG0 and G0 are self-adjoint and positive semidefinite. Proof. Since Σ r(t; t′) = Σ r(t′; t), the definition of ˆG0 is symmetric in j and k, so ˆG0 is self-adjoint. For any f ∈ H ⊗r,
+
+D ˆG0f, f 
+
+E 
+
+> H⊗r
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1(m)2
+
+> r
+
+X
+
+> j,k∈Irm
+
+Σr(tij; tik)f (tij)f (tik).
+
+If we set 
+
+Zi(f ) := 1(m)r
+
+X
+
+> j∈Irm
+
+f (tij) Xi(tij 1 ) · · · Xi(tij r ) − μr(tij),
+
+then the right-hand side is exactly 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+E[Zi(f )2 | T ] ≥ 0.
+
+Hence ˆG0 is positive semidefinite. The same properties pass to G0 = E[ ˆG0]. With this notation, ˆV0 has the operator form ˆV0 = 1
+
+n Tr  T 1/2 
+
+> r
+
+ˆT −1 
+
+> r,λ
+
+ˆG0 ˆT −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+. (32) To separate the empirical covariance part from the empirical sampling operator, we introduce ˜V0 := 1
+
+n Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+ˆG0T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+, V0 := 1
+
+n Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+G0T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+. (33) Because ˆG0 and G0 are positive semidefinite, these traces can also be written as Hilbert-Schmidt norms: ˆV0 = 1
+
+n ∥T 1/2 
+
+> r
+
+ˆT −1 
+
+> r,λ
+
+ˆG1/20 ∥2 
+
+> HS
+
+, ˜V0 = 1
+
+n ∥T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+ˆG1/20 ∥2 
+
+> HS
+
+, V0 = 1
+
+n ∥T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+G1/20 ∥2 
+
+> HS
+
+.
+
+The comparison naturally splits into two pieces: ˆV0 − V0 = ( ˆV0 − ˜V0) + ( ˜V0 − V0). (34) The second term already has the form ˜V0 − V0 = 1
+
+n Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+( ˆG0 − G0)T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+. (35) 19 For the first term, the resolvent identity gives ˆT −1 
+
+> r,λ
+
+− T −1 
+
+> r,λ
+
+= ˆT −1 
+
+> r,λ
+
+(Tr − ˆTr)T −1 
+
+> r,λ
+
+.
+
+Hence 
+
+| ˆV0 − ˜V0| ≤ 1
+
+n ∥T 1/2 
+
+> r
+
+( ˆT −1 
+
+> r,λ
+
+− T −1 
+
+> r,λ
+
+) ˆG1/20 ∥HS 
+
+×
+
+
+
+∥T 1/2 
+
+> r
+
+ˆT −1 
+
+> r,λ
+
+ˆG1/20 ∥HS + ∥T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+ˆG1/20 ∥HS 
+
+
+
+. (36) Set ∆r := T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1/2 
+
+> r,λ
+
+, H0 := T −1/2 
+
+> r,λ
+
+ˆG1/20 .
+
+Then 
+
+T 1/2 
+
+> r
+
+( ˆT −1 
+
+> r,λ
+
+− T −1 
+
+> r,λ
+
+) ˆG1/20 = T 1/2 
+
+> r
+
+T −1/2 
+
+> r,λ
+
+∆rT 1/2 
+
+> r,λ
+
+ˆT −1 
+
+> r,λ
+
+T 1/2 
+
+> r,λ
+
+H0.
+
+Therefore, by T 1/2 
+
+> r
+
+T −1/2 
+
+> r,λ
+
+≤ I,
+
+∥T 1/2 
+
+> r
+
+( ˆT −1 
+
+> r,λ
+
+− T −1 
+
+> r,λ
+
+) ˆG1/20 ∥HS ≤ ∥ ∆r∥∥ T 1/2 
+
+> r,λ
+
+ˆT −1 
+
+> r,λ
+
+T 1/2 
+
+> r,λ
+
+∥∥ H0∥HS .
+
+By Lemma 9, when vr → 0, with probability tending to one we are on the event 
+
+∥∆r∥ ≤ 12 , ∥T 1/2 
+
+> r,λ
+
+ˆT −1 
+
+> r,λ
+
+T 1/2 
+
+> r,λ
+
+∥ ≤ 2.
+
+Hence 
+
+∥T 1/2 
+
+> r
+
+( ˆT −1 
+
+> r,λ
+
+− T −1 
+
+> r,λ
+
+) ˆG1/20 ∥HS ≤ 2∥∆r∥∥ H0∥HS . (37) Also, 
+
+∥T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+ˆG1/20 ∥HS = ∥T 1/2 
+
+> r
+
+T −1/2 
+
+> r,λ
+
+H0∥HS 
+
+≤ ∥ H0∥HS , (38) and therefore 
+
+∥T 1/2 
+
+> r
+
+ˆT −1 
+
+> r,λ
+
+ˆG1/20 ∥HS ≤ ∥ T 1/2 
+
+> r
+
+( ˆT −1 
+
+> r,λ
+
+− T −1 
+
+> r,λ
+
+) ˆG1/20 ∥HS + ∥T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+ˆG1/20 ∥HS 
+
+≤ (2 ∥∆r∥ + 1) ∥H0∥HS . (39) Substituting (37)–(39) into (36), we get 
+
+| ˆV0 − ˜V0| ≤ 1
+
+n
+
+ 2∥∆r∥∥ H0∥HS 
+
+  (2 ∥∆r∥ + 1) ∥H0∥HS + ∥H0∥HS 
+
+
+
+= 1
+
+n 4∥∆r∥(∥∆r∥ + 1) ∥H0∥2 
+
+> HS
+
+.
+
+Since ∥∆r∥ ≤ 1/2 on the same event, 4∥∆r∥(∥∆r∥ + 1) ≤ 6∥∆r∥. Using ∥H0∥2 
+
+> HS
+
+=Tr( T −1/2 
+
+> r,λ
+
+ˆG0T −1/2 
+
+> r,λ
+
+), we obtain 
+
+| ˆV0 − ˜V0| ≤ Cn ∥∆r∥ Tr  T −1/2 
+
+> r,λ
+
+ˆG0T −1/2
+
+> r,λ
+
+. (40) Finally, Tr  T −1/2 
+
+> r,λ
+
+ˆG0T −1/2
+
+> r,λ
+
+ ≤ Tr  T −1/2 
+
+> r,λ
+
+G0T −1/2
+
+> r,λ
+
+ + Tr  T −1/2 
+
+> r,λ
+
+( ˆG0 − G0)T −1/2
+
+> r,λ
+
+ . (41) 20 Proposition 11. Assume Σr̸ = 0 , suppose λ → 0 satisfies 
+
+
+
+ln 1
+
+λ
+
+r−1
+
+= o(m), vr → 0.
+
+Then 
+
+V0 = 1
+
+n Vcurve (λ; Σ r) + 1
+
+mn Vpoint (λ; Σ r) + o λ−1/β 
+
+mn 
+
+!
+
+,
+
+1
+
+n Vcurve (λ; Σ r) ≍ 1
+
+n , 1
+
+mn Vpoint (λ; Σ r) = O λ−1/β 
+
+mn 
+
+!
+
+,
+
+ˆV0 = V0 + oP
+
+1
+
+n + λ−1/β 
+
+mn 
+
+!
+
+.
+
+Proof. By Proposition 36, 
+
+V0 = 1
+
+n Vcurve (λ; Σ r) + 1
+
+mn Vpoint (λ; Σ r) + o λ−1/β 
+
+mn 
+
+!
+
+.
+
+Since Σ r̸ = 0 and λ → 0, the expectation bounds in Lemma 34, together with the definition of 
+
+Vcurve , give 1
+
+n Vcurve (λ; Σ r) ≍ 1
+
+n .
+
+The corresponding one-overlap bound and the definition of Vpoint give 1
+
+mn Vpoint (λ; Σ r) = O λ−1/β 
+
+mn 
+
+!
+
+.
+
+Since λ → 0, we have ln 1 
+
+> λ
+
+→ ∞ . Therefore 
+
+λ−1/β  ln 1
+
+> λ
+
+r−1
+
+mn = vr
+
+ln 1
+
+> λ
+
+→ 0. (42) Also,  ln 1
+
+> λ
+
+r−1
+
+√mn = λ1/(2 β)
+
+
+
+ln 1
+
+λ
+
+r/ 2−1 √vr → 0, (43) because vr → 0 and λc(ln 1 
+
+> λ
+
+)a → 0 as λ → 0 for every c > 0 and every fixed a ∈ R.We next estimate the two gaps in (34). For ˜V0 − V0, Proposition 37 and (35) imply 
+
+| ˜V0 − V0| = 1
+
+n OP
+
+λ−1/(2 β)(ln 1 
+
+> λ
+
+)(r−1) /2
+
+m1/2n1/2 + λ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1  1
+
+mn + 1
+
+m3/2n1/2
+
+!
+
+.
+
+The first term is 1
+
+n
+
+s
+
+λ−1/β (ln 1 
+
+> λ
+
+)r−1
+
+mn = o
+
+ 1
+
+n
+
+
+
+21 by (42). The second term is 1
+
+nλ−1/β (ln 1 
+
+> λ
+
+)r−1
+
+mn = o
+
+ 1
+
+n
+
+
+
+again by (42). For the third term, 1
+
+nλ−1/β (ln 1 
+
+> λ
+
+)r−1
+
+m3/2n1/2 = λ−1/β 
+
+mn 
+
+(ln 1 
+
+> λ
+
+)r−1
+
+√mn = o λ−1/β 
+
+mn 
+
+!
+
+by (43). Hence ˜V0 − V0 = oP
+
+1
+
+n + λ−1/β 
+
+mn 
+
+!
+
+.
+
+We now estimate the first gap in (34), namely ˆV0 − ˜V0. By Lemma 9, 
+
+∥∆r∥ = OP(√vr).
+
+Next, Proposition 38 gives Tr  T −1/2 
+
+> r,λ
+
+G0T −1/2
+
+> r,λ
+
+ = O 1 + λ−1/β 
+
+m
+
+!
+
+,
+
+while Proposition 39 gives 
+
+Tr  T −1/2 
+
+> r,λ
+
+( ˆG0 − G0)T −1/2
+
+> r,λ
+
+
+
+= OP
+
+λ−1/(2 β)(ln 1 
+
+> λ
+
+)(r−1) /2
+
+m1/2n1/2 + λ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1  1
+
+mn + 1
+
+m3/2n1/2
+
+!
+
+.
+
+The first term above is s
+
+λ−1/β (ln 1 
+
+> λ
+
+)r−1
+
+mn = o(1) by (42). The second term is 
+
+λ−1/β (ln 1 
+
+> λ
+
+)r−1
+
+mn = o(1) by (42), and the last one is 
+
+λ−1/β 
+
+m
+
+(ln 1 
+
+> λ
+
+)r−1
+
+√mn = o λ−1/β 
+
+m
+
+!
+
+by (43). Hence Tr  T −1/2 
+
+> r,λ
+
+ˆG0T −1/2
+
+> r,λ
+
+ = OP 1 + λ−1/β 
+
+m
+
+!
+
+.
+
+Substituting this into the high-probability inequality (40), we obtain 
+
+| ˆV0 − ˜V0| = OP
+
+√vr
+
+1
+
+n + λ−1/β 
+
+mn 
+
+!! 
+
+= oP
+
+1
+
+n + λ−1/β 
+
+mn 
+
+!
+
+.
+
+Combining the estimates for ˜V0 − V0 and ˆV0 − ˜V0 with (34) proves the claim for ˆV0.22 6.4 Estimating the First Noise Term ˆV1
+
+Throughout this subsection, we work in the noisy case σ2 > 0. By definition, ˆV1 = σ2
+
+n2(m)2
+
+> rn
+
+X
+
+> i=1
+
+X
+
+> j,k∈Irm
+
+ X
+
+> q∈J(j)∩J(k)
+
+μ2r−2
+
+ t{q}
+
+> i, j,k
+
+ D ˆT −1 
+
+> r,λ
+
+K(tij), ˆT −1 
+
+> r,λ
+
+K(tik)
+
+E 
+
+> L2
+
+. (44) For ξ ∈ I and ˜ t = ( t1, . . . , t r−1) ∈ I r−1, define the insertion sum 
+
+Sr(ξ; ˜ t) := 
+
+> r
+
+X
+
+> a=1
+
+K(t1, . . . , t a−1, ξ, t a, . . . , t r−1) ∈ H ⊗r. (45) Also, for 1 ≤ l ≤ m, let 
+
+Ir−1 
+
+> m,l
+
+:= {j = ( j1, . . . , j r−1) ∈ Ir−1 
+
+> m
+
+: l / ∈ J(j)}. (46) Then |Ir−1 
+
+> m,l
+
+| = |Ir−1
+
+> m−1
+
+| = ( m − 1) r−1. For notational convenience, when ˜t = ( t1, . . . , t r−1), ˜t′ = ( t′
+
+> 1
+
+, . . . , t ′
+
+> r−1
+
+),
+
+we write 
+
+μ2r−2(˜ t; ˜ t′) := μ2r−2(t1, . . . , t r−1, t ′
+
+> 1
+
+, . . . , t ′
+
+> r−1
+
+).
+
+In (44), the common location can be chosen as l, while the remaining coordinates form two ordered (r − 1)-tuples in Ir−1 
+
+> m,l
+
+. The shared point may appear in any position of each r-block, and (45) sums over these possible insertions. Therefore ˆV1 = σ2
+
+n2m2(m − 1) 2
+
+> r−1
+> n
+
+X
+
+> i=1
+> m
+
+X
+
+> l=1
+
+X
+
+> j,k∈Ir−1
+> m,l
+
+ˆg1,λ 
+
+ til ; tij; tik
+
+, (47) where ˆg1,λ (ξ; ˜ t; ˜ t′) := μ2r−2(˜ t; ˜ t′)
+
+D ˆT −1 
+
+> r,λ
+
+Sr(ξ; ˜ t), ˆT −1 
+
+> r,λ
+
+Sr(ξ; ˜ t′)
+
+E 
+
+> L2
+
+. (48) As in the noise-free case, it is convenient to package the kernel into an empirical operator. Define ˆG1 := 1
+
+nm (m − 1) 2
+
+> r−1
+> n
+
+X
+
+> i=1
+> m
+
+X
+
+> l=1
+
+X
+
+> j,k∈Ir−1
+> m,l
+
+μ2r−2(tij; tik)Sr(til ; tik) ⊗ Sr(til ; tij), G1 := E[ ˆG1]. (49) 
+
+Lemma 12. The operators ˆG1 and G1 are self-adjoint and positive semidefinite. Proof. The definition of ˆG1 is symmetric in j and k, because μ2r−2(˜ t; ˜ t′) = μ2r−2(˜ t′; ˜ t). Hence ˆG1
+
+is self-adjoint. For any f ∈ H ⊗r,
+
+D ˆG1f, f 
+
+E 
+
+> H⊗r
+
+= 1
+
+nm (m − 1) 2
+
+> r−1
+> n
+
+X
+
+> i=1
+> m
+
+X
+
+> l=1
+
+X
+
+> j,k∈Ir−1
+> m,l
+
+μ2r−2(tij; tik)ai,l, j(f )ai,l, k(f ),
+
+where 
+
+ai,l, j(f ) := ⟨f, S r(til ; tij)⟩H⊗r .
+
+23 For each fixed i and l, the matrix 
+
+ μ2r−2(tij; tik)
+
+> j,k∈Ir−1
+> m,l
+
+is positive semidefinite. Indeed, if 
+
+Zi, j := Xi(tij 1 ) · · · Xi(tij r−1 ), j ∈ Ir−1 
+
+> m,l
+
+,
+
+then 
+
+μ2r−2(tij; tik) = E[Zi, jZi, k | T ].
+
+Hence the corresponding quadratic form is nonnegative. Therefore 
+
+D ˆG1f, f 
+
+E 
+
+> H⊗r
+
+≥ 0, and ˆG1 is positive semidefinite. The same properties pass to G1 = E[ ˆG1]. With this notation, ˆV1 = σ2
+
+mn Tr  T 1/2 
+
+> r
+
+ˆT −1 
+
+> r,λ
+
+ˆG1 ˆT −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+. (50) We also define the mixed and population versions ˜V1 := σ2
+
+mn Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+ˆG1T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+, V1 := σ2
+
+mn Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+G1T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+. (51) Because ˆG1 and G1 are positive semidefinite, ˆV1 = σ2
+
+mn ∥T 1/2 
+
+> r
+
+ˆT −1 
+
+> r,λ
+
+ˆG1/21 ∥2 
+
+> HS
+
+, ˜V1 = σ2
+
+mn ∥T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+ˆG1/21 ∥2 
+
+> HS
+
+, V1 = σ2
+
+mn ∥T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+G1/21 ∥2 
+
+> HS
+
+.
+
+As before, ˆV1 − V1 = ( ˆV1 − ˜V1) + ( ˜V1 − V1), (52) with ˜V1 − V1 = σ2
+
+mn Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+( ˆG1 − G1)T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+. (53) The Hilbert-Schmidt comparison used earlier for ˆV0 − ˜V0 applies verbatim here, after replacing ˆG0
+
+by ˆG1. Recalling ∆r := T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1/2 
+
+> r,λ
+
+,
+
+we work on the event 
+
+∥∆r∥ ≤ 12 , ∥T 1/2 
+
+> r,λ
+
+ˆT −1 
+
+> r,λ
+
+T 1/2 
+
+> r,λ
+
+∥ ≤ 2,
+
+which has probability tending to one when vr → 0 by Lemma 9. On this event, 
+
+| ˆV1 − ˜V1| ≤ Cσ 2
+
+mn ∥∆r∥ Tr  T −1/2 
+
+> r,λ
+
+ˆG1T −1/2
+
+> r,λ
+
+. (54) Finally, Tr  T −1/2 
+
+> r,λ
+
+ˆG1T −1/2
+
+> r,λ
+
+ ≤ Tr  T −1/2 
+
+> r,λ
+
+G1T −1/2
+
+> r,λ
+
+ + Tr  T −1/2 
+
+> r,λ
+
+( ˆG1 − G1)T −1/2
+
+> r,λ
+
+ . (55) 24 Proposition 13. Assume μ2r−2̸ = 0 and σ2 > 0, and suppose λ → 0 satisfies 
+
+
+
+ln 1
+
+λ
+
+r−1
+
+= o(m), vr = λ−1/β (ln 1 
+
+> λ
+
+)r
+
+mn → 0.
+
+Then 
+
+V1 = σ2
+
+mn Vnoise (λ; μ2r−2) + o λ−1/β 
+
+mn 
+
+!
+
+, σ2
+
+mn Vnoise (λ; μ2r−2) ≍ λ−1/β 
+
+mn ,
+
+ˆV1 = V1 + oP
+
+λ−1/β 
+
+mn 
+
+!
+
+.
+
+Proof. By Proposition 43 and Lemma 42 and since μ2r−2̸ = 0, 
+
+V1 = σ2
+
+mn Vnoise (λ; μ2r−2) + O
+
+ σ2
+
+mn 
+
+
+
++ O σ2λ−1/β  ln 1
+
+> λ
+
+r−1
+
+m2n
+
+!
+
+.
+
+Moreover, Vnoise (λ; μ2r−2) ≍ λ−1/β . Since σ2 > 0 is fixed, λ−1/β → ∞ , and  ln 1
+
+> λ
+
+r−1 = o(m), the two remainder terms are o(λ−1/β /(mn )), so 
+
+V1 = σ2
+
+mn Vnoise (λ; μ2r−2) + o λ−1/β 
+
+mn 
+
+!
+
+, V1 ≍ λ−1/β 
+
+mn .
+
+Next, Proposition 44 yields ˜V1 − V1 = OP
+
+σ2λ−1/β  ln 1
+
+> λ
+
+r−1
+
+mn √mn 
+
+!
+
+.
+
+By (43),  ln 1
+
+> λ
+
+r−1
+
+√mn → 0,
+
+so ˜V1 − V1 = oP
+
+λ−1/β 
+
+mn 
+
+!
+
+. (56) For the first gap, Lemma 9 gives 
+
+∥∆r∥ = OP(√vr).
+
+Also, Proposition 45 gives Tr  T −1/2 
+
+> r,λ
+
+G1T −1/2
+
+> r,λ
+
+ = O
+
+
+
+λ−1/β 
+
+,
+
+while Proposition 46 gives Tr  T −1/2 
+
+> r,λ
+
+( ˆG1 − G1)T −1/2
+
+> r,λ
+
+ = OP
+
+λ−1/β  ln 1
+
+> λ
+
+r−1
+
+√mn 
+
+!
+
+= oP(λ−1/β ),
+
+again by (43). Hence (55) implies Tr  T −1/2 
+
+> r,λ
+
+ˆG1T −1/2
+
+> r,λ
+
+ = OP
+
+
+
+λ−1/β 
+
+.
+
+Substituting this into the high-probability inequality (54), ˆV1 − ˜V1 = OP σ2√vr
+
+λ−1/β 
+
+mn 
+
+!
+
+= oP
+
+λ−1/β 
+
+mn 
+
+!
+
+.
+
+Combining this with (56) and (52) proves the claim. 25 6.5 Summary of the Variance Term 
+
+At this point the variance analysis is complete, so we collect the previous three sections into one statement. 
+
+Theorem 14. Assume Σr̸ = 0 , μ2r−2̸ = 0 , and σ2 > 0. Suppose λ → 0 satisfies 
+
+
+
+ln 1
+
+λ
+
+r−1
+
+= o(m), vr = λ−1/β (ln 1 
+
+> λ
+
+)r
+
+mn → 0.
+
+Then 
+
+Var( λ) =  1 + oP(1) (V0 + V1).
+
+Equivalently, 
+
+Var( λ) =  1 + oP(1)  1
+
+n Vcurve (λ; Σ r) + 1
+
+mn Vpoint (λ; Σ r) + σ2
+
+mn Vnoise (λ; μ2r−2)
+
+
+
+.
+
+Proof. By (23) and (31) and Propositions 11 and 13, Var( λ) = V0 + V1 + oP
+
+1
+
+n + λ−1/β 
+
+mn 
+
+!
+
+.
+
+The deterministic equivalents in Propositions 11 and 13 give 
+
+V0 = 1
+
+n Vcurve (λ; Σ r) + 1
+
+mn Vpoint (λ; Σ r) + o λ−1/β 
+
+mn 
+
+!
+
+,V1 = σ2
+
+mn Vnoise (λ; μ2r−2) + o λ−1/β 
+
+mn 
+
+!
+
+,
+
+and hence Var( λ) = 1
+
+n Vcurve (λ; Σ r) + 1
+
+mn Vpoint (λ; Σ r)+ σ2
+
+mn Vnoise (λ; μ2r−2) + oP
+
+1
+
+n + λ−1/β 
+
+mn 
+
+!
+
+.
+
+The same propositions imply that both V0 + V1 and the deterministic equivalent in the preceding display are ≍ 1 
+
+> n
+
++ λ−1/β  
+
+> mn
+
+. Thus the two additive remainders above are relative oP(1), which gives both claimed multiplicative forms. 
+
+Proposition 15 (Noise-free variance expansion) . Assume Σr̸ = 0 , σ2 = 0 , and suppose Assump-tion 3 holds. If λ → 0 satisfies 
+
+
+
+ln 1
+
+λ
+
+r−1
+
+= o(m), vr = λ−1/β (ln 1 
+
+> λ
+
+)r
+
+mn → 0,
+
+then 
+
+Var( λ) = ˆV0 =  1 + oP(1)   1
+
+n Vcurve (λ; Σ r) + 1
+
+mn Vpoint (λ; Σ r)
+
+
+
+.
+
+Proof. When σ2 = 0, all terms ˆVd with d ≥ 1 vanish in (23), so Var( λ) = ˆV0. By Proposition 11, ˆV0 = 1
+
+n Vcurve (λ; Σ r) + 1
+
+mn Vpoint (λ; Σ r) + oP
+
+1
+
+n + λ−1/β 
+
+mn 
+
+!
+
+.
+
+Moreover, Lemma 34 gives Vcurve (λ; Σ r) ≍ 1, and Lemma 35 gives Vpoint (λ; Σ r) ≍ λ−1/β . Therefore the additive remainder is of smaller order than the displayed deterministic leading term. 26 6.6 Estimating the Bias Term 
+
+We now turn to the second term in (18), namely 
+
+∥λ ˆT −1 
+
+> r,λ
+
+μr∥2 
+
+> L2(Ir)
+
+.
+
+Recall the L2(Ir)-expansion of μr:
+
+μr =
+
+> ∞
+
+X
+
+> i=1
+
+ciei, ei = ei1 ⊗ · · · ⊗ eir , Λi =
+
+> r
+
+Y
+
+> a=1
+
+λia .
+
+The deterministic quantity that governs the bias is 
+
+B(λ; μr) := ∥λT −1 
+
+> r,λ
+
+μr∥L2(Ir ). (57) 
+
+Lemma 16. If μr ∈ ([ H]s)⊗r for some s > 0, then 
+
+B(λ; μr) = O λmin( s, 2) /2,
+
+or equivalently, 
+
+B(λ; μr)2 = O λmin( s, 2) .
+
+Proof. Write 
+
+μr =
+
+> ∞
+
+X
+
+> i=1
+
+aiΛs/ 2 
+
+> i
+
+ei,
+
+> ∞
+
+X
+
+> i=1
+
+a2 
+
+> i
+
+= ∥μr∥2([ H]s)⊗r .
+
+Then 
+
+B(λ; μr)2 =
+
+> ∞
+
+X
+
+> i=1
+
+a2 
+
+> i
+
+Λs
+
+> i
+
+ λ
+
+Λi + λ
+
+2
+
+≤ λ2 sup 
+
+> x∈(0 ,λ r
+> 1]
+
+xs
+
+(x + λ)2
+
+> ∞
+
+X
+
+> i=1
+
+a2 
+
+> i
+
+.
+
+If s ≤ 2, the supremum is O(λs−2). If s > 2, it is O(1). This gives the claim. 
+
+Proposition 17. Suppose Assumption 4 holds, and set ˜s := min( s, 2) . Then: 1. for every s′ < s ,
+
+B(λ; μr) = O λmin( s′,2) /2;
+
+2. 
+
+B(λ; μr) = Ω( λ˜s/ 2).
+
+Proof. The first claim follows from Lemma 16, applied with s′ in place of s.For the lower bound, first assume s < 2. Then 
+
+B(λ; μr)2 =
+
+> ∞
+
+X
+
+> i=1
+
+c2
+
+> i
+
+ λ
+
+Λi + λ
+
+2
+
+≥ X
+
+> Λi<λ
+
+c2
+
+> i
+
+ λ
+
+Λi + λ
+
+2
+
+≥ 14
+
+X
+
+> Λi<λ
+
+c2 
+
+> i
+
+= Ω( λs).
+
+27 Therefore B(λ; μr) = Ω( λs/ 2). If s ≥ 2, pick any multi-index i∗ such that ci∗̸ = 0. Then 
+
+B(λ; μr)2 ≥ c2
+
+> i∗
+
+ λ
+
+Λi∗ + λ
+
+2
+
+≍ λ2.
+
+Hence B(λ; μr) = Ω( λ). Since ˜ s = min( s, 2), this proves the second claim. 
+
+Example 5 (A borderline coefficient sequence) . This example gives a concrete borderline form of the squared bias B(λ; μr)2. Suppose that, for some s > 0, the coefficients in the L2(Ir)-expansion 
+
+μr =
+
+> ∞
+
+X
+
+> i=1
+
+biei
+
+satisfy 
+
+|bi| ≍ Λ(s+1 /β )/2 
+
+> i
+
+.
+
+Then, as λ → 0,
+
+B(λ; μr)2 ≍
+
+
+
+λs  ln 1
+
+> λ
+
+r−1 , s < 2,λ2  ln 1
+
+> λ
+
+r , s = 2 ,λ2, s > 2.
+
+The proof is deferred to Section E. 
+
+Theorem 18. Suppose Assumption 4 holds. Suppose also that λ → 0 satisfies 
+
+λ = Ω  (mn )−θ
+
+for some fixed θ < β . Then 
+
+∥λ ˆT −1 
+
+> r,λ
+
+μr∥2  
+
+> L2(Ir)
+
+=  1 + oP(1) B(λ; μr)2.
+
+Proof. Set Bias( λ) := ∥λ ˆT −1 
+
+> r,λ
+
+μr∥L2(Ir ), B(λ; μr) := ∥λT −1 
+
+> r,λ
+
+μr∥L2(Ir ).
+
+By the triangle inequality, 
+
+| Bias( λ) − B(λ; μr)| ≤ ∥ (λ ˆT −1 
+
+> r,λ
+
+− λT −1 
+
+> r,λ
+
+)μr∥L2(Ir ).
+
+The resolvent identity gives 
+
+λ ˆT −1 
+
+> r,λ
+
+− λT −1 
+
+> r,λ
+
+= λ ˆT −1 
+
+> r,λ
+
+(Tr − ˆTr)T −1 
+
+> r,λ
+
+.
+
+Therefore 
+
+∥(λ ˆT −1 
+
+> r,λ
+
+− λT −1 
+
+> r,λ
+
+)μr∥L2 = λ∥T 1/2 
+
+> r
+
+ˆT −1 
+
+> r,λ
+
+(Tr − ˆTr)T −1 
+
+> r,λ
+
+μr∥H⊗r
+
+≤ λ∥T 1/2 
+
+> r
+
+T −1/2 
+
+> r,λ
+
+∥∥ T 1/2 
+
+> r,λ
+
+ˆT −1 
+
+> r,λ
+
+T 1/2 
+
+> r,λ
+
+∥∥ T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1 
+
+> r,λ
+
+μr∥H⊗r . (58) Since λ = Ω(( mn )−θ), we have 
+
+vr = λ−1/β (ln 1 
+
+> λ
+
+)r
+
+mn = O
+
+
+
+(mn )θ/β −1 (ln( mn )) r
+
+= o(1) ,
+
+28 because θ < β . On the high-probability event from Lemma 9, 
+
+∥T 1/2 
+
+> r
+
+T −1/2 
+
+> r,λ
+
+∥ ≤ 1, ∥T 1/2 
+
+> r,λ
+
+ˆT −1 
+
+> r,λ
+
+T 1/2 
+
+> r,λ
+
+∥ ≤ 2,
+
+so (58) becomes 
+
+∥(λ ˆT −1 
+
+> r,λ
+
+− λT −1 
+
+> r,λ
+
+)μr∥L2 ≤ 2λ∥T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1 
+
+> r,λ
+
+μr∥H⊗r . (59) Define the scalar function 
+
+qλ(t) := ( T −1 
+
+> r,λ
+
+μr)( t), t = ( t1, . . . , t r) ∈ I r,
+
+and the H⊗r-valued kernel 
+
+ξλ(t) := qλ(t)T −1/2 
+
+> r,λ
+
+K(t).
+
+Then applying the reproducing property of K gives 
+
+T −1/2 
+
+> r,λ
+
+ˆTrT −1 
+
+> r,λ
+
+μr = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1(m)r
+
+X
+
+> j∈Irm
+
+ξλ(tij),
+
+and 
+
+E[ξλ(t)] = T −1/2 
+
+> r,λ
+
+TrT −1 
+
+> r,λ
+
+μr.
+
+Hence 
+
+T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1 
+
+> r,λ
+
+μr = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1(m)r
+
+X
+
+> j∈Irm
+
+ξλ(tij) − E[ξλ(t)] . (60) We next estimate the variance and the uniform bound of ξλ. First, 
+
+E[qλ(t)2] = ∥qλ∥2 
+
+> L2(Ir)
+
+= ∥T −1 
+
+> r,λ
+
+μr∥2  
+
+> L2(Ir)
+
+= λ−2B(λ; μr)2. (61) Also, by Lemma 31, 
+
+∥T −1/2 
+
+> r,λ
+
+K(t)∥2 
+
+> H⊗r
+
+≤ M rN (r)1 (λ), t ∈ I r.
+
+Therefore 
+
+E∥ξλ(t)∥2 
+
+> H⊗r
+
+≤ M rN (r)1 (λ)λ−2B(λ; μr)2. (62) To bound qλ uniformly, choose any 
+
+s′ ∈ (1 /β, min( s, 2)) , α ∈ (1 /β, s ′).
+
+Since μr ∈ ([ H]s′
+
+)⊗r, we may write 
+
+μr =
+
+> ∞
+
+X
+
+> i=1
+
+aiΛs′/2 
+
+> i
+
+ei,
+
+> ∞
+
+X
+
+> i=1
+
+a2 
+
+> i
+
+= ∥μr∥2([ H]s′ )⊗r .
+
+Hence 
+
+qλ(t) = 
+
+> ∞
+
+X
+
+> i=1
+
+ai
+
+Λs′/2
+
+> i
+
+Λi + λ ei(t).
+
+29 By Cauchy-Schwarz, 
+
+|qλ(t)|2 ≤ ∥ μr∥2([ H]s′ )⊗r
+
+> ∞
+
+X
+
+> i=1
+
+Λs′
+
+> i
+
+(Λ i + λ)2 ei(t)2
+
+= ∥μr∥2([ H]s′ )⊗r
+
+> ∞
+
+X
+
+> i=1
+
+Λs′−α
+
+> i
+
+(Λ i + λ)2 Λα 
+
+> i
+
+ei(t)2.
+
+Since s′ < 2, we have sup 
+
+> x> 0
+
+xs′−α
+
+(x + λ)2 ≲ λs′−α−2.
+
+Moreover, 
+
+> ∞
+
+X
+
+> i=1
+
+Λα 
+
+> i
+
+ei(t)2 =
+
+> r
+
+Y
+
+> ℓ=1
+
+
+
+> ∞
+
+X
+
+> j=1
+
+λαj ej (tℓ)2
+
+ ≤ M 2rα ,
+
+because α > 1/β . Therefore 
+
+∥qλ∥∞ = O
+
+
+
+λ−(2 −s′+α)/2
+
+. (63) Combining this with Lemma 31, we obtain 
+
+∥ξλ∥∞ = O
+
+
+
+λ−(2 −s′+α)/2
+
+q
+
+N (r)1 (λ)
+
+
+
+. (64) Now apply Lemma 25 to the kernel ξλ. Using (60), (62), and (64) and the fact that ⌊m/r ⌋ ≍ m
+
+because r is fixed, we get 
+
+∥T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1 
+
+> r,λ
+
+μr∥H⊗r = OP
+
+λ−1B(λ; μr)
+
+s
+
+N (r)1 (λ)
+
+mn + λ−(2 −s′+α)/2
+
+q
+
+N (r)1 (λ)
+
+mn 
+
+ . (65) Combining (65) with the high-probability inequality (59), 
+
+∥(λ ˆT −1 
+
+> r,λ
+
+− λT −1 
+
+> r,λ
+
+)μr∥L2 = OP
+
+B(λ; μr)
+
+s
+
+N (r)1 (λ)
+
+mn + λ1−(2 −s′+α)/2
+
+q
+
+N (r)1 (λ)
+
+mn 
+
+ . (66) We now compare the two terms with B(λ; μr). By Lemma 30, 
+
+N (r)1 (λ) ≍ λ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1
+
+.
+
+Hence 
+
+N (r)1 (λ)
+
+mn ≲ λ1/θ −1/β 
+
+
+
+ln 1
+
+λ
+
+r−1
+
+→ 0,
+
+so the first term on the right-hand side of (66) is oP(B(λ; μr)). Let ˜ s = min( s, 2). By Proposition 17, 
+
+B(λ; μr) = Ω( λ˜s/ 2).
+
+30 Therefore the second term in (66), divided by B(λ; μr), is 
+
+OP
+
+ λ1−(2 −s′+α)/2
+
+q
+
+N (r)1 (λ)
+
+mnB (λ; μr)
+
+ = OP
+
+λ(s′−˜s−α−1/β )/2  ln 1
+
+> λ
+
+(r−1) /2
+
+mn 
+
+!
+
+.
+
+Since λ = Ω(( mn )−θ), we have 1
+
+mn = O(λ1/θ ).
+
+Hence the previous display is bounded by 
+
+OP λκ
+
+
+
+ln 1
+
+λ
+
+(r−1) /2!
+
+, κ := 1
+
+θ + s′ − ˜s − α − 1/β 
+
+2 .
+
+Because θ < β , we have 1 /θ > 1/β . We may therefore choose s′ < min( s, 2) sufficiently close to ˜ s
+
+and α > 1/β sufficiently close to 1 /β so that κ > 0. For this choice, 
+
+λκ
+
+
+
+ln 1
+
+λ
+
+(r−1) /2
+
+→ 0.
+
+Hence the second term in (66) is also oP(B(λ; μr)). We have proved 
+
+∥(λ ˆT −1 
+
+> r,λ
+
+− λT −1 
+
+> r,λ
+
+)μr∥L2 = oP(B(λ; μr)) .
+
+Combining this with the initial triangle inequality yields Bias( λ) = B(λ; μr) + oP(B(λ; μr)) .
+
+Since both quantities are nonnegative, this immediately implies Bias( λ)2 =  1 + oP(1) B(λ; μr)2.
+
+# 7 Conclusion 
+
+We studied KRR for estimating the r-th moment function of a random function from noisy, dis-cretely observed curves. Using a tensor-product RKHS, the construction covers mean, covariance, and higher-order moment estimation. For every admissible regularization parameter, our main result gives a 1 + oP(1) deterministic equivalent of the L2 generalization error. It describes how the error varies with λ, the number of curves n, the number of observations per curve m, and the noise level. It also identifies four terms representing different sources of error: the bias term and the curve-level, point-level, and noise variance terms. As applications, we derived the optimal regularization parameter and showed that KRR attains the minimax rate when s ≤ 2, whereas the saturation effect makes it suboptimal in the sparse regime when s > 2. These results provide a complete picture of the generalization error of KRR for functional data. On the technical side, we formulate the estimation of the r-th moment function as KRR on the tensor-product RKHS H⊗r, with within-curve products at distinct sampling locations serving as regression responses. This construction suggests a general route to other multivariate functional estimation problems. Moreover, we provide a set of Bernstein-type concentration inequalities for 31 U -statistics arising from functional data. These inequalities are useful under the dependent product structure of functional observations, and they may be of independent interest. Several future directions are worth exploring. First, the sampling design can affect the minimax rate in functional data analysis (Cai and Yuan, 2011). Extending the present analysis to the com-mon design would require a substantive modification, because observations from different curves then share the same sampling locations and hence obey a different sampling geometry. Second, spectral algorithms form a well-studied class of regularization methods that includes KRR (Bauer et al., 2007), and their exact generalization error curves have been established in nonparametric regression (Li et al., 2024a). For functional data, building upon the optimal rates for spectral algo-rithms (Gupta and Sriperumbudur, 2026), it would be natural to establish analogous deterministic equivalents for these methods. 
+
+# Acknowledgments 
+
+The authors thank colleagues and seminar participants for helpful comments on earlier versions of this manuscript. The authors received no specific funding for this work and declare no competing interests. 
+
+# A Concentration Inequalities 
+
+This appendix collects the concentration tools used implicitly in the trace estimates. The scalar 
+
+U -statistic inequalities are obtained from moment-generating-function bounds together with Ho-effding’s blocking representation (Hoeffding, 1963). The operator-valued inequality combines the same blocking representation with the matrix Laplace-transform method of Tropp (2015) and its Hilbert-space extension with effective rank due to Minsker (2017). The vector-valued inequality is then derived from the operator-valued inequality by a standard self-adjoint dilation. 
+
+A.1 Classical Inequalities 
+
+Lemma 19 (Hoeffding’s inequality) . Let ξ, ξ 1, . . . , ξ n be i.i.d. real-valued random variables such that 
+
+E exp  λ(ξ − Eξ) ≤ exp 
+
+ λ2B2
+
+2
+
+
+
+, λ ∈ R.
+
+Then for any δ ∈ (0 , 1) , with probability at least 1 − δ,
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ξi − Eξ ≤
+
+r 2B2 ln(2 /δ )
+
+n .
+
+In particular, if 
+
+esssup ξ − essinf ξ ≤ 2B
+
+almost surely, then the same conclusion holds. 
+
+Lemma 20 (Bernstein’s inequality) . Let ξ, ξ 1, . . . , ξ n be i.i.d. real-valued random variables. Suppose at least one of the following conditions holds: 1. 
+
+|ξ − Eξ| ≤ L a.s. , Var( ξ) ≤ σ2.
+
+32 2. 
+
+E|ξ − Eξ|p ≤ 12 p!σ2Lp−2, p = 2 , 3, . . . . 
+
+3. 
+
+E exp  λ(ξ − Eξ) ≤ exp 
+
+ λ2σ2
+
+2(1 − | λ|L)
+
+
+
+, |λ| < 1
+
+L .
+
+Then for any δ ∈ (0 , 1) , with probability at least 1 − δ,
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ξi − Eξ ≤
+
+r 2σ2 ln(2 /δ )
+
+n + L ln(2 /δ )
+
+n .
+
+Moreover, condition 1 ⇒ 2 ⇒ 3.
+
+The two inequalities above are classical. In what follows we only need the moment-generating-function conditions. 
+
+A.2 Scalar U -statistics 
+
+For a measurable kernel h : X k → R and an i.i.d. array 
+
+{Xij : 1 ≤ i ≤ n, 1 ≤ j ≤ m},
+
+write 
+
+U (i)
+
+> m,k
+
+(h) := 1(m)k
+
+X
+
+> j∈Ikm
+
+h(Xi,j 1 , . . . , X i,j k ), Um,k (h) := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+U (i)
+
+> m,k
+
+(h).
+
+The following inequality is due to Hoeffding (1963), through Hoeffding’s blocking representation. 
+
+Lemma 21 (Bernstein’s inequality for scalar U -statistics) . Let h : X k → R be measurable, and let 
+
+θ := Eh(T1, . . . , T k),
+
+where T1, . . . , T k are i.i.d. copies of X11 . Assume 
+
+Var  h(T1, . . . , T k) ≤ σ2, ∥h − θ∥∞ ≤ L. 
+
+Then for any δ ∈ (0 , 1) , with probability at least 1 − δ,
+
+|Um,k (h) − θ| ≤ 
+
+s
+
+2σ2 ln(2 /δ )
+
+n⌊m/k ⌋ + L ln(2 /δ )
+
+n⌊m/k ⌋ .
+
+Proof. Define the symmetrized kernel 
+
+hsym (x1, . . . , x k) := 1
+
+k!
+
+X 
+
+> τ∈Sk
+
+h(xτ (1) , . . . , x τ (k)).
+
+Then 
+
+U (i)
+
+> m,k
+
+(h) = 1
+
+ mk
+
+ X 
+
+> 1≤j1<··· <j k≤m
+
+hsym (Xij 1 , . . . , X ij k ),
+
+and 
+
+Ehsym (T1, . . . , T k) = θ. 
+
+33 Moreover, Var  hsym (T1, . . . , T k) ≤ σ2, ∥hsym − θ∥∞ ≤ L, 
+
+so we may assume from the outset that h is symmetric. Let ¯h(x1, . . . , x k) := h(x1, . . . , x k) − θ, 
+
+and write 
+
+q := ⌊m/k ⌋.
+
+For every τ ∈ Sm, define 
+
+Yτ := 1
+
+nq 
+
+> n
+
+X
+
+> i=1
+> q
+
+X
+
+> ℓ=1
+
+¯h Xi,τ (k(ℓ−1)+1) , . . . , X i,τ (kℓ )
+
+.
+
+Hoeffding’s blocking representation gives 
+
+Um,k (h) − θ = 1
+
+m!
+
+X 
+
+> τ∈Sm
+
+Yτ .
+
+For fixed τ , the variable Yτ is the average of nq i.i.d. centered random variables, each distributed as ¯h(T1, . . . , T k). Hence condition 1 of Lemma 20 implies the moment-generating-function bound 
+
+E exp( λY τ ) ≤ exp 
+
+ λ2σ2
+
+2nq 
+
+
+
+1 − |λ|Lnq 
+
+ , |λ| < nq L .
+
+Since the Yτ are identically distributed, Jensen’s inequality gives 
+
+E exp  λ(Um,k (h) − θ) = E exp λm!
+
+X 
+
+> τ∈Sm
+
+Yτ
+
+!
+
+≤ 1
+
+m!
+
+X 
+
+> τ∈Sm
+
+E exp( λY τ )
+
+≤ exp 
+
+ λ2σ2
+
+2nq 
+
+
+
+1 − |λ|Lnq 
+
+ , |λ| < nq L .
+
+Thus Um,k (h) − θ itself satisfies condition 3 of Lemma 20 with effective sample size nq . Applying that lemma completes the proof. 
+
+Lemma 22 (Hoeffding’s inequality for scalar U -statistics) . Let h : X k → R be measurable, and let 
+
+θ := Eh(T1, . . . , T k),
+
+where T1, . . . , T k are i.i.d. copies of X11 . Assume 
+
+esssup h − essinf h ≤ 2L. 
+
+Then for any δ ∈ (0 , 1) , with probability at least 1 − δ,
+
+|Um,k (h) − θ| ≤ L
+
+s
+
+2 ln(2 /δ )
+
+n⌊m/k ⌋ .
+
+Proof. Since Hoeffding’s inequality also follows from a moment-generating-function condition, we can apply the same proof as in Lemma 21. One only replaces the Bernstein moment-generating-function bound by Lemma 19. 34 A.3 Operator-valued U -statistics 
+
+The next lemma is an operator-valued U -statistic analogue of Minsker’s Bernstein inequality. The concentration mechanism is not new: in the matrix case it is the matrix Laplace-transform argument of Tropp (2015), refined to effective rank and extended to separable Hilbert spaces by Minsker (2017). The additional step here is to insert Hoeffding’s blocking representation into that operator Bernstein argument, so that the effective sample size becomes n⌊m/k ⌋.
+
+Lemma 23 (Operator Bernstein for U -statistics) . Let P be a probability measure on X . Let H be a separable Hilbert space, and let 
+
+Z : X k → S (H)
+
+be a measurable kernel taking values in the self-adjoint Hilbert-Schmidt operators on H. Define 
+
+D := EZ(X1, . . . , X k),
+
+and 
+
+ˆD := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1(m)k
+
+X
+
+> j∈Ikm
+
+Z(Xi,j 1 , . . . , X i,j k ),
+
+where Xij i.i.d.
+
+∼ P and m ≥ k. Suppose there exist L > 0 and a positive trace-class operator S such that 
+
+∥Z − D∥ ≤ L a.s. , E(Z(X1, . . . , X k) − D)2 ⪯ S. 
+
+If S = 0 , then ˆD = D almost surely. Otherwise, for every δ ∈ (0 , 1) ,
+
+P ∥ ˆD − D∥ >
+
+s
+
+2uδ∥S∥
+
+n⌊m/k ⌋ + 2uδL
+
+3n⌊m/k ⌋
+
+!
+
+≤ δ, 
+
+where 
+
+uδ := ln 4dδ , d := Tr S
+
+∥S∥ .
+
+Here d is the effective rank of S.Proof. If S = 0, then 
+
+E∥(Z − D)u∥2 
+
+> H
+
+= E[( Z − D)2]u, u = 0 , u ∈ H, 
+
+and hence Z = D almost surely, so there is nothing to prove. Define the symmetrized kernel ˜Z(x1, . . . , x k) := 1
+
+k!
+
+X 
+
+> τ∈Sk
+
+Z(xτ (1) , . . . , x τ (k)).
+
+Then ˆD = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1
+
+ mk
+
+ X 
+
+> 1≤j1<··· <j k≤m
+
+˜Z(Xij 1 , . . . , X ij k ).
+
+35 Also E ˜Z = D, ∥ ˜Z − D∥ ≤ L almost surely, and for every u ∈ H,
+
+D
+
+E( ˜Z − D)2u, u 
+
+E
+
+= E∥( ˜Z − D)u∥2
+
+> H
+
+= E 1
+
+k!
+
+X 
+
+> τ∈Sk
+
+ Zτ − Du
+
+> 2
+> H
+
+≤ 1
+
+k!
+
+X 
+
+> τ∈Sk
+
+E∥(Zτ − D)u∥2
+
+> H
+
+= E∥(Z − D)u∥2
+
+> H
+
+≤ ⟨ Su, u ⟩ ,
+
+where Zτ (x1, . . . , x k) := Z(xτ (1) , . . . , x τ (k)). Thus we may assume from the outset that Z is sym-metric. Write 
+
+q := ⌊m/k ⌋, ˜Z0 := Z − D. 
+
+For τ ∈ Sm, set 
+
+Yτ := 1
+
+nq 
+
+> n
+
+X
+
+> i=1
+> q
+
+X
+
+> ℓ=1
+
+˜Z0
+
+ Xi,τ (k(ℓ−1)+1) , . . . , X i,τ (kℓ )
+
+.
+
+Then Hoeffding’s blocking representation (Hoeffding, 1963) gives ˆD − D = 1
+
+m!
+
+X 
+
+> τ∈Sm
+
+Yτ .
+
+For each fixed τ , the operator Yτ is the average of nq i.i.d. centered self-adjoint Hilbert-Schmidt operators. Moreover, 
+
+∥Yτ ∥ ≤ L a.s. ,
+
+> n
+
+X
+
+> i=1
+> q
+
+X
+
+> ℓ=1
+
+E ˜Z0(Xi,τ (k(ℓ−1)+1) , . . . , X i,τ (kℓ ))2 ⪯ nqS. 
+
+We first work in the finite-dimensional matrix case H = CN . Let 
+
+ϕ(x) := ex − x − 1.
+
+For each fixed permutation τ , apply the matrix Laplace-transform estimate used in the proof of Minsker’s Bernstein inequality with effective rank (Minsker, 2017, Theorem 3.1); this estimate itself is based on Tropp’s matrix Laplace-transform method (Tropp, 2015, Chapter 3). It gives, for every 
+
+θ > 0, 
+
+E Tr ϕ θnqY τ
+
+ ≤ Tr 
+
+
+
+exp 
+
+ ϕ(θL )
+
+L2 nqS 
+
+
+
+− I
+
+
+
+.
+
+Now diagonalize 
+
+A := ϕ(θL )
+
+L2 nqS. 
+
+Since A is positive and each eigenvalue of A is at most ∥A∥, we have Tr( eA − I) = X
+
+> j
+
+(eλj (A) − 1) ≤ e∥A∥
+
+∥A∥
+
+X
+
+> j
+
+λj (A) = Tr A
+
+∥A∥ e∥A∥.
+
+36 Hence 
+
+E Tr ϕ θnqY τ
+
+ ≤ Tr S
+
+∥S∥ exp 
+
+ ϕ(θL )
+
+L2 nq ∥S∥
+
+
+
+. (67) Since ϕ is convex, the map A 7 → Tr ϕ(A) is convex on self-adjoint matrices; see, for example, the convex trace-function fact used in Minsker (2017). Therefore Jensen’s inequality, now applied to Hoeffding’s average over permutations, and (67) give 
+
+E Tr ϕ θnq ( ˆD − D) = E Tr ϕ θnq m!
+
+X 
+
+> τ∈Sm
+
+Yτ
+
+!
+
+≤ 1
+
+m!
+
+X 
+
+> τ∈Sm
+
+E Tr ϕ θnqY τ
+
+
+
+≤ Tr S
+
+∥S∥ exp 
+
+ ϕ(θL )
+
+L2 nq ∥S∥
+
+
+
+. (68) The remaining finite-dimensional tail calculation is the standard Bernstein optimization follow-ing Minsker’s proof; we include the details to keep track of the U -statistic effective sample size 
+
+nq . We now estimate the upper tail. Since ϕ is increasing and nonnegative on [0 , ∞), Markov’s inequality implies 
+
+P
+
+
+
+λmax ( ˆD − D) > t 
+
+
+
+= P
+
+
+
+λmax 
+
+ θnq ( ˆD − D) > θnqt 
+
+
+
+≤ P
+
+
+
+Tr ϕ θnq ( ˆD − D) > ϕ (θnqt )
+
+
+
+≤ E Tr ϕ θnq ( ˆD − D)
+
+ϕ(θnqt )
+
+≤ Tr S
+
+∥S∥ exp 
+
+
+
+nq 
+
+ ϕ(θL )
+
+L2 ∥S∥ − θt 
+
+ eθnqt 
+
+ϕ(θnqt ) ,
+
+where in the last step we used (68). Next, whenever θL < 3, 
+
+ϕ(θL )
+
+L2 = 1
+
+L2
+
+> ∞
+
+X
+
+> j=2
+
+(θL )j
+
+j! ≤ θ2
+
+2
+
+> ∞
+
+X
+
+> j=2
+
+ θL 
+
+3
+
+j−2
+
+= θ2
+
+2(1 − θL/ 3) .
+
+Also, for every u > 0, eu
+
+ϕ(u) = 1 + 1 + ueu − u − 1 ≤ 1 + 6
+
+u2 .
+
+Therefore, for θ < 3/L ,
+
+P
+
+
+
+λmax ( ˆD − D) > t 
+
+
+
+≤ Tr S
+
+∥S∥ exp 
+
+
+
+nq 
+
+ θ2∥S∥
+
+2(1 − θL/ 3) − θt 
+
+  
+
+1 + 6(θnqt )2
+
+
+
+. (69) Choose 
+
+θ := t
+
+∥S∥ + Lt/ 3 .
+
+37 Then θL < 3, and (69) becomes 
+
+P
+
+
+
+λmax ( ˆD − D) > t 
+
+
+
+≤ Tr S
+
+∥S∥ exp 
+
+
+
+−nq t2/2
+
+∥S∥ + Lt/ 3
+
+  
+
+1 + 6(θnqt )2
+
+
+
+. (70) If t2
+
+∥S∥ + Lt/ 3 ≥√6
+
+nq , (71) then θnqt ≥ √6, hence 1 + 6(θnqt )2 ≤ 2.
+
+Under (71), (70) reduces to 
+
+P
+
+
+
+λmax ( ˆD − D) > t 
+
+
+
+≤ 2 Tr S
+
+∥S∥ exp 
+
+
+
+−nq t2/2
+
+∥S∥ + Lt/ 3
+
+
+
+. (72) Apply the same argument to −Z. This gives the identical bound for 
+
+P
+
+
+
+λmax (D − ˆD) > t 
+
+
+
+= P
+
+
+
+λmin ( ˆD − D) < −t
+
+
+
+.
+
+Hence, still in the matrix case, 
+
+P
+
+
+
+∥ ˆD − D∥ > t 
+
+
+
+≤ 4 Tr S
+
+∥S∥ exp 
+
+
+
+−nq t2/2
+
+∥S∥ + Lt/ 3
+
+
+
+(73) whenever (71) holds. We now pass to general separable H, following Minsker’s finite-rank approximation argument for self-adjoint Hilbert-Schmidt operators. Let L1 ⊂ L2 ⊂ · · · be finite-dimensional subspaces with dense union, and let Pj be the orthogonal projection onto Lj . Since ˆD − D is Hilbert-Schmidt, we have 
+
+∥( ˆD − D) − Pj ( ˆD − D)Pj ∥ → 0.
+
+Therefore, by Fatou’s lemma, 
+
+P
+
+
+
+∥ ˆD − D∥ > t 
+
+
+
+≤ lim inf  
+
+> j→∞
+
+P
+
+
+
+∥Pj ( ˆD − D)Pj ∥ > t 
+
+
+
+.
+
+Moreover, 
+
+E(Pj (Z − D)Pj )2 ⪯ Pj SP j ,
+
+and 
+
+∥Pj (Z − D)Pj ∥ ≤ L a.s. Since S is trace-class, Pj SP j → S in trace norm, hence Tr( Pj SP j ) → Tr S, ∥Pj SP j ∥ → ∥ S∥.
+
+Applying the finite-dimensional estimate (73) to the compressed operators and then letting j → ∞ ,we obtain the same tail bound in the Hilbert-space case: 
+
+P
+
+
+
+∥ ˆD − D∥ > t 
+
+
+
+≤ 4 Tr S
+
+∥S∥ exp 
+
+
+
+−nq t2/2
+
+∥S∥ + Lt/ 3
+
+
+
+, (74) 38 again under (71). Finally, set 
+
+uδ := ln 4 Tr Sδ∥S∥ .
+
+If nqt 2
+
+2( ∥S∥ + Lt/ 3) ≥ uδ,
+
+then (74) gives P(∥ ˆD − D∥ > t ) ≤ δ. This inequality is equivalent to 
+
+t2 − 2uδL
+
+3nq t − 2uδ∥S∥
+
+nq ≥ 0,
+
+so it is enough to require 
+
+t ≥ uδL
+
+3nq +
+
+s
+
+2uδ∥S∥
+
+nq + u2 
+
+> δ
+
+L2
+
+9n2q2 .
+
+Since 2uδ = 2 ln 4 Tr Sδ∥S∥ ≥ 2 ln 4 ≥ √6,
+
+this choice of t also implies (71). Finally, use √a + b ≤ √a + √b to obtain the simpler sufficient condition 
+
+t ≥
+
+s
+
+2uδ∥S∥
+
+nq + 2uδL
+
+3nq .
+
+This proves the claim. 
+
+Remark 24. Sriperumbudur and Sterge (2022, Supplement, Theorem E.3) also state a Bernstein-type inequality for a second-order operator-valued U -statistic. We do not use that result here. In their moment-generating-function argument, the equality immediately after the display marked (∗)
+
+replaces X
+
+> i̸=j
+
+(δXi − δX′ 
+
+> i
+
+)( δXj − δX′ 
+
+> j
+
+)Z
+
+by an expression involving two independent Rademacher sequences (ε(1)  
+
+> i
+
+)i and (ε(2)  
+
+> i
+
+)i. Even if each difference δXi − δX′ 
+
+> i
+
+were symmetric about zero, such a symmetrization would only introduce one Rademacher sign for that difference, not two independent signs. Moreover, the preceding expectation over (X′
+
+> i
+
+)ni=1 is taken conditionally on the fixed sample (Xi)ni=1 ; under this conditional law, δXi −δX′
+
+> i
+
+is not symmetric about zero. Therefore the Rademacherization step between (∗) and (†) is not justified. Lemma 23 avoids this gap by inserting Hoeffding’s blocking representation directly into the Tropp–Minsker Laplace-transform argument. 
+
+A.4 Vector-valued U -statistics 
+
+Lemma 25 (Bernstein’s inequality for vector-valued U -statistics) . Let (X , P ) be a measurable space, let H be a separable Hilbert space, and let 
+
+ξ : X k → H
+
+be measurable. Define 
+
+θ := Eξ(X1, . . . , X k),
+
+39 and 
+
+ˆθ := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1(m)k
+
+X
+
+> j∈Ikm
+
+ξ(Xi,j 1 , . . . , X i,j k ),
+
+where Xij i.i.d.
+
+∼ P and m ≥ k. Assume 
+
+∥ξ − θ∥H ≤ L a.s. , E∥ξ − θ∥2 
+
+> H
+
+≤ σ2.
+
+Then for every δ ∈ (0 , 1) , with probability at least 1 − δ,
+
+∥ˆθ − θ∥H ≤
+
+s
+
+2σ2 ln(8 /δ )
+
+n⌊m/k ⌋ + 2L ln(8 /δ )3n⌊m/k ⌋ .
+
+Proof. If σ = 0, then ξ = θ almost surely, so the conclusion is trivial. Assume henceforth that 
+
+σ > 0. Let H ⊕ R be the orthogonal direct sum, and for u ∈ H define 
+
+J (u) := 
+
+ 0 uu∗ 0
+
+
+
+,
+
+where u : R → H is the rank-one operator a 7 → au , and u∗ : H → R is its adjoint v 7 → ⟨ u, v ⟩H .Then J (u) is a self-adjoint Hilbert-Schmidt operator on H ⊕ R, and the map 
+
+J : H → S (H ⊕ R)is linear. A direct computation shows that 
+
+J (u)2 =
+
+u ⊗ u 00 ∥u∥2
+
+> H
+
+
+
+.
+
+Hence 
+
+∥J (u)∥ = ∥u∥H ,
+
+so J is an isometry from H into S(H ⊕ R). Apply Lemma 23 to the operator-valued kernel 
+
+Z := J ◦ ξ. 
+
+Its expectation is 
+
+D = EZ(X1, . . . , X k) = J (θ),
+
+by linearity of J . Also, 
+
+∥Z − D∥ = ∥J (ξ − θ)∥ = ∥ξ − θ∥H ≤ L a.s. Set 
+
+S := E(Z − D)2.
+
+Since (Z − D)2 =
+
+(ξ − θ) ⊗ (ξ − θ) 00 ∥ξ − θ∥2
+
+> H
+
+
+
+,
+
+40 we get 
+
+S =
+
+E[( ξ − θ) ⊗ (ξ − θ)] 00 E∥ξ − θ∥2
+
+> H
+
+
+
+.
+
+Therefore 
+
+∥S∥ = E∥ξ − θ∥2 
+
+> H
+
+≤ σ2,
+
+because the lower-right block already has norm E∥ξ − θ∥2 
+
+> H
+
+, while the upper-left block has operator norm at most the same quantity. Moreover, Tr S = Tr E(Z − D)2 = E Tr  (Z − D)2 = 2 E∥ξ − θ∥2 
+
+> H
+
+,
+
+because Tr  (ξ − θ) ⊗ (ξ − θ) = ∥ξ − θ∥2 
+
+> H
+
+,
+
+so Tr S
+
+∥S∥ = 2 .
+
+Thus the effective rank in Lemma 23 is d = 2. Finally, by linearity of J ,1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1(m)k
+
+X
+
+> j∈Ikm
+
+Z(Xi,j 1 , . . . , X i,j k ) − D = J (ˆθ − θ).
+
+Applying Lemma 23 and using the isometry ∥J (u)∥ = ∥u∥H gives 
+
+∥ˆθ − θ∥H ≤
+
+s
+
+2∥S∥ ln(8 /δ )
+
+n⌊m/k ⌋ + 2L ln(8 /δ )3n⌊m/k ⌋ ≤
+
+s
+
+2σ2 ln(8 /δ )
+
+n⌊m/k ⌋ + 2L ln(8 /δ )3n⌊m/k ⌋ .
+
+This proves the claim. 
+
+Remark 26. Exponential inequalities for Hilbert-valued U -statistics are available in the literature (Giraudo, 2025). The particular form needed here follows directly from the operator-valued inequal-ity above. 
+
+# B Regular RKHS 
+
+This appendix collects the regular-RKHS consequences and tensor eigenvalue estimates used in the main proofs. 
+
+Lemma 27. Suppose Assumption 2 holds, and let f : [0 , λ 1] → [0 , ∞) be non-decreasing with P∞ 
+
+> j=1
+
+f (λj ) < ∞. Then 
+
+sup 
+
+> x∈I ∞
+
+X
+
+> j=1
+
+f (λj )ej (x)2 ≤ M
+
+> ∞
+
+X
+
+> j=1
+
+f (λj ).
+
+In particular, if s > 1/β , then 
+
+M 2 
+
+> s
+
+:= sup 
+
+> x∈I ∞
+
+X
+
+> j=1
+
+λsj ej (x)2 < ∞.
+
+Consequently, for every q ≥ 1 and every h ∈ ([ H]s)⊗q,
+
+∥h∥∞ ≤ M qs ∥h∥([ H]s)⊗q .
+
+41 Proof. Let ( θm)m≥1, dm, and km be as in Assumption 2. Fix x ∈ I , and set 
+
+bm := km(x, x ), cm := M d m, m ≥ 1.
+
+By Assumption 2, mX
+
+> ℓ=1
+
+bℓ =
+
+> m
+
+X
+
+> ℓ=1
+
+kℓ(x, x ) ≤ M
+
+> m
+
+X
+
+> ℓ=1
+
+dℓ =
+
+> m
+
+X
+
+> ℓ=1
+
+cℓ, m ≥ 1.
+
+Since ( θm) is decreasing and f is non-decreasing, ( f (θm)) m≥1 is non-increasing. Abel summation implies that for every N ≥ 1, 
+
+> N
+
+X
+
+> m=1
+
+f (θm)km(x, x ) = 
+
+> N
+
+X
+
+> m=1
+
+f (θm)bm ≤
+
+> N
+
+X
+
+> m=1
+
+f (θm)cm = M
+
+> N
+
+X
+
+> m=1
+
+f (θm)dm.
+
+Letting N → ∞ gives 
+
+> ∞
+
+X
+
+> j=1
+
+f (λj )ej (x)2 =
+
+> ∞
+
+X
+
+> m=1
+
+f (θm)km(x, x ) ≤ M
+
+> ∞
+
+X
+
+> m=1
+
+f (θm)dm = M
+
+> ∞
+
+X
+
+> j=1
+
+f (λj ).
+
+Since x was arbitrary, the first claim follows. Apply this with f (x) = xs. Because λj ≍ j−β and s > 1/β , we have P∞ 
+
+> j=1
+
+λsj < ∞, hence 
+
+M 2 
+
+> s
+
+≤ M
+
+> ∞
+
+X
+
+> j=1
+
+λsj < ∞.
+
+Finally, let h ∈ ([ H]s)⊗q and write 
+
+h(t1, . . . , t q) = 
+
+> ∞
+
+X 
+
+> i1,...,i q=1
+
+ai1,...,i q
+
+> q
+
+Y
+
+> ℓ=1
+
+λs/ 2 
+
+> iℓ
+
+eiℓ (tℓ),
+
+> ∞
+
+X 
+
+> i1,...,i q=1
+
+a2 
+
+> i1,...,i q
+
+= ∥h∥2([ H]s)⊗q .
+
+By Cauchy-Schwarz, 
+
+|h(t1, . . . , t q)|2 ≤
+
+
+
+> ∞
+
+X 
+
+> i1,...,i q=1
+
+a2
+
+> i1,...,i q
+
+
+
+> ∞
+
+X 
+
+> i1,...,i q=1
+> q
+
+Y
+
+> ℓ=1
+
+λsiℓ eiℓ (tℓ)2
+
+
+
+= ∥h∥2([ H]s)⊗q
+
+> q
+
+Y
+
+> ℓ=1
+
+
+
+> ∞
+
+X
+
+> j=1
+
+λsj ej (tℓ)2
+
+
+
+≤ M 2qs ∥h∥2([ H]s)⊗q .
+
+Taking square roots proves the final inequality. The following standard estimate is Exercise 2.1.18(c) in Montgomery and Vaughan (2006). 
+
+Lemma 28. For R ≥ 1, define 
+
+Ar(R) := # {(i1, . . . , i r) ∈ Nr : i1 · · · ir ≤ R}.
+
+Then 
+
+Ar(R) ≍ R(ln( eR )) r−1.
+
+42 Lemma 29. Let y ≥ 1 and a, b ∈ R. If b > −1, then, as y → ∞ ,
+
+Z y
+
+> 1
+
+x−a(ln x)b dx ≍
+
+
+
+y1−a(ln y)b, a < 1,
+
+(ln y)b+1 , a = 1 ,
+
+1, a > 1.
+
+Moreover, Z ∞
+
+> y
+
+x−a(ln x)b dx ≍
+
+(
+
+y1−a(ln y)b, a > 1, b ∈ R,
+
+(ln y)b+1 , a = 1 , b < −1,
+
+in the parameter regimes where the tail integral is finite. If a < 1, or if a = 1 and b ≥ − 1, the tail integral is infinite. Proof. The change of variables t = ln x gives 
+
+Z y
+
+> 1
+
+x−a(ln x)b dx =
+
+Z ln y
+
+> 0
+
+e−(a−1) ttb dt, 
+
+Z ∞
+
+> y
+
+x−a(ln x)b dx =
+
+Z ∞ 
+
+> ln y
+
+e−(a−1) ttb dt. 
+
+The condition b > −1 is exactly the local integrability condition at t = 0 for the first integral. We use the standard incomplete-gamma notation and large-variable asymptotics from DLMF: the definitions of γ(s, z ) and Γ( s, z ) are given in DLMF, (8.2.1)–(8.2.2), and the fixed-parameter large-z expansion of Γ( s, z ) is given in DLMF, (8.11.2). First consider the integral over [1 , y ]. If a > 1, a − 1 > 0, 
+
+Z ln y
+
+> 0
+
+e−(a−1) ttb dt =( a − 1) −b−1γ(b + 1 , (a − 1) ln y)=( a − 1) −b−1Γ( b + 1) − (a − 1) −b−1Γ( b + 1 , (a − 1) ln y) > 0.
+
+Since Γ( b + 1 , (a − 1) ln y) → 0, this integral converges to a positive finite constant, and hence is 
+
+≍ 1. If a = 1, the identity Z ln y
+
+> 0
+
+tb dt = (ln y)b+1 
+
+b + 1 gives the middle case. If a < 1, 1 − a > 0. The contribution comes from the upper endpoint. Put L := ln y.For the upper bound, split the integral over [0 , L/ 2] and [ L/ 2, L ]. The first part is bounded by 
+
+Ce (1 −a)L/ 2Lb+1 , which is O(e(1 −a)LLb); on [ L/ 2, L ], tb ≤ CbLb, and hence 
+
+Z LL/ 2
+
+e(1 −a)ttb dt ≤ Ce (1 −a)LLb = Cy 1−a(ln y)b.
+
+For the lower bound, if L ≥ 2, then tb ≥ cbLb for every t ∈ [L − 1, L ], where cb > 0 depends only on b. Hence Z LL−1
+
+e(1 −a)ttb dt ≥ cbe(1 −a)( L−1) Lb = Cy 1−a(ln y)b.
+
+This proves the case a < 1. We now turn to the tail integral. If a > 1, a − 1 > 0, 
+
+Z ∞ 
+
+> ln y
+
+e−(a−1) ttb dt = ( a − 1) −b−1Γ( b + 1 , (a − 1) ln y).
+
+43 The DLMF large-z asymptotic gives Γ( b + 1 , (a − 1) ln y) ∼ e−(a−1) ln y(( a − 1) ln y)b,
+
+and therefore the tail is ≍ y1−a(ln y)b. If a = 1, then 
+
+Z ∞ 
+
+> ln y
+
+tb dt = (ln y)b+1 
+
+−b − 1 , b < −1.
+
+The same display also shows divergence when b ≥ − 1; when a < 1, the exponential factor e(1 −a)t
+
+makes the tail diverge. 
+
+Lemma 30 (Tensor effective dimension) . Let 
+
+Λi := 
+
+> r
+
+Y
+
+> a=1
+
+λia , i = ( i1, . . . , i r) ∈ Nr,
+
+and let (λ(r) 
+
+> j
+
+)j≥1 be the non-increasing rearrangement of {Λi : i ∈ Nr}, counted with multiplicity. Then, as u ↓ 0,
+
+Nr(u) := # {j ≥ 1 : λ(r) 
+
+> j
+
+≥ u} ≍ u−1/β 
+
+
+
+ln 1
+
+u
+
+r−1
+
+.
+
+Equivalently, for every j ≥ 1,
+
+λ(r) 
+
+> j
+
+≍ j−β (ln( ej )) β(r−1) .
+
+Moreover, for every fixed p ≥ 1, define 
+
+N (r) 
+
+> p
+
+(λ) := 
+
+> ∞
+
+X 
+
+> i1,...,i r=1
+
+  Λi
+
+Λi + λ
+
+p.
+
+Then, as λ ↓ 0,
+
+N (r) 
+
+> p
+
+(λ) ≍ λ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1
+
+.
+
+Moreover, if s > 1/β , then for every 1 ≤ a ≤ r, as λ ↓ 0,
+
+> ∞
+
+X 
+
+> i1,...,i r=1
+
+Y
+
+> ℓ̸=a
+
+λsiℓ
+
+   Λi
+
+Λi + λ
+
+p ≍ λ−1/β .
+
+Proof. Since λj ≍ j−β , there are constants 0 < c ≤ C < ∞ such that 
+
+cr(i1 · · · ir)−β ≤ Λi ≤ Cr(i1 · · · ir)−β .
+
+Therefore, for all sufficiently small u > 0, 
+
+Ar
+
+
+
+(cr/u )1/β 
+
+≤ Nr(u) ≤ Ar
+
+
+
+(Cr/u )1/β 
+
+.
+
+The counting estimate in Lemma 28 gives 
+
+Nr(u) ≍ u−1/β 
+
+
+
+ln 1
+
+u
+
+r−1
+
+, u ↓ 0.
+
+44 We next invert this counting estimate. Put 
+
+bj := j−β (ln( ej )) β(r−1) .
+
+For each fixed A > 0, as j → ∞ ,
+
+Nr(Ab j ) ≍ (Ab j )−1/β 
+
+
+
+ln 1
+
+Ab j
+
+r−1
+
+= A−1/β j(ln( ej )) −(r−1) 
+
+
+
+ln 1
+
+Ab j
+
+r−1
+
+≍ A−1/β j, 
+
+because ln(1 /(Ab j )) ≍ ln( ej ). Choosing A large gives Nr(Ab j ) < j for all sufficiently large j,and hence λ(r) 
+
+> j
+
+≤ Ab j . Choosing A small gives Nr(Ab j ) ≥ j for all sufficiently large j, and hence 
+
+λ(r) 
+
+> j
+
+≥ Ab j . Adjusting the constants to cover the finitely many remaining indices proves 
+
+λ(r) 
+
+> j
+
+≍ j−β (ln( ej )) β(r−1) .
+
+We now prove the effective-dimension estimate. By the definition of ( λ(r) 
+
+> j
+
+)j≥1,
+
+N (r) 
+
+> p
+
+(λ) = 
+
+> ∞
+
+X
+
+> j=1
+
+λ(r)
+
+> j
+
+λ(r) 
+
+> j
+
++ λ
+
+!p
+
+.
+
+Let N := Nr(λ). Since the sequence ( λ(r) 
+
+> j
+
+)j≥1 is non-increasing, the split at the level λ gives 
+
+N (r) 
+
+> p
+
+(λ) = X
+
+> j≤N
+
+λ(r)
+
+> j
+
+λ(r) 
+
+> j
+
++ λ
+
+!p
+
++ X
+
+> j>N
+
+λ(r)
+
+> j
+
+λ(r) 
+
+> j
+
++ λ
+
+!p
+
+≍ N + λ−p X
+
+> j>N
+
+ λ(r)
+
+> j
+
+p.
+
+Indeed, if j ≤ N , then λ(r) 
+
+> j
+
+/(λ(r) 
+
+> j
+
++ λ) ∈ [1 /2, 1]; if j > N , then 
+
+λ(r)
+
+> j
+
+2λ ≤ λ(r)
+
+> j
+
+λ(r) 
+
+> j
+
++ λ ≤ λ(r)
+
+> j
+
+λ .
+
+The first summand already gives the lower bound Nr(λ) ≍ λ−1/β (ln(1 /λ )) r−1. It remains to control the second summand. The eigenvalue bound proved above gives λ(r) 
+
+> j
+
+≍ j−β (ln( ej )) β(r−1) . Hence 
+
+X
+
+> j>N
+
+ λ(r)
+
+> j
+
+p ≍ X
+
+> j>N
+
+j−βp (ln( ej )) βp (r−1) .
+
+The function x 7 → x−βp (ln( ex )) βp (r−1) is eventually decreasing. Hence, for small enough λ, integral comparison gives X
+
+> j>N
+
+j−βp (ln( ej )) βp (r−1) ≍
+
+Z ∞
+
+> N
+
+x−βp (ln( ex )) βp (r−1) dx. 
+
+45 Since ln( ex ) ≍ ln x on [ N, ∞) for N large, the tail estimate in Lemma 29, with a = βp > 1 and 
+
+b = βp (r − 1), gives 
+
+Z ∞
+
+> N
+
+x−βp (ln( ex )) βp (r−1) dx ≍ N 1−βp (ln( eN )) βp (r−1) .
+
+Since 
+
+N ≍ λ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1
+
+, ln( eN ) ≍ ln 1
+
+λ ,
+
+it follows that 
+
+λ−p X
+
+> j>N
+
+ λ(r)
+
+> j
+
+p ≍ λ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1
+
+.
+
+Together with the split above, this proves 
+
+N (r) 
+
+> p
+
+(λ) ≍ λ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1
+
+.
+
+For the second claim, by symmetry it is enough to treat a = r. Write 
+
+αi1,...,i r−1 := 
+
+> r−1
+
+Y
+
+> ℓ=1
+
+λiℓ .
+
+Then 
+
+> ∞
+
+X 
+
+> i1,...,i r=1
+> r−1
+
+Y
+
+> ℓ=1
+
+λsiℓ
+
+!   Λi
+
+Λi + λ
+
+p
+
+=
+
+> ∞
+
+X
+
+> i1,...,i r−1=1
+> r−1
+
+Y
+
+> ℓ=1
+
+λsiℓ
+
+! ∞X 
+
+> ir=1
+
+ αi1,...,i r−1 λir
+
+αi1,...,i r−1 λir + λ
+
+p
+
+.
+
+The lower bound follows by keeping only the term i1 = · · · = ir−1 = 1: 
+
+λs(r−1) 1
+
+> ∞
+
+X 
+
+> ir=1
+
+ λr−11 λir
+
+λr−11 λir + λ
+
+p
+
+≍ λ−1/β ,
+
+where we used the effective-dimension estimate just proved in the case r = 1, with regularization parameter λ/λ r−11 .For the upper bound, note that for every ρ > 0, 
+
+> ∞
+
+X
+
+> j=1
+
+ λj
+
+λj + ρ
+
+p
+
+≤ C
+
+> ∞
+
+X
+
+> j=1
+
+1(1 + ρj β )p
+
+≤ C
+
+Z ∞
+
+> 0
+
+1(1 + ρx β )p dx
+
+= Cρ −1/β 
+
+Z ∞
+
+> 0
+
+1(1 + yβ )p dy ≤ Cpρ−1/β .
+
+46 This estimate is valid for every ρ > 0; in particular, it does not require ρ → 0. Applying it with 
+
+ρ = λ/α i1,...,i r−1 ,
+
+> ∞
+
+X 
+
+> i1,...,i r=1
+> r−1
+
+Y
+
+> ℓ=1
+
+λsiℓ
+
+!   Λi
+
+Λi + λ
+
+p
+
+≤ Cp
+
+> ∞
+
+X
+
+> i1,...,i r−1=1
+> r−1
+
+Y
+
+> ℓ=1
+
+λsiℓ
+
+!  λαi1,...,i r−1
+
+−1/β 
+
+= Cpλ−1/β 
+
+> ∞
+
+X
+
+> i1,...,i r−1=1
+> r−1
+
+Y
+
+> ℓ=1
+
+λs+1 /β iℓ ≍ λ−1/β ,
+
+because s > 1/β implies P∞ 
+
+> j=1
+
+λs+1 /β j < ∞.
+
+Lemma 31. For the population operator, 
+
+sup 
+
+> t∈I r
+
+∥T −1 
+
+> r,λ
+
+K(t)∥2 
+
+> L2
+
+≤ M rN (r)2 (λ),
+
+and 
+
+sup 
+
+> t∈I r
+
+∥T −1/2 
+
+> r,λ
+
+K(t)∥2 
+
+> H⊗r
+
+≤ M rN (r)1 (λ).
+
+Proof. Since x 7 → x/ (x + λ) is increasing on (0 , ∞), both 
+
+u 7 →
+
+ Au Au + λ
+
+2
+
+and u 7 → Au Au + λ , A > 0,
+
+are non-decreasing functions of u.Using the spectral decomposition of Tr,
+
+∥T −1 
+
+> r,λ
+
+K(t)∥2 
+
+> L2
+
+=
+
+> ∞
+
+X
+
+> i=1
+
+  Λi
+
+Λi + λ
+
+2 rY
+
+> ℓ=1
+
+eiℓ (tℓ)2,
+
+and 
+
+∥T −1/2 
+
+> r,λ
+
+K(t)∥2 
+
+> H⊗r
+
+=
+
+> ∞
+
+X
+
+> i=1
+
+Λi
+
+Λi + λ
+
+> r
+
+Y
+
+> ℓ=1
+
+eiℓ (tℓ)2.
+
+We estimate the first display; the second one is identical. The functions displayed at the start of the proof are summable along ( λj )j≥1, since they are bounded by a constant multiple of u and P 
+
+> j
+
+λj < ∞. For fixed i2, . . . , i r, apply Lemma 27 with 
+
+f (u) = 
+
+ u Qrℓ=2 λiℓ
+
+u Qrℓ=2 λiℓ + λ
+
+2
+
+.
+
+Here and below, an empty product is interpreted as 1. Repeating the same application coordinate by coordinate yields sup 
+
+> t∈I r
+> ∞
+
+X
+
+> i=1
+
+  Λi
+
+Λi + λ
+
+2 rY
+
+> ℓ=1
+
+eiℓ (tℓ)2 ≤ M r
+
+> ∞
+
+X
+
+> i=1
+
+  Λi
+
+Λi + λ
+
+2 = M rN (r)2 (λ).
+
+The same iteration with Λi 
+
+> Λi+λ
+
+gives the second inequality. 47 C Trace Bounds for the Noise-free Term 
+
+This appendix collects the four trace estimates used in Proposition 11. We separate the estimates into three parts: the overlap decomposition of the double sums, the bounds for the two auxiliary kernels, and finally the four trace estimates themselves. Throughout this appendix, assume m ≥ 2r.
+
+C.1 Overlap Decomposition 
+
+For a measurable kernel h : Ir × I r → R, define the separate symmetrization 
+
+hsym (t; t′) := 1(r!) 2
+
+X
+
+> π,ρ ∈Sr
+
+h tπ(1) , . . . , t π(r); t′
+
+> ρ(1)
+
+, . . . , t ′
+
+> ρ(r)
+
+.
+
+For 0 ≤ q ≤ r, define the (2 r − q)-variable kernel 
+
+hq(t1, . . . , t 2r−q) := hsym  (t1, . . . , t r); ( t1, . . . , t q, t r+1 , . . . , t 2r−q).
+
+For a q-variable function u, write 
+
+U (i)
+
+> m,q
+
+(u) := 1(m)q
+
+X
+
+> ℓ∈Iqm
+
+u(tiℓ), Um,q (u) := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+U (i)
+
+> m,q
+
+(u).
+
+We also abbreviate 
+
+cr,q,m := 
+
+rq
+
+2
+
+q! (m)2r−q
+
+(m)2
+
+> r
+
+, 0 ≤ q ≤ r. 
+
+Lemma 32. For every measurable h : Ir × I r → R and every 1 ≤ i ≤ n,
+
+1(m)2
+
+> r
+
+X
+
+> j,k∈Irm
+
+h(tij; tik) = 
+
+> r
+
+X
+
+> q=0
+
+cr,q,m U (i)
+
+> m, 2r−q
+
+(hq).
+
+Proof. We classify the ordered pairs ( j, k) ∈ Irm × Irm by the overlap size 
+
+q = q(j, k) = |J(j) ∩ J(k)|.
+
+For fixed q, there are  rq
+
+2q! ways to choose the overlapping positions and match them. Once this is done, the remaining 2 r−q distinct sample indices can be chosen in ( m)2r−q ordered ways. Averaging over the separate permutations of the first and second r-blocks produces the symmetrized kernel 
+
+hq, and the claimed identity follows after dividing by ( m)2 
+
+> r
+
+.
+
+C.2 Two Auxiliary Kernels 
+
+For t, t′ ∈ I r, define 
+
+g0,λ (t; t′) := Σ r(t; t′)
+
+D
+
+T −1 
+
+> r,λ
+
+K(t), T −1 
+
+> r,λ
+
+K(t′)
+
+E  
+
+> L2(Ir)
+
+, (75) 
+
+f0,λ (t; t′) := Σ r(t; t′)
+
+D
+
+T −1/2 
+
+> r,λ
+
+K(t), T −1/2 
+
+> r,λ
+
+K(t′)
+
+E 
+
+> H⊗r
+
+. (76) By construction, Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+ˆG0T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+ =
+
+> r
+
+X
+
+> q=0
+
+cr,q,m Um, 2r−q
+
+ (g0,λ )q
+
+, (77) Tr  T −1/2 
+
+> r,λ
+
+ˆG0T −1/2
+
+> r,λ
+
+ =
+
+> r
+
+X
+
+> q=0
+
+cr,q,m Um, 2r−q
+
+ (f0,λ )q
+
+. (78) 48 Lemma 33. Let CΣr be the constant supplied by Assumption 4 (iv) , so that |Σr| ≤ CΣr . Then 
+
+∥g0,λ ∥∞ ≤ CΣr M rN (r)2 (λ), E[g20,λ ] ≤ C2Σr N (r)4 (λ),
+
+∥f0,λ ∥∞ ≤ CΣr M rN (r)1 (λ), E[f 20,λ ] ≤ C2Σr N (r)2 (λ).
+
+Proof. The sup-norm bound for g0,λ follows from Cauchy-Schwarz and Lemma 31: 
+
+|g0,λ (t; t′)| ≤ CΣr ∥T −1 
+
+> r,λ
+
+K(t)∥L2 ∥T −1 
+
+> r,λ
+
+K(t′)∥L2 ≤ CΣr M rN (r)2 (λ).
+
+For the second moment, write 
+
+D
+
+T −1 
+
+> r,λ
+
+K(t), T −1 
+
+> r,λ
+
+K(t′)
+
+E 
+
+> L2
+
+=
+
+> ∞
+
+X
+
+> i=1
+
+  Λi
+
+Λi + λ
+
+2 rY
+
+> ℓ=1
+
+eiℓ (tℓ)eiℓ (t′
+
+> ℓ
+
+),
+
+hence orthonormality gives 
+
+E[g20,λ ] ≤ C2Σr
+
+> ∞
+
+X
+
+> i=1
+
+  Λi
+
+Λi + λ
+
+4 = C2Σr N (r)4 (λ).
+
+The proof for f0,λ is the same, using 
+
+D
+
+T −1/2 
+
+> r,λ
+
+K(t), T −1/2 
+
+> r,λ
+
+K(t′)
+
+E 
+
+> H⊗r
+
+=
+
+> ∞
+
+X
+
+> i=1
+
+Λi
+
+Λi + λ
+
+> r
+
+Y
+
+> ℓ=1
+
+eiℓ (tℓ)eiℓ (t′
+
+> ℓ
+
+).
+
+Therefore 
+
+∥f0,λ ∥∞ ≤ CΣr M rN (r)1 (λ), E[f 20,λ ] ≤ C2Σr N (r)2 (λ).
+
+Lemma 34. Recall from Lemma 32 that, for a kernel h, the notation h1 means the one-overlap kernel obtained by forcing exactly one common design point between the two r-blocks. In particular, 
+
+(g0,λ )1 and (f0,λ )1 are the one-overlap versions of g0,λ and f0,λ . We have 
+
+Vcurve = E[g0,λ ] = O(1) , E[f0,λ ] = O(1) ,
+
+and 
+
+r2E[( g0,λ )1] = Vpoint (λ; Σ r) + O(1) , Vpoint (λ; Σ r) = O(λ−1/β ),
+
+E[( f0,λ )1] = O(λ−1/β ).
+
+If Σr̸ = 0 , then E[g0,λ ] is bounded away from zero for all sufficiently small λ.Proof. Expand Σ r in the tensor basis: Σr(t; t′) = 
+
+> ∞
+
+X
+
+> j,k=1
+
+aj;k
+
+> r
+
+Y
+
+> ℓ=1
+
+λs1/2 
+
+> jℓ
+
+ejℓ (tℓ)
+
+> r
+
+Y
+
+> ℓ=1
+
+λs1/2 
+
+> kℓ
+
+ekℓ (t′
+
+> ℓ
+
+).
+
+Then 
+
+E[g0,λ ] = 
+
+> ∞
+
+X
+
+> i=1
+
+ai;iΛs1
+
+> i
+
+  Λi
+
+Λi + λ
+
+2 ≤
+
+> ∞
+
+X
+
+> i=1
+
+ai;iΛs1 
+
+> i
+
+< ∞
+
+49 because s1 > 1 
+
+> β
+
+. The same computation with one power of Λi 
+
+> Λi+λ
+
+gives E[f0,λ ] = O(1). If Σ r̸ = 0, then since Σ r is positive semidefinite there exists some multi-index i∗ with ai∗;i∗ > 0. Therefore 
+
+E[g0,λ ] ≥ ai∗;i∗ Λs1
+
+> i∗
+
+ Λi∗
+
+Λi∗ + λ
+
+2
+
+,
+
+which is bounded below by a positive constant when λ is small enough. It remains to estimate the one-overlap expectations. It follows from symmetry that 
+
+E[( g0,λ )1] = 1
+
+r Eg0,λ (ξ, t 2, . . . , t r; ξ, t ′
+
+> 2
+
+, . . . , t ′
+
+> r
+
+) + r − 1
+
+r Eg0,λ (ξ, t 2, . . . , t r; t′
+
+> 1
+
+, ξ, t ′
+
+> 3
+
+, . . . , t ′
+
+> r
+
+),
+
+where the second term is absent when r = 1. Denote the first and second expectations by Aλ and 
+
+Bλ, respectively, with Bλ := 0 when r = 1. By the definition of Vpoint (λ; Σ r), 
+
+Vpoint (λ; Σ r) = rA λ.
+
+We begin with Aλ. Expanding Σ r and the kernel inner product, then using orthonormality in the variables t2, . . . , t r, t ′
+
+> 2
+
+, . . . , t ′
+
+> r
+
+, we get 
+
+Aλ = Eg0,λ (ξ, t 2, . . . , t r; ξ, t ′
+
+> 2
+
+, . . . , t ′
+
+> r
+
+)
+
+=
+
+Z ∞X
+
+> i=1
+> ∞
+
+X
+
+> j1,k 1=1
+
+aj1,i 2,...,i r ;k1,i 2,...,i r
+
+× λs1/2 
+
+> j1
+
+λs1/2 
+
+> k1
+
+ej1 (ξ)ek1 (ξ)
+
+> r
+
+Y
+
+> ℓ=2
+
+λs1
+
+> iℓ
+
+!   Λi
+
+Λi + λ
+
+2ei1 (ξ)2dρ (ξ).
+
+Therefore 
+
+|Aλ| ≤ sup  
+
+> i2,...,i r,ξ
+> ∞
+
+X
+
+> j1,k 1=1
+
+aj1,i 2,...,i r ;k1,i 2,...,i r λs1/2 
+
+> j1
+
+λs1/2 
+
+> k1
+
+ej1 (ξ)ek1 (ξ)
+
+×
+
+Z ∞X
+
+> i=1
+> r
+
+Y
+
+> ℓ=2
+
+λs1
+
+> iℓ
+
+!   Λi
+
+Λi + λ
+
+2ei1 (ξ)2dρ (ξ).
+
+For each fixed i2, . . . , i r, the coefficient block 
+
+ aj1,i 2,...,i r ;k1,i 2,...,i r
+
+
+
+> j1,k 1≥1
+
+is a partial ℓ2-sum of the coefficient tensor of Σ r, hence 
+
+> ∞
+
+X
+
+> j1,k 1=1
+
+a2  
+
+> j1,i 2,...,i r;k1,i 2,...,i r
+
+≤ ∥ Σr∥2([ H]s1 )⊗2r .
+
+By Cauchy-Schwarz and Lemma 27, 
+
+> ∞
+
+X
+
+> j1,k 1=1
+
+aj1,i 2,...,i r ;k1,i 2,...,i r λs1/2 
+
+> j1
+
+λs1/2 
+
+> k1
+
+ej1 (ξ)ek1 (ξ)
+
+≤
+
+
+
+> ∞
+
+X
+
+> j1,k 1=1
+
+a2 
+
+> j1,i 2,...,i r;k1,i 2,...,i r
+
+ 
+
+> 1/2
+
+
+
+> ∞
+
+X
+
+> j1=1
+
+λs1 
+
+> j1
+
+ej1 (ξ)2
+
+ 
+
+> 1/2
+
+
+
+> ∞
+
+X
+
+> k1=1
+
+λs1 
+
+> k1
+
+ek1 (ξ)2
+
+
+
+> 1/2
+
+≤ ∥ Σr∥([ H]s1 )⊗2r M 2 
+
+> s1
+
+.
+
+50 Since R ei1 (ξ)2 = 1, we conclude that 
+
+|Aλ| ≤ ∥ Σr∥([ H]s1 )⊗2r M 2
+
+> s1
+> ∞
+
+X
+
+> i=1
+> r
+
+Y
+
+> ℓ=2
+
+λs1
+
+> iℓ
+
+!   Λi
+
+Λi + λ
+
+2 = O(λ−1/β ),
+
+by the second part of Lemma 30 with a = 1 and p = 2. Consequently, 
+
+Vpoint (λ; Σ r) = rA λ = O(λ−1/β ).
+
+We now turn to Bλ. There is nothing to prove when r = 1, so assume r ≥ 2. Expanding as above and integrating out the non-overlapping variables gives 
+
+Bλ = Eg0,λ (ξ, t 2, . . . , t r; t′
+
+> 1
+
+, ξ, t ′
+
+> 3
+
+, . . . , t ′
+
+> r
+
+)
+
+=
+
+> ∞
+
+X
+
+> i=1
+> ∞
+
+X
+
+> j1,k 2=1
+
+aj1,i 2,...,i r ;i1,k 2,i 3,...,i r λs1/2 
+
+> j1
+
+λs1/2 
+
+> k2
+
+λs1/2 
+
+> i1
+
+λs1/2
+
+> i2
+> r
+
+Y
+
+> ℓ=3
+
+λs1
+
+> iℓ
+
+!   Λi
+
+Λi + λ
+
+2
+
+×
+
+Z
+
+ej1 (ξ)ek2 (ξ)ei1 (ξ)ei2 (ξ)dρ (ξ).
+
+We prove that Bλ = O(1). Since Λ i/(Λ i + λ) ≤ 1, Cauchy-Schwarz gives 
+
+|Bλ| ≤ 
+
+
+
+> ∞
+
+X
+
+> i=1
+> ∞
+
+X
+
+> j1,k 2=1
+
+a2 
+
+> j1,i 2,...,i r;i1,k 2,i 3,...,i r
+
+
+
+> 1/2
+
+×
+
+> ∞
+
+X
+
+> i=1
+> ∞
+
+X
+
+> j1,k 2=1
+
+λs1 
+
+> j1
+
+λs1 
+
+> k2
+
+λs1 
+
+> i1
+
+λs1
+
+> i2
+> r
+
+Y
+
+> ℓ=3
+
+λ2s1
+
+> iℓ
+
+Z 
+
+ej1 (ξ)ek2 (ξ)ei1 (ξ)ei2 (ξ)dρ (ξ)
+
+2!1/2
+
+.
+
+The first factor is bounded by 
+
+∥Σr∥([ H]s1 )⊗2r ,
+
+because it is a partial ℓ2-sum of the coefficient tensor of Σ r. In the second factor, the variables 
+
+i3, . . . , i r appear only through Qrℓ=3 λ2s1 
+
+> iℓ
+
+, and therefore their sum is finite since s1 > 1/β . It remains to bound the nonnegative series 
+
+S4 := 
+
+> ∞
+
+X
+
+> i1,i 2,j 1,k 2=1
+
+λs1 
+
+> i1
+
+λs1 
+
+> i2
+
+λs1 
+
+> j1
+
+λs1
+
+> k2
+
+Z 
+
+ei1 (ξ)ei2 (ξ)ej1 (ξ)ek2 (ξ)dρ (ξ)
+
+2
+
+.
+
+Let 
+
+Ls1 (x, y ) := 
+
+> ∞
+
+X
+
+> j=1
+
+λs1 
+
+> j
+
+ej (x)ej (y).
+
+Expanding the fourth power for finite truncations of Ls1 gives, formally, 
+
+S4 =
+
+Z
+
+> I
+
+Z
+
+> I
+
+Ls1 (x, y )4dρ (x)dρ (y).
+
+By Cauchy-Schwarz and Lemma 27, 
+
+|Ls1 (x, y )| ≤ 
+
+
+
+> ∞
+
+X
+
+> j=1
+
+λs1 
+
+> j
+
+ej (x)2
+
+ 
+
+> 1/2
+
+
+
+> ∞
+
+X
+
+> j=1
+
+λs1 
+
+> j
+
+ej (y)2
+
+
+
+> 1/2
+
+≤ M 2 
+
+> s1
+
+.
+
+51 The same bound applies to the finite truncations, so dominated convergence justifies the preceding identity and gives S4 ≤ M 8 
+
+> s1
+
+< ∞. Hence Bλ = O(1). Consequently, 
+
+r2E[( g0,λ )1] = rA λ + r(r − 1) Bλ = Vpoint (λ; Σ r) + O(1) .
+
+The same decomposition works for ( f0,λ )1. For the first pattern, one only replaces   Λi
+
+> Λi+λ
+
+2 by  
+
+> Λi
+> Λi+λ
+
+, and then applies the second part of Lemma 30 with p = 1. For the off-diagonal pattern, the preceding O(1) argument is unchanged because it only uses Λ i/(Λ i + λ) ≤ 1. Thus E[( f0,λ )1] = 
+
+O(λ−1/β ). 
+
+Lemma 35. Suppose Assumption 3 holds. If Σr̸ = 0 , then 
+
+Vpoint (λ; Σ r) ≍ λ−1/β .
+
+Proof. The upper bound is part of Lemma 34, so it remains to prove the lower bound. We use the notation from the proof of Lemma 34; in particular, Vpoint (λ; Σ r) = rA λ. Rearranging the expression for Aλ obtained there gives 
+
+Aλ =
+
+> ∞
+
+X 
+
+> i2,...,i r=1
+> r
+
+Y
+
+> ℓ=2
+
+λs1
+
+> iℓ
+
+! Z 
+
+> ∞
+
+X
+
+> j1,k 1=1
+
+aj1,i 2,...,i r ;k1,i 2,...,i r λs1/2 
+
+> j1
+
+λs1/2 
+
+> k1
+
+ej1 (ξ)ek1 (ξ)
+
+
+
+×
+
+> ∞
+
+X
+
+> m=1
+
+ θm
+
+Qrℓ=2 λiℓ
+
+θm
+
+Qrℓ=2 λiℓ + λ
+
+2
+
+km(ξ, ξ )
+
+!
+
+dρ (ξ),
+
+where, when r = 1, the product over ℓ = 2 , . . . , r and the corresponding summation are omitted. For any fixed indices i2, . . . , i r, the matrix 
+
+ aj1,i 2,...,i r ;k1,i 2,...,i r
+
+
+
+> j1,k 1≥1
+
+is a principal submatrix of the positive semidefinite coefficient matrix of Σ r. Therefore, for every 
+
+ξ, ∞X
+
+> j1,k 1=1
+
+aj1,i 2,...,i r ;k1,i 2,...,i r λs1/2 
+
+> j1
+
+λs1/2 
+
+> k1
+
+ej1 (ξ)ek1 (ξ) ≥ 0.
+
+Since Σ r̸ = 0, the positive semidefinite coefficient matrix has a positive diagonal entry. Choose 
+
+i = ( i1, . . . , i r) such that ai;i > 0, and fix these indices i2, . . . , i r in what follows. Moreover, 
+
+Z ∞X
+
+> j1,k 1=1
+
+aj1,i 2,...,i r ;k1,i 2,...,i r λs1/2 
+
+> j1
+
+λs1/2 
+
+> k1
+
+ej1 (ξ)ek1 (ξ)dρ (ξ) = 
+
+> ∞
+
+X
+
+> j1=1
+
+aj1,i 2,...,i r ;j1,i 2,...,i r λs1
+
+> j1
+
+≥ ai1,...,i r ;i1,...,i r λs1 
+
+> i1
+
+> 0.
+
+Since the integrand in the last display is nonnegative, choose ϵ > 0 small enough that the same integral remains positive after restriction to any set of measure at least 1 −ϵ. To apply Assumption 3 directly, set 
+
+ℓN (ξ) = 
+
+PNm=1 km(ξ, ξ )
+
+PNm=1 dm
+
+, bn(ξ) = inf   
+
+> N≥n
+
+ℓN (ξ).
+
+Then bn(ξ) ↑ lim inf N →∞ ℓN (ξ) > 0 for ρ-almost every ξ. Consequently, the increasing sets 
+
+En = {ξ ∈ I : bn(ξ) ≥ n−1}
+
+52 have union of full measure. Choose Nϵ such that ρ(ENϵ ) ≥ 1 − ϵ, and set Eϵ = ENϵ and cϵ = N −1 
+
+> ϵ
+
+.It follows that NX
+
+> m=1
+
+km(ξ, ξ ) ≥ cϵNX
+
+> m=1
+
+dm, ξ ∈ Eϵ, N ≥ Nϵ.
+
+The sequence  θm
+
+Qrℓ=2 λiℓ
+
+θm
+
+Qrℓ=2 λiℓ + λ
+
+2
+
+, m ≥ 1,
+
+is non-increasing in m. Abel summation gives, uniformly for ξ ∈ Eϵ,
+
+> ∞
+
+X
+
+> m=1
+
+ θm
+
+Qrℓ=2 λiℓ
+
+θm
+
+Qrℓ=2 λiℓ + λ
+
+2
+
+km(ξ, ξ ) ≥ cϵ
+
+> ∞
+
+X
+
+> m=1
+
+ θm
+
+Qrℓ=2 λiℓ
+
+θm
+
+Qrℓ=2 λiℓ + λ
+
+2
+
+dm − Oϵ(1) .
+
+The Oϵ(1) term only removes the finitely many indices m < N ϵ. Since 
+
+> ∞
+
+X
+
+> m=1
+
+ θm
+
+Qrℓ=2 λiℓ
+
+θm
+
+Qrℓ=2 λiℓ + λ
+
+2
+
+dm =
+
+> ∞
+
+X
+
+> j=1
+
+ λj
+
+λj + λ/ Qrℓ=2 λiℓ
+
+2
+
+≍ λ−1/β ,
+
+by Lemma 30 with r = 1 and p = 2, we have 
+
+> ∞
+
+X
+
+> m=1
+
+ θm
+
+Qrℓ=2 λiℓ
+
+θm
+
+Qrℓ=2 λiℓ + λ
+
+2
+
+km(ξ, ξ ) ≳ λ−1/β , ξ ∈ Eϵ,
+
+for all sufficiently small λ. Keeping only the nonnegative summand indexed by the fixed i2, . . . , i r
+
+in the expression for Aλ, and restricting the integral to Eϵ, gives 
+
+Aλ ≳ λ−1/β .
+
+Hence Vpoint (λ; Σ r) = rA λ ≳ λ−1/β , as desired. 
+
+C.3 The Four Trace Estimates 
+
+Proposition 36. Assume λ → 0 satisfies (ln 1 
+
+> λ
+
+)r−1 = o(m). Then 
+
+Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+G0T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+ = Vcurve (λ; Σ r) + 1
+
+m Vpoint (λ; Σ r) + o λ−1/β 
+
+m
+
+!
+
+.
+
+In particular, 
+
+Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+G0T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+ = O 1 + λ−1/β 
+
+m
+
+!
+
+.
+
+Proof. Take expectations in (77): Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+G0T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+ =
+
+> r
+
+X
+
+> q=0
+
+cr,q,m E[( g0,λ )q].
+
+Since (m)2r
+
+(m)2
+
+> r
+
+= 1 + O(m−1), E[g0,λ ] = Vcurve (λ; Σ r) = O(1) ,
+
+53 the q = 0 term is 
+
+Vcurve (λ; Σ r) + O(m−1) = Vcurve (λ; Σ r) + o λ−1/β 
+
+m
+
+!
+
+.
+
+Also, 
+
+cr, 1,m = r2
+
+m + O(m−2).
+
+By Lemma 34, 
+
+r2E[( g0,λ )1] = Vpoint (λ; Σ r) + O(1) , E[( g0,λ )1] = O(λ−1/β ).
+
+Hence the q = 1 term is 
+
+cr, 1,m E[( g0,λ )1] = 1
+
+m Vpoint (λ; Σ r) + o λ−1/β 
+
+m
+
+!
+
+.
+
+For q ≥ 2, |E[( g0,λ )q]| ≤ ∥ g0,λ ∥∞, so 
+
+> r
+
+X
+
+> q=2
+
+cr,q,m E[( g0,λ )q] = O N (r)2 (λ)
+
+m2
+
+!
+
+= O λ−1/β (ln 1 
+
+> λ
+
+)r−1
+
+m2
+
+!
+
+= o λ−1/β 
+
+m
+
+!
+
+,
+
+by Lemmas 30 and 33. This proves the expansion, and the final O(·) bound follows from E[g0,λ ] = 
+
+O(1). 
+
+Proposition 37. For every 0 < δ < 1, with probability at least 1 − (r + 1) δ,
+
+Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+( ˆG0 − G0)T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+
+
+≤ C
+
+s
+
+N (r)4 (λ) ln(2 /δ )
+
+nm + N (r)2 (λ) ln(2 /δ )
+
+nm + N (r)2 (λ)
+
+m
+
+r ln(2 /δ )
+
+nm 
+
+!
+
+.
+
+Therefore, 
+
+Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+( ˆG0 − G0)T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+
+
+= OP
+
+λ−1/(2 β)(ln 1 
+
+> λ
+
+)(r−1) /2
+
+m1/2n1/2 + λ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1  1
+
+mn + 1
+
+m3/2n1/2
+
+!
+
+.
+
+Proof. Subtract the expectation in (77): Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+( ˆG0 − G0)T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+ =
+
+> r
+
+X
+
+> q=0
+
+cr,q,m 
+
+ Um, 2r−q(( g0,λ )q) − E[( g0,λ )q].
+
+For q = 0, Lemma 21 gives 
+
+|Um, 2r(g0,λ ) − E[g0,λ ]| ≤ 
+
+s
+
+2E[g20,λ ] ln(2 /δ )
+
+n⌊m/ (2 r)⌋ + 2∥g0,λ ∥∞ ln(2 /δ )
+
+n⌊m/ (2 r)⌋ .
+
+For each q ≥ 1, Lemma 22 yields 
+
+|Um, 2r−q(( g0,λ )q) − E[( g0,λ )q]| ≤ ∥ g0,λ ∥∞
+
+s
+
+2 ln(2 /δ )
+
+n⌊m/ (2 r − q)⌋ .
+
+Insert these bounds, use cr,q,m = O(m−q) for q ≥ 1, and then substitute the estimates from Lemma 33. Finally use Lemma 30 to rewrite the result in powers of λ.54 Proposition 38. Assume λ → 0 satisfies  ln 1
+
+> λ
+
+r−1 = o(m). Then 
+
+Tr  T −1/2 
+
+> r,λ
+
+G0T −1/2
+
+> r,λ
+
+ = (m)2r
+
+(m)2
+
+> r
+
+E[f0,λ ] + O λ−1/β 
+
+m
+
+!
+
+.
+
+In particular, 
+
+Tr  T −1/2 
+
+> r,λ
+
+G0T −1/2
+
+> r,λ
+
+ = O 1 + λ−1/β 
+
+m
+
+!
+
+.
+
+Proof. This is the same argument as in Proposition 36, now using (78) and the bounds for f0,λ 
+
+from Lemmas 33 and 34. 
+
+Proposition 39. For every 0 < δ < 1, with probability at least 1 − (r + 1) δ,
+
+Tr  T −1/2 
+
+> r,λ
+
+( ˆG0 − G0)T −1/2
+
+> r,λ
+
+
+
+≤ C
+
+s
+
+N (r)2 (λ) ln(2 /δ )
+
+nm + N (r)1 (λ) ln(2 /δ )
+
+nm + N (r)1 (λ)
+
+m
+
+r ln(2 /δ )
+
+nm 
+
+!
+
+.
+
+Therefore, 
+
+Tr  T −1/2 
+
+> r,λ
+
+( ˆG0 − G0)T −1/2
+
+> r,λ
+
+
+
+= OP
+
+λ−1/(2 β)(ln 1 
+
+> λ
+
+)(r−1) /2
+
+m1/2n1/2 + λ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1  1
+
+mn + 1
+
+m3/2n1/2
+
+!
+
+.
+
+Proof. Repeat the proof of Proposition 37 with f0,λ in place of g0,λ , and use Lemma 33. 
+
+# D Trace Bounds for the First Noise Term 
+
+This appendix records the bounds used in Proposition 13. As in the preceding trace appendix, it is helpful to separate the proof into three layers: the overlap decomposition, the estimates for the two auxiliary kernels, and finally the four trace estimates that feed back into the main text. Throughout this appendix, assume m ≥ 2r − 1. 
+
+D.1 Overlap with One Distinguished Point 
+
+We reuse the notation U (i) 
+
+> m,q
+
+and Um,q from Lemma 32. For a measurable kernel h : I ×I r−1 ×I r−1 →
+
+R, define the separate symmetrization 
+
+hsym (ξ; ˜ t; ˜ t′) := 1(( r − 1)!) 2
+
+X
+
+> π,ρ ∈Sr−1
+
+h ξ; tπ(1) , . . . , t π(r−1) ; t′
+
+> ρ(1)
+
+, . . . , t ′
+
+> ρ(r−1)
+
+.
+
+For 0 ≤ q ≤ r − 1, define the (2 r − 1 − q)-variable kernel 
+
+hq(u0, . . . , u 2r−2−q) := hsym  u0; ( u1, . . . , u r−1); ( u1, . . . , u q, u r, . . . , u 2r−2−q).
+
+We also abbreviate 
+
+dr,q,m := 
+
+r − 1
+
+q
+
+2
+
+q! (m)2r−1−q
+
+m(m − 1) 2
+
+> r−1
+
+, 0 ≤ q ≤ r − 1.
+
+55 Lemma 40. For every measurable h : I × I r−1 × I r−1 → R and every 1 ≤ i ≤ n,
+
+1
+
+m(m − 1) 2
+
+> r−1
+> m
+
+X
+
+> l=1
+
+X
+
+> j,k∈Ir−1
+> m,l
+
+h(til ; tij; tik) = 
+
+> r−1
+
+X
+
+> q=0
+
+dr,q,m U (i)
+
+> m, 2r−1−q
+
+(hq).
+
+Proof. Fix l. The two tuples j, k ∈ Ir−1 
+
+> m,l
+
+may overlap in exactly q indices, where 0 ≤ q ≤ r − 1. For fixed q, there are  r−1
+
+> q
+
+2q! ways to choose the overlapping positions and match them. Once the overlap pattern is fixed, the total number of distinct sample indices is 2 r − 1 − q, so the remaining choices are counted by ( m)2r−1−q. Averaging over the separate permutations of the two (r − 1)-blocks produces hq, which gives the stated formula after normalization. 
+
+D.2 Two Auxiliary Kernels 
+
+Recall that 
+
+Sr(ξ; ˜ t) = 
+
+> r
+
+X
+
+> a=1
+
+K(t1, . . . , t a−1, ξ, t a, . . . , t r−1) ∈ H ⊗r.
+
+For ξ ∈ I and ˜ t, ˜t′ ∈ I r−1, define 
+
+g1,λ (ξ; ˜ t; ˜ t′) := μ2r−2(˜ t; ˜ t′)
+
+D
+
+T −1 
+
+> r,λ
+
+Sr(ξ; ˜ t), T −1 
+
+> r,λ
+
+Sr(ξ; ˜ t′)
+
+E 
+
+> L2
+
+, (79) 
+
+f1,λ (ξ; ˜ t; ˜ t′) := μ2r−2(˜ t; ˜ t′)
+
+D
+
+T −1/2 
+
+> r,λ
+
+Sr(ξ; ˜ t), T −1/2 
+
+> r,λ
+
+Sr(ξ; ˜ t′)
+
+E 
+
+> H⊗r
+
+. (80) 
+
+Lemma 41. Let Cμ2r−2 be the constant supplied by Assumption 4 (iv) , so that |μ2r−2| ≤ Cμ2r−2 .Then 
+
+∥g1,λ ∥∞ ≤ r2Cμ2r−2 M rN (r)2 (λ),
+
+and 
+
+∥f1,λ ∥∞ ≤ r2Cμ2r−2 M rN (r)1 (λ).
+
+Proof. For every ξ ∈ I and ˜ t ∈ I r−1,
+
+∥T −1 
+
+> r,λ
+
+Sr(ξ; ˜ t)∥L2 ≤
+
+> r
+
+X
+
+> a=1
+
+T −1 
+
+> r,λ
+
+K(t1, . . . , t a−1, ξ, t a, . . . , t r−1) L2
+
+≤ r sup 
+
+> u∈I r
+
+∥T −1 
+
+> r,λ
+
+K(u)∥L2 ≤ r
+
+q
+
+M rN (r)2 (λ),
+
+by Lemma 31. Therefore 
+
+|g1,λ (ξ; ˜ t; ˜ t′)| ≤ Cμ2r−2 ∥T −1 
+
+> r,λ
+
+Sr(ξ; ˜ t)∥L2 ∥T −1 
+
+> r,λ
+
+Sr(ξ; ˜ t′)∥L2
+
+≤ r2Cμ2r−2 M rN (r)2 (λ).
+
+The proof for f1,λ is identical, using 
+
+∥T −1/2 
+
+> r,λ
+
+Sr(ξ; ˜ t)∥H⊗r ≤ r sup 
+
+> u∈I r
+
+∥T −1/2 
+
+> r,λ
+
+K(u)∥H⊗r ≤ r
+
+q
+
+M rN (r)1 (λ)from Lemma 31. This gives the second bound. 56 Lemma 42. For 1 ≤ a, b ≤ r, define 
+
+V (a,b )noise ,λ := E
+
+h
+
+μ2r−2(˜ t; ˜ t′)
+
+*T −1 
+
+> r,λ
+
+K(t1, . . . , t a−1, ξ, t a, . . . , t r−1),T −1 
+
+> r,λ
+
+K(t′
+
+> 1
+
+, . . . , t ′
+
+> b−1
+
+, ξ, t ′
+
+> b
+
+, . . . , t ′
+
+> r−1
+
+)
+
++
+
+> L2
+
+i
+
+,
+
+where the expectation is taken over independent ξ, t 1, . . . , t r−1, t ′
+
+> 1
+
+, . . . , t ′
+
+> r−1
+
+. By symmetry, V (a,a )noise ,λ 
+
+does not depend on a. By definition 
+
+Vnoise (λ; μ2r−2) = 
+
+> r
+
+X
+
+> a=1
+
+V (a,a )noise ,λ = rV (1 ,1) noise ,λ . (81) 
+
+We have 
+
+E[g1,λ ] = Vnoise (λ; μ2r−2) + O(1) , Vnoise (λ; μ2r−2) = O(λ−1/β ), E[f1,λ ] = O(λ−1/β ).
+
+If μ2r−2̸ = 0 , then 
+
+Vnoise (λ; μ2r−2) ≍ λ−1/β , E[g1,λ ] ≍ λ−1/β .
+
+Proof. Expand μ2r−2 in the tensor basis of ([ H]s2 )⊗(2 r−2) :
+
+μ2r−2(˜ t; ˜ t′) = X
+
+> j,k∈Nr−1
+
+aj;k
+
+> r−1
+
+Y
+
+> ℓ=1
+
+λs2/2 
+
+> jℓ
+
+ejℓ (tℓ)
+
+> r−1
+
+Y
+
+> ℓ=1
+
+λs2/2 
+
+> kℓ
+
+ekℓ (t′
+
+> ℓ
+
+).
+
+Since μ2r−2 ∈ ([ H]s2 )⊗(2 r−2) , the coefficient array satisfies 
+
+X
+
+> j,k∈Nr−1
+
+a2 
+
+> j;k
+
+< ∞,
+
+hence every coefficient is bounded by ∥μ2r−2∥([ H]s2 )⊗(2 r−2) . Moreover, because μ2r−2 is a moment kernel, the matrix ( aj;k)j,k∈Nr−1 is positive semidefinite. For i = ( i1, . . . , i r) ∈ Nr and 1 ≤ a ≤ r, write 
+
+i\a := ( i1, . . . , i a−1, i a+1 , . . . , i r) ∈ Nr−1.
+
+Expanding the insertion sum in g1,λ , then using orthonormality in ξ, ˜t, ˜t′, gives 
+
+E[g1,λ ] = 
+
+> r
+
+X
+
+> a,b =1
+
+X
+
+> i∈Nr
+
+1{ia=ib}ai\a;i\b
+
+Y 
+
+> ℓ̸=a
+
+λs2/2
+
+> iℓ
+
+Y 
+
+> ℓ̸=b
+
+λs2/2
+
+> iℓ
+
+  Λi
+
+Λi + λ
+
+2. (82) The key simplification, compared with E[( g0,λ )1], is that the shared variable ξ only contributes the product eia (ξ)eib (ξ). After integration in ξ, this turns into the indicator of the event ia = ib. So no fourth power of a basis function appears here. The diagonal part a = b in (82) is precisely Vnoise (λ; μ2r−2). Indeed, expanding V (a,a )noise ,λ in the same way gives 
+
+Vnoise (λ; μ2r−2) = 
+
+> r
+
+X
+
+> a=1
+
+X
+
+> i∈Nr
+
+ai\a;i\a
+
+Y 
+
+> ℓ̸=a
+
+λs2
+
+> iℓ
+
+  Λi
+
+Λi + λ
+
+2.
+
+57 Using |aj;j| ≤ ∥ μ2r−2∥([ H]s2 )⊗(2 r−2) ,
+
+Vnoise (λ; μ2r−2) ≤ ∥ μ2r−2∥([ H]s2 )⊗(2 r−2) 
+
+> r
+
+X
+
+> a=1
+
+X
+
+> i∈Nr
+
+Y 
+
+> ℓ̸=a
+
+λs2
+
+> iℓ
+
+  Λi
+
+Λi + λ
+
+2
+
+= O(λ−1/β ),
+
+by the second part of Lemma 30 with p = 2. Next consider the off-diagonal contribution a̸ = b. Parameterizing the equality constraint by the common value q := ia = ib and the remaining r − 2 free indices u1, . . . , u r−2, we obtain 
+
+> r
+
+X
+
+> a,b =1
+> a̸=b
+
+X
+
+> i∈Nr
+
+1{ia=ib} ai\a;i\b
+
+Y 
+
+> ℓ̸=a
+
+λs2/2
+
+> iℓ
+
+Y 
+
+> ℓ̸=b
+
+λs2/2
+
+> iℓ
+
+  Λi
+
+Λi + λ
+
+2
+
+≤ ∥ μ2r−2∥([ H]s2 )⊗(2 r−2) 
+
+> r
+
+X
+
+> a,b =1
+> a̸=b
+
+X
+
+> i∈Nr
+
+1{ia=ib}
+
+Y 
+
+> ℓ̸=a
+
+λs2/2
+
+> iℓ
+
+Y 
+
+> ℓ̸=b
+
+λs2/2
+
+> iℓ
+
+
+
+= ∥μ2r−2∥([ H]s2 )⊗(2 r−2) 
+
+> r
+
+X
+
+> a,b =1
+> a̸=b
+> ∞
+
+X
+
+> q=1
+> ∞
+
+X
+
+> u1,...,u r−2=1
+
+λs2
+
+> qr−2
+
+Y
+
+> ℓ=1
+
+λs2 
+
+> uℓ
+
+< ∞,
+
+because s2 > 1/β implies P 
+
+> j
+
+λs2 
+
+> j
+
+< ∞. Thus the off-diagonal contribution is O(1). Combining the diagonal and off-diagonal parts proves 
+
+E[g1,λ ] = Vnoise (λ; μ2r−2) + O(1) .
+
+The same decomposition works for f1,λ . One only replaces   Λi
+
+> Λi+λ
+
+2 by Λi 
+
+> Λi+λ
+
+. The diagonal terms are then O(λ−1/β ) by the second part of Lemma 30 with p = 1, while the off-diagonal terms are still O(1). Hence 
+
+E[f1,λ ] = O(λ−1/β ).
+
+Finally, assume μ2r−2̸ = 0. Since the coefficient matrix is positive semidefinite and nonzero, there exists j∗ = ( j∗ 
+
+> 1
+
+, . . . , j ∗
+
+> r−1
+
+) ∈ Nr−1 such that aj∗;j∗ > 0. Every diagonal coefficient aj;j is nonnegative. Therefore, for a lower bound it is enough to keep only the single diagonal piece 
+
+a = b = 1 with i2 = j∗ 
+
+> 1
+
+, . . . , i r = j∗
+
+> r−1
+
+:
+
+Vnoise (λ; μ2r−2) ≥ aj∗;j∗
+
+> r−1
+
+Y
+
+> ℓ=1
+
+λs2
+
+> j∗
+> ℓ
+> ∞
+
+X
+
+> q=1
+
+Qr−1 
+
+> ℓ=1
+
+λj∗ 
+
+> ℓ
+
+λq
+
+Qr−1 
+
+> ℓ=1
+
+λj∗ 
+
+> ℓ
+
+λq + λ
+
+!2
+
+.
+
+By the r = 1 case of Lemma 30, applied with regularization parameter λ/ Qr−1 
+
+> ℓ=1
+
+λj∗ 
+
+> ℓ
+
+,
+
+> ∞
+
+X
+
+> q=1
+
+Qr−1 
+
+> ℓ=1
+
+λj∗ 
+
+> ℓ
+
+λq
+
+Qr−1 
+
+> ℓ=1
+
+λj∗ 
+
+> ℓ
+
+λq + λ
+
+!2
+
+≍ λ−1/β .
+
+Hence 
+
+Vnoise (λ; μ2r−2) ≳ λ−1/β 
+
+for all sufficiently small λ. Together with the already proved upper bound, this gives 
+
+Vnoise (λ; μ2r−2) ≍ λ−1/β .
+
+Since E[g1,λ ] = Vnoise (λ; μ2r−2) + O(1), we also have E[g1,λ ] ≍ λ−1/β .58 D.3 The Four Trace Estimates 
+
+By Lemma 40, applying the overlap decomposition to g1,λ and f1,λ gives Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+ˆG1T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+ =
+
+> r−1
+
+X
+
+> q=0
+
+dr,q,m Um, 2r−1−q
+
+ (g1,λ )q
+
+, (83) Tr  T −1/2 
+
+> r,λ
+
+ˆG1T −1/2
+
+> r,λ
+
+ =
+
+> r−1
+
+X
+
+> q=0
+
+dr,q,m Um, 2r−1−q
+
+ (f1,λ )q
+
+. (84) 
+
+Proposition 43. Assume λ → 0 satisfies  ln 1
+
+> λ
+
+r−1 = o(m). Then 
+
+Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+G1T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+ = (m)2r−1
+
+m(m − 1) 2
+
+> r−1
+
+E[g1,λ ] + O λ−1/β  ln 1
+
+> λ
+
+r−1
+
+m
+
+!
+
+.
+
+In particular, if μ2r−2̸ = 0 , then 
+
+Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+G1T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+ = (m)2r−1
+
+m(m − 1) 2
+
+> r−1
+
+Vnoise (λ; μ2r−2) + o(λ−1/β ) ≍ λ−1/β .
+
+Proof. Taking expectations in (83) gives Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+G1T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+ =
+
+> r−1
+
+X
+
+> q=0
+
+dr,q,m E[( g1,λ )q].
+
+The q = 0 term is exactly (m)2r−1
+
+m(m − 1) 2
+
+> r−1
+
+E[g1,λ ].
+
+For q ≥ 1, 
+
+|E[( g1,λ )q]| ≤ ∥ g1,λ ∥∞,
+
+so r−1X
+
+> q=1
+
+dr,q,m E[( g1,λ )q] = O
+
+ ∥g1,λ ∥∞
+
+m
+
+
+
+,
+
+because dr,q,m = O(m−q) for q ≥ 1. By Lemmas 30 and 41, 
+
+∥g1,λ ∥∞ = O λ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1!
+
+,
+
+which proves the first expansion. If μ2r−2̸ = 0, then Lemma 42 gives 
+
+E[g1,λ ] = Vnoise (λ; μ2r−2) + O(1) , Vnoise (λ; μ2r−2) ≍ λ−1/β .
+
+Since (ln 1 
+
+> λ
+
+)r−1 = o(m), the overlap remainder is o(λ−1/β ), and the additional O(1) term is also 
+
+o(λ−1/β ). Therefore Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+G1T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+ = (m)2r−1
+
+m(m − 1) 2
+
+> r−1
+
+Vnoise (λ; μ2r−2) + o(λ−1/β ) ≍ λ−1/β .
+
+59 Proposition 44. For every 0 < δ < 1, with probability at least 1 − rδ ,
+
+Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+( ˆG1 − G1)T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+ ≤ CN (r)2 (λ)
+
+r ln(2 /δ )
+
+mn .
+
+Therefore, 
+
+Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+( ˆG1 − G1)T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+ = OP
+
+λ−1/β  ln 1
+
+> λ
+
+r−1
+
+√mn 
+
+!
+
+.
+
+Proof. Subtract expectations in (83): Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+( ˆG1 − G1)T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+ =
+
+> r−1
+
+X
+
+> q=0
+
+dr,q,m 
+
+ Um, 2r−1−q(( g1,λ )q) − E[( g1,λ )q].
+
+For each 0 ≤ q ≤ r − 1, Lemma 22 gives, with probability at least 1 − δ,
+
+|Um, 2r−1−q(( g1,λ )q) − E[( g1,λ )q]| ≤ ∥ g1,λ ∥∞
+
+s
+
+2 ln(2 /δ )
+
+n⌊m/ (2 r − 1 − q)⌋ .
+
+Taking a union bound over q = 0 , . . . , r − 1, we obtain with probability at least 1 − rδ ,
+
+Tr  T 1/2 
+
+> r
+
+T −1 
+
+> r,λ
+
+( ˆG1 − G1)T −1 
+
+> r,λ
+
+T 1/2
+
+> r
+
+ ≤ C∥g1,λ ∥∞
+
+r ln(2 /δ )
+
+mn 
+
+> r−1
+
+X
+
+> q=0
+
+dr,q,m .
+
+Since Pr−1 
+
+> q=0
+
+dr,q,m = O(1), the first claim follows from Lemma 41. The OP-statement is then immediate from Lemma 30. 
+
+Proposition 45. Assume λ → 0 satisfies  ln 1
+
+> λ
+
+r−1 = o(m). Then 
+
+Tr  T −1/2 
+
+> r,λ
+
+G1T −1/2
+
+> r,λ
+
+ = (m)2r−1
+
+m(m − 1) 2
+
+> r−1
+
+E[f1,λ ] + O λ−1/β  ln 1
+
+> λ
+
+r−1
+
+m
+
+!
+
+,
+
+and in particular 
+
+Tr  T −1/2 
+
+> r,λ
+
+G1T −1/2
+
+> r,λ
+
+ = O
+
+
+
+λ−1/β 
+
+.
+
+Proof. Taking expectations in (84), we get Tr  T −1/2 
+
+> r,λ
+
+G1T −1/2
+
+> r,λ
+
+ =
+
+> r−1
+
+X
+
+> q=0
+
+dr,q,m E[( f1,λ )q].
+
+The q = 0 term is exactly (m)2r−1
+
+m(m − 1) 2
+
+> r−1
+
+E[f1,λ ].
+
+For q ≥ 1, 
+
+|E[( f1,λ )q]| ≤ ∥ f1,λ ∥∞,
+
+so r−1X
+
+> q=1
+
+dr,q,m E[( f1,λ )q] = O
+
+ ∥f1,λ ∥∞
+
+m
+
+
+
+= O λ−1/β  ln 1
+
+> λ
+
+r−1
+
+m
+
+!
+
+,
+
+by Lemmas 30 and 41. This proves the expansion. Since E[f1,λ ] = O(λ−1/β ) by Lemma 42, the whole trace is O(λ−1/β ). 60 Proposition 46. For every 0 < δ < 1, with probability at least 1 − rδ ,
+
+Tr  T −1/2 
+
+> r,λ
+
+( ˆG1 − G1)T −1/2
+
+> r,λ
+
+ ≤ CN (r)1 (λ)
+
+r ln(2 /δ )
+
+mn .
+
+Therefore, 
+
+Tr  T −1/2 
+
+> r,λ
+
+( ˆG1 − G1)T −1/2
+
+> r,λ
+
+ = OP
+
+λ−1/β  ln 1
+
+> λ
+
+r−1
+
+√mn 
+
+!
+
+.
+
+Proof. Repeat the proof of Proposition 44, starting from (84) and using ∥f1,λ ∥∞ in place of ∥g1,λ ∥∞.The bound from Lemma 41 then gives the claimed inequality, and Lemma 30 turns it into the stated 
+
+OP-estimate. 
+
+# E Omitted Proofs 
+
+Proof of Example 2. 
+
+Let Hdq (Sd) be the space of degree-q spherical harmonics, and write aq = dim Hdq (Sd). Its reproduc-ing kernel is 
+
+Zq(x, y ) = 
+
+> aq
+
+X
+
+> ℓ=1
+
+Yq,ℓ (x)Yq,ℓ (y),
+
+for any orthonormal basis ( Yq,ℓ )aq
+
+> ℓ=1
+
+. The addition formula for spherical harmonics gives Zq(x, x ) = 
+
+aq for every x ∈ Sd (Dai and Xu, 2013, Corollary 1.27). By the Funk-Hecke formula, T acts on Hdq (Sd) as multiplication by a scalar γq. Therefore, for each positive eigenvalue θm of T , the eigenspace Vm is the direct sum of the harmonic spaces with γq = θm. Since the diagonal of the orthogonal projection kernel is additive over orthogonal direct sums, 
+
+km(x, x ) = X 
+
+> γq=θm
+
+Zq(x, x ) = X 
+
+> γq=θm
+
+aq = dm, x ∈ Sd.
+
+Hence, for every N ≥ 1, NX
+
+> m=1
+
+km(x, x ) = 
+
+> N
+
+X
+
+> m=1
+
+dm, x ∈ Sd.
+
+This proves Assumption 3. The same identity also gives the regular RKHS condition. 
+
+Proof of Example 3. 
+
+Let V dq be the space of orthogonal polynomials of degree exactly q on Bd with respect to the weight W (x) = (1 − ∥ x∥2)−1/2, and set aq = dim V dq =  q+d−1
+
+> q
+
+. The Funk-Hecke formula on the ball implies that T acts on V dq as multiplication by a scalar γq for a dot-product kernel (Dai and Xu, 2013, Theorem 11.1.9). Let Pq denote the reproducing kernel of V dq . Thus, for each positive eigenvalue θm,
+
+km(x, x ) = X 
+
+> γq=θm
+
+Pq(x, x ), dm = X 
+
+> γq=θm
+
+aq.
+
+With η = ( d − 1) /2 and u = 2 ∥x∥2 − 1, the explicit formula of Dai and Xu (2013, Corollary 11.1.8) yields 
+
+Pq(x, x ) = q + η
+
+2η
+
+Cηq (1) + Cηq (u) , −1 ≤ u ≤ 1,
+
+61 where Cηq is the Gegenbauer polynomial. We use the standard Gegenbauer bound (Dai and Xu, 2013, Appendix B.2) 
+
+Cηq (u) ≤ Cηq (1) , −1 ≤ u ≤ 1,
+
+and the standard value formula for Cηq (1): 
+
+Cηq (1) = 
+
+q + d − 2
+
+q
+
+
+
+, aq =
+
+q + d − 1
+
+q
+
+
+
+= q + d − 1
+
+d − 1
+
+q + d − 2
+
+q
+
+
+
+.
+
+Since η = ( d − 1) /2, this gives the exact comparison 
+
+q + ηη Cηq (1) = 2q + d − 1
+
+q + d − 1 aq.
+
+Fix x̸ = 0, and set u = 2 ∥x∥2 − 1. If ∥x∥ < 1, then u ∈ (−1, 1), and the classical Darboux asymptotic formula for Gegenbauer polynomials (Dai and Xu, 2013, Appendix B.2) gives 
+
+Cηq (u)
+
+Cηq (1) = O(q−η) → 0.
+
+If ∥x∥ = 1, then u = 1. In both cases, the displayed formula for Pq(x, x ) implies that there exist qx
+
+and cx > 0 such that 
+
+Pq(x, x ) ≥ cxaq, q ≥ qx.
+
+Using km(x, x ) = P  
+
+> γq=θm
+
+Pq(x, x ), we obtain, for this fixed x̸ = 0, 
+
+> N
+
+X
+
+> m=1
+
+km(x, x ) ≥ cxNX
+
+> m=1
+
+dm − O(1) ,
+
+where the O(1) term accounts for the finitely many q < q x that may contribute to the sum. Since PNm=1 dm → ∞ , this yields lim inf  
+
+> N→∞
+
+PNm=1 km(x, x )
+
+PNm=1 dm
+
+≥ cx, x̸ = 0 .
+
+Since ρ({0}) = 0, Assumption 3 follows. 
+
+Proof of Example 4. 
+
+Fix s′ < s . By the tensor-product definition of the interpolation spaces, 
+
+∥μr∥2([ H]s′ )⊗r = X
+
+> i∈Nr
+
+c2 
+
+> i
+
+Λ−s′ 
+
+> i
+
+.
+
+Since c2 
+
+> i
+
+≍ Λs+ 1 
+
+> β
+> i
+
+, the last display is bounded by a constant multiple of 
+
+X
+
+> i∈Nr
+
+Λs+ 1  
+
+> β−s′
+> i
+
+=
+
+
+
+> ∞
+
+X
+
+> j=1
+
+λs+ 1 
+
+> β−s′
+> j
+
+
+
+> r
+
+< ∞,
+
+because s + 1 
+
+> β
+
+− s′ > 1/β . Hence μr ∈ ([ H]s′
+
+)⊗r, which proves Assumption 4(i). 62 If s ≥ 2, Assumption 4(ii) is void. Suppose now that s < 2. Let N = Nr(λ), and let ( λ(r) 
+
+> j
+
+)j≥1
+
+be the non-increasing rearrangement of {Λi : i ∈ Nr}. By Lemma 30, 
+
+N ≍ λ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1
+
+, λ(r) 
+
+> j
+
+≍ j−β (ln( ej )) β(r−1) .
+
+Therefore, 
+
+X
+
+> Λi<λ
+
+c2 
+
+> i
+
+≍ X
+
+> j>N
+
+ λ(r)
+
+> j
+
+s+1 /β 
+
+≍ X
+
+> j>N
+
+j−β(s+1 /β )(ln( ej )) β(s+1 /β )( r−1) 
+
+≍
+
+Z ∞
+
+> N
+
+x−(sβ +1) (ln( ex )) (sβ +1)( r−1) dx. 
+
+Since βs + 1 > 1, the tail estimate in Lemma 29 yields 
+
+Z ∞
+
+> N
+
+x−(sβ +1) (ln( ex )) (sβ +1)( r−1) dx ≍ N −βs (ln( eN )) (βs +1)( r−1) .
+
+Using the estimate for N and ln( eN ) ≍ ln(1 /λ ), we obtain 
+
+X
+
+> Λi<λ
+
+c2 
+
+> i
+
+≍ λs
+
+
+
+ln 1
+
+λ
+
+r−1
+
+= Ω( λs).
+
+This proves Assumption 4(ii). 
+
+Proof of Example 5. 
+
+By the coefficient assumption, 
+
+B(λ; μr)2 ≍
+
+> ∞
+
+X
+
+> i=1
+
+Λs+1 /β 
+
+> i
+
+ λ
+
+Λi + λ
+
+2
+
+.
+
+Let ( λ(r) 
+
+> j
+
+)j≥1 be the non-increasing rearrangement of the tensor eigenvalues {Λi : i ∈ Nr}, and define 
+
+N := # {j ≥ 1 : λ(r) 
+
+> j
+
+≥ λ}.
+
+By Lemma 30, 
+
+N ≍ λ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1
+
+, ln( eN ) ≍ ln 1
+
+λ .
+
+We next record the two summation estimates needed below. By Lemma 30, 
+
+ λ(r)
+
+> j
+
+q ≍ j−βq (ln( ej )) βq (r−1) 
+
+for each fixed q ∈ R. Integral comparison gives 
+
+X
+
+> j≤N
+
+ λ(r)
+
+> j
+
+q ≍ 1 + 
+
+Z N
+
+> 1
+
+x−βq (ln( ex )) βq (r−1) dx. 
+
+63 Applying Lemma 29 to the shifted-log integral, equivalently after discarding the bounded initial interval and using ln( ex ) ≍ ln x for x ≥ 2, yields 
+
+X
+
+> j≤N
+
+ λ(r)
+
+> j
+
+q ≍
+
+
+
+N 1−βq (ln( eN )) βq (r−1) , q < 1/β, 
+
+(ln( eN )) r, q = 1 /β, 
+
+1, q > 1/β, 
+
+where the constant 1 accounts for the finitely many small indices in the convergent case. Similarly, for q > 1/β , another integral comparison gives 
+
+X
+
+> j>N
+
+ λ(r)
+
+> j
+
+q ≍
+
+Z ∞
+
+> N
+
+x−βq (ln( ex )) βq (r−1) dx. 
+
+Applying the tail part of Lemma 29 gives 
+
+X
+
+> j>N
+
+ λ(r)
+
+> j
+
+q ≍ N 1−βq (ln( eN )) βq (r−1) .
+
+Split the bias according to the two regions Λ i ≥ λ and Λ i < λ :
+
+B(λ; μr)2 ≍ B≥(λ) + B<(λ),
+
+where 
+
+B≥(λ) := X
+
+> Λi≥λ
+
+Λs+1 /β 
+
+> i
+
+ λ
+
+Λi + λ
+
+2
+
+and 
+
+B<(λ) := X
+
+> Λi<λ
+
+Λs+1 /β 
+
+> i
+
+ λ
+
+Λi + λ
+
+2
+
+.
+
+On the first region, 
+
+B≥(λ) ≍ λ2 X
+
+> Λi≥λ
+
+Λs+1 /β −2 
+
+> i
+
+= λ2 X
+
+> j≤N
+
+ λ(r)
+
+> j
+
+s+1 /β −2.
+
+Applying the partial-sum estimate above with q = s + 1 /β − 2, we obtain 
+
+B≥(λ) ≍
+
+
+
+λs  ln 1
+
+> λ
+
+r−1 , s < 2,λ2  ln 1
+
+> λ
+
+r , s = 2 ,λ2, s > 2.
+
+On the second region, 
+
+B<(λ) ≍ X
+
+> Λi<λ
+
+Λs+1 /β  
+
+> i
+
+= X
+
+> j>N
+
+ λ(r)
+
+> j
+
+s+1 /β ≍ λs
+
+
+
+ln 1
+
+λ
+
+r−1
+
+.
+
+Since this term is of lower order than B≥(λ) when s ≥ 2, and has the same order when s < 2, we conclude that 
+
+B(λ; μr)2 ≍
+
+
+
+λs  ln 1
+
+> λ
+
+r−1 , s < 2,λ2  ln 1
+
+> λ
+
+r , s = 2 ,λ2, s > 2.
+
+64 Proof of Theorem 2. 
+
+Since λ = Ω(( mn )−θ) for some θ < β , we have vr = λ−1/β (log(1 /λ )) r/(mn ) → 0, and Assump-tion 4(iv) gives Σ r̸ = 0 and μ2r−2̸ = 0, so Theorem 14 applies. Combining the variance expansion in Theorem 14, the bias expansion in Theorem 18, and the bias–variance decomposition (18) gives the result. 
+
+Proof of Proposition 3. 
+
+As in the proof of Theorem 2, the condition on λ implies vr = λ−1/β (log(1 /λ )) r/(mn ) → 0. Combining the noise-free variance expansion in Proposition 15, the bias expansion in Theorem 18, and the bias–variance decomposition (18) proves the claim. 
+
+Proof of Theorem 4. 
+
+We prove the two terms by restricting to two submodels of Pr,s (R). For the sampling term, let A take the values 1 and 2 with equal probability, independently across curves, and consider the submodel 
+
+X = Af. 
+
+Its target is μr = ϑrf ⊗r, where ϑr := EAr > 0. Let N = mn , choose 
+
+J ≍ N 1/(sβ +1) , aJ = ηJ −(sβ +1) /2,
+
+and write 
+
+fω = be 1 + uω, uω = aJ
+
+> 2J
+
+X
+
+> j=J+1
+
+ωj ej , ω ∈ {− 1, 1}J .
+
+Here b, η > 0 are fixed sufficiently small constants. By Assumption 1, 
+
+∥uω∥2[H]s = a2
+
+> J
+> 2J
+
+X
+
+> j=J+1
+
+λ−sj ≲ a2 
+
+> J
+
+Jsβ +1 = η2.
+
+Since A ≤ 2 almost surely, 
+
+
+
+E ∥Af ω∥2r
+
+> [H]s
+
+1/(2 r)
+
+≤ 2
+
+
+
+bλ −s/ 21 + Cη 
+
+
+
+.
+
+Thus b and η may be chosen, independently of n, m , so that the laws of Af ω all belong to Pr,s (R). The Varshamov–Gilbert bound gives a subset Ω ⊂ {− 1, 1}J such that log |Ω| ≳ J, dH(ω, ω ′) ≥ J/ 8 for distinct ω, ω ′ ∈ Ω.
+
+To compare the corresponding moment functions, let EJ = span {eJ+1 , . . . , e 2J }. Projecting f ⊗rω −
+
+f ⊗rω′ onto the orthogonal sum of the r tensor subspaces having one coordinate in EJ and all other coordinates in span {e1} gives 
+
+br−1
+
+> r
+
+X
+
+> ℓ=1
+
+e⊗(ℓ−1) 1 ⊗ (uω − uω′ ) ⊗ e⊗(r−ℓ)1 .
+
+65 The summands are mutually orthogonal. Consequently, 
+
+ϑrf ⊗rω − ϑrf ⊗rω′  
+
+> 2
+> L2(ρ⊗r)
+
+≥ ϑ2 
+
+> r
+
+rb 2r−2 ∥uω − uω′ ∥2
+
+> L2(ρ)
+
+= 4 ϑ2 
+
+> r
+
+rb 2r−2a2 
+
+> J
+
+dH(ω, ω ′) ≳ a2 
+
+> J
+
+J. 
+
+Let Pω denote the distribution of the observed data under fω. Revealing the latent amplitudes 
+
+A1, . . . , A n can only increase the information. Conditional on these amplitudes and the design points, the observations are Gaussian, so the data-processing inequality gives KL( Pω, P ω′ ) ≤ mn EA2
+
+2σ2 ∥fω − fω′ ∥2
+
+> L2(ρ)
+
+≲ mna 2 
+
+> J
+
+J ≍ η2J. 
+
+Taking η sufficiently small makes this a fixed small fraction of log |Ω|. Fano’s lemma therefore yields inf  
+
+> bμ
+
+sup  
+
+> P∈P r,s (R)
+
+EP ∥bμ − μr(P )∥2  
+
+> L2(ρ⊗r)
+
+≳ a2 
+
+> J
+
+J ≍ (mn )−sβ/ (sβ +1) .
+
+For the curve-level term, fix a nonzero h ∈ [H]s with sufficiently small norm and let X = Ah ,where 
+
+Pp(A = 2) = p, Pp(A = 1) = 1 − p, 
+
+for p in a fixed neighborhood of 1 /2. These laws also lie in Pr,s (R), and 
+
+μr,p =  1 + (2 r − 1) ph⊗r.
+
+The observed data are obtained from the independent amplitudes A1, . . . , A n through a Markov kernel that does not depend on p. Hence, for p, q near 1 /2, KL( Pp, P q) ≤ n KL  Bern( p), Bern( q) ≲ n(p − q)2.
+
+Choose p, q with |p − q| = c0n−1/2, where c0 > 0 is a sufficiently small constant. The last display is then bounded by a fixed small constant, whereas 
+
+∥μr,p − μr,q ∥2  
+
+> L2(ρ⊗r)
+
+= (2 r − 1) 2(p − q)2 ∥h∥2rL2(ρ) ≍ n−1.
+
+Le Cam’s two-point lemma gives the lower bound n−1. Taking the maximum of the lower bounds from the two submodels, and using a ∨ b ≥ (a + b)/2, proves the theorem. 
+
+Proof of Corollary 5. 
+
+Write 
+
+μr = X
+
+> i
+
+ciei.
+
+By Assumption 4(ii), choose i∗ such that ci∗̸ = 0. The eigenvalues of λT −1 
+
+> r,λ
+
+are λ/ (Λ i + λ). Hence, for all small enough λ,
+
+B(λ; μr)2 = X
+
+> i
+
+c2
+
+> i
+
+ λ
+
+Λi + λ
+
+2
+
+≥ c2
+
+> i∗
+
+ λ
+
+Λi∗ + λ
+
+2
+
+≳ λ2.
+
+66 On the other hand, Lemma 16 gives B(λ; μr)2 = O(λ2). Thus B(λ; μr)2 ≍ λ2. By Theorem 2 in the noisy case, or Proposition 3 in the noiseless case, we have MSE r,λ (T ) = Θ P n−1 + λ−1/β 
+
+mn + λ2
+
+!
+
+.
+
+Since 
+
+λ2 + λ−1/β 
+
+mn ≳ (mn )−2β/ (2 β+1) 
+
+for every λ > 0, the lower bound follows. 
+
+Proof of Lemma 6. 
+
+Since j and k have no repeated indices inside themselves, each noise variable εiℓ can appear at most once in Yij and at most once in Yik. Therefore, in the product YijYik, every εiℓ can appear only 0, 1, or 2 times. Terms in which a noise variable appears exactly once have conditional expectation zero; terms in which a noise variable appears twice must use a common sample location in J(j) ∩ J(k), and each such matched pair contributes σ2. Hence 
+
+E[YijYik | T ] = X
+
+> A⊆J(j)∩J(k)
+
+σ2|A|μ2r−2|A|
+
+ tAi, j,k
+
+. (85) Subtracting μr(tij)μr(tik) only changes the coefficient of σ0, and that coefficient becomes Σr(tij; tik). Grouping the remaining terms according to d = |A| gives (22). 
+
+Proof of Lemma 9. 
+
+This is the tensor-product analogue of Li et al. (2024a, Proposition 4.6 and 4.7). We split the proof into two auxiliary steps. 
+
+Auxiliary Lemma 1. For every δ ∈ (0 , 1), with probability at least 1 − δ,
+
+∥T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1/2 
+
+> r,λ
+
+∥ ≤ 
+
+q
+
+ur,δ (λ) + 23 ur,δ (λ), (86) where 
+
+ur,δ (λ) := 2M rN (r)1 (λ)
+
+n⌊m/r ⌋ ln 4( ∥Tr∥ + λ)N (r)1 (λ)
+
+δ∥Tr∥
+
+!
+
+. (87) 
+
+Proof. Define the operator-valued kernel 
+
+Zr,λ (t) := T −1/2
+
+> r,λ
+
+ K(t) ⊗ K(t)T −1/2 
+
+> r,λ
+
+, t ∈ I r.
+
+Then Zr,λ (t) is a positive self-adjoint Hilbert-Schmidt operator on H⊗r, and 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1(m)r
+
+X
+
+> j∈Irm
+
+Zr,λ (tij) = T −1/2 
+
+> r,λ
+
+ˆTrT −1/2 
+
+> r,λ
+
+.
+
+Also, 
+
+EZr,λ (t) = T −1/2 
+
+> r,λ
+
+TrT −1/2 
+
+> r,λ
+
+,
+
+67 so the centered U -statistic in Lemma 23 is exactly 
+
+T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1/2 
+
+> r,λ
+
+.
+
+By Lemma 31, 
+
+∥Zr,λ (t)∥ = ∥T −1/2 
+
+> r,λ
+
+K(t)∥2 
+
+> H⊗r
+
+≤ M rN (r)1 (λ) =: Lr,λ .
+
+Taking expectations gives 
+
+∥T −1/2 
+
+> r,λ
+
+TrT −1/2 
+
+> r,λ
+
+∥ ≤ E∥Zr,λ (t)∥ ≤ Lr,λ .
+
+Hence 
+
+∥Zr,λ (t) − EZr,λ (t)∥ ≤ 2Lr,λ =: L. 
+
+Next, since Zr,λ (t) is positive and rank one, 
+
+Zr,λ (t)2 = ∥T −1/2 
+
+> r,λ
+
+K(t)∥2 
+
+> H⊗r
+
+Zr,λ (t) ⪯ Lr,λ Zr,λ (t).
+
+Using E(B − EB)2 ⪯ EB2, we obtain 
+
+E(Zr,λ (t) − EZr,λ (t)) 2 ⪯ E[Zr,λ (t)2]
+
+⪯ Lr,λ E[Zr,λ (t)] = Lr,λ T −1/2 
+
+> r,λ
+
+TrT −1/2 
+
+> r,λ
+
+=: Sr,λ .
+
+Since Tr and Tr,λ commute, 
+
+Sr,λ = Lr,λ TrT −1 
+
+> r,λ
+
+.
+
+Therefore 
+
+∥Sr,λ ∥ = Lr,λ ∥TrT −1 
+
+> r,λ
+
+∥ = Lr,λ 
+
+∥Tr∥∥Tr∥ + λ ,
+
+and Tr Sr,λ = Lr,λ Tr( TrT −1 
+
+> r,λ
+
+) = Lr,λ N (r)1 (λ).
+
+Hence Tr Sr,λ 
+
+∥Sr,λ ∥ = (∥Tr∥ + λ)N (r)1 (λ)
+
+∥Tr∥ .
+
+Apply Lemma 23 with k = r and D = EZr,λ (t). With probability at least 1 − δ,
+
+∥T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1/2 
+
+> r,λ
+
+∥≤
+
+s
+
+2∥Sr,λ ∥
+
+n⌊m/r ⌋ ln 
+
+ 4 Tr Sr,λ 
+
+δ∥Sr,λ ∥
+
+
+
++ 2L
+
+3n⌊m/r ⌋ ln 
+
+ 4 Tr Sr,λ 
+
+δ∥Sr,λ ∥
+
+
+
+.
+
+Since 
+
+∥Sr,λ ∥ ≤ Lr,λ = M rN (r)1 (λ), 4 Tr Sr,λ 
+
+δ∥Sr,λ ∥ = 4( ∥Tr∥ + λ)N (r)1 (λ)
+
+δ∥Tr∥ ,
+
+this is exactly (86). 
+
+Auxiliary Lemma 2. If A is a self-adjoint operator with ∥A∥ ≤ 12 , then I + A is invertible and 
+
+∥(I + A)−1∥ ≤ 11 − ∥ A∥ ≤ 2.
+
+68 Proof. The spectrum of A is contained in [ −∥ A∥, ∥A∥] ⊂ [−1/2, 1/2], so the spectrum of I + A
+
+lies in [1 /2, 3/2]. Therefore I + A is invertible and 
+
+∥(I + A)−1∥ = 1min σ(I + A) ≤ 2.
+
+We now return to the main claim. By Lemma 30, 
+
+N (r)1 (λ) ≍ λ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1
+
+.
+
+Hence, for every fixed δ ∈ (0 , 1), 
+
+ur,δ (λ) ≤ Cδ
+
+λ−1/β (ln 1 
+
+> λ
+
+)r−1
+
+n⌊m/r ⌋ ln Cδλ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1!
+
+≤ Cδ
+
+λ−1/β (ln 1 
+
+> λ
+
+)r
+
+n⌊m/r ⌋ ,
+
+for all sufficiently small λ, because ln Cδλ−1/β 
+
+
+
+ln 1
+
+λ
+
+r−1!
+
+= Oδ
+
+
+
+ln 1
+
+λ
+
+
+
+.
+
+Since m ≥ r, we have ⌊m/r ⌋ ≥ m/ (2 r), hence 
+
+ur,δ (λ) ≤ Cδ,r 
+
+λ−1/β (ln 1 
+
+> λ
+
+)r
+
+mn = Cδ,r vr. (88) Combining (86) with (88), we obtain 
+
+∥T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1/2 
+
+> r,λ
+
+∥ = OP(√vr),
+
+because ur,δ (λ) → 0 and 
+
+q
+
+ur,δ (λ) + 23 ur,δ (λ) ≤ 2
+
+q
+
+ur,δ (λ) ≤ Cδ,r 
+
+√vr
+
+for all sufficiently small λ.Since this implies 
+
+∥T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1/2 
+
+> r,λ
+
+∥ = oP(1) ,
+
+the event 
+
+∥T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1/2 
+
+> r,λ
+
+∥ ≤ 12
+
+
+
+has probability tending to one. On this event, 
+
+T −1/2 
+
+> r,λ
+
+ˆTr,λ T −1/2 
+
+> r,λ
+
+= I + T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1/2 
+
+> r,λ
+
+.
+
+Hence, by Auxiliary Lemma 2, 
+
+∥T 1/2 
+
+> r,λ
+
+ˆT −1 
+
+> r,λ
+
+T 1/2 
+
+> r,λ
+
+∥ =  T −1/2 
+
+> r,λ
+
+ˆTr,λ T −1/2
+
+> r,λ
+
+−1 ≤ 2.
+
+69 Proof of Lemma 7. 
+
+The resolvent identity gives ˆT −1 
+
+> r,λ
+
+− T −1 
+
+> r,λ
+
+= ˆT −1 
+
+> r,λ
+
+(Tr − ˆTr)T −1 
+
+> r,λ
+
+.
+
+For h ∈ H ⊗r, we use the identity 
+
+∥h∥L2(Ir ) = ∥T 1/2 
+
+> r
+
+h∥H⊗r .
+
+Therefore, for every t ∈ I r,
+
+∥ ˆT −1 
+
+> r,λ
+
+K(t)∥L2 ≤ ∥ T −1 
+
+> r,λ
+
+K(t)∥L2
+
++ ∥T 1/2 
+
+> r
+
+ˆT −1 
+
+> r,λ
+
+( ˆTr − Tr)T −1 
+
+> r,λ
+
+K(t)∥H⊗r .
+
+Set ∆r := T −1/2 
+
+> r,λ
+
+( ˆTr − Tr)T −1/2 
+
+> r,λ
+
+.
+
+Then 
+
+∥T 1/2 
+
+> r
+
+ˆT −1 
+
+> r,λ
+
+( ˆTr − Tr)T −1 
+
+> r,λ
+
+K(t)∥H⊗r
+
+≤ ∥ T 1/2 
+
+> r
+
+T −1/2 
+
+> r,λ
+
+∥∥ T 1/2 
+
+> r,λ
+
+ˆT −1 
+
+> r,λ
+
+T 1/2 
+
+> r,λ
+
+∥∥ ∆r∥∥ T −1/2 
+
+> r,λ
+
+K(t)∥H⊗r .
+
+Since 0 ≤ Tr ≤ Tr,λ ,
+
+∥T 1/2 
+
+> r
+
+T −1/2 
+
+> r,λ
+
+∥ ≤ 1.
+
+On the high-probability event from Lemma 9, 
+
+∥T 1/2 
+
+> r,λ
+
+ˆT −1 
+
+> r,λ
+
+T 1/2 
+
+> r,λ
+
+∥ ≤ 2.
+
+Hence, on that event, 
+
+∥T 1/2 
+
+> r
+
+ˆT −1 
+
+> r,λ
+
+( ˆTr − Tr)T −1 
+
+> r,λ
+
+K(t)∥H⊗r ≤ 2∥∆r∥∥ T −1/2 
+
+> r,λ
+
+K(t)∥H⊗r .
+
+By Lemma 31, sup 
+
+> t∈I r
+
+∥T −1/2 
+
+> r,λ
+
+K(t)∥2 
+
+> H⊗r
+
+≤ M rN (r)1 (λ),
+
+and sup 
+
+> t∈I r
+
+∥T −1 
+
+> r,λ
+
+K(t)∥2 
+
+> L2
+
+≤ M rN (r)2 (λ).
+
+Since vr → 0, Lemma 9 also gives 
+
+∥∆r∥ = oP(1) ,
+
+so with probability tending to one we may additionally assume ∥∆r∥ ≤ 1. On that event, sup 
+
+> t∈I r
+
+∥T 1/2 
+
+> r
+
+ˆT −1 
+
+> r,λ
+
+( ˆTr − Tr)T −1 
+
+> r,λ
+
+K(t)∥H⊗r ≤ 2
+
+q
+
+M rN (r)1 (λ).
+
+Since N (r)1 (λ) ≍ N (r)2 (λ) by Lemma 30, this is bounded by C
+
+q
+
+M rN (r)2 (λ) for all sufficiently small 
+
+λ. This proves (27). 70 Proof of Lemma 8. 
+
+Classify pairs ( j, k) by the overlap size q = q(j, k). For a fixed q, the number of ordered pairs (j, k) ∈ Irm × Irm with exactly q common sample indices is 
+
+rq
+
+2
+
+q!( m)2r−q.
+
+Indeed, choose the q shared positions in j, choose the q shared positions in k, match them by a bijection, and then choose the remaining 2 r − q distinct sample indices in order. For each such pair there are  qd
+
+ choices of the d common locations that enter the inner sum. Summing over 
+
+q = d, . . . , r gives (29). 
+
+# F Table of Notation 
+
+Table 1 lists the symbols used most frequently in the paper. 
+
+Table 1: Frequently used notation. Symbol Meaning 
+
+I, ρ compact sampling space and design distribution 
+
+n, m, r, λ, σ 2 number of sample paths, number of observations per path, moment order, regularization parameter, and noise variance 
+
+Xi, t ij , ε ij , y ij latent curve, design point, measurement noise, and observation 
+
+T collection of all design points ( tij )1≤i≤n, 1≤j≤m
+
+μr , μ 0, Σr r-th moment function, the convention μ0 = 1, and the covariance kernel of the r-fold product process 
+
+Pr,s (R) uniform [ H]s-moment class used for the minimax lower bound 
+
+Irm, (m)r ordered distinct coordinate set and its cardinality 
+
+Yij , t ij product pseudo-response and corresponding r-tuple of design points 
+
+H, k x, K (x), H⊗r RKHS, scalar feature k(x, ·), tensor feature kx1 ⊗ · · · ⊗ kxr , and tensor-product RKHS [H]s, ([ H]s)⊗r interpolation space and its tensor-product analogue 
+
+Mα, α 0 embedding norm of [ H]α ,→ L∞(I, ρ ) and embedding index (λj , e j ) Mercer eigenpairs of T , with eigenvalues repeated according to mul-tiplicity (θm, V m, d m, k m) distinct eigenvalues, associated eigenspaces, their dimensions, and spectral projection kernels 
+
+ei, Λi, c i tensor eigenfunction, tensor eigenvalue, and coefficient in the ex-pansion of μr
+
+T, T r , ˆTr base integral operator, tensor-product operator Tr = T ⊗r , and em-pirical tensor operator 
+
+Tr,λ , ˆTr,λ shorthand for Tr + λI and ˆTr + λI 
+
+ˆζr , ˜ζr empirical and conditional-mean right-hand sides for KRR ˆμr,λ , ˜μr,λ KRR estimator and its conditional mean MSE r,λ (T ) conditional generalization error given the design points Var( λ), Bias( λ)2 conditional variance and conditional bias terms in the proof decom-position 
+
+Continued on next page 
+
+71 Table 1: Frequently used notation (continued). Symbol Meaning 
+
+B(λ; μr )2 deterministic squared bias scale 
+
+Vcurve , V point , V noise deterministic variance coefficients in the main expansion, with pref-actors 1 /n , 1 /(mn ), and σ2/(mn ), respectively ˆVd, ˜Vd, V d variance contribution of order σ2d, with mixed and population ver-sions used for the leading terms ˆG0, G 0, ˆG1, G 1 empirical and population operators packaging the noise-free and first-noise trace terms 
+
+λ(r) 
+
+> j
+
+, N r (u) non-increasing rearrangement and counting function of the tensor eigenvalues Λ i
+
+N (r) 
+
+> p
+
+(λ) tensor effective dimension ∆r , v r normalized empirical-operator fluctuation and its scale 
+
+λ−1/β (ln(1 /λ )) r /(mn )
+
+# References 
+
+Miguel A. Arcones. A Bernstein-type inequality for U-statistics and U-processes. Statistics & Probability Letters , 22(3):239–247, February 1995. doi: 10.1016/0167-7152(94)00072-G. Frank Bauer, Sergei Pereverzev, and Lorenzo Rosasco. On regularization algorithms in learning theory. Journal of Complexity , 23(1):52–72, February 2007. doi: 10.1016/j.jco.2006.07.001. Blake Bordelon, Abdulkadir Canatar, and Cengiz Pehlevan. Spectrum Dependent Learning Curves in Kernel Regression and Wide Neural Networks. In Proceedings of the 37th Inter-national Conference on Machine Learning , pages 1024–1034. PMLR, November 2020. URL 
+
+https://proceedings.mlr.press/v119/bordelon20a.html .T Tony Cai and Ming Yuan. Nonparametric Covariance Function Estimation for Functional and Longitudinal Data. Technical report, University of Pennsylvania and Georgia Institute of Tech-nology, Atlanta, GA, 2010. T. Tony Cai and Ming Yuan. Optimal estimation of the mean function based on discretely sampled functional data: Phase transition. The Annals of Statistics , 39(5), October 2011. doi: 10.1214/ 11-AOS898. A. Caponnetto and E. De Vito. Optimal Rates for the Regularized Least-Squares Algo-rithm. Foundations of Computational Mathematics , 7(3):331–368, July 2007. doi: 10.1007/ s10208-006-0196-8. Hugo Cui, Bruno Loureiro, Florent Krzakala, and Lenka Zdeborov´ a. Generalization error rates in kernel regression: The crossover from the noiseless to noisy regime*. Journal of Statistical Mechanics: Theory and Experiment , 2022(11):114004, November 2022. doi: 10.1088/1742-5468/ ac9829. Feng Dai and Yuan Xu. Approximation Theory and Harmonic Analysis on Spheres and Balls .Springer Monographs in Mathematics. Springer New York, New York, NY, 2013. doi: 10.1007/ 978-1-4614-6660-4. 72 DLMF. NIST digital library of mathematical functions , March 2026. URL https://dlmf.nist. gov/ .Simon Fischer and Ingo Steinwart. Sobolev norm learning rates for regularized least-squares al-gorithms. Journal of Machine Learning Research , 21(205):1–38, 2020. URL http://jmlr.org/ papers/v21/19-734.html .Davide Giraudo. An exponential inequality for Hilbert-valued U -statistics of i.i.d. data. Journal of Multivariate Analysis , 207:105406, May 2025. doi: 10.1016/j.jmva.2025.105406. Naveen Gupta and Bharath K. Sriperumbudur. Minimax Optimal Estimation of Mean and Co-variance Functions with Spectral Regularization, March 2026. Peter Hall, Hans-Georg M¨ uller, and Jane-Ling Wang. Properties of principal component methods for functional and longitudinal data analysis. The Annals of Statistics , 34(3), June 2006. doi: 10.1214/009053606000000272. Wassily Hoeffding. Probability Inequalities for Sums of Bounded Random Variables. Journal of the American Statistical Association , 58(301):13–30, March 1963. doi: 10.1080/01621459.1963. 10500830. Tailen Hsing and Randall Eubank. Theoretical Foundations of Functional Data Analysis, with an Introduction to Linear Operators . Wiley Series in Probability and Statistics. Wiley, 1 edition, May 2015. doi: 10.1002/9781118762547. Mingyuan Li, Martin A. Lindquist, Edward Gunning, and Ciprian Crainiceanu. Functional Mo-ments Regression, 2026. Yehua Li and Tailen Hsing. Uniform convergence rates for nonparametric regression and principal component analysis in functional/longitudinal data. The Annals of Statistics , 38(6), December 2010. doi: 10.1214/10-AOS813. Yicheng Li, Haobo Zhang, and Qian Lin. On the Asymptotic Learning Curves of Kernel Ridge Re-gression under Power-law Decay. In Thirty-Seventh Conference on Neural Information Processing Systems , 2023. URL https://openreview.net/forum?id=E4P5kVSKlT .Yicheng Li, Weiye Gan, Zuoqiang Shi, and Qian Lin. Generalization Error Curves for Analytic Spectral Algorithms under Power-law Decay, 2024a. Yicheng Li, Haobo Zhang, and Qian Lin. On the Saturation Effect of Kernel Ridge Regression, 2024b. Junhong Lin, Alessandro Rudi, Lorenzo Rosasco, and Volkan Cevher. Optimal rates for spectral al-gorithms with least-squares regression over Hilbert spaces. Applied and Computational Harmonic Analysis , 48(3):868–890, May 2020. doi: 10.1016/j.acha.2018.09.009. Stanislav Minsker. On some extensions of Bernstein’s inequality for self-adjoint operators. Statistics & Probability Letters , 127:111–119, August 2017. doi: 10.1016/j.spl.2017.03.020. Hugh L. Montgomery and Robert C. Vaughan. Multiplicative Number Theory I: Classical Theory .Cambridge University Press, 1 edition, November 2006. doi: 10.1017/CBO9780511618314. James O Ramsay and Bernard W Silverman. Functional Data Analysis . Springer, 1997. 73 John A. Rice and B. W. Silverman. Estimating the Mean and Covariance Structure Nonparamet-rically When the Data are Curves. Journal of the Royal Statistical Society Series B: Statistical Methodology , 53(1):233–243, September 1991. doi: 10.1111/j.2517-6161.1991.tb01821.x. Bharath K. Sriperumbudur and Nicholas Sterge. Approximate kernel PCA: Computational versus statistical trade-off. The Annals of Statistics , 50(5), October 2022. doi: 10.1214/22-AOS2204. Ingo Steinwart and Andreas Christmann. Support Vector Machines . Information Science and Statistics. Springer New York, New York, NY, 2008. doi: 10.1007/978-0-387-77242-4. Ingo Steinwart and Clint Scovel. Mercer’s Theorem on General Domains: On the Interaction between Measures, Kernels, and RKHSs. Constructive Approximation , 35(3):363–417, June 2012. doi: 10.1007/s00365-012-9153-3. Yoshikazu Terada and Atsutomo Yara. A Theory of Nonparametric Covariance Function Estimation for Discretely Observed Data, 2026. Joel A. Tropp. An Introduction to Matrix Concentration Inequalities, 2015. Jane-Ling Wang, Jeng-Min Chiou, and Hans-Georg M¨ uller. Functional Data Analysis. An-nual Review of Statistics and Its Application , 3(1):257–295, June 2016. doi: 10.1146/ annurev-statistics-041715-033624. Jiayi Wang, Raymond K. W. Wong, and Xiaoke Zhang. Low-Rank Covariance Function Estimation for Multidimensional Functional Data. Journal of the American Statistical Association , 117(538): 809–822, April 2022. doi: 10.1080/01621459.2020.1820344. Raymond K.W. Wong and Xiaoke Zhang. Nonparametric operator-regularized covariance function estimation for functional data. Computational Statistics & Data Analysis , 131:131–144, March 2019. doi: 10.1016/j.csda.2018.05.013. Fang Yao, Hans-Georg M¨ uller, and Jane-Ling Wang. Functional Data Analysis for Sparse Longitu-dinal Data. Journal of the American Statistical Association , 100(470):577–590, June 2005. doi: 10.1198/016214504000001745. Haobo Zhang, Yicheng Li, and Qian Lin. On the optimality of misspecified spectral algorithms. 
+
+Journal of Machine Learning Research , 25(188):1–50, 2024. URL http://jmlr.org/papers/ v25/23-0383.html .Xiaoke Zhang and Jane-Ling Wang. From sparse to dense functional data and beyond. The Annals of Statistics , 44(5), October 2016. doi: 10.1214/16-AOS1446. 74

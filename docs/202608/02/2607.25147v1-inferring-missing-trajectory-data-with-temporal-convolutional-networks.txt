@@ -1,0 +1,309 @@
+Title: Inferring Missing Trajectory Data with Temporal Convolutional Networks
+
+URL Source: https://arxiv.org/pdf/2607.25147v1
+
+Published Time: Wed, 29 Jul 2026 00:26:07 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# Inferring Missing Trajectory Data with Temporal Convolutional Networks 
+
+Ilinca Tiriblecea 1 and Gabriel Turinici [0000 −0003 −2713 −006 X]2  
+
+> 1
+
+Independent Researcher, Oxford, UK  
+
+> 2
+
+CEREMADE, Université Paris Dauphine - PSL, CNRS, Paris, FRANCE 
+
+gabriel.turinici@dauphine.fr , https://turinici.com May 2026 
+
+Abstract. Trajectory data collected in real-world settings is frequently incomplete due to sensor failure, communication loss, or occlusion. We address the task of trajectory inpainting : reconstructing contiguous miss-ing segments from observed context. We propose a Temporal Convolu-tional Network (TCN) with symmetric dilation that relaxes the standard causality constraint, allowing each time step to draw on both past and future observations, a property that is essential for inpainting, but ab-sent from forecasting-oriented architectures. The model is trained with a composite loss that combines weighted mean squared error, boundary– continuity penalties, and a smoothness regularizer. Trained on a syn-thetic dataset of 1, 000 (train), 200 (validation), and 300 (test) two-dimensional trajectories with randomly placed 20% masked segments, the model achieves good R 2, MSE and MAE metrics. 
+
+Keywords: Trajectory inpainting · Temporal Convolutional Networks 
+
+· Sequence modeling · Missing data reconstruction 
+
+## 1 Introduction 
+
+Trajectory data underpins a broad class of real-world systems, from GPS-based navigation to motion capture and autonomous robotics. In practice, however, such data is rarely complete: drop-outs caused by signal obstruction, sensor fail-ure, or packet loss introduce contiguous gaps that must be filled before any downstream processing can take place. The task of reconstructing plausible tra-jectories from incomplete observations – commonly referred to as trajectory in-painting – requires a model that simultaneously respects local continuity at gap boundaries and the broader temporal dynamics of the full sequence. Classical approaches such as linear interpolation are computationally light-weight but ignore the underlying motion model, producing unrealistic straight-line segments that violate the natural curvature of the trajectory. Recurrent models such as LSTMs [8] capture sequential dependencies but suffer from se-quential computation bottlenecks and vanishing gradients. Transformer-based models provide strong long-range context but impose substantial computational cost and typically require large training corpora [19]. arXiv:2607.25147v1 [cs.AI] 27 Jul 2026 2 I.Tiriblecea, G. Turinici 
+
+Temporal Convolutional Networks (TCNs) [3] offer an attractive middle ground: sequences are processed entirely in parallel via stacked dilated convolu-tions, training is stable, and the effective receptive field grows exponentially with network depth. Crucially, because our objective is inpainting rather than fore-casting, we relax the standard causal-padding constraint and adopt symmetric 
+
+padding, enabling every position to attend to both past and future context. This design choice distinguishes our use of TCNs from their conventional application to sequence prediction. We evaluate the proposed approach on synthetic two-dimensional trajectories composed of superimposed sinusoidal components with random phase offsets and additive Gaussian noise, reporting performance on both a pilot and a larger-scale experimental setting. 
+
+1.1 Literature review 
+
+Pedestrian trajectory modeling has been extensively studied in the context of autonomous driving, crowd analysis, and human–robot interaction, with the primary focus historically placed on trajectory forecasting rather than recon-struction. Early approaches relied on expert-driven and physics-based models, such as social-force formulations and heuristic crowd dynamics, which offer in-terpretability but struggle with complex, nonlinear motion patterns and long temporal dependencies [7]. The emergence of data-driven approaches shifted attention toward learn-ing trajectory dynamics directly from data. Recurrent neural networks, notably LSTMs, became a dominant paradigm due to their ability to capture tempo-ral dependencies, with Social-LSTM [1] introducing explicit social interaction modeling via pooling mechanisms. Subsequent generative extensions, such as Social-GAN [6], enabled multimodal forecasting by sampling diverse plausible futures, significantly improving performance on standard benchmarks such as ETH/UCY [14,12]. However, these models are primarily causal and forward-predictive, and are not explicitly designed to handle missing observations within a sequence. More recent work has explored convolutional and graph-based architectures to overcome the limitations of recurrent models. Temporal Convolutional Net-works (TCNs) provide parallel computation and stable training while main-taining large receptive fields through dilation [3,10]. Graph-based models, in-cluding Social-STGCNN and related spatio-temporal graph networks, explicitly encode pedestrian–pedestrian interactions and achieve strong results in dense scenes [13,16]. Attention mechanisms and transformer-based models further im-prove long-range dependency modeling, albeit at increased computational cost [19]. Alongside architectural advances, benchmark datasets and evaluation pro-tocols have played a central role. ETH/UCY [14,12] and the Stanford Drone Dataset remain the most widely used references, typically evaluated using displacement-based metrics such as ADE and FDE [6,21]. However, as noted in recent sur-veys [15,18], these datasets were not originally designed for studying missing Inferring Missing Trajectory Data with Temporal Convolutional Networks 3
+
+data. TrajImpute represents the closest recent effort toward formalizing trajec-tory imputation by introducing systematic masking protocols and imputation-focused evaluation [5]. Overall, while trajectory prediction has seen rapid progress—particularly with generative and diffusion-based models [17,2]—the specific problem of tra-jectory inpainting remains comparatively underexplored. Existing methods are often adapted post hoc to missing-data scenarios, and there is a lack of stan-dardized benchmarks isolating reconstruction from forecasting. This explains our use of controlled synthetic datasets to study trajectory inpainting in isolation, enabling precise analysis of architectural and loss-function design choices. 
+
+1.2 Summary and Positioning 
+
+Trajectory inpainting remains comparatively underexplored relative to forecast-ing and tracking, with fragmented benchmarks and largely adapted objective formulations. This work makes several contributions: first, we introduce a con-trolled synthetic benchmark; second, we adapt the TCN architecture to trajec-tory inpainting by replacing causal convolutions with symmetric dilated convo-lutions that exploit both past and future context; third, we design a loss function tailored to handle contiguous gaps. 
+
+## 2 Methodology 
+
+2.1 Synthetic Data Generation 
+
+Motivation: There is no single standardized trajectory inpainting benchmark; TrajImpute is the closest recent effort, and our synthetic data provides a com-plementary, fully controlled testbed [5]. Existing evaluations therefore rely on a combination of synthetic trajectories, repurposed pedestrian datasets, and track-ing benchmarks. Synthetic datasets are widely used to study interpolation and imputation un-der controlled conditions, as parametric and sinusoidal motion models generate smooth but nonlinear trajectories that cannot be recovered by linear interpola-tion [20,4]. Our synthetic data follows this established practice while enabling precise control over curvature, noise, and gap structure. Real-world datasets such as ETH/UCY [14,12] are frequently adapted for in-painting by artificially masking contiguous segments [14]. TrajImpute formalizes this approach through standardized masking protocols and evaluation metrics fo-cused explicitly on imputation performance [5]. In contrast, tracking benchmarks such as MOT16-20 contain natural gaps due to occlusions [11], but reconstruc-tion quality is confounded with detection noise and data association. In this context, synthetic trajectories serve not as a replacement for real-world data, but as a principled experimental baseline that isolates the inpainting problem from confounding factors such as detection noise and identity ambiguity. This controlled setting enables precise analysis of model behavior and loss design, which is difficult to achieve on fully unconstrained benchmarks. 4 I.Tiriblecea, G. Turinici 
+
+Technical details: Trajectories are generated as superpositions of sinusoidal com-ponents with random phase offsets and additive Gaussian noise. For a normal-ized time axis t ∈ [0 , 1] sampled at T = 200 evenly spaced points, the x and y
+
+coordinates are defined as: 
+
+x(t) = sin(2 πt + ϕx) + 0 .3 sin(6 πt + ϕy ) + ϵx, (1) 
+
+y(t) = cos(2 πt + ϕy ) + 0 .3 sin(4 πt + 0 .5 + ϕx) + ϵy , (2) where ϕx, ϕ y ∼ U (0 , 2π) are independent random phase shifts and ϵx, ϵ y ∼N (0 , σ 2) with σ = 0 .02 . Phase randomization ensures that no two trajectories are identical, while the multi-frequency structure produces non-trivial curvature that is challenging to interpolate linearly. A single contiguous masked segment covering 20% of the sequence (i.e. 40 time steps) is placed at a uniformly sampled starting index for each trajectory. We generated 1,500 trajectory-mask pairs, of which 1,000 were used for training, 
+
+200 for validation and 300 for testing. 
+
+2.2 Input Representation 
+
+Each time step ti is encoded as a four-dimensional vector: 
+
+ui =  xi · (1 − mi), yi · (1 − mi), mi, ˜ti
+
+⊤, (3) where mi ∈ { 0, 1} is the binary mask (1 if the position is missing, 0 if observed), and ˜ti = i/ (T − 1) is the normalized time index. Zeroing the coordinates inside the gap prevents the model from observing ground truth during training, while the explicit mask channel allows it to distinguish missing from observed positions without relying on the magnitude of the input signal. The time channel provides positional context that is otherwise absent in a purely convolutional architecture. 
+
+2.3 Model Architecture 
+
+The network consists of five stacked TCN blocks followed by a 1×1 convolutional output head that projects to two output dimensions (predicted ˆx and ˆy). Each block applies the following operations in sequence: 1. A dilated 1D convolution with kernel size k = 5 and dilation dℓ = 2 ℓ−1 for block ℓ ∈ { 1, . . . , 5}, i.e. dilations of 1, 2, 4, 8, and 16; 2. Layer normalization across the channel dimension; 3. ReLU activation; 4. A residual connection that adds the block input to its output, using a 1×1
+
+projection when input and output channel counts differ. All hidden layers use 64 channels. Symmetric (zero) padding is applied rather than the causal padding used in forecasting TCNs, so that each position attends to an equal window of past and future context. The receptive field spans 125 time steps, allowing substantial contextual information to be incorporated from both sides of the gap. Table 1 summarizes the NN architecture. Inferring Missing Trajectory Data with Temporal Convolutional Networks 5                                      
+
+> Layer Type Channels Dilation Purpose
+> Position Input —4—+ mask +time Block 1 Conv1D + LN 64 1Local + ReLU + Residual features Block 2 Conv1D + LN 64 2Medium + ReLU + Residual context Block 3 Conv1D + LN 64 4Longer + ReLU + Residual dependencies Block 4 Conv1D + LN 64 8Broader + ReLU + Residual patterns Block 5 Conv1D + LN 64 16 Global + ReLU + Residual structure Head Conv1D ( 1×1)2–Predicts
+> (ˆ x, ˆy)
+> Table 1. Model architecture overview.
+
+2.4 Loss Function 
+
+Most prior learning-based approaches optimize a pointwise reconstruction loss, typically mean squared error, over missing trajectory points. While effective for minimizing average error, such objectives alone do not enforce continuity or smoothness and often lead to visually implausible reconstructions, especially at gap boundaries. To address this, a number of previous works introduce auxiliary regulariza-tion terms, such as velocity or acceleration penalties, or constraints on endpoint consistency. These terms encourage smoother motion but are often applied glob-ally, without explicitly distinguishing between observed and missing regions. The loss function used in this work is designed to reflect the specific require-ments of trajectory inpainting: 1. First, the reconstruction loss (here LM SE ) is weighted to emphasize accuracy within masked regions while still weakly anchoring predictions in observed segments. This prevents trivial solutions in which the model alters observed points to reduce global error. 2. Second, an explicit continuity loss (here Lcont ) penalizes mismatches at the entry and exit of the masked segment, directly targeting the most perceptu-ally salient failure mode of inpainting models. 3. Finally, a first-order smoothness penalty (here Lsmooth ) encourages globally coherent motion without imposing a rigid parametric model. By decomposing the objective into region-aware reconstruction, boundary continuity, and global smoothness terms, our formulation differs from prior ap-6 I.Tiriblecea, G. Turinici 
+
+proaches that rely primarily on uniform MSE or generic temporal regularizers, and is specifically aligned with the structural constraints of the inpainting task. Training minimizes the composite objective: 
+
+L = LMSE + λcont Lcont + λsmooth Lsmooth , (4) with λcont = λsmooth = 0 .5. We now describe the three terms of the overall loss function. 
+
+Weighted MSE. The reconstruction term penalizes errors in masked regions more heavily than those in observed regions: 
+
+LMSE = 1
+
+|M| 
+
+X
+
+> i∈M
+
+∥ˆpi − pi∥2 + α
+
+| ¯M| 
+
+X
+
+> i / ∈M
+
+∥ˆpi − pi∥2, (5) where M denotes the set of masked indices, pi = ( xi, y i)⊤ is the ground-truth position, ˆpi is the model prediction, and α = 0 .1.
+
+Continuity loss. To prevent discontinuities at gap boundaries, we penalize the squared distance between the prediction at the gap start point and the observed position immediately before the gap, and between the gap end point and the observed position immediately after: 
+
+Lcont = ∥ˆps − ps−1∥2 + ∥ˆpe − pe+1 ∥2, (6) where s and e denote the start and end indices of the masked segment, respec-tively. 
+
+Smoothness loss. A first-order finite-difference penalty (mimicking the H1 semi-norm) discourages large frame-to-frame changes in the predicted output: 
+
+Lsmooth = 1
+
+T − 1 
+
+> T−1
+
+X
+
+> i=1
+
+∥ˆpi − ˆpi−1∥2. (7) 
+
+2.5 Training Protocol 
+
+The model is optimized with Adam [9] (learning rate 3 × 10 −3) for 50 epochs. We use a batch size of 1 because the dataset is small enough and larger batch sizes would lead to too few updates per epoch. Experiments with larger batch sizes (up to 256) yielded similar final performance but required more epochs to converge. 
+
+## 3 Results and Discussion 
+
+3.1 Quantitative Evaluation 
+
+The quantitative evaluation is based on three metrics described below. Inferring Missing Trajectory Data with Temporal Convolutional Networks 7
+
+Evaluation metrics. Let {pi}i∈M with pi = ( xi, y i)⊤ denote the ground-truth trajectory coordinates over the masked index set M, and {ˆpi}i∈M their recon-structions, with |M| = Tm. Let ¯p = 1
+
+> Tm
+
+P 
+
+> i∈M
+
+pi denote the mean position over the masked segment. The mean squared error (MSE) over masked regions, the mean absolute error (MAE) and the coefficient of determination ( R2) are computed as 
+
+MSE = 1
+
+Tm
+
+X
+
+> i∈M
+
+∥pi − ˆpi∥22 , (8) 
+
+MAE = 1
+
+Tm
+
+X
+
+> i∈M
+
+∥pi − ˆpi∥1 , (9) 
+
+R2 = 1 −
+
+P 
+
+> i∈M
+
+∥pi − ˆpi∥22
+
+P 
+
+> i∈M
+
+∥pi − ¯p∥22
+
+. (10) 
+
+Interpretation. While MSE and MAE quantify absolute reconstruction error, R2
+
+measures how much of the intrinsic variability of the masked trajectory segments is explained by the model, providing a scale-independent assessment of structural fidelity. The relatively large variance of R2 across trials is attributable to the random placement of masked segments, which induces substantial differences in reconstruction difficulty depending on local curvature, frequency content, and temporal context. 
+
+Baseline To compare the results with a simple baseline we also implemented a linear interpolation procedure. 
+
+Results Performance is evaluated exclusively on the masked (held-out) regions of each trajectory. We report in Figure 1 MSE, MAE, and R2, each computed per trajectory and then averaged over the full 1, 000 -sample dataset (together with the standard deviation over the trajectories). The same figures are given for the baseline algorithm. The R2 figure indicates that the model captures most of the dominant tem-poral structure of the synthetic trajectories. The associated standard deviation reflects the heterogeneity of masked segments, with performance degrading in cases where the gap overlaps regions of high local curvature or rapid directional change. The model shows clear improvement with respect to the baseline in all three metrics. For comparison, an earlier experiment conducted on a smaller, less varied dataset ( 200 trajectories drawn from only two underlying trajectory shapes) yielded considerably stronger metrics, as shown in Table 2. The performance gap between the pilot and the full experiment is consistent with the expectation that the 1,000-trajectory dataset introduces harder, more diverse examples that expose the limits of the current architecture and training configuration. We also examined the median of the per-trajectory scores as a more outlier-robust summary; while it differs from the mean owing to a skewed 8 I.Tiriblecea, G. Turinici 
+
+Baseline: Linear interpolation Metric Mean ± Std 
+
+MSE 0.047 ± 0.096 
+
+MAE 0.159 ± 0.083 
+
+R2 −0.437 ± 5.639 
+
+TCN model Metric Mean ± Std 
+
+MSE 0.004 ± 0.012 
+
+MAE 0.047 ± 0.025 
+
+R2 0.776 ± 0.777 10 0 10 1  
+
+> Epoch
+> 10 2
+> 10 1
+> Loss
+> Training Loss
+> Test Loss
+
+Fig. 1. Left top: Quantitative evaluation on masked regions (trained on 1,000 syn-thetic trajectories, 20% mask fraction) for a linear interpolation baseline. Left bottom: 
+
+Quantitative evaluation on masked regions (trained on 1,000 synthetic trajectories, 20% mask fraction). Right: Loss evolution on the train and test datasets. 
+
+Dataset Metric Mean ± Std 
+
+Smooth MSE 0.0011 ± 0.0005 
+
+MAE 0.025 ± 0.006 
+
+R2 0.984 ± 0.006 
+
+Dataset Metric Mean ± Std 
+
+Wiggly MSE 0.0025 ± 0.0009 
+
+MAE 0.038 ± 0.007 
+
+R2 0.965 ± 0.011 
+
+Table 2. Pilot experiment results on the two-trajectory dataset (trained on 200 sam-ples). 
+
+error distribution, it preserves the same ordering, with our model outperforming the baseline on all three metrics. 
+
+3.2 Qualitative Evaluation 
+
+Qualitative inspection of reconstructed trajectories confirms that the model pro-duces smooth, boundary-consistent completions in the majority of cases. The composite loss function visibly suppresses discontinuities at gap entry and exit points relative to a pure MSE baseline, and the smoothness term prevents high-frequency artifacts in the predicted segment. In cases where quantitative per-formance is lower, visual inspection suggests that the model tends to predict a smoothed, lower-amplitude version of the true trajectory rather than an en-tirely erroneous path. Performance degrades when masked segments coincide with high-curvature regions, highlighting the sensitivity of convolutional models to local frequency content. Inferring Missing Trajectory Data with Temporal Convolutional Networks 91.0 0.5 0.0 0.5 1.0         
+
+> 1.0
+> 0.5
+> 0.0
+> 0.5
+> 1.0
+> Reconstructed Trajectory (Example 1)
+> True
+> Reconstructed (input + predicted)
+> Predicted (masked) points
+> 1.0 0.5 0.0 0.5 1.0
+> 0.5
+> 0.0
+> 0.5
+> 1.0
+> Reconstructed Trajectory (Example 2)
+> True
+> Reconstructed (input + predicted)
+> Predicted (masked) points
+> 1.0 0.5 0.0 0.5 1.0
+> 1.0
+> 0.5
+> 0.0
+> 0.5
+> 1.0
+> Reconstructed Trajectory (Example 3)
+> True
+> Reconstructed (input + predicted)
+> Predicted (masked) points
+
+Fig. 2. True versus predicted trajectories. The predicted trajectories are constructed using true values for the known part and predicted values for the masked part. 
+
+Metric Mean ± Std 
+
+MSE 0.005 ± 0.018 
+
+MAE 0.048 ± 0.031 
+
+R2 0.743 ± 0.831 
+
+Metric Mean ± Std 
+
+MSE 0.005 ± 0.013 
+
+MAE 0.049 ± 0.029 
+
+R2 0.752 ± 0.908 
+
+Table 3. Ablation study on loss function components (test set, 300 samples). Left: no continuity loss. Right: no smoothness loss. 
+
+3.3 Ablation Study 
+
+To assess the contribution of each loss component, we train two ablated variants of the model: one without the continuity loss ( λcont = 0 ) and one without the smoothness loss ( λsmooth = 0 ), keeping all other hyperparameters identical and using the same dataset. Results reported in Table 3 suggest a consistent, albeit modest, degradation across all metrics when either loss component is removed. This conclusion depends, of course, on the specific run of the algorithm (because Adam is a stochastic optimization procedure). 
+
+3.4 Limitations 
+
+All experiments are conducted on synthetic data; generalization to real-world trajectories – which exhibit non-stationary dynamics, structured measurement noise, and variable gap lengths – remains an open question. The current masking strategy places a single contiguous gap per trajectory; realistic dropout patterns may involve multiple concurrent gaps. In addition, the fixed receptive field of the TCN may require architectural scaling for substantially longer input sequences. Finally, the difference between the mean and median scores reflects a skewed error distribution in which a small number of hard trajectories inflate the re-ported means; techniques that reduce this variance across trajectories would be a valuable addition. 10 I.Tiriblecea, G. Turinici 
+
+## 4 Conclusion 
+
+We have presented a TCN-based approach to two-dimensional trajectory in-painting that combines a non-causal dilated convolutional architecture with a composite loss function enforcing boundary continuity and output smoothness. On a synthetic benchmark of 1,000 diverse trajectories the model achieves a mean R 2 of 0.776 on held-out masked regions, demonstrating that TCNs are a viable, computationally efficient alternative to recurrent and attention-based models for this task. Future work includes evaluation on real trajectory traces, extension to multi-gap masking, and a systematic ablation of the loss components to quantify the individual contribution of the continuity and smoothness terms. 
+
+## References 
+
+1. Alahi, A., Goel, K., Ramanathan, V., Robicquet, A., Fei-Fei, L., Savarese, S.: Social lstm: Human trajectory prediction in crowded spaces. In: Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR). pp. 961–971 (2016) 2. Bae, I., Park, Y.J., Jeon, H.G.: Singulartrajectory: Universal trajectory predictor using diffusion model. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. pp. 17890–17901 (2024) 3. Bai, S., Kolter, J.Z., Koltun, V.: An empirical evaluation of generic convolutional and recurrent networks for sequence modeling. arXiv preprint arXiv:1803.01271 (2018), https://arxiv.org/abs/1803.01271 4. Cao, Z., Bryant, D., Molteno, T.C., Fox, C., Parry, M.: V-spline: An adaptive smoothing spline for trajectory reconstruction. Sensors 21 (9), 3215 (2021). https: //doi.org/10.3390/s21093215 5. Chib, P.S., Singh, P.: Pedestrian trajectory prediction with missing data: Datasets, imputation, and benchmarking. In: Proceedings of the 38th International Confer-ence on Neural Information Processing Systems (NeurIPS). pp. 124530–124546. NIPS ’24, ACM (2024) 6. Gupta, A., Johnson, J., Fei-Fei, L., Savarese, S., Alahi, A.: Social gan: Socially acceptable trajectories with generative adversarial networks. In: Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR). pp. 2255–2264 (2018) 7. Henderson, L.F.: The statistics of crowd fluids. Nature 229 , 381–383 (1971) 8. Hochreiter, S., Schmidhuber, J.: Long short-term memory. Neural Computation 
+
+9(8), 1735–1780 (1997) 9. Kingma, D.P., Ba, J.: Adam: A method for stochastic optimization. arXiv preprint arXiv:1412.6980 (2014) 10. Lea, C., Vidal, R., Reiter, A., Hager, G.D.: Temporal convolutional networks: A unified approach to action segmentation. In: Proceedings of the European Confer-ence on Computer Vision (ECCV) Workshops. Lecture Notes in Computer Science, vol. 9915, pp. 47–54. Springer, Cham (2016), https://arxiv.org/abs/1608.08242 11. Leal-Taixé, L., Milan, A., Reid, I., Roth, S., Schindler, K.: Motchallenge 2015: Towards a benchmark for multi-target tracking. arXiv preprint arXiv:1504.01942 (2015) Inferring Missing Trajectory Data with Temporal Convolutional Networks 11 12. Lerner, A., Chrysanthou, Y., Lischinski, D.: Crowds by example. In: Computer graphics forum. vol. 26, pp. 655–664. Wiley Online Library (2007) 13. Mohamed, A., Qian, K., Elhoseiny, M., Claudel, C.: Social-stgcnn: A social spatio-temporal graph convolutional neural network for human trajectory prediction. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recog-nition (CVPR). pp. 14424–14432 (2020) 14. Pellegrini, S., Ess, A., Van Gool, L.: You’ll never walk alone: Modeling social behav-ior for multi-target tracking. In: Proceedings of the IEEE International Conference on Computer Vision (ICCV). pp. 261–268 (2009) 15. Rudenko, A., Palmieri, L., Herman, M., Kitani, K., Gavrila, D.M., Arras, K.O.: Human motion trajectory prediction: A survey. International Journal of Robotics Research 39 (8), 895–935 (2020) 16. Shi, L., Wang, L., Long, C., Zhou, S., Zhou, M., Niu, Z., Hua, G.: Sgcn: Sparse graph convolution network for pedestrian trajectory prediction. In: Proceedings of the IEEE/CVF conference on computer vision and pattern recognition. pp. 8994– 9003 (2021) 17. Sun, G., Wang, S., Zhu, L., Liu, M., Ma, J.: Gdts: Goal-guided diffusion model with tree sampling for multi-modal pedestrian trajectory prediction. In: 2025 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). pp. 14595– 14602. IEEE (2025) 18. Taha, M., Zaky, A., Yamaguchi, H., Fares, A.: Pedestrian trajectory and in-tention prediction: a comprehensive review of models, datasets, and chal-lenges. Journal of Ambient Intelligence and Humanized Computing 17 (2), 491– 523 (Mar 2026). https://doi.org/10.1007/s12652-026-05042-1, https://doi.org/10. 1007/s12652-026-05042-1 19. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, L., Polosukhin, I.: Attention is all you need. In: Advances in Neural Information Processing Systems. vol. 30 (2017) 20. Wan, Z., Dodge, S.: A generative trajectory interpolation method for imputing gaps in wildlife movement data. In: Proceedings of the 1st ACM SIGSPATIAL in-ternational workshop on AI-driven spatio-temporal data analysis for wildlife con-servation. pp. 1–8 (2023) 21. Yuan, Y., Weng, X., Ou, Y., Kitani, K.: Agentformer: Agent-aware transform-ers for socio-temporal multi-agent forecasting. In: 2021 IEEE/CVF International Conference on Computer Vision (ICCV). pp. 9793–9803 (2021). https://doi.org/ 10.1109/ICCV48922.2021.00967

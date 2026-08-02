@@ -1,0 +1,577 @@
+Title: Variance-Preserving Orthogonal Selection (VPOS): Greedy Feature Selection via Orthogonal Deflation in PCA Loading Space
+
+URL Source: https://arxiv.org/pdf/2607.23198v2
+
+Published Time: Wed, 29 Jul 2026 01:02:58 GMT
+
+Number of Pages: 23
+
+Markdown Content:
+# Variance-Preserving Orthogonal Selection (VPOS): Greedy Feature Selection via Orthogonal Deflation in PCA Loading Space 
+
+Baran Koseoglu a, ∗, Berrin Yanikoglu b
+
+> aIndependent Researcher, London, UK
+> bSabanci University, Istanbul, Turkey
+
+Abstract 
+
+We propose Variance-Preserving Orthogonal Selection (VPOS) , a greedy framework for unsupervised feature selection that operates in the weighted PCA loading space. After each selection, VPOS projects out the chosen feature’s variance direction via null-space deflation, forcing subsequent selections to cover orthogonal parts of the covariance structure. Each step provably reduces the loading matrix rank by one, and the greedy objective connects to monotone submodular maximization. The single hyperparameter d is selected via a reproducible rule: the value minimising reconstruction MSE in a sensitivity sweep. On eight benchmarks, VPOS achieves the lowest reconstruction MSE on all eight while running 10– 140 × faster than graph-based methods at scale. Comparing against PCA (no deflation) at matched d confirms deflation as the primary driver, reducing MSE by 10–73%. 
+
+Keywords: unsupervised feature selection, principal component analysis, orthogonal deflation, column subset selection, greedy algorithms, gene expression 
+
+1. Introduction 
+
+Dimensionality reduction transforms high-dimensional data into a lower-dimensional space by extracting meaningful patterns or selecting the most relevant features. Dimension-ality reduction is broadly categorized into feature selection and feature extraction. Feature selection selects a subset of unchanged input features according to predefined evaluation met-rics, while feature extraction applies mathematical transformations to the high-dimensional data and transforms it into a compressed, lower-dimensional space while maximizing the retention of critical variance. We focus on unsupervised feature selection : selecting a dis-crete subset of original features based solely on the intrinsic variance structure of the data, without access to class labels. This setting excludes supervised methods (wrapper and em-bedded approaches) that require a target variable, as well as feature extraction methods     
+
+> ∗Corresponding author.
+> Email addresses: koseoglubaran@gmail.com (Baran Koseoglu), berrin@sabanciuniv.edu (Berrin Yanikoglu) arXiv:2607.23198v2 [cs.LG] 28 Jul 2026
+
+that produce linear combinations rather than original features. When the number of fea-tures D far exceeds the number of observations N , data tends to cluster on a low-dimensional manifold [1]. PCA recovers that manifold efficiently, but its components are dense linear combinations of all original variables [2]. In genomics, finance, and clinical measurement, the goal is not a rotated projection but the identification of a small, interpretable set of original variables — specific genes, assets, or biomarkers — that capture the essential vari-ance structure. Gene-expression microarrays are a canonical example: thousands of genes are measured simultaneously, but only a handful of pathway-level signals drive biological variation, and practitioners need to identify the specific genes to target in follow-up assays [25]. Unsupervised feature selection fills this role, yet it faces a structural difficulty [3]. Most methods assign each feature an independent score (marginal variance, Laplacian score [4], spectral score [5]) and select the top k. Under strong multicollinearity, the top-k features all correspond to the same dominant latent factor, giving a redundant subset that misses independent secondary and tertiary signals entirely. We call this the clustering trap .A separate line of work sidesteps discrete selection by placing ℓ1 penalties on PCA load-ings [8, 9]. These methods produce sparse component weights, not a discrete feature index set. In applications where practitioners need to physically act on selected variables — con-structing a portfolio, running a targeted assay — mixing originals is not acceptable. We propose Variance-Preserving Orthogonal Selection (VPOS) , which resolves the clustering trap through a different mechanism: after selecting a feature, its variance direction is removed from the loading representations of all remaining candidates via a null-space projection. This forces the next selection to cover a genuinely orthogonal part of the covariance structure. The algorithm is a greedy Gram-Schmidt process applied to the rows of the variance-weighted loading matrix B = VdΛ1/2 
+
+> d
+
+, which we show addresses the Column Subset Selection Problem (CSSP) [15, 16] with a novel formulation that applies greedy Gram-Schmidt selection to a variance-weighted loading embedding, yielding materially different feature selections than classical CSSP algorithms (Golub-Klema-Stewart pivoted QR and rank-revealing QR decomposition) and the covariance-deflation approach of Yaghooti et al. [12]. The contributions of this work are: (i) The Weighted Loading Embedding B = VdΛ1/2 
+
+> d
+
+is formalized as the natural geometric space for feature diversity measurement, with each row’s squared norm equal to the feature’s contribution to the d-dimensional principal subspace. (ii) A loading-space null-space deflation operator is introduced that removes the re-dundant variance direction of each selected feature from all remaining candidates, with a proof that rank decreases by exactly one per step. (iii) A formal connection to the CSSP problem domain is established: VPOS is positioned as a novel algorithm for column subset selection that operates on the rows of B, and empirical comparison against standard CSSP algorithms (greedy selection 2on unweighted Vd and on sample-space X; Section 6.5) confirms that the variance weighting and loading-space projection materially change which features are selected. (iv) Experiments across eight datasets spanning D ∈ [12 , 3072] — including a gene-expression microarray benchmark (Colon Cancer [25]) — characterize when deflation helps (block-correlated feature spaces) and when it does not (Multi-Sector synthetic where oracle information is available), alongside a sensitivity analysis of the d hy-perparameter with a reproducible selection rule: choose the d that minimises recon-struction MSE. The main benchmark (Table 1) includes PCA (no deflation) at the same best-d as VPOS, directly isolating the marginal contribution of the deflation mechanism. 
+
+2. Problem Formulation 
+
+2.1. Matrix Representation and Covariance 
+
+We consider a dataset X ∈ RD×N where D denotes the number of features and N denotes the number of observations. We adopt the D × N convention (features as rows, observations as columns) to align with signal processing and covariance analysis standards [18]. We assume the data is centered such that PNi=1 xi = 0. The global structure of the feature space is encoded in the feature-covariance matrix Σ ∈ RD×D:
+
+Σ = 1
+
+N XX ⊤ (1) This covariance matrix captures all pairwise linear relationships between features and pro-vides the substrate for the loading embedding that VPOS operates on. 
+
+2.2. The Geometry of the Loading Space 
+
+The spectral decomposition of Σ is given by: 
+
+Σ = VΛV ⊤ (2) where V = [ v1, v2, . . . , vD] is the orthonormal matrix of eigenvectors (loadings) and Λ =
+
+diag (λ1, λ 2, . . . , λ D) is the diagonal matrix of eigenvalues sorted in descending order ( λ1 ≥
+
+λ2 ≥ · · · ≥ λD ≥ 0). We define the Weighted Loading Embedding B ∈ RD×d for the top d principal components as: 
+
+B = VdΛ1/2 
+
+> d
+
+(3) where Vd ∈ RD×d contains the top-d eigenvectors and Λd = diag (λ1, . . . , λ d). Each row 
+
+bj ∈ Rd of B serves as a low-dimensional representation of feature j in the principal subspace. The magnitude ∥bj ∥2 = Pdk=1 λkv2 
+
+> jk
+
+corresponds to the variance that feature j contributes to the d-dimensional principal subspace, recovering the weighted sum of squared loadings familiar from factor analysis [19]. Crucially, redundancy between features is geometrically represented by the angular proximity of their corresponding row vectors in this d-dimensional loading space: two features that are near-collinear in the data space will have nearly parallel row vectors in B.32.3. The Clustering Trap in Static Selection 
+
+Static ranking methods assign a scalar score to each feature independently and select the top-k features by score. Under extreme multicollinearity—where a dominant latent factor drives many features—the top-k features by any static criterion (variance, Laplacian score [4], spectral score [5]) will all correspond to the same latent factor. This is the clustering trap : the selected subset is informationally redundant, and lower-variance but independent latent factors are entirely missed. VPOS resolves this by making the selection criterion adaptive: the score of each candidate feature is updated after every selection to reflect only the variance not yet explained by the already-chosen set. 
+
+3. Methodology: Orthogonal Deflation 
+
+3.1. Information Draining via Null-Space Projection 
+
+Traditional selection methods like Principal Feature Analysis (PFA) [13] or simple vari-ance thresholding treat feature importance as a static attribute. VPOS recognizes that importance is conditional . Upon selecting feature it at iteration t, we extract its loading vector u = b(t) 
+
+> it
+
+∈ Rd. To remove all redundant information from the remaining candidates, we define the orthogonal projection operator onto the complement of span (u):
+
+P⊥ 
+
+> u
+
+= Id − uu ⊤
+
+u⊤u (4) The loading embedding is updated via right-multiplication (deflation along the component axis): 
+
+B(t+1) = B(t)P⊥ 
+
+> u
+
+(5) For any remaining candidate feature j, its updated representation is: 
+
+b(t+1)  
+
+> j
+
+= b(t) 
+
+> j
+
+− b(t)⊤ 
+
+> j
+
+u
+
+∥u∥2 u (6) which is the component of b(t) 
+
+> j
+
+orthogonal to u. Features that were highly correlated with 
+
+it (i.e., nearly parallel to u in loading space) will have their residual representation collapse toward zero, sharply reducing their score in the next iteration. Features that were already orthogonal to it are unaffected. 
+
+3.2. Incremental Orthogonal Variance Objective 
+
+The algorithm maximizes the Incremental Orthogonal Variance (IOV) . At step t:
+
+it = arg max 
+
+> j / ∈S t−1
+
+∥b(t) 
+
+> j
+
+∥2 (7) This criterion selects the feature that contributes the most novel , unexplained variance to the current selection. The total objective after k selections is: IOV k =
+
+> k
+
+X
+
+> t=1
+
+∥b(t) 
+
+> it
+
+∥2 (8) 4This greedy strategy is equivalent to maximizing an approximation of the volume of the parallelotope spanned by selected feature vectors in loading space, analogous to the deter-minantal criterion used in Determinantal Point Processes (DPP) [14] and related to the Column Subset Selection Problem (CSSP) [15, 16]. 
+
+3.3. Algorithmic Implementation 
+
+Algorithm 1 Variance-Preserving Orthogonal Selection (VPOS) 
+
+Require: Data X ∈ RD×N , budget k, PCA dimension d 
+
+> 1:
+
+X ← Standardize (X) ▷ Zero mean, unit variance per feature  
+
+> 2:
+
+Compute Σ = 1 
+
+> N
+
+XX ⊤ ∈ RD×D 
+
+> 3:
+
+Solve eigendecomposition: Σ = VΛV ⊤, sort descending  
+
+> 4:
+
+Initialize B(1) = VdΛ1/2 
+
+> d
+
+∈ RD×d 
+
+> 5:
+
+S ← ∅  
+
+> 6:
+
+for t = 1 to k do  
+
+> 7:
+
+wj ← ∥ b(t) 
+
+> j
+
+∥2 for all j / ∈ S  
+
+> 8:
+
+it ← arg max j wj 
+
+> 9:
+
+S ← S ∪ { it} 
+
+> 10:
+
+u ← b(t) 
+
+> it
+> 11:
+
+B(t+1) ← B(t)
+
+
+
+Id − uu ⊤
+
+> ∥u∥2
+
+ 
+
+> 12:
+
+end for  
+
+> 13:
+
+return S
+
+Role of d. The hyperparameter d controls which part of the covariance structure VPOS operates on, and its effect is not symmetric. When d is too small, B is an overly compressed summary that conflates distinct latent directions; the deflation drains correlations inaccu-rately, and the selected features do not fully escape redundancy. When d is too large — particularly when d approaches N or includes PCs whose eigenvalues are near-zero — the loading vectors for those trailing components are dominated by estimation noise. Deflat-ing along noise directions injects randomness into the scoring sequence, degrading selection quality. The practical sweet spot is d near the data’s intrinsic dimensionality — enough to represent the main covariance structure faithfully, but not so large as to include noise components. 
+
+Selection rule for d. We adopt a reproducible, single-criterion rule: sweep d over a representative range (5–6 values spanning the plausible signal dimensionality) and select the d that minimises reconstruction MSE on the VPOS-selected features. This criterion is consistent with VPOS’s design objective of maximising variance coverage. The sensitivity analysis in Section 6.4 reports both MSE and kNN accuracy across the sweep; the minimum-MSE rule is the formal selection criterion, and all VPOS results in Table 1 use this best-d.
+
+Complexity. The eigendecomposition costs O(D2N +D3). Each deflation step costs O(Dd ),and scoring costs O(Dd ) per iteration, giving a total selection phase cost of O(kDd ). For large D, a randomized SVD [17] can reduce the decomposition to O(DN log d).54. Related Work 
+
+Since VPOS is an unsupervised method that selects discrete original features based on variance structure, we restrict this survey to methods in the same problem class. We exclude supervised approaches (wrapper and embedded methods) that require a target variable. We also exclude several important nonlinear feature extraction methods such as autoencoders, kernel PCA, and UMAP, as they produce transformed representations rather than origi-nal feature subsets. Within unsupervised feature selection, methods fall into four families: spectral/graph-based, sparse PCA, reconstruction-driven, and matrix factorization/deflation methods. We survey the most relevant prior work in each and clarify where VPOS sits. 
+
+4.1. Spectral and Graph-Based Methods 
+
+Early spectral methods evaluate features based on their ability to preserve local neighbor-hood structure. The Laplacian Score [4] assigns each feature a score based on its consistency with the graph Laplacian of the data, capturing local manifold structure but ignoring global variance. Multi-Cluster Feature Selection (MCFS) [5] extends this by solving a sparse spec-tral embedding and selecting features that best reconstruct the spectral coefficients. Joint 
+
+ℓ2,1-norm methods [6] simultaneously perform row-sparse regression and graph-based mani-fold learning. While these methods elegantly capture local geometry, they share a common limitation: feature scores are computed in a single pass and do not account for redundancy between selected features. 
+
+4.2. Sparse PCA and Soft Selection 
+
+A separate line of work achieves implicit feature selection through sparsity regularization on PCA loadings. Sparse PCA (SPCA) by Zou et al. [8] reformulates PCA as a regression problem with LASSO penalties on the loadings, driving many loadings to zero. Jolliffe et al. [9] introduced SCoTLASS, which directly penalizes the ℓ1 norm of principal compo-nent coefficients. More recently, Yi et al. [10] proposed Adaptive Weighted Sparse PCA (AWSPCA), incorporating adaptive weights into the sparsity penalty to improve robustness to noise and outliers. Hu et al. [11] introduce an interpretable framework (SP-SPCA) with a single equilibrium parameter that adaptively adjusts variable penalties across components. In contrast, VPOS provides “hard” geometric selection rather than soft weighting. While SPCA and its variants produce sparse linear combinations (soft-scaling feature weights), VPOS selects a discrete index set S of original features. This is critical in interpretability-sensitive domains where any mixing of original variables is unacceptable. Furthermore, VPOS requires no sparsity penalty hyperparameters; its only hyperparameter is d, which has a clear geometric interpretation and is analyzed in Section 6.4. 
+
+4.3. Reconstruction and Subspace Methods 
+
+Reconstruction-driven selection minimizes data loss in the selected subset. Principal Feature Analysis (PFA) by Lu et al. [13] clusters the PCA loading vectors using K-means and selects the feature closest to each cluster centroid, effectively seeking diverse representatives of the loading space. VPOS can be viewed as a deterministic alternative to PFA: instead of a 6stochastic K-means pass, it uses greedy incremental orthogonal variance maximization with deflation to achieve a similar diversity objective with stronger theoretical guarantees and no randomness. Methods based on joint ℓ2,1 norms [6, 7] embed sparse regression within a graph Laplacian framework. Double-sparsity constrained methods [20] extend this by embedding sparsity constraints directly into the PCA framework. 
+
+4.4. Matrix Factorization and Deflation Methods 
+
+The Column Subset Selection Problem (CSSP) [15] is the overarching problem domain for discrete feature selection from a matrix: given A ∈ Rm×n, select a subset S of k columns such that the residual ∥A − AS A+ 
+
+> S
+
+A∥F is minimised, where AS is the submatrix of selected columns and (·)+ denotes the Moore-Penrose pseudoinverse. VPOS, along with all methods in this subsection, can be understood as algorithmic approaches to (variants of) CSSP. The key distinctions among them lie in the operating space, the deflation mechanism, and the weighting scheme. The foundational algorithmic approach to CSSP is the Golub-Klema-Stewart (GKS) method [21], which applies pivoted QR factorization to the right singular vectors V⊤ 
+
+> k
+
+to identify representative columns of a matrix. Since pivoted QR is algorithmically equivalent to Gram-Schmidt orthogonalization with column pivoting (at each step, selecting the column with the largest residual norm after projecting out the already-selected subspace), GKS performs the same iterative deflation-and-select logic as VPOS. Recent work in optimal sensor placement extends GKS to Bayesian experimental design [22]. Boutsidis et al. [16] establish an improved deterministic greedy algorithm for CSSP based on rank-revealing QR decomposition (RRQR), which selects columns by pivoting on those with maximum residual norm after orthogonal projection. However, GKS and RRQR-based methods operate on the unweighted right singular vec-tors Vk and target matrix approximation quality rather than feature selection; they have not been framed or evaluated as unsupervised feature selection methods. VPOS can be viewed as a variance-weighted variant of GKS applied to the rows of VdΛ1/2 
+
+> d
+
+, where the Λ1/2 
+
+> d
+
+weighting ensures that principal directions explaining more variance contribute proportionally more to the selection score. Yaghooti et al. [12] proposed Gram-Schmidt methods for unsupervised feature extraction and selection. Their framework constructs a series of covariance matrices Σj by projecting the data onto orthonormalized function spaces, generalizing PCA to detect both linear and nonlinear redundancies. Their feature selection selects features based on diagonal elements of the iteratively deflated covariance matrix. VPOS is related in spirit but distinct in both mechanism and scope. Yaghooti et al. deflate the D × D covariance matrix by projecting the data distribution; VPOS deflates the D × d loading matrix via a right-multiplication null-space projection. This distinction has practical consequences: (1) VPOS operates in the compressed d-dimensional loading space, making it significantly cheaper when d ≪ D; (2) by explicitly weighting eigenvectors by √λk, VPOS scales the importance of each principal direction by its variance explained, giving B a direct spectral interpretation; (3) VPOS targets purely linear feature selection, making its guarantees cleaner and its output directly interpretable as row-norm maximization in a well-defined Euclidean space. 7How VPOS differs from standard CSSP algorithms. The standard greedy CSSP algorithms (GKS, RRQR) apply Gram-Schmidt orthogonalisation directly to the columns of A or the unweighted singular vectors, selecting the column with the largest residual ℓ2
+
+norm at each step after projecting out the already-selected subspace. While VPOS addresses the same CSSP problem domain — selecting a discrete subset of original features — three structural differences distinguish it from these classical algorithms: (i) Operating space. Greedy CSSP on X operates directly on the raw data matrix, selecting features by residual norms in RN . GKS operates on the unweighted singular vectors Vk. VPOS operates on the variance-weighted loading matrix B = VdΛ1/2 
+
+> d
+
+,which means features are scored by their contribution to the global variance structure 
+
+rather than by raw norms in sample space (vs. CSSP on X) or unweighted geometric position (vs. GKS). (ii) Variance weighting. A greedy CSSP algorithm applied to the unweighted eigen-vector matrix Vd (as in GKS) treats all principal components equally. VPOS weights each eigenvector by √λk, so principal components explaining more variance receive proportionally more influence on the selection score ∥bj ∥2 = P 
+
+> k
+
+λkv2
+
+> jk
+
+. This is not a free parameter — it is the natural metric induced by the covariance structure of the data. (iii) Deflation space and cost. In greedy CSSP on X, deflation removes the projection onto the selected feature’s row from all remaining feature rows, updating D vectors in RN at a cost of O(DN ) per step. In VPOS, deflation removes the projection of the selected feature’s loading row bit from the loading rows of all remaining features, updating D vectors in Rd at a cost of O(Dd ) per step. The speedup factor is N/d ,favouring VPOS whenever d ≪ N — which is the typical operating regime, since best-d is generally far smaller than the sample size. 
+
+Empirical comparison. We compare VPOS directly against two CSSP-derived base-lines: (i) Greedy CSSP on X: applies Gram-Schmidt column selection to the standardised data matrix, selecting the feature with maximum residual norm in sample space at each step; (ii) Greedy CSSP on Vd: applies the same greedy procedure to the unweighted eigen-vector matrix, isolating the effect of the Λ1/2 
+
+> d
+
+variance weighting. Results are reported in Section 6.5. 
+
+5. Theoretical Analysis 
+
+5.1. Rank Reduction and Subspace Coverage 
+
+Proposition 1 (Rank Reduction) . At each iteration t, the deflation B(t+1) = B(t)P⊥ 
+
+> u
+
+reduces the rank of B by exactly one: rank (B(t+1) ) = rank (B(t)) − 1 (9) 
+
+provided u = b(t)
+
+> it
+
+̸ = 0.
+
+8Proof. The projection P⊥ 
+
+> u
+
+= I − uu ⊤/∥u∥2 is a rank-(d − 1) operator on Rd (its null space is span (u), which is one-dimensional). Post-multiplying B(t) by this rank-(d − 1) matrix removes the component of every row along u. Since u was itself a row of B(t) with nonzero norm, u maps to 0 under P⊥ 
+
+> u
+
+, decreasing the rank by exactly one. 
+
+Remark 1. After d iterations, B(d+1) = 0, meaning all d independent directions of the loading embedding have been captured. For any k ≤ d, VPOS guarantees that the selected set S spans at least k dimensions of the d-dimensional principal subspace, provided B has rank d (i.e., no two distinct features have identical loading representations in the principal subspace). In practice, rank (B) = min( D, d ), so this condition holds whenever D ≥ d, which is the typical case. 5.2. Greedy IOV Maximization and Connection to Submodularity 
+
+The IOV objective IOV k = Pkt=1 ∥b(t) 
+
+> it
+
+∥2 is a greedy approximation to maximizing the total squared volume of the feature-loading parallelotope. Global maximization of the paral-lelotope volume (equivalent to the MAP inference problem in Determinantal Point Processes (DPP) [14], where selection probability is proportional to the squared volume spanned by chosen items) is NP-hard in general. The greedy IOV strategy is structurally analogous to greedy CSSP algorithms that admit a (1 − 1/e ) approximation ratio under monotone sub-modularity [16]. While the IOV objective shares the same greedy-deflation structure as these CSSP objectives — selecting the element with maximum residual norm after orthogonal pro-jection — the formal submodularity of IOV as a set function depends on the spectrum of 
+
+B, and we do not claim a universal guarantee. In practice, the greedy strategy consistently selects near-optimal feature subsets across our experiments, and the structural similarity to provably-good CSSP algorithms provides a principled justification for the approach. 
+
+5.3. Geometry of Orthogonal Deflation 
+
+The deflation step has an intuitive geometric interpretation. After selecting feature it
+
+with loading direction u, the updated loading of any remaining feature j is its component orthogonal to u:
+
+b(t+1)  
+
+> j
+
+= b(t) 
+
+> j
+
+− b(t)⊤ 
+
+> j
+
+u
+
+∥u∥2
+
+!| {z } 
+
+> similarity to it
+
+u (10) The residual norm ∥b(t+1)  
+
+> j
+
+∥2 = ∥b(t) 
+
+> j
+
+∥2 − (b(t)⊤ 
+
+> j
+
+ˆu)2 where ˆu = u/∥u∥ is the unit loading direction. Features that are nearly co-directional with it in loading space have their score collapsed toward zero, removing redundant directions and preventing the clustering trap. 
+
+5.4. Complexity and Scalability 
+
+The full pipeline costs O(D2N + D3) for the eigendecomposition and O(kDd ) for the selection phase. For datasets where D ≫ N , the randomized SVD of Halko et al. [17] reduces decomposition to O(DN log d) with high probability guarantees, making VPOS scalable to settings with hundreds of thousands of features. 96. Experimental Results and Discussion 
+
+6.1. Experimental Setup 
+
+We conduct experiments on two types of datasets: (i) six real-world benchmark datasets spanning a broad range of sizes and complexities, from small tabular data to large-scale image collections and a gene-expression microarray, and (ii) two controlled synthetic datasets designed to stress-test the clustering trap and probe the D ≫ N regime. 
+
+6.1.1. Real-World Benchmarks 
+
+To probe algorithm behavior across a wide range of dataset scales and complexities, we evaluate on six datasets spanning three tiers: 
+
+• Small tabular (D ≤ 64 ): 
+
+– Wine (D = 13 , N = 178 , 3 classes) from the UCI repository represents low-dimensional, structured tabular data with moderate inter-feature correlation. 
+
+– Breast Cancer Wisconsin (D = 30 , N = 569 , 2 classes) from the UCI repository represents low-dimensional tabular data with high inter-feature correlation. 
+
+– Digits (D = 64 , N = 1 ,797 , 10 classes) from the UCI repository represents 8 ×8pixel handwritten digit images with moderate spatial correlation between adjacent pixel intensities. 
+
+• Genomics (D ≫ N ): 
+
+– Colon Cancer [25] ( D = 2 ,000 genes, N = 62 tissue samples, 2 classes) is a mi-croarray gene-expression dataset measuring expression levels of 2,000 genes across 40 tumour and 22 normal colon tissue samples. This dataset has strong co-expression structure — genes in the same biological pathway exhibit high pairwise correlation — making it a natural test case for VPOS’s redundancy-elimination mechanism. It also places VPOS in the D ≫ N regime ( D/N ≈ 32 ), where covariance estimation is rank-deficient and the loading embedding is constrained to at most N − 1 = 61 
+
+dimensions. 
+
+• Large image (D ≥ 784 ): 
+
+– MNIST [23] ( D = 784 , N = 70 ,000 , 10 classes) provides a high-dimensional grayscale digit representation using the full dataset without subsampling. 
+
+– CIFAR-10 [24] ( D = 3 ,072 raw RGB pixels, N = 20 ,000 , 10 classes) uses the complete CIFAR_10_small dataset available from OpenML. (The full 50,000-sample CIFAR-10 dataset was not accessible from OpenML in the experimental environ-ment.) These six real-world datasets allow us to assess whether VPOS’s variance-diversity mecha-nism holds up across scales, and to measure the wall-clock cost of each method as N grows substantially relative to the tabular tier. 10 6.1.2. Synthetic Datasets 
+
+We use two synthetic datasets to probe complementary aspects of VPOS: 
+
+• Multi-Sector (D = 12 , N = 1 ,000 , 3 sectors). We construct a synthetic market dataset of 12 assets across three sectors (Technology, Energy, Healthcare). Each sector’s assets are generated as: 
+
+xs,i (t) = fs(t) + ϵs,i (t), ϵs,i ∼ N (0 , 0.01) (11) where fs(t) is the common sector factor and ϵs,i is idiosyncratic noise. Within-sector correlations are by construction near ρ ≈ 0.99 , while between-sector correlations are near zero. 
+
+• High-Dimensional (D = 500 , N = 150 , 3 classes). Generated using make_classification 
+
+with 30 informative features and 200 linearly redundant features. This setup mimics a small-sample study where D ≫ N , but unlike real genomics data the redundancy is randomly generated rather than biologically structured. For each dataset we report (i) mean reconstruction MSE—the average ordinary least squares (OLS) reconstruction error of every feature from the selected subset (for CIFAR-10 and Colon Cancer, averaged over a random sample of 500 features for computational tractability)—and (ii) k-NN accuracy ( k = 5 , 5-fold CV for tabular; 3-fold for image and ge-nomics datasets) on the selected features, and (iii) wall-clock time in seconds for the feature-selection step (excluding data loading and standardisation). The number of selected features 
+
+k is chosen to represent moderate compression: approximately 20–30% of features for small tabular datasets (Wine k = 4 , Breast Cancer k = 6 , Digits k = 16 ) and 3–7% for large-scale datasets (MNIST k = 50 , CIFAR-10 k = 100 ), reflecting practical deployment constraints where retaining a small interpretable subset is the goal. For Colon Cancer, k = 20 follows standard practice in genomics feature selection studies, where downstream experimental val-idation cost per gene is high [25]. Wall-clock time is measured with time.perf_counter 
+
+on a single CPU core; the graph construction step (kNN graph) is included in the reported time for Laplacian Score and MCFS. 
+
+6.1.3. Baselines 
+
+We compare VPOS against five baselines spanning all major unsupervised selection fam-ilies: (i) Variance Threshold : select top-k features by marginal variance. (ii) PCA (no deflation) : select top-k by weighted loading norm ∥bj ∥2, identical to VPOS but omitting the deflation step. Uses the same best-d as VPOS (from the sen-sitivity analysis), so the comparison directly isolates the contribution of the deflation mechanism at matched d.(iii) Laplacian Score [4]: scores each feature by consistency with the k-NN graph Lapla-cian; selects features with the lowest (best) score. 11 (iv) MCFS [5]: builds a normalised graph Laplacian spectral embedding and selects fea-tures via sparse LASSO regression onto the embedding. (v) Greedy CSSP on X: applies Gram-Schmidt deflation directly in sample space, selecting at each step the feature with the maximum residual column norm in RN .This is the natural “brute-force” greedy subset selection baseline and allows isolating the benefit of operating in the compressed loading space. Laplacian Score and MCFS are implemented from scratch using standard eigendecompo-sition and k-NN graph construction ( kgraph = 5 , as recommended in the original papers [4, 5]); the MCFS sparsity parameter is set to α = 0 .01 throughout. We verified via in-ternal sweeps (not reported) that varying kgraph ∈ { 3, 5, 10 , 15 , 20 } for Laplacian Score and 
+
+α ∈ { 0.001 , 0.01 , 0.1, 1.0} for MCFS does not materially change the conclusions: the best-tuned Laplacian Score and MCFS results remain below VPOS (best-d) on reconstruction MSE across all datasets. 
+
+6.1.4. The d Hyperparameter 
+
+VPOS requires choosing d, the number of principal components used to construct the loading embedding B. The sensitivity analysis in Section 6.4 sweeps d across a representative range for each dataset, and best-d is selected as the value that minimises reconstruction MSE — a reproducible, single-criterion rule consistent with VPOS’s variance-coverage objective. The resulting best-d values used in Table 1 are: Wine d = 5 , Breast Cancer Wisconsin d = 7 ,Digits d = 15 , MNIST d = 50 , CIFAR-10 d = 120 , Colon Cancer d = 20 , High-Dimensional 
+
+d = 20 and Multi-Sector d = 3 . Practitioners should apply the same minimum-MSE rule on a sweep of 5–6 candidate d values for their dataset. 
+
+6.2. Real-World Benchmark Results 
+
+Table 1 reports reconstruction MSE, kNN accuracy, and wall-clock time on six datasets spanning four complexity tiers. 
+
+Breast Cancer Wisconsin. VPOS achieves the best reconstruction MSE by a sig-nificant margin—0.1911 vs. 0.2500 (Variance), 0.2323 (CSSP on X), 0.3320 (PCA), 0.3856 (Laplacian Score), and 0.3391 (MCFS)—and a kNN accuracy of 94.0%, narrowly behind MCFS (94.6%). CSSP on X scores second-best on MSE yet trails VPOS by nearly 2.5 percentage points in kNN accuracy, indicating that operating in the compressed loading space selects features with better discriminative structure beyond raw reconstruction. This dataset is highly consistent with VPOS’s design premise: 30 features organised around a small number of highly correlated measurement groups (mean, standard error, and worst-case values of the same cell nucleus measurements), forming exactly the multicollinearity structure that the deflation mechanism is built to resolve. 
+
+Digits. VPOS achieves the best reconstruction MSE (0.4050 vs. 0.4458 for CSSP on X
+
+and 0.4668 for PCA without deflation) and the best kNN accuracy (86.3%), ahead of MCFS (85.4%) and PCA without deflation (81.4%). The MSE gap between VPOS and PCA at matched d (0.4050 vs. 0.4668, a 13% reduction) confirms the deflation benefit even on this moderately correlated dataset. 12 Wine. VPOS achieves the best reconstruction MSE (0.3599 vs. 0.3873 for CSSP on 
+
+X). Laplacian Score achieves the best kNN accuracy (96.1%), with VPOS at 92.1%. Wine has only D = 13 features with moderate multicollinearity; at d = 5 the loading embedding captures the dominant factors without overfitting to minor components. 
+
+MNIST. VPOS achieves the best kNN accuracy across all methods at 87.8%, ahead of PCA without deflation (81.2%) and Variance (66.5%), and the best MSE (0.5374 vs. 0.6699 for PCA without deflation). The 6.6 percentage-point kNN gap between VPOS and PCA (no deflation) at matched d directly quantifies the discriminative benefit of the deflation mechanism. The sensitivity analysis (Table 4) confirms that d = 50 is the optimal operating point; performance degrades sharply at larger d as trailing principal components introduce estimation noise into the deflation. On timing, VPOS runs in 0.2 s — 140 × faster than Laplacian Score (28.5 s), 210 × faster than MCFS (42.1 s), and 40 × faster than CSSP on X
+
+(8.1 s). Laplacian Score and MCFS both require constructing a full kNN affinity matrix on 70,000 samples, making them impractical for interactive use. 
+
+CIFAR-10. VPOS achieves the best reconstruction MSE (0.1627 vs. 0.1742 for CSSP on X) and the best kNN accuracy (0.3026 vs. 0.2898 for CSSP on X, 0.2856 for Variance). VPOS and CSSP on X are close on MSE while graph-based methods fall far behind. The timing column highlights the cost gap: CSSP on X takes 18.4 s, while VPOS takes 1.3 s — a 14 × speedup. Laplacian Score (11.7 s) and MCFS (15.8 s) both require the kNN graph and are 9–12 × slower than VPOS, while achieving only 19% and 21% kNN accuracy respectively (vs. 30% for VPOS). 
+
+Colon Cancer. This microarray dataset places VPOS in the D ≫ N regime with real biological co-expression structure. VPOS achieves the best reconstruction MSE (0.2732) by a clear margin over PCA without deflation (0.3020), Laplacian Score (0.3329), Variance (0.3735), CSSP on X (0.3882), and MCFS (0.3924). On kNN accuracy, PCA without deflation leads (87.2%), followed by Laplacian Score (82.2%) and Variance (75.7%); VPOS achieves 71.0%. The trade-off is characteristic of the minimum-MSE selection rule: d =20 gives the best variance coverage but overshoots the discriminative sweet spot ( d = 15 
+
+achieves 82.1% kNN at slightly higher MSE of 0.2825). This illustrates that the minimum-MSE rule optimises for reconstruction fidelity, not classification — consistent with VPOS’s unsupervised design objective. This result demonstrates that VPOS can achieve best-in-class MSE in the D ≫ N regime when the underlying covariance has genuine block structure — the binding constraint is not simply the D/N ratio but whether the leading principal components carry real signal. 
+
+6.3. Synthetic Dataset Results 
+
+Table 2 reports results on the synthetic datasets with all five methods. 
+
+Multi-Sector. VPOS is the only method to cover all three sectors, achieving near-oracle reconstruction MSE (0.0150 vs. 0.0000 for the oracle with all 12 features). Variance and PCA without deflation each cover two sectors (MSE ≈ 0.34 ), missing one latent factor entirely. Laplacian Score and MCFS both collapse to a single sector (MSE ≈ 0.67 ), the extreme form of the clustering trap: graph-based local methods are not designed to enforce 13 global variance diversity. The minimum-MSE rule selects d = 3 for this dataset, matching the true number of latent factors. 
+
+High-Dimensional. To complement the real-world Colon Cancer experiment above, we evaluate VPOS on the high-dimensional synthetic dataset described in Section 6.1 ( D = 500 ,
+
+N = 150 , 30 informative features, 200 linearly redundant features, 3 classes). Table 3 reports results at the MSE-minimising d = 20 .VPOS achieves the best reconstruction MSE (0.5460), narrowly ahead of PCA without deflation (0.5572) and Laplacian Score (0.5622). However, VPOS’s kNN accuracy (38.0%) is substantially below Laplacian Score and MCFS (both 54.7%), indicating that the variance-diverse features selected by VPOS do not align with the class boundaries in this dataset. This outcome illustrates a key property of the minimum-MSE selection rule: it optimises for variance coverage, which may diverge from classification performance when the informa-tive signal for class separability occupies a different subspace than the dominant variance structure. The contrast with Colon Cancer is instructive: both datasets have D ≫ N , but VPOS achieves best MSE on both. This refines the characterisation: VPOS reliably achieves best reconstruction under the minimum-MSE rule even in the D ≫ N regime (provided d is chosen conservatively), but downstream classification performance depends on whether the data’s dominant variance directions coincide with discriminative structure. 
+
+6.4. Sensitivity to d
+
+Table 4 reports VPOS reconstruction MSE and kNN accuracy across a representative range of d values for each dataset except Multi-Sector as it doesn’t have class labels. For Breast Cancer, VPOS is stable across d ∈ [3 , 10] , with MSE varying from 0.191 to 0.280 over a 5 × change in d. The best MSE is at d = 7 , which aligns with the data’s block-correlation structure (mean, standard error, and worst-case measurements form three correlated groups). For Digits, MSE is minimised at d = 15 (0.4050), while kNN peaks at d = 10 (89.8%). The minimum-MSE rule selects d = 15 , which achieves the best variance coverage; the kNN decrease from 89.8% to 86.3% reflects that the additional 5 components improve re-construction at the cost of including directions that do not aid classification. Incorporating dimensions beyond 15 adds noise without benefit. For MNIST, kNN accuracy peaks at d = 20 (90.3%) and decreases monotonically as d
+
+grows, falling to 87.8% at d = 50 , 76.4% at d = 100 , 65.5% at d = 150 , and 34.3% at 
+
+d = 238 . MSE is minimised at d = 50 (0.5374). The minimum-MSE rule selects d = 50 ,which achieves the best variance coverage while retaining 87.8% kNN. MNIST has a large number of near-zero eigenvalues corresponding to smooth pixel-correlation modes that carry variance but no discriminative signal; retaining too many of these pushes VPOS into the noise-deflation regime. A simple sweep over five d values immediately reveals the correct operating point. For CIFAR-10, MSE decreases steadily with larger d: from 0.2398 at d = 20 to 0.1627 at d = 120 , which is the best-d used in Table 1. The kNN accuracy also generally increases with d, peaking at d = 120 (0.3026). Both metrics improve monotonically with d on this 14 dataset, suggesting that CIFAR-10’s covariance structure distributes useful signal across many components. For Colon Cancer, MSE improves steadily from d = 5 (0.3159) to d = 20 (0.2732), then degrades at larger d (0.3026 at d = 34 ). The kNN accuracy peaks sharply at d = 15 
+
+(82.1%), drops at d = 20 (71.0%), and declines further at d = 34 (61.2%). The minimum-MSE rule selects d = 20 , which achieves the best reconstruction (0.2732, best among all methods in Table 1). The kNN drop from 82.1% to 71.0% between d = 15 and d = 20 
+
+illustrates that the last 5 components improve variance coverage but introduce noise that degrades class separability — a characteristic trade-off of the unsupervised MSE objective. In this rank-deficient setting (rank ≤ 61 ), components beyond the first ∼20 are increasingly noise-dominated. For the high-dimensional synthetic dataset, MSE is minimised at d = 20 (0.5460) and is fairly flat across d ∈ [10 , 40] . The minimum-MSE rule selects d = 20 , a conservative value that avoids the noise-dominated trailing components. 
+
+6.5. CSSP Baseline Comparison 
+
+Table 5 isolates the contribution of the two design choices that distinguish VPOS from standard CSSP algorithms: variance weighting ( Λ1/2 
+
+> d
+
+) and operating space (loading vs. sam-ple). Greedy CSSP on X (already included in Table 1 for all datasets) and greedy CSSP on Vd are compared against VPOS on three representative tabular datasets; CSSP on Vd
+
+is omitted from Table 1 to avoid clutter since the CSSP-on-X vs. VPOS comparison there already captures the main story at scale. The results reveal two distinct findings. First, comparing CSSP on Vd against VPOS isolates the contribution of the Λ1/2 
+
+> d
+
+variance weighting: VPOS outperforms unweighted CSSP on all three datasets — Wine (0.3599 vs. 0.4909 MSE), Breast Cancer (0.1911 vs. 0.2508 MSE; 94.0% vs. 90.0% kNN), and Digits (0.4050 vs. 0.4085 MSE; 86.3% vs. 79.1% kNN) — demonstrating that weighting eigenvectors by their eigenvalues is not cosmetic. The weighting ensures that directions explaining more variance dominate the selection score, so features are ranked by their contribution to global variance structure rather than by their arbitrary geometric position in the unweighted eigenvector space. Second, comparing CSSP on X against VPOS shows the complementary effect of the loading-space projection. VPOS achieves better MSE than CSSP on X on all three datasets at best-d: Wine (0.3599 vs. 0.3873), Breast Cancer (0.1911 vs. 0.2323), and Digits (0.4050 vs. 0.4458). VPOS also achieves higher kNN accuracy on all three datasets. This confirms that the PCA projection is not merely a computational shortcut — compressing the selection into the d-dimensional subspace that concentrates variance actually improves selection quality by discarding noise dimensions that would otherwise pollute the Gram-Schmidt deflation. Using the minimum-MSE rule to select d ensures that the loading embedding captures the dominant covariance structure without overshooting into noise. 
+
+6.6. Discussion 
+
+The results identify three regimes for VPOS’s deflation mechanism: 15 Strong benefit: block-correlated features. When features cluster into groups driven by distinct latent signals, deflation prevents the selection budget from concentrating on the dominant group. The PCA (no deflation) baseline in Table 1 confirms this: at matched d,deflation reduces MSE by 10–73%, with the largest gains on CIFAR-10 and Breast Cancer. 
+
+Modest benefit: moderate correlation. On Wine, correlation is moderate and no single factor dominates. VPOS still achieves the best MSE, but the margin over CSSP on 
+
+X is narrow and Laplacian Score leads on kNN. Without a severe clustering trap, deflation has less to overcome. 
+
+Structured D ≫ N : genomics with co-expression. Colon Cancer shows that VPOS can achieve best-in-class MSE even when the covariance is rank-deficient, provided the data has genuine pathway-level co-expression structure concentrated in a moderate number of principal components. The minimum-MSE rule selects d = 20 , which restricts deflation to the well-estimated portion of the loading space. The trade-off is visible in kNN: PCA without deflation achieves 87.2% vs. VPOS’s 71.0%, indicating that the MSE-optimal d overshoots the discriminative sweet spot. This is expected: VPOS optimises variance coverage, not class separability. Reconstructing the latent manifold is the primary objective, making downstream classification a secondary diagnostic rather than the goal function. While VPOS dominates on reconstruction fidelity across all datasets, the choice of using VPOS over alternative methods should be guided by the dataset at hand and the overall objective. A cross-cutting finding is the role of d and the importance of the minimum-MSE selection rule. On MNIST, kNN drops from 90.3% at d = 20 to 34.3% at d = 238 ; on Colon Cancer, from 82.1% at d = 15 to 61.2% at d = 34 . The underlying mechanism is the same: trailing principal components dominated by estimation noise corrupt the deflation. The minimum-MSE rule provides an automatic, reproducible guard against this failure mode — a simple sweep over 5–6 values of d suffices to identify the optimal operating point without requiring labels or external information. The HighDim synthetic result (Table 3) demonstrates that the minimum-MSE rule also resolves the previously-reported failure in the D ≫ N regime with unstructured redundancy. By selecting d = 20 rather than a large value near the rank limit, the rule restricts deflation to well-estimated directions, allowing VPOS to achieve the best MSE even with random redundancy. The kNN gap on this dataset (VPOS 38.0% vs. Laplacian Score 54.7%) confirms that variance-optimised selection does not guarantee classification performance when class structure occupies a different subspace. 
+
+Why unsupervised? A natural question is why not use label information when it is available. Supervised filters (e.g., Fisher Score, mutual information) can exploit class struc-ture directly, and will often outperform unsupervised methods on classification-specific met-rics. However, the unsupervised setting is the appropriate framing for VPOS’s design goal: identifying features that faithfully represent the variance structure of the data regardless of a particular labelling. This is the relevant objective in exploratory analysis, multi-task set-tings where labels change across downstream tasks, and domains (e.g., unlabelled genomics cohorts, financial time series) where labels are unavailable or expensive to obtain. The kNN accuracy reported here serves as a downstream probe of whether variance-diverse features happen to capture discriminative structure — not as the optimisation target. 16 7. Conclusion 
+
+VPOS unifies two well-studied ideas — greedy Gram-Schmidt selection and variance-weighted PCA representations — into a principled pipeline for unsupervised feature selec-tion. The key design choice is to apply the deflation in the compressed d-dimensional loading space rather than in sample space, and to weight eigenvectors by √λk so that directions ex-plaining more variance have proportionally more influence on selection scores. Each deflation step provably reduces the effective rank of B by one, the greedy objective is structurally connected to monotone submodular maximization with known approximation guarantees, and the selected features are original discrete variables — not linear combinations. Experiments across eight datasets spanning D ∈ [12 , 3072] — including full-scale MNIST, CIFAR-10, and a gene-expression microarray Colon Cancer confirm that VPOS with best-d
+
+(selected by the minimum-MSE rule) achieves the lowest reconstruction MSE on all eight benchmarks. The PCA (no deflation) baseline — run at the same best-d — confirms that the deflation mechanism is the primary contributor, with deflation accounting for a 10–73% MSE reduction at matched d. The wall-clock timing results make explicit what the complex-ity analysis implied: operating in the compressed d-dimensional loading space makes VPOS 9–210 × faster than graph-based methods at large scale, while matching or exceeding their accuracy. The Colon Cancer result demonstrates that VPOS’s advantage extends to the ge-nomics setting that motivates much of the feature selection literature: even with D/N ≈ 32 ,VPOS achieves best-in-class MSE when the minimum-MSE rule selects a conservative d,exploiting the biological co-expression structure that concentrates signal in the leading prin-cipal components. The minimum-MSE selection rule resolves a previously-reported limi-tation: on the high-dimensional synthetic dataset, the rule selects d = 20 rather than a naive large value, allowing VPOS to achieve the best MSE even with unstructured redun-dancy. The results also sharpen the boundary conditions: VPOS is sensitive to d, and the minimum-MSE sweep is a necessary part of the pipeline — on MNIST, the gap between best-d (d = 50 ) and a naive large d is not marginal but categorical (87.8% vs. 34.3% kNN). The minimum-MSE rule optimises for variance coverage, which may diverge from classifi-cation performance when discriminative structure occupies a different subspace (e.g., Colon Cancer kNN: 71.0% at MSE-optimal d = 20 vs. 82.1% at d = 15 ; HighDim kNN: 38.0% vs. Laplacian Score’s 54.7%). This trade-off is by design: VPOS targets reconstruction fidelity as an unsupervised objective. Several directions remain open. Kernel extensions of the loading embedding could han-dle nonlinear inter-feature redundancy, which the linear framework misses by construction. Tighter bounds on reconstruction error as a function of k and d would provide principled d-selection rules beyond the empirical sweep. Regularised covariance estimation (e.g., Ledoit-Wolf shrinkage) would extend VPOS to the small-sample regime, potentially improving performance on datasets like Colon Cancer where N = 62 limits the loading quality. Evalu-ation on larger gene-expression compendia (e.g., TCGA pan-cancer, N > 10 ,000 ) would test whether VPOS’s advantage grows when covariance estimation is no longer the bottleneck. Finally, evaluating VPOS on deep feature representations — where spatial and semantic correlations are expected to be even denser — would determine whether the performance 17 advantage scales to modern representation learning settings. 
+
+Declaration of competing interest 
+
+The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. 
+
+Data availability 
+
+All datasets used in this study are publicly available. The Wine, Breast Cancer, and Digits datasets are from the UCI Machine Learning Repository via scikit-learn. MNIST and CIFAR-10 are obtained from OpenML. The Colon Cancer dataset [25] is available from OpenML (dataset ID: colon-cancer). 
+
+References 
+
+[1] R. Bellman, Dynamic Programming . Princeton University Press, 1957. [2] I. T. Jolliffe, Principal Component Analysis , 2nd ed. Springer, 2002. [3] J. Li, K. Cheng, S. Wang, F. Morstatter, R. P. Trevino, J. Tang, and H. Liu, “Feature selection: A data perspective,” ACM Comput. Surv. , vol. 50, no. 6, pp. 1–45, 2017. [4] X. He, D. Cai, and P. Niyogi, “Laplacian score for feature selection,” in Advances in Neural Information Processing Systems (NeurIPS) , vol. 18, 2005. [5] D. Cai, C. Zhang, and X. He, “Unsupervised feature selection for multi-cluster data,” in Proc. ACM SIGKDD Int. Conf. Knowledge Discovery and Data Mining (KDD) , pp. 333–342, 2010. [6] F. Nie, H. Huang, X. Cai, and C. Ding, “Efficient and robust feature selection via joint ℓ2,1-norms minimization,” in Advances in Neural Information Processing Systems (NeurIPS) , vol. 23, 2010. [7] C. Hou, F. Nie, X. Li, D. Yi, and Y. Wu, “Joint embedding learning and sparse regres-sion: A framework for unsupervised feature selection,” IEEE Trans. Cybern. , vol. 44, no. 6, pp. 793–804, 2014. [8] H. Zou, T. Hastie, and R. Tibshirani, “Sparse principal component analysis,” J. Comput. Graph. Stat. , vol. 15, no. 2, pp. 265–286, 2006. [9] I. T. Jolliffe, N. T. Trendafilov, and M. Uddin, “A modified principal component tech-nique based on the LASSO,” J. Comput. Graph. Stat. , vol. 12, no. 3, pp. 531–547, 2003. [10] S. Yi, X. Zhou, and Z. Nie, “Adaptive weighted sparse principal component analysis for robust unsupervised feature selection,” IEEE Access , vol. 7, pp. 125128–125139, 2019. 18 [11] Y. Hu and H. Yang, “An interpretable and stable framework for sparse principal com-ponent analysis,” arXiv preprint arXiv:2603.13806, 2026. [12] B. Yaghooti, N. Raviv, and B. Sinopoli, “Gram-Schmidt methods for unsupervised fea-ture extraction and selection,” IEEE Trans. Inf. Theory (to appear), arXiv:2311.09386, 2023. [13] Y. Lu, I. Cohen, X. S. Zhou, and Q. Tian, “Feature selection using principal feature analysis,” in Proc. ACM Int. Conf. Multimedia , pp. 301–304, 2007. [14] A. Kulesza and B. Taskar, “Determinantal point processes for machine learning,” Found. Trends Mach. Learn. , vol. 5, no. 2–3, pp. 123–286, 2012. [15] M. W. Mahoney, “Randomized algorithms for matrices and data,” Found. Trends Mach. Learn. , vol. 3, no. 2, pp. 123–224, 2011. [16] C. Boutsidis, M. W. Mahoney, and P. Drineas, “An improved approximation algorithm for the column subset selection problem,” in Proc. ACM-SIAM SODA , pp. 968–977, 2009. [17] N. Halko, P. G. Martinsson, and J. A. Tropp, “Finding structure with randomness: Probabilistic algorithms for constructing approximate matrix decompositions,” SIAM Rev. , vol. 53, no. 2, pp. 217–288, 2011. [18] A. Hyvärinen, J. Karhunen, and E. Oja, Independent Component Analysis . Wiley, 2001. [19] L. L. Thurstone, Multiple-Factor Analysis . University of Chicago Press, 1947. [20] X. Xiu, A. Yang, C. Huang, X. Li, and W. Liu, “Enhancing unsupervised feature selection via double sparsity constrained optimization,” arXiv:2501.00726, 2025. [21] G. H. Golub, V. Klema, and G. W. Stewart, “Rank degeneracy and least squares prob-lems,” Technical Report TR-456, Department of Computer Science, University of Mary-land, 1976. [22] S. Eswar, V. Rao, and A. K. Saibaba, “Bayesian D-optimal experimental designs via column subset selection,” arXiv:2402.16000, 2024. [23] Y. LeCun, L. Bottou, Y. Bengio, and P. Haffner, “Gradient-based learning applied to document recognition,” Proc. IEEE , vol. 86, no. 11, pp. 2278–2324, 1998. [24] A. Krizhevsky, “Learning multiple layers of features from tiny images,” Technical Re-port, University of Toronto, 2009. [25] U. Alon, N. Barkai, D. A. Notterman, K. Gish, S. Ybarra, D. Mack, and A. J. Levine, “Broad patterns of gene expression revealed by clustering analysis of tumor and normal colon tissues probed by oligonucleotide arrays,” Proc. Natl. Acad. Sci. USA , vol. 96, no. 12, pp. 6745–6750, 1999. 19 Table 1: Real-world benchmark results (6 methods, 6 datasets). Bold = best per dataset per metric. 
+
+Dataset Method D k Recon MSE ↓ kNN Acc ↑ Time (s) ↓
+
+Wine Variance 13 4 0.4223 0.8432 <0.01 PCA (no deflation) 0.4553 0.8425 <0.01 Laplacian Score 0.4389 0.9605 0.00 MCFS 0.4795 0.8986 0.01 CSSP (on X) 0.3873 0.9043 <0.01 
+
+VPOS 0.3599 0.9211 <0.01 Breast Cancer Variance 30 6 0.2500 0.9332 <0.01 PCA (no deflation) 0.3320 0.9438 <0.01 Laplacian Score 0.3856 0.9438 0.05 MCFS 0.3391 0.9456 0.01 CSSP (on X) 0.2323 0.9157 <0.01 
+
+VPOS 0.1911 0.9403 <0.01 Digits Variance 64 16 0.4632 0.7418 <0.01 PCA (no deflation) 0.4668 0.8136 0.00 Laplacian Score 0.5437 0.7985 0.04 MCFS 0.4740 0.8536 0.08 CSSP (on X) 0.4458 0.7151 0.00 
+
+VPOS 0.4050 0.8631 0.00 MNIST Variance 784 50 0.6361 0.6647 0.1 
+
+PCA (no deflation) 0.6699 0.8117 0.2 Laplacian Score 0.9171 0.1079 28.5 MCFS 0.7449 0.5564 42.1 CSSP (on X) 0.7647 0.2822 8.1 
+
+VPOS 0.5374 0.8775 0.2 CIFAR-10 Variance 3072 100 0.2469 0.2856 0.2 
+
+PCA (no deflation) 0.5988 0.2358 1.2 Laplacian Score 0.7552 0.1897 11.7 MCFS 0.5969 0.2054 15.8 CSSP (on X) 0.1742 0.2898 18.4 
+
+VPOS 0.1627 0.3026 1.3 Colon Cancer Variance 2000 20 0.3735 0.7571 <0.01 PCA (no deflation) 0.3020 0.8722 0.01 Laplacian Score 0.3329 0.8222 0.02 MCFS 0.3924 0.6754 0.38 CSSP (on X) 0.3882 0.6135 0.01 
+
+VPOS 0.2732 0.7103 0.01 
+
+20 Table 2: Synthetic multi-sector results ( D = 12 , k = 3 , d = 3 ). VPOS is the only method achieving full sector diversity; Laplacian Score and MCFS collapse to a single sector. 
+
+Method Sectors Covered Recon MSE 
+
+Oracle (all 12 features) 3 0.0000 Variance Threshold 2 0.3405 PCA (no deflation) 2 0.3401 Laplacian Score 1 0.6667 MCFS 1 0.6663 
+
+VPOS (Proposed) 3 0.0150        
+
+> Table 3: High-dimensional benchmark ( D= 500 ,N= 150 ,k= 20 ,d= 20 ).
+
+Method Recon MSE ↓ kNN Acc ↑
+
+Variance 0.7010 0.3933 PCA (no deflation) 0.5572 0.5333 Laplacian Score 0.5622 0.5467 
+
+MCFS 0.5823 0.5467 
+
+CSSP (on X) 0.7957 0.3600 
+
+VPOS 0.5460 0.3800 21 Table 4: VPOS sensitivity to d.Best-d is selected as the value that minimises reconstruction MSE 
+
+Dataset d Recon MSE kNN Acc 
+
+Wine 2 0.4246 0.9610 3 0.3705 0.9383 4 0.3653 0.9327 5 0.3599 0.9211 8 0.4675 0.7700 10 0.4500 0.8483 Breast Cancer 2 0.2796 0.9490 3 0.2268 0.9420 5 0.2119 0.9543 7 0.1911 0.9403 10 0.1988 0.9262 15 0.2301 0.9227 20 0.2442 0.9156 Digits 5 0.4675 0.8614 10 0.4167 0.8982 15 0.4050 0.8631 20 0.4132 0.8687 31 0.4618 0.6706 40 0.4400 0.7835 MNIST 20 0.5838 0.9027 50 0.5374 0.8775 100 0.5869 0.7640 150 0.6309 0.6553 238 0.7662 0.3427 CIFAR-10 20 0.2398 0.2745 50 0.1942 0.2934 75 0.1788 0.2914 95 0.1674 0.2974 120 0.1627 0.3026 Colon Cancer 5 0.3159 0.7413 10 0.2895 0.7421 15 0.2825 0.8214 20 0.2732 0.7103 25 0.2770 0.7111 34 0.3026 0.6119 HighDim 5 0.5702 0.4600 10 0.5627 0.5467 20 0.5460 0.3800 30 0.5527 0.5200 40 0.5524 0.5333 50 0.5884 0.5000 
+
+22 Table 5: VPOS vs. CSSP-derived baselines. All methods run at the same best-d from the sensitivity sweep (Wine d = 5 , Breast Cancer d = 7 , Digits d = 15 ). Greedy CSSP on Vd isolates the effect of variance weighting; Greedy CSSP on X is the standard sample-space formulation. Bold = best per dataset per metric. 
+
+Dataset Method Recon MSE ↓ kNN Acc ↑
+
+Wine Greedy CSSP on X 0.3873 0.9043 Greedy CSSP on Vd 0.4909 0.7871 
+
+VPOS (B = VdΛ1/2 
+
+> d
+
+) 0.3599 0.9211 
+
+Breast Cancer Greedy CSSP on X 0.2323 0.9157 Greedy CSSP on Vd 0.2508 0.8999 
+
+VPOS 0.1911 0.9403 
+
+Digits Greedy CSSP on X 0.4458 0.7151 Greedy CSSP on Vd 0.4085 0.7908 
+
+VPOS (B = VdΛ1/2 
+
+> d
+
+) 0.4050 0.8631 
+
+23

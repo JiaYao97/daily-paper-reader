@@ -1,0 +1,784 @@
+Title: Differential Equation-Constrained Exponential-Type Local Polynomial Regression Under Model Misspecification
+
+URL Source: https://arxiv.org/pdf/2607.25248v1
+
+Published Time: Wed, 29 Jul 2026 00:28:02 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+## Differential Equation-Constrained Exponential-Type Local Polynomial Regression Under Model Misspecification 
+
+Chunlei Ge ∗a and W. John Braun a
+
+> a
+
+The University of British Columbia Okanagan, 3333 University Way, Kelowna, BC, Canada 
+
+ARTICLE HISTORY 
+
+Compiled July 29, 2026 
+
+ABSTRACT 
+
+The issue of model misspecification is critical, yet it is often regarded as unavoidable in applied statistical modeling. Model misspecification can be mitigated by incorpo-rating informative features and strengthening model formulations, such as through the integration of domain knowledge or structural constraints. In this paper, we pro-pose a regression framework constrained by differential equations, which leverages first-order differential equations and adapts local polynomial regression techniques. Specifically, we focus on the local exponential growth model, characterized by an exponential-type differential equation. For this model, we examine the asymptotic biases and variances of kernel estimators constructed using Taylor polynomials of varying degrees. To evaluate model robustness, we conduct simulation studies com-paring different estimators under two misspecification scenarios varying the levels of misspecification. 
+
+KEYWORDS 
+
+Nonparametric regression; Local polynomial regression; Model misspecification; Differential equations. 
+
+1. Introduction 
+
+Model misspecification is a fundamental concern in statistical modeling because it can produce biased parameter estimates, reduce estimation efficiency, distort predictions, and compromise the validity of hypothesis tests. Statistical tools for detecting and diagnosing model misspecification include residual analysis, cross-validation, information criteria such as AIC and BIC, and specification tests such as the Ramsey Regression Equation Specification Error Test (RESET) [9]. In addition, Cheng [2] developed simple bias-reduction methods for nonparametric and semiparametric regression, particularly useful when the assumed parametric model is misspecified. We aim to mitigate the impact of model misspecification by introducing a robust nonparametric approach. In this paper, we present a differential equation-constrained regression method that was originally proposed by Ding, A. A., and Wu, H. [3] and extend the study on local exponential growth models in our previous work Ge, Chunlei, and W. John Braun. [5] to investigate its performance under model misspecification. Ding, A. A., and Wu, H. [3] focused primarily on parameter estimation for differ-
+
+> ∗CONTACT W. John Braun. Email: john.braun@ubc.ca arXiv:2607.25248v1 [stat.ME] 28 Jul 2026
+
+ential equations, whereas our interest lies in local parameter estimation, allowing for greater flexibility in handling misspecified models. This approach leverages structural constraints for improved robustness, and our analysis extends to simulation studies demonstrating estimator behavior under varying degrees of misspecification. Local polynomial regression, as introduced by Fan, J. & Gijbels, I. [4], is a highly effective nonparametric method owing to its flexibility and capacity for local adaptation. This estimator evolved from the kernel regression approach known as the Nadaraya-Watson estimator, which is also referred to as the local constant estimator (Nadaraya, E. A. [8]; Watson, G. S. [10]). In this paper, the proposed a bias reduction method that incorporates differential equation constraints into conventional local polynomial regression. The resulting DE-constrained local polynomial regression method extends the applicability of local polynomial techniques to a broad class of differential equations, encompassing both linear and nonlinear forms. The remainder of the paper is organized as follows. Section 2 introduces the differen-tial equation-constrained regression model. Section 3 details a specific subclass, the local exponential growth model, defined by an exponential-type differential equation. Section 4 presents the DE-constrained estimator. Section 5 discusses the asymptotic properties of DE-constrained estimation. Section 6 illustrates the effectiveness of the proposed approach through simulation studies. Section 7 contains discussion and concluding re-marks. Proofs of the main results and additional simulation figures are provided in the Appendix. 
+
+2. Differential Equation-constrained Regression Model 
+
+Given n independent observations on an explanatory variable x and a response variable 
+
+y, we consider the following DE-constrained regression model: 
+
+yi = g(xi) + εi where g′(x) = F (x, g (x)) , xi ∈ [a, b ], i = 1 , 2, . . . , n. (1) for some Lipschitz continuous function F and uncorrelated, mean-zero errors εi.We assume that the design points have been randomly sampled from an interval [a, b ]
+
+according to a probability density function f (x), or they have been selected accord-ing to a fixed sampling design in that interval. We assume that f (x) is continuously differentiable to the second order and has a bounded second derivative. In this paper, we focus on a first-order differential equation-constrained model; specif-ically, we will apply an exponential-type differential equation to our model. The descrip-tion will be in the next section. 
+
+3. Local Exponential Growth Model 
+
+In model (1), we assume that F (x, g (x)) = λg (x), therefore, we have a local exponential growth model (Ge, Chunlei, and W. John Braun. [5]): 
+
+yi = g(xi) + εi where g′(x) = λg (x), xi ∈ [a, b ], i = 1 , 2, . . . , n. (2) 2The differential equation g′(x) = λg (x) has an explicit solution 
+
+g(x) = g(a)eλ(x−a). (3) The global parameter λ can be estimated by nonlinear least-squares regression. In practice, we can apply the function nls () in the R Package nlstools (Baty [1]) to the data. 
+
+4. Differential Equation-constrained Regression Estimation 
+
+The approach developed in this paper builds on the local polynomial regression frame-work of Fan, J. & Gijbels, I. [4] and extends the methodology beyond the differential equation–constrained models originally considered by Ding, A. A., and Wu, H. [3]. While Ding, A. A., and Wu, H. [3] focuses on the estimation of the parameters of the ordinary differential, we are interested in the estimation of local parameters. we assume that the design density, kernel, and bandwidth satisfy the conditions outlined in Fan, J. & Gijbels, I. [4]. For a given evaluation point x0, a DE-constrained local polynomial regression estimator for g(x) is obtained by minimizing the local least-squares objective function: 
+
+> n∑
+> i=1
+
+{yi − g∗
+
+> k
+
+(xi)}2Kh(xi − x0). (4) where 
+
+g∗
+
+> k
+
+(xi) = g(x0) + ( xi − x0)g′(x0) + · · · + (xi − x0)k
+
+k! g(k)(x0) (5) is the kth -degree Taylor approximation of g(xi) about x0. This procedure will give us the kth -degree DE-constrained estimation. Specifically, to achieve the first-degree DE-constrained estimation, by incorporating information from the differential equation in model (2) , that is, 
+
+g′(x) = λg (x),
+
+we have 
+
+g∗ 
+
+> 1
+
+(xi) = g(x0) + ( xi − x0)λg (x0),
+
+then the local least squares eqn:genmethod will be 
+
+> n∑
+> i=1
+
+{yi − g∗ 
+
+> 1
+
+(xi)}2Kh(xi − x) = 
+
+> n∑
+> i=1
+
+{yi − g(x0) − λg (x0)( xi − x)}2Kh(xi − x0).
+
+Optimizing the expression on the right leads to the first-degree DE-constrained esti-3mator,denoted as DE 1 estimator, ̂
+
+g1(x0) = 
+
+∑ni=1 yi(1 + ( xi − x0)λ)Kh(xi − x0)
+
+∑ni=1 (1 + ( xi − x0)λ)2Kh(xi − x0) . (6) Additional derivatives can be taken. In general, by applying the kth degree Taylor expansion for g(xi) in a sufficiently small neighborhood of x0,we can obtain the kth 
+
+degree DE-constrained estimator, DE p estimator (Ge, Chunlei, and W. John Braun. [5]): ̂
+
+gk(x0) = arg min g(x0)
+
+∑ni=1 
+
+{
+
+yi − ∑kp=0 1 
+
+> p!
+
+(xi − x0)pg(p)(x0)
+
+}2
+
+Kh(xi − x0)= arg min g(x0)
+
+∑ni=1 
+
+{
+
+yi − ∑kp=0 1 
+
+> p!
+
+(xi − x0)pλpg(x0)
+
+}2
+
+Kh(xi − x0)=
+
+∑ni=1 {yi
+
+∑kp=0 1 
+
+> p!(xi−x0)pλp}Kh(xi−x0)
+
+∑ni=1 {∑kp=0 1  
+
+> p!(xi−x0)pλp}2Kh(xi−x0)
+
+. (7) 
+
+5. Asymptotic Properties 
+
+When performing the conditional asymptotic analysis of the kth degree estimators, we make the following assumptions for model (2): (I) g(x0), the mean function, has a bounded and continuous k + 1 th derivative in a neighborhood of x0.(II) f (x0), the design density, is twice continuously differentiable and positive. (III) Kh(x), the kernel function, is a nonnegative, symmetric and bounded PDF with compact support, on the interval [−h, h ]. The kernel function satisfies ∫ ∞−∞ Kh(w)dw =1, R(K) = ∫ K21 (w)dw < ∞, and has finite moments up to sixth order. We will also use the notation μk = ∫ wkK1(w)dw , and Rk = ∫ wkK21 (w)dw .(IV) The error variance σ2(x) is a smooth function on [a, b ].
+
+5.1. Asymptotic Conditional Bias and Variance 
+
+We summarize the results concerning the asymptotic conditional bias and variance of the DE-constrained estimators in the interior of the interval [a, b ] in the following two theorems. 
+
+Theorem 1 (Asymptotic Conditional Bias) For regression model (2), under the assumptions (I) - (III), with x0 ∈ (a + h, b − h), the DE k estimator, ˆgk(x0), has asymptotic conditional bias 
+
+Bias( ̂ gk(x0)|x1, ..., x n) = 1(k + 1)! λ(k+1) g(x0)hk+1 μk+1 + op(hk+1 ), k odd , (8) and when k is even, 
+
+Bias( ̂ gk(x0)|x1, ..., x n) = 1(k + 1)! λ(k+1) g(x0)
+
+( λk + 2 + f ′(x0)
+
+f (x0)
+
+)
+
+hk+2 hk+2 μk+2 +op(hk+2 ).
+
+(9) 4Theorem 2 (Asymptotic Conditional Variance) Under the assumptions (I) through (IV), with x0 ∈ (a + h, b − h), the DE k estimator, ˆgk(x0), has asymptotic conditional variance 
+
+Var( ̂ gk(x0)|x1, ..., x n) = σ2R(K)
+
+nhf (x0) + op
+
+( 1
+
+nh 
+
+)
+
+. (10) From the results of Theorems 1 and 2, the differential equation-constrained local polynomial regression approach examined in this study effectively reduces asymptotic bias without substantially increasing variance. The proofs of Theorems 1 and 2 are provided in the appendix. 
+
+5.2. Theoretical Comparison of Estimators 
+
+In this section, we will compare the asymptotic properties of different estimators, as-suming the correct model. We will compare our DE-constrained estimators with the conventional local polynomial regression estimators and He, H., & Huang, L. S. [7]’s double-smoothing estimator. Under the DE-constrained local exponential growth model (2), g(k)(x0) = λkg(x0).Table 1 provide a summary comparison of the asymptotic properties of various esti-mators. The order follows the pattern from the largest to the smallest bias magnitude, approximately. The double-smoothed estimator (DS) was proposed by He, H., & Huang, L. S. [7]. The related notation is as follows. B(x0) = (μ22 − μ4)/4[ g′′ (x0)f ′′ (x0)/f (x0) + 2( g(3) (x0)f ′(x0)/f (x0)) + g(4) (x0)] = (μ22 − μ4)/4[ λ2g(x0)f ′′ (x0)/f (x0) +2( λ3g(x0)f ′(x0)/f (x0)) + λ4g(x0)] . V = ∫ {(K ∗ K)( v) − (L ∗ L)( v)/μ 2}2dv , where 
+
+L(u) = uK 1(u), and vk = ∫ wkK21 (w)dw , for k = 0 , 1, 2, ... .
+
+Method Asymptotic bias in interior Asymptotic variance 
+
+NW 12
+
+{
+
+λ2g(x0) + 2 λ g(x0)f ′(x0) 
+
+> f(x0)
+
+}
+
+h2μ2 + op(h2) 1  
+
+> nh σ2
+> f(x0)
+
+v0 + op( 1 
+
+> nh
+
+)
+
+LL 12 λ2g(x0)h2μ2 + op(h2) 1  
+
+> nh σ2(x0)
+> f(x0)
+
+v0 + op( 1 
+
+> nh
+
+)
+
+DE 1 12 λ2g(x0)h2μ2 + op(h2) 1  
+
+> nh σ2
+> f(x0)
+
+v0 + op( 1 
+
+> nh
+
+)
+
+DE 2 16 λ3g(x0)h4μ4
+
+(
+
+λ + f ′(x0) 
+
+> f(x0)
+
+)
+
+μ4 + op(h4) 1  
+
+> nh σ2
+> f(x0)
+
+v0 + op( 1 
+
+> nh
+
+)
+
+LQ 124 
+
+> μ2μ6−μ24
+> μ22−μ4
+
+{
+
+λ4g(x0) + 4 λ3 g(x0)f ′(x0) 
+
+> f(x0)
+
+}
+
+h4 + op(h4) 1  
+
+> nh σ2
+> f(x0)
+> μ24v0−2μ2μ4v2+μ22v4
+> (μ22−μ4)2
+
++ op( 1 
+
+> nh
+
+)
+
+LC 124  
+
+> μ2μ6−μ24
+> μ22−μ4
+
+λ4g(x0)h4 + op(h4) 1  
+
+> nh σ2
+> f(x0)
+> μ24v0−2μ2μ4v2+μ22v4
+> (μ22−μ4)2
+
++ op( 1 
+
+> nh
+
+)
+
+DS h4B(x0) + op(h4) 1  
+
+> nh σ2
+> f(x0)
+
+V + op( 1 
+
+> nh
+
+)
+
+DE 3 124 λ4g(x0)h4μ4 + op(h4) 1  
+
+> nh σ2
+> f(x0)
+
+v0 + op( 1 
+
+> nh
+
+)     
+
+> Table 1. Summary of asymptotic conditional bias and variance for the NW (local constant), LL (local linear), LC (local cubic), DS (double smoothing), DE 1, DE 2, and DE 3estimators. Here, g(x0) = g(0) eλx 0.
+
+We observe that when the differential equation model is correctly specified, the higher-degree DE-constrained estimator exhibits lower bias than conventional local polynomial estimators of the same degree, while their variances remain similar. This suggests a preference for the higher-degree DE-constrained estimator. Furthermore, under model misspecification, the higher-degree DE-constrained estimator continues to outperform its lower-degree counterpart in terms of estimation accuracy. These findings will be demonstrated in the following simulation study. 56. Simulation Study on Misspecified Model 
+
+In this section, we conduct simulation studies to evaluate the performance of the DE-constrained local polynomial regression estimator under model misspecification. The analysis compares the estimation accuracy of the proposed approach with conventional local polynomial estimators across various degrees of model misspecification and noise levels. 
+
+Simulation Setup 
+
+We assess the DE-constrained regression method against conventional local polyno-mial estimators using 1000 simulated samples of size 100. The data generation encom-passes four scenarios with varying degrees of misspecification: 
+
+• Scenario 1: g(x) = ex−0.025 x2
+
+• Scenario 2: g(x) = ex−0.1x2
+
+• Scenario 3: g(x) = ex−0.25 x2
+
+• Scenario 4: g(x) = ex−0.5x2
+
+In each scenario, data are drawn uniformly from interval [0 , 1] , with additive Gaussian noise of zero mean and standard deviation σ. The local exponential growth model (2) assumes λ = 1 and and simulations are performed at three different noise levels: 
+
+σ = 0 .1, 0.2, and 0.3. This design allows comprehensive comparison under increasing model mismatch and noise. For each simulated dataset, we apply the following estimators: NW (local constant), LL (local linear), LQ (local quadratic), LC (local cubic), DE 1, DE 2, DE 3, and NLS (the exponential growth model fit by nonlinear least-squares). Bandwidths for each DE-constrained estimator are selected via leave-one-out cross-validation, a procedure that has proven effective for small sample sizes in local polynomial regression contexts. This approach ensures optimal smoothing parameters tailored to each estimator’s structure. The comparison criterion used in our simulation study is the Integrated Squared Error (ISE), a standard metric in nonparametric statistics for evaluating smoothing estimators. It is defined as the integral of the squared difference between the estimated function ˆg(x) and the true function g(x) over the interval [a, b ]:ISE = 
+
+> ∫ba
+
+(ˆ g(x) − g(x)) 2dx, 
+
+which in practice is approximated numerically by summing over a grid of points:: ISE ≈
+
+> K∑
+> k=1
+
+(ˆ g(xk) − g(xk)) 2∆x
+
+where x1, x 2, ..., x k are grid points, ∆x = xk+1 −xk in the case of equally spaced points, or the trapezoidal rule is applied for unequally spaced grids. We report the average ISE across the 1000 simulated datasets and visualize the distribution of ISE values using boxplots for each estimator. This approach provides a comprehensive assessment of estimator accuracy and variability. 
+
+Simulation Results 
+
+6Figure 1. ISE (Integrated Squared Error) distributions (on the log scale) for the estimation methods applied to simulated data with 1000 runs in Scenario 1 and 2. Sample size n = 100. 
+
+The boxplots in Figure 1 display the distributions of the Integrated Squared Error (ISE) values for the eight estimation methods applied to the simulated datasets, plot-ted on a logarithmic scale. Using a logarithmic scale allows clearer visualization and comparison across methods when ISE values span several orders of magnitude. In our previous work [5], when the differential equation model was correctly speci-fied, we found that among the DE-constrained estimators for the local growth model, the highest-degree estimator consistently produced the lowest bias. This finding suggests that higher-degree DE-constrained regression is preferable for model selection. Our anal-ysis of boxplots under model misspecification reveals a similar pattern, reinforcing the robustness of the higher-degree estimators. To further illustrate these results, additional figures are provided below, highlighting the improved performance of higher-degree DE-constrained estimators relative to lower-degree counterparts and conventional methods. Figure 2 presents the mean ± standard deviation (SD) error bars of the Integrated Squared Error (ISE) across 1000 simulations for both Scenario 1 and Scenario 2. These results demonstrate that the DE 3 estimator consistently achieves the best overall per-formance. Similarly, the rank plot in Figure 3 supports this conclusion, showing DE 3 as the top-ranked method. Figure 4 illustrates the mean estimated curves with ± SD bands for Scenario 1 at σ = 0 .1, visualizing how well each method recovers the true underlying function and the stability of estimates. The DE-constrained methods provide superior coverage with narrower SD bands, indicating enhanced accuracy and robustness com-pared to competitor estimators. Additional curve comparisons for other scenarios are provided in the Appendix. 7Figure 2. ISE (Integrated Squared Error) mean ± SD point and error chart for the estimation methods applied to simulated data with 1000 runs in Scenario 1 and 2. Sample size n = 100. 
+
+Figure 3. Rank plot for the estimation methods applied to simulated data with 1000 runs in Scenario 1 and 2. Sample size n = 100. 
+
+8Figure 4. Mean estimated curve ± SD bands for the estimation methods applied to simulated data with 1000 runs in Scenario 1 ( σ = 0 .1). Sample size n = 100. 
+
+7. Discussion 
+
+In Section 5, we discussed the asymptotic bias and variance of the estimators when the model is correctly specified. To further demonstrate the bias reduction capability DE-constrained approach, we use the DE 1estimator as an example for comparison with the conventional local constant and local linear estimators under model misspecification. We suppose that the model we use is the DE-constrained local exponential growth model (2) with g′(x) = λ1g(x).The true function is g(x) = eλ1x−λ2x2
+
+, where λ1 and λ2 are known global positive parameters. Its first and second derivatives are given by, 
+
+g′(x) = ( λ1 − 2xλ 2)g(x),
+
+and 
+
+g′′ (x) = (( λ1 − 2xλ 2)2 − 2xλ 2)g(x).
+
+Using the approach outlined in Section 4, we derive the asymptotic conditional bi-ases of the DE 1, NW (local constant), and LL (local linear) estimators under model misspecification. Since the asymptotic conditional variances remain unchanged by mis-specification, they are omitted from Table 2. Results confirm that the DE 1 estimator exhibits the smallest bias among the three methods, demonstrating the bias reduction advantage of the DE-constrained estimator. In summary, our study demonstrates that regardless of whether the model is correctly specified or misspecified, fully nonparametric methods are generally outperformed by differential equation (DE)-constrained approaches. The results of this paper and Ge, Chunlei, and W. John Braun. [5] demonstrate that the DE-constrained estimator, par-ticularly of higher degree, consistently exhibits reduced bias and improved performance in both correctly specified and misspecified scenarios. 9Method Asymptotic bias in interior 
+
+NW 12 (( λ1 − 2xλ 2)2 − 2xλ 2)g(x)h2μ2 + g′(x)f ′(x)  
+
+> f(x)
+
+h2μ2 + op(h2)
+
+LL 12 (( λ1 − 2xλ 2)2 − 2xλ 2)g(x)h2μ2 + op(h2)
+
+DE1-1 12 (( λ1 − 2xλ 2)2 − 2xλ 2)g(x)h2μ2 − 2xλ 2g(x)( λ1 + f ′(x)  
+
+> f(x)
+
+)h2μ2 + op(h2)   
+
+> Table 2. Summary of asymptotic conditional bias and variance for the NW (local constant), LL (local linear), and DE 1(first-degree DE-Assisted) estimators for misspecified models.
+
+This finding motivates further research on differential equation–constrained regres-sion models. In our recent work [6], we examined a local quasi-exponential model whose structure is governed by a quasi-exponential differential equation. In future work, we plan to extend DE-constrained regression to more general classes of differential equa-tions. 
+
+Acknowledgements 
+
+This research has been supported in part by a grant from the Natural Sciences and Engineering Research Council of Canada (NSERC). 
+
+References 
+
+[1] Baty, F., Ritz, C., Charles, S., Brutsche, M., Flandrois, J. P., & Delignette-Muller, M. L. (2015). A toolbox for nonlinear regression in R: the package nlstools. Journal of Statistical Software, 66, 1-21. [2] Cheng, M. Y., Huang, T., Liu, P., & Peng, H. (2018). Bias reduction for nonparametric and semiparametric regression models. Statistica Sinica, 28(4), 2749-2770. [3] Ding, A. A., & Wu, H. (2014). Estimation of ordinary differential equation parameters using constrained local polynomial regression. Statistica Sinica, 24(4), 1613. [4] Fan J. and Gijbels I. (1996). Local Polynomial Modelling and Its Applications, volume 66. CRC. [5] Ge, C., & Braun, W. J. (2025). Differential Equation-Constrained Local Regression for Data with Sparse Design. arXiv preprint arXiv:2507.06409. Accepted by Communications in Statistics - Simulation and Computation. [6] Ge, C., & Braun, W. J. (2025). Local Quasi-Exponential Growth Models: Kernel Differen-tial Equation Regression and Sparse Data. arXiv preprint arXiv:2505.00231. [7] He, H., & Huang, L. S. (2009). Double-smoothing for bias reduction in local linear regres-sion. Journal of Statistical Planning and Inference, 139(3), 1056-1072. [8] Nadaraya, E. A. (1964). On estimating regression. Theory of Probability & Its Applications, 9(1), 141-142. [9] Ramsey, J. B. (1969). Tests for specification errors in classical linear least-squares regression analysis. Journal of the Royal Statistical Society Series B: Statistical Methodology, 31(2), 350-371. [10] Watson, G. S. (1964). Smooth regression analysis. Sankhy¯ a: The Indian Journal of Statis-tics, Series A, Vol. 26, 359-372. 
+
+10 Appendix 
+
+Proof of Theorems 
+
+.0.1. Proof of Theorem 1 
+
+The asymptotic conditional bias of the kth -degree estimator ˆgk(x0) is given by 
+
+Bias( ̂ gk(x0)|x1, ..., x n) = E[ˆ gk(x0)|x1, ...x n] − g(x0)
+
+≈ 1(k + 1)! λk+1 g(x0)
+
+∑ni=1 (xi − x0)k+1 {∑kp=0 1 
+
+> p!
+
+(xi − x0)pλp}Kh(xi − x0)
+
+∑ni=1 {∑kp=0 1 
+
+> p!
+
+(xi − x0)pλp}2Kh(xi − x0)
+
+≈ 1(k + 1)! λk+1 g(x0)
+
+∫ ba (z − x)k+1 {∑kp=0 1 
+
+> p!
+
+(z − x)pλp}f (z)Kh(z − x)dz 
+
+∫ ba {∑kp=0 1 
+
+> p!
+
+(z − x)pλp}2f (z)Kh(z − x)dz 
+
+(11) Let z−xh = w. Then the integral in the numerator becomes 
+
+∫ ba
+
+(z − x)k+1 
+
+
+
+> k
+
+∑
+
+> p=0
+
+1
+
+p! (z − x)pλp
+
+ f (z)Kh(z − x)dz 
+
+=
+
+∫
+
+(hw )k+1 
+
+
+
+> k
+
+∑
+
+> p=0
+
+1
+
+p! (hw )pλp
+
+ f (x + hw )K(w)dw 
+
+=
+
+∫
+
+(hw )k+1 
+
+
+
+> k
+
+∑
+
+> p=0
+
+1
+
+p! (hw )pλp
+
+ (f (x0) + hwf ′(x0)) K(w)dw 
+
+=
+
+∫ 
+
+> k
+
+∑
+
+> p=0
+
+1
+
+p! hp+k+1 wp+k+1 λpf (x0) + 
+
+> k
+
+∑
+
+> p=0
+
+1
+
+p! hp+k+2 wp+k+2 λpf ′(x0)
+
+ K1(w)dw. 
+
+The denominator can be approximated by 
+
+∫ ba
+
+
+
+> k
+
+∑
+
+> p=0
+
+1
+
+p! (z − x)pλp
+
+
+
+> 2
+
+f (z)Kh(z − x)dz 
+
+=
+
+∫ 
+
+> k
+
+∑
+
+> p=0
+
+1
+
+p! (hw )pλp
+
+
+
+> 2
+
+f (x + hw )K1(w)dw 
+
+≈ f (x0)
+
+when x0 ∈ (a + h, b − h), and when k is odd, the asymptotic conditional bias of ̂ gk(x0)
+
+is 
+
+Bias( ̂ gk(x0)|x1, ..., x n) = 1(k + 1)! λk+1 g(x0)hk+1 μk+1 + op(hk+1 ) (12) 11 and when k is even, 
+
+Bias( ̂ gk(x0)|x1, ..., x n) = 1(k + 1)! λk+1 g(x0)hk+2 μk+2 ( λk + 2 + f ′(x0)
+
+f (x0) ) + op(hk+2 ). (13) 
+
+.0.2. Proof of Theorem 2 
+
+Assume x0 ∈ (a + h, b − h). The asymptotic conditional variance of the kth -degree estimator (DE1-k estimator) is then 
+
+Var( ̂ gk(x0)|x1, ..., x n) = 
+
+∑ni=1 Var( yi|x1, ..., x n){∑kp=0 1 
+
+> p!
+
+(xi − x0)pλp}2K2
+
+> h
+
+(xi − x0)
+
+{∑ni=1 {∑kp=0 1 
+
+> p!
+
+(xi − x0)pλp}2Kh(xi − x0)}2
+
+=
+
+∑ni=1 σ2{∑kp=0 1 
+
+> p!
+
+(xi − x0)pλp}2K2
+
+> h
+
+(xi − x0)
+
+{∑ni=1 {∑kp=0 1 
+
+> p!
+
+(xi − x0)pλp}2Kh(xi − x0)}2
+
+≈ 1
+
+n
+
+∫ ba σ2{1 + ∑kp=1 1 
+
+> p!
+
+(z − x)pλp}2K2
+
+> h
+
+(z − x)f (z)dz 
+
+{∫ ba {1 + ∑kp=1 1 
+
+> p!
+
+(z − x)pλp}2Kh(z − x)f (z)dz }2
+
+= 1
+
+nh 
+
+∫ σ2{1 + ∑kp=1 1 
+
+> p!
+
+(hw )pλp}2K2(w)f (x + hw )dw 
+
+{∫ {1 + ∑kp=1 1 
+
+> p!
+
+(hw )pλp}2K(w)f (x + hw )dw }2
+
+≈ σ2R(K)
+
+nhf (x0) + op
+
+( 1
+
+nh 
+
+)
+
+(14) where z−xh = w. If σ2 varies with x, that is, the conditional variance Var( yi|x1, ..., x n) = 
+
+σ2(xi), then the asymptotic conditional variance of ̂ gk(x0)|x1, ..., x n) is given by 
+
+Var( ̂ gk(x0)|x1, ..., x n) = 
+
+∑ni=1 Var( yi|x1, ..., x n){∑kp=0 1 
+
+> p!
+
+(xi − x0)pλp}2K2
+
+> h
+
+(xi − x0)
+
+{∑ni=1 {∑kp=0 1 
+
+> p!
+
+(xi − x0)pλp}2Kh(xi − x0)}2
+
+=
+
+∑ni=1 σ2(xi){∑kp=0 1 
+
+> p!
+
+(xi − x0)pλp}2K2
+
+> h
+
+(xi − x0)
+
+{∑ni=1 {∑kp=0 1 
+
+> p!
+
+(xi − x0)pλp}2Kh(xi − x0)}2 .
+
+Applying the first-degree Taylor expansion for σ2(xi) in a sufficiently small neighbor-hood of x0, we have 
+
+σ2(xi) ≈ σ2(x0) + ( xi − x0) dσ 2(x0)
+
+dx ≈ σ2(x0)
+
+since the derivative dσ 2(x0) 
+
+> dx
+
+is bounded on [a, b ], by Assumption (IV). Then we can obtain 
+
+Var( ̂ gk(x0)|x1, ..., x n) ≈ 1
+
+n
+
+∫ ba σ2(x0){1 + ∑kp=1 1 
+
+> p!
+
+(z − x)pλp}2K2
+
+> h
+
+(z − x)f (z)dz 
+
+{∫ ba {1 + ∑kp=1 1 
+
+> p!
+
+(z − x)pλp}2Kh(z − x)f (z)dz }2
+
+= 1
+
+nh σ2(x0) ∫ {1 + ∑kp=1 1 
+
+> p!
+
+(hw )pλp}2K2(w)f (x + hw )dw 
+
+{∫ {1 + ∑kp=1 1 
+
+> p!
+
+(hw )pλp}2K(w)f (x + hw )dw }2
+
+≈ σ2(x0)R(K)
+
+nhf (x0) + op
+
+( 1
+
+nh 
+
+)
+
+(15) 12 Figure 5. Mean estimated curve ± SD bands for the estimation methods applied to simulated data with 1000 runs in Scenario 1 ( σ = 0 .2). Sample size n = 100. 
+
+Figure 6. Mean estimated curve ± SD bands for the estimation methods applied to simulated data with 1000 runs in Scenario 1 ( σ = 0 .3). Sample size n = 100. 
+
+13 Figure 7. Mean estimated curve ± SD bands for the estimation methods applied to simulated data with 1000 runs in Scenario 2 ( σ = 0 .1). Sample size n = 100. 
+
+Figure 8. Mean estimated curve ± SD bands for the estimation methods applied to simulated data with 1000 runs in Scenario 2 ( σ = 0 .2). Sample size n = 100. 
+
+14 Figure 9. Mean estimated curve ± SD bands for the estimation methods applied to simulated data with 1000 runs in Scenario 2 ( σ = 0 .3). Sample size n = 100. 
+
+15

@@ -1,0 +1,1184 @@
+Title: Origins and mitigation of double descent in reduced order modeling
+
+URL Source: https://arxiv.org/pdf/2607.26414v1
+
+Published Time: Thu, 30 Jul 2026 00:22:32 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+# Origins and mitigation of double descent in reduced order modeling 
+
+Andrei A. Klishin, 1, 2, 3, ∗ J. Nathan Kutz, 2, 4 and Krithika Manohar 2, 3 
+
+> 1
+
+Department of Mechanical Engineering, University of Hawai‘ i at M¯ anoa, Honolulu, HI 
+
+> 2
+
+AI Institute in Dynamic Systems, University of Washington, Seattle, WA 98195, USA 
+
+> 3
+
+Department of Mechanical Engineering, University of Washington, Seattle, WA 98195, USA 
+
+> 4
+
+Departments of Applied Mathematics and Electrical and Computer Engineering, University of Washington, Seattle, WA 98195, USA 
+
+(Dated: July 30, 2026) Latent low-dimensional structure in datasets of natural and engineered systems enables their sparse sensing, or full-state reconstruction from historical data and very few carefully chosen local-ized measurements. Depending on the reconstruction algorithm, sensor locations, and measurement noise, the reconstruction risk curves demonstrate a diversity of patterns including a dramatic peak in error known as double descent in Machine Learning literature. Here we explore those scenar-ios under a unified Data-Noise Averaging theory. Qualitatively, we formulate sufficient criteria for double descent to emerge through a catastrophic amplification of a pathological signal in reconstruc-tion. Quantitatively, we predict the detailed risk curves at a fraction of computational cost, trace reconstruction instability to individual sensors and their combinations, and provide regularization mechanisms to mitigate the instability. We demonstrate results for both static reconstruction of Sea Surface Temperature patterns and time integration of a reduced order model of a PDE. 
+
+I. INTRODUCTION 
+
+Reduced Order Models (ROMs) are one of the cen-terpiece techniques of modern scientific computing as in many cases they can drastically reduce the compute and memory requirements of a simulation with only a modest or negligible reduction in accuracy [1–3]. A key property of ROMs is sparsity , which comes in two flavors. On one side, the entire high-dimensional n ≫ 1 state of a sys-tem can be efficiently approximated with just a few linear modes or nonlinear latent parameters. On the other side, in order to avoid evaluating expensive functions many times, ROMs perform computations in only a sparse set of spatial locations and interpolate the remaining state space. Mode-sparsity and space-sparsity compete and intersect in a complex way across both sparse sensing of static snapshots [4] and more general ROMs of dynamical systems [5, 6]. The same problem of approximately reconstructing the state from sparse observations is known as empiri-cal interpolation [5–7] or state estimation [8] in applied and computational mathematics literature and as sen-sor placement in engineering [4, 9]; for consistency, we use the latter terminology in this paper. Early work on empirical interpolation required the number of sensors p
+
+to be larger than the number of reconstructed modes r
+
+in order for reconstruction matrices to be properly in-vertible with p ≥ r (though some methods use sparse time series to reconstruct even more modes [10, 11]). From this requirement many successive methods were proposed for picking the best points for evaluation, ei-ther randomly [12], based on local maxima of the modes  
+
+> ∗To whom correspondence should be addressed: aklishin@hawaii.edu, kmanohar@uw.edu
+
+[13], with greedy condition number optimization [6, 14], QR pivoting of a mode matrix [4, 7], or interaction land-scapes [15]. Once one of these algorithms returns an or-dered set of sampling locations, the Root Mean Square Error (RMSE) can be evaluated by reconstructing states from a withheld testing data set [16, 17]. Reconstruc-tion is trivially extended to the undersampled case p < r 
+
+through the Moore-Penrose pseudoinverse, resulting in a continuous risk curve of RMSE against p at fixed r. Em-pirical and benchmarking results show the curve having a sharp cusp near p ≈ r, the boundary of undersampled and oversampled regime [18], for instance in the refer-ence documentation of a popular sparse sensing package 
+
+PySensors [19, 20], though it was not discussed as a dis-tinct phenomenon in the literature. The cusp or singularity of the risk curve frequently appears in supervised machine learning, popularized un-der the name “double descent” since the curve initially falls, then abruptly spikes, and falls a second time [21]. While the current wave of research has been primarily driven by the neural network applications deep into the overparameterized regime [21, 22], the phenomenon it-self has been observed in linear regression and percep-trons since at least the 1980s [23–29]. In exotic cases the risk curve can show triple [30] or even multiple descent [31]. Qualitatively, the cusp is explained by the model overfitting the training set when the number of model parameters exactly matches the number of data points (known as the interpolation threshold) [21], and can be mitigated by parameter regularization [32], early stop-ping of the training [22], or addition of unlabeled data points in semi-supervised learning [33]. Quantitatively, under weak feature assumptions the cusp shape can be predicted by bias-variance decomposition and averaging over the random data matrices [34–37], with connections to statistical physics and jamming phenomena [38, 39]. Cusp locations can also be predicted by the bounds set arXiv:2607.26414v1 [stat.ML] 29 Jul 2026 2by the Generalized Aliasing Decomposition (GAD) [31]. The vast majority of double descent studies focus on supervised learning, i.e. using features to predict labels, and observe a cusp either model-wise (increasing number of parameters), sample-wise (increasing amount of data), or epoch-wise (increasing training length) [21, 40]. Rare studies consider double descent in unsupervised learning, such as discovery of latent low-dimensional structure in the data via an autoencoder [40]. The ROM case com-bines elements of both, as it first finds the latent structure (such as a modal decomposition), and then selects a few of the features (sensor locations) to predict the rest of the features (different from principal component regres-sion [41]). In addition, many machine learning studies of double descent rely on weak features that achieve pre-diction in the aggregate and can be chosen essentially randomly; in contrast, in sparse sensing, the sensors are chosen via a specific algorithm, akin to the “prescient features” [23, 35]. In this paper, we compute the risk curve of sparse sens-ing via a covariance decomposition of the reconstruction error, and use this decomposition to explain the origins of double descent and its mitigation. Our main contri-bution is the Data-Noise Averaging (DNA) theory of re-construction risk, organized as follows: 1. Closed-form analytical risk prediction. We construct an explicit analytic expression for the re-construction risk curve that exploits the data sin-gular values, rank r, and sensor selection matrix di-rectly, without averaging over data matrices drawn from a generic ensemble. The expression introduces no free parameters beyond the design choices of the sparse sensing setup, and predicts both the location and magnitude of the double descent spike across all tested configurations. 2. Computational efficiency. The DNA theory re-duces risk curve computation to efficient low-rank linear algebra operations, achieving a 10 3× reduc-tion in cost relative to empirical risk averaging, re-ducing computation from approximately 50 min-utes to 3 seconds on a standard laptop for Sea Sur-face Temperature reconstruction ( n = 44219 , r =100). 3. Reconstruction instability. For either random or intelligent sensor placement, we show that the contamination from truncated modes and measure-ment noise is resonantly amplified when the inver-sion matrix M develops low-lying eigenvalues, lead-ing to a sharp instability peak. We diagnose two distinct failure cases using the Gram matrix of sens-ing vectors: 1-point failure driven by individual sensors, and ensemble failure driven by collective sensor interactions. The sampling regime p = r
+
+common in ROMs [4, 6, 7] is identified as the worst possible operating point, arising from an inevitable orthogonality crisis in Rr .x
+
+> True
+> full state
+
+y
+
+> Sensor
+> measurements
+
+ˆa
+
+> Latent
+> state
+
+ˆx                     
+
+> Reconstructed
+> full state
+> Subsampling
+> Cx +η=yReconstruction
+> Ay = ˆ aProjection
+> Ψrˆa= ˆ x
+> [|| ˆx−x|| 2]= ?
+> p×n
+> ·
+> n
+> +η
+> p
+> =
+> pr×p
+> ·
+> p
+> =
+> r
+> n×r
+> ·
+> r
+> =
+> n
+> 123
+> 4
+
+FIG. 1. Computational flow of sparse sensing for reconstruc-tion. The circled numbers highlight the junctions of quali-tative system setup choices (design factors). A full state is subsampled at a small set of locations (1), sampling from either the full state or its projection on the leading modes (2), with possible measurement noise (3). The sensor mea-surements are converted into the latent state estimation with or without regularization (4). The latent state is then used to project back to full state space. The central question of the paper is how the design choices qualitatively and quanti-tatively impact the expected reconstruction error of the full state (risk curve). 
+
+4. Mitigation and design. The shape of the risk curve also suggests remedies, such as surprisingly using fewer sensors. We demonstrate that a com-bination of undersampling with regularized optimal linear estimation achieves lower reconstruction er-ror and reduced computational cost in ROMs. The rest of the paper is organized as follows. In Sec. II we introduce the principal ideas behind state reconstruc-tion from sparse measurements, formulate the risk curve shape as the central object of study, and conduct em-pirical tests to explain qualitatively the reasons for the double descent phenomenon. In Sec. III we construct the DNA theory by computing the covariance matrix of the reconstruction error and predicting the risk curve quan-titatively through decomposition into terms, and suggest mitigation mechanisms. In Sec. IV we apply our the-ory to Case Study 1: Sparse Sensing of static snapshots and trace the effect of reconstruction design choices on the risk curves. In Sec. V we apply the reconstruction lessons to Case study 2: empirical interpolation for par-tial differential equations (PDEs). Sec. VI summarizes the results and suggests future steps. 
+
+II. DOUBLE DESCENT IN SPARSE SENSING 
+
+In this section we introduce the basic scheme of state reconstruction from sparse sensors, demonstrate several different behaviors of the risk curve on an empirical dataset, and explain the double descent phenomenon 
+
+qualitatively , with a more detailed calculation following. 3 
+
+> A. Sparse sensing
+
+Sparse sensing is a family of methods that differ by subtle design choices. Fig. 1 highlights those qualitative system setup choices (design factors) with the markers 1–4, explained in more detail below. The idea of sparse sensing is predicated on representing a high-dimensional system state x as a sparse combination of a small number of modes [4]. The modes are usually learned through Proper Orthogonal Decomposition (POD) of a training data set of state snapshots Xtrain : n × N , where n is the state dimension, N is the number of snapshots, and 
+
+n > N for most applications. The POD allows us to write any state as a linear combination of the modes: 
+
+Xtrain = UΣV ⊤ ⇒ x = Ψr ar + Ψcac, (1) where we separated the left singular vector matrix U =
+
+Ψr |Ψc into the leading r ≪ N modes that carry the ma-jority of signal variance, and the remaining N − r modes [42–44]. Similarly, we separate the square diagonal ma-trix of singular values Σ into the leading r singular values 
+
+Σr and the rest Σc. We further normalize the singular values Σ′ 
+
+> r
+
+= Σr /√N − 1, Σ′ 
+
+> c
+
+= Σc/√N − 1 following the prescription in Ref. [8]: while the original singular values express the covariance structure of the whole data matrix , the normalized singular values express the covari-ance of typical states . We note that following the initial POD and normalization, the number of training snap-shots N is not used again, thus making it irrelevant to reconstruction instabilities. While the full training data matrix is available for of-fline calculation of the singular vectors, for the states we only have access to sparse and noisy local observations: 
+
+y = Cx + ∆ y, (2) where C : p×n is the selection matrix consisting of p rows of the identity matrix corresponding to placed sensors (factor 1), x : n is the full-state vector (factor 2), and ∆y is measurement noise (factor 3), which is assumed to be Gaussian and uncorrelated with variance η2.To get a full state estimate from the sparse observa-tions, we compute a linear estimator of the latent vector of leading mode coefficients and project it to the leading modes: ˆar = Ay ; ˆx = Ψ r ˆar , (3) where A : r × p is a reconstruction matrix that depends on the sensor placement C. There are different options for the reconstruction matrix A (factor 4), but they are all assumed to be full rank rank (A) = min( r, p ). The quality of reconstruction can be measured by the Root Mean Squared Error, averaged across either the training set or the holdout test set and normalized by the state dimension: 
+
+Rel.RM SE ≡ 1
+
+σscale 
+
+r 1
+
+n Extest [∥ˆx − x∥2] (4) where σscale is the natural scale of the dataset given by the standard deviation of the training set Xtrain .The benefit of normalization lies in that the most naive reconstruction guess ˆ x = 0 would result in expected 
+
+Rel.RM SE = 1, which makes it easy to judge the rela-tive success of different methods. Relative RMSE can be computed for a sequence of sensor sets and form a risk curve with sensor number p serving as the horizontal axis, which can have a variety of qualitatively different shapes.  
+
+> B. Binary design factors
+
+The above derivation sketch deliberately omitted sev-eral experimental design choices. In order to gain a qual-itative intuition for the shape of the risk curve, we con-sider the experimental design space to consist of four bi-nary factors: 1. Sensor placement algorithm . Previous stud-ies highlighted the critical importance of choos-ing the sensor locations given a tailored sparse ba-sis, with a variety of available algorithms [4, 6, 7, 12–14]. First, we use the 2-point algorithm of Ref. [15], closely similar to QR pivoting [4] and implemented in PySensors 2 package [45], which gives a sequence of locations aiming to maximize the captured signal variance while minimizing sen-sor crosstalk. Second, we use a single realization of sensors drawn at random without replacement. Both algorithms return pmax sensors in a priority order, so that computations can be carried out for the first p sensors as p gradually increases. 2. State projection . We separate the original data matrix X into the training and test matrices 
+
+Xtrain , Xtest randomly in 80:20 proportion. The training data matrix is used to compute the POD and thus the leading singular vectors Ψr . We com-pute RMSE on both training and test data sets. First, we consider each state (matrix column) as is, and second we project the data matrices onto the leading r modes X → Ψr (Ψr X) to limit the spectral content of the signal to exactly r modes. The bracket enforces multiplication order to avoid an intermediate rank r matrix of size n × n.3. Amount of noise . First, we use Gaussian uncorrelated noise with the covariance matrix 
+
+∆y∆y⊤ = η2Ip and set the noise level equal to half of data standard deviation ηnoise = 0 .5σscale .Second, we use zero noise. 4. Linear estimator . We consider two different choice of the linear estimator matrix A : r × p.In both cases we assemble the sensing matrix Θ ≡
+
+CΨ r , which consist of subsampled rows of the lead-ing singular vector matrix. First, we use the least 4   
+
+> FIG. 2. Sea Surface Temperature dataset and sparse sensors placement. (a) Dataset properties: (a.i) a typical snapshot of raw temperature distribution in ◦C, (a.ii) the standard deviation of data in each pixel within the leading r= 100 modes, (a.iii) the standard deviation of data within the subleading modes beyond the top 100 (contamination). (b) Sensor placement patterns under different methods: (b.i) 2-point, (b.ii) random, (b.iii) 1-point. Sensor are color coded by placement order in batches of 25.
+
+squares estimator via the Moore-Penrose pseudoin-verse AL = Θ†. Second, we use the Bayesian op-timal linear estimator that includes the prior in-formation of state variance AR = (η2 
+
+> reg
+
+Σ′ 
+
+> r
+> −2
+
++
+
+Θ⊤Θ)−1Θ⊤, where Σ′ 
+
+> r
+
+are the normalized lead-ing singular values of the training set and ηreg is the expected noise magnitude (derived in Ref. [15] with normalization from Ref. [8]). The optimal esti-mator is essentially a ridge (Tikhonov) regularized regression where the expected noise magnitude reg-ulates the strength of regularization. We test all 2 4 = 16 combinations of the binary factors on the Sea Surface Temperature data set by NOAA [46] that consists of 1727 weekly snapshots between Dec 31, 1989 and Jan 1, 2023 that are separated into Ntrain =1381 train and Ntest = 346 test states. Each snapshot contains the interpolated water temperature in degrees Celsius with spatial resolution of 1 × 1 degree (longitude by latitude, Fig. 2a). After filtering out the part of Earth covered by ground this leaves the dimension n = 44219 for each state snapshots. The standard deviation of the dataset is σscale = 1 .945 ◦C. This dataset demonstrates a steep decay of singular values so we choose r = 100 states for the reduced order model. We use three methods to place pmax = 200 sensors (Fig. 2b): the 2-point method starts with placing sensors on continental coasts and in inland bodies of water and then gradually fills out the open ocean; the random method drops sensors in ran-dom order; the 1-point method (known to be strictly in-ferior [15]) ignores sensor correlations and places sensors in tight clusters in locations of maximal signal variance. The results of the enumeration are presented in Fig. 3 where the risk curve either decreases monotonically or first decreases, then abruptly spikes, and decreases again in what we term double descent . The pattern of risk curves suggests a qualitative explanation of the origins of double descent. Using regularization completely sup-presses the spike. If regularization is absent, the risk curve can be interpreted as a “pathological signal” en-tering an “amplifier”. Here the pathological signal is anything not in the modeled r modes: either the sub-leading modes, or the measurement noise, or both. The amplifier somehow results from the collection of sensors either close to the number of modes p ≈ r (panels b,d,f,n) or sometimes earlier (panels j,l). When the pathological signal and the amplifier are both present, the small er-rors in state measurement are disproportionally magni-fied, resulting in the instability. If there is no patholog-ical signal, using p ≥ r reconstructs the signal perfectly (Rel.RM SE = 0 in panels n,p). In the following section we seek to quantify this intu-ition and get a handle on the functional shape of these empirical curves. 50
+
+> 1
+> 2
+
+Regular. rec. Full state 
+
+a test set 
+
+> train set
+
+Pseudoinv. rec. 
+
+b
+
+Regular. rec. 
+
+Projected state 
+
+c
+
+Pseudoinv. rec. 
+
+> Noise
+> Sensors 2pt
+
+d
+
+> 0
+> 1
+> 2
+> Reconstruction Rel. RMSE
+
+e f g
+
+> No noise
+
+h 
+
+> 0
+> 1
+> 2
+
+i j k
+
+> Noise
+> Sensors random
+
+l   
+
+> 0100 200
+> 0
+> 1
+> 2
+
+m  
+
+> 0100 200
+
+n  
+
+> 0100 200
+
+# sensors p
+
+o  
+
+> 0100 200 No noise
+
+p
+
+FIG. 3. Qualitative enumeration of the risk curves of sparse sensing. Each design parameter of Fig. 1 takes one of two values, resulting in 2 4 = 16 combinations of all possible plots. The design choices are indicated on the labels of panel rows and columns. Each panel uses r = 100 modes for reconstruction on the SST dataset and up to pmax = 200 sensors. Purple and brown show the empirical mean RMSE ±one standard deviation, across test and train sets, respectively. The two shaded areas overlap almost everywhere in the figure. 
+
+III. DNA THEORY OF DOUBLE DESCENT 
+
+Here we provide a quantitative theory of double descent and its suppression. The derivation relies on decompos-ing the covariance matrix of the state reconstruction er-ror into distinct terms referring to Data distribution and 
+
+Noise realizations, and then Averaging (hence the DNA name). Our computation predicts the overall risk curve for any sensor number and configuration. We emphasize that the derivation introduces no free parameters beyond the design factors of the sparse sensing setup. Crucially, extant theories of double descent rely heav-ily on the random matrix theory and random sampling of features [34–37, 39]. While such analyses can predict quantitatively the shape of the risk curve, they necessar-ily suppress the role of specific sensor configurations that are relevant in applied data scenarios. Our computation expresses the covariance matrix directly in terms of the data set POD and sensor selection matrices, and thus allow tracing the state reconstruction instability back to the design decisions of the reconstruction algorithm. GAD theory similarly traced the risk peaks to the struc-ture of the selected features and used matrix norms to accurately predict the locations of all risk peaks [31]; in contrast, the DNA theory aims to quantitatively predict the exact shape of the risk curve .
+
+A. Error covariance matrix 
+
+We seek to compute the error covariance matrix in the following form: 
+
+K = Ex,∆y[(ˆ x − x)(ˆ x − x)⊤], (5) where the state x and the noise realization ∆ y are uncor-related from each other. In order to compute the average, we need to directly relate the estimator ˆ x to the state x,as well as make assumptions on the covariance matrix of 
+
+x itself. The estimator can be expressed by plugging Eqns. 1 and 2 into Eqn. 3: ˆx = Ψr A(CΨ r ar + CΨ cac + ∆ y). (6) The state covariance matrix can be estimated by the sample covariance matrix of the training data set, nor-malized by the number of training snapshots [8]: 
+
+Ex[xx ⊤] ≈ 1  
+
+> N−1
+
+Xtrain X⊤ 
+
+> train
+
+= 1  
+
+> N−1
+
+UΣ 2U⊤
+
+= Ψr Σ′
+
+> r
+> 2
+
+Ψ⊤ 
+
+> r
+
++ ΨcΣ′
+
+> c
+> 2
+
+Ψ⊤ 
+
+> c
+
+(7) 
+
+Ex[ar a⊤ 
+
+> r
+
+] = Σ′
+
+> r
+> 2
+
+; Ex[aca⊤ 
+
+> c
+
+] = Σ′
+
+> c
+> 2
+
+; Ψr Ψ⊤ 
+
+> c
+
+= 0; (8) 
+
+Ex,∆y [ac∆y⊤] = 0; Ex,∆y [ar ∆y⊤] = 0; 
+
+E∆y [∆ y∆y⊤] = η2Ip, (9) 6where the second line expresses the diagonal covariances of the reduced order coefficients as well as ensures that the low and high singular vectors are mutually orthogo-nal, while the third line expresses the covariance between sampled states and noise. The data and noise covariances allow a compact form of writing the reconstruction covariance as a sum of six terms: 
+
+K = ΨcB0B⊤ 
+
+> 0
+
+Ψ⊤
+
+> c
+
+| {z }
+
+> subleading modes
+
++ Ψr B1B⊤ 
+
+> 1
+
+Ψ⊤
+
+> r
+
+| {z }
+
+> leading modes
+
++ Ψr B2B⊤ 
+
+> 2
+
+Ψ⊤
+
+> r
+
+| {z }
+
+> contamination
+
++ Ψr B3B⊤ 
+
+> 3
+
+Ψ⊤
+
+> r
+
+| {z }
+
+> noise
+
+− ΨcB0B⊤ 
+
+> 2
+
+Ψ⊤ 
+
+> r
+
+− Ψr B2B⊤ 
+
+> 0
+
+Ψ⊤
+
+> c
+
+| {z }
+
+> cross terms
+
+(10) 
+
+B0 =Σ′
+
+> c
+
+; B1 = ( AΘ − Ir )Σ′ 
+
+> r
+
+; (11) 
+
+B2 =ACΨ cΣ′
+
+> c
+
+; B3 = ηA, (12) where the B0 term contains the subleading modes of the reconstructed signal that cannot be expressed by the first 
+
+r singular vectors; the B1 term quantifies how well the true coefficients within the leading r modes are recon-structed; the B2 term expresses the contamination of the measured signal by the subleading modes; the B3 term expresses the contamination of the measured signal by the sensor noise; the cross terms between B0,2 affect the covariance but not the overall error as explained below. We provide a detailed interpretation of each term’s ef-fect in the following subsections and demonstrate that the double descent phenomenon is mostly driven by the 
+
+B2 and B3 terms similarly to the “double trouble” ar-gument of Ref. [34]. The terms also neatly correspond to those in the GAD theory [31]: model insufficiency is the part of the signal that cannot be expressed by the model (our B0), data insufficiency is the degree to which parameters are under-constrained by too little data (our 
+
+B1), and generalized aliasing expresses the “crosstalk” between modeled and unmodeled parts of the signal (our 
+
+B2,3). Before detailed interpretation of each term , we show how the expression K can be used for analytic pre-dictions. Note that the matrix K is of size n × n but of rank no more than N , depending on the rate of decay of the training data singular values. Holding the whole covari-ance matrix in computer memory is thus inefficient, but it can be used to compute summary expressions. In par-ticular, the prediction of average reconstruction error is given by: 
+
+\Rel.RM SE = 1
+
+σscale 
+
+r 1
+
+n Tr K, (13) where we can use the fact that Ψr and Ψc are isome-tries and do not change the 2-norm of the vector they act upon. In this case the RMSE prediction takes a par-ticularly simple form: 
+
+\RM SE =
+
+vuuut 1
+
+n
+
+> 3
+
+X
+
+> l=0
+
+X
+
+> ij
+
+B2
+
+> l,ij
+
+ , (14) where the squaring is applied to the B matrices elemen-twise; the Bl matrices are of different sizes, so the ij 
+
+summation needs to be performed first within each ma-trix. Note that the cross terms are traceless because of orthogonality Ψr Ψ⊤ 
+
+> c
+
+and do not contribute to the RMSE prediction. The expression (14) consists of efficient low-rank linear algebra operations that can be computed for any choice of sensor and linear estimator matrix A, and thus can be used for exploration of the qualitative behav-iors of the risk curve.  
+
+> B. Computational complexity
+
+a. Assumptions In order to assess the relative com-putational complexity of the DNA theory as opposed to naive risk curve averaging, we introduce several accounting assumptions: (i) only multiplications are counted, ignoring scalar-by-scalar O(1) operations, (ii) row-subsampling a matrix (i.e. left multiplications by 
+
+C) is negligibly cheap, (iii) dense matrix multiplication is cubic in matrix dimensions, multiplying by a diagonal matrix is quadratic, (iv) an a × b matrix can be (pseudo-)inverted in O(ab · min( a, b )), (v) We use rc ≤ N − r
+
+subleading singular values, the number of which can be reduced if singular values are truncated at machine pre-cision level. Under these assumptions, the cost of ob-taining an error estimate at a given sensor budget p can be computed and added up for p ∈ [1 , p max ] to obtain the full risk curve, assuming pmax > r to investigate the oversampled regime. 
+
+b. Reconstruction operator The pseudoinverse re-construction AL : r × p is computed in a single op-eration O(pr · min( p, r )). The regularized reconstruc-tion AR requires two multiplications and inversion 
+
+O rpr + r3 + r2p (assuming that adding the diago-nal term η2 
+
+> reg
+
+Σ′− 2 
+
+> r
+
+is negligible in comparison). Since the reconstruction operators need to be constructed for both naive averaging and DNA, the cost is the same at O r4 + ( p2 
+
+> max
+
+− r2)r2 for pseudoinverse and 
+
+O r2p2 
+
+> max
+
++ r3pmax 
+
+ for regularized reconstruction. If the maximal oversampling is not very large, e.g. pmax ≈
+
+2r, the costs of both reconstruction approaches are equiv-alent. 
+
+c. Naive risk curve For the naive reconstruction at fixed p the reconstruction ˆX = Ψr ACX takes O(nrpN )operations where N is the test set size. Adding mea-surement noise to the sensed locations takes another 
+
+O(pN ) and evaluating the RMSE between the true and reconstructed states takes another O(nN ) mul-tiplications. Aggregating over all p values to form 7a risk curve, the total cost of naive averaging is 
+
+O nrp 2
+
+> max
+
+N + p2
+
+> max
+
+N + np max N .
+
+d. DNA theory For the DNA theory at fixed p, the cost consists of evaluating all B matrices and squaring them elementwise. For B0, the cost of squaring the di-agonal elements is O(rc) and does not depend on the sensor choice, thus the result can be computed once and reused across the whole risk curve. For B1, the cost is O(rpr ) for matrix multiplication and r2 for squar-ing. For B2, the cost is O(rpr c) for matrix multipli-cation and rr c for squaring. For B3, there is only a matrix-by-scalar multiplication and squaring for a total of O(rp ). Adding up the costs of each matrix and aggre-gating over all p values, the total cost of DNA theory is 
+
+O(rc + r2p2 
+
+> max
+
++ r3pmax + r2pmax + rr cp2 
+
+> max
+
++ rr cpmax 
+
++ rp 2
+
+> max
+
+) and is comparable to the cost of reconstruc-tion operators. Here the factors of rc ≤ (N − r) can be further reduced if subleading singular values are further truncated. Notably, the DNA theory operates entirely in reduced-order space (both in modes and space), so the computational cost of predicting the entire risk curve does not scale with either the dimension n or number N
+
+of snapshots. By computing the ratio of leading-order terms, we get Tnaive /T DN A = O(nN/r ). For the SST dataset this ratio is theoretically O 10 5, whereas our implementation in Python achieved a speedup of about 
+
+O 10 3. 
+
+> IV. CASE STUDY 1: SPARSE SENSING
+
+Following the theoretical derivation, we now turn to the first case study of sparse sensing on the SST dataset. We use the Eqn. 14 to compute the analytical prediction for the same 2 4 = 16 regimes tested in Fig. 3. We em-phasize that due to the analytic averaging the Eqn. 14 does not iterate over the individual states in the training and test sets, and thus the computation is dramatically faster, at about 3 seconds in a single-core process on a standard modern laptop as opposed to ∼50 minutes for the benchmark results in Fig. 3 (speedup of a factor 10 3). The analytical curve is superimposed on top of bench-marking results in Fig. 4. Across all design parameters, the analytical curve precisely traces the empirical mean, reproducing not only the locations and magnitudes of the double descent spike, but also the minute localized jumps. Having established the overall quantitative predictive power of the DNA theory, in the rest of this section we fo-cus on how the individual terms B0,1,2,3 interact with the design factors to result in the leading mode reconstruc-tion, the double descent instability peak and its connec-tion to sensor placement, and the effect of regularization to suppress the double descent.  
+
+> A. Leading mode reconstruction
+
+We first consider the reconstruction of the leading modes, i.e. the B1 term in the covariance matrix (10). In the simplest case of pseudoinverse reconstruction, 
+
+A = Θ†, and the product Θ†Θ is a projector onto the 
+
+Range (Θ⊤). When there are few sensors p < r , the ma-trix Θ†Θ has exactly p eigenvalues of 1 and r − p eigen-values of 0. When the number of sensors reaches p ≥ r,if the sensing matrix Θ remains full rank, the projector turns into identity and Θ†Θ − Ir = 0, and thus the B1
+
+term ceases to contribute to the covariance matrix. If other terms do not contribute to the covariance either, the reconstruction becomes exact for any sensor selec-tion (panels n,p in Fig. 4). This transition argument was also identified in GAD [31] where the data insufficiency term turns to identical zero for more features than model parameters. While the rank of the reconstruction increases linearly with the number of sensors as min( p, r ), the error does not necessarily decrease linearly. While the leading r
+
+modes carry the majority of signal variance, it is not uniform but is expressed by the singular values Σ′ 
+
+> r
+
+. The projector Θ†Θ does not project onto the first p modes, but rather some linear subspace of the full r-dimensional space. The reconstructed state thus captures a progres-sively larger fraction of variance of the leading modes, but in a data-dependent way.  
+
+> B. Reconstruction instability
+
+We now consider the last two terms of the covariance matrix B2 and B3 (Eqn. 12) in which the leading modes appear only once via the linear estimator A. These two terms are closely related if we define the following p × p
+
+matrices: 
+
+Scont =CΨ cΣ′
+
+> c
+> 2
+
+Ψ⊤ 
+
+> c
+
+C⊤ (15) 
+
+Snoise =η2Ip, (16) which quantify the covariance of two “pathological sig-nal” inputs from the sensors into the reconstruction al-gorithm: Scont quantifies the contamination of the signal by the subleading modes, whereas Snoise is the covariance of sensor measurement noise. In practical situations the magnitudes of these two matrices might be comparable, or one might be much larger than the other. However, so long as at least one of them is present, the spike in reconstruction error appears for number of sensors p ≈ r
+
+or even earlier Fig. 4 panels j,l. At the same time, the magnitude of the undesired in-puts is typically much smaller than the magnitude of the leading modes, so they are somehow amplified. The only remaining component of the covariance term is the lin-ear estimator matrix A, the properties of which can be best understood through its singular value spectrum: so 80                        
+
+> 1
+> 2
+> Regular. rec. Full state
+> aDNA
+> test mean
+> train mean
+> Pseudoinv. rec.
+> b
+> Regular. rec.
+> Projected state
+> c
+> Pseudoinv. rec.
+> Noise
+> Sensors 2pt
+> d
+> 0
+> 1
+> 2
+> Reconstruction Rel. RMSE  efg
+> No noise
+> h
+> 0
+> 1
+> 2ijk
+> Noise
+> Sensors random
+> l
+> 0100 200
+> 0
+> 1
+> 2m
+> 0100 200
+> n
+> 0100 200
+> # sensors p
+> o
+> 0100 200 No noise
+> p
+> FIG. 4. Comparison of benchmark reconstruction and the DNA theory prediction of risk curves of sparse sensing. Each design parameter of Fig. 1 takes one of two values, resulting in 2 4= 16 combinations of all possible plots. The design choices are indicated on the labels of panel rows and columns. Each panel uses r= 100 modes for reconstruction on the SST dataset and up to pmax = 200 sensors. Dashed purple and brown curves and shaded areas show the empirical mean RMSE ±one standard deviation, across test and train sets, respectively. Dashed green curve shows the analytic RMSE prediction with no free parameters.
+
+long as A has some large singular values, it would dra-matically amplify the undesired input and lead to the spike. Consider a following more uniform definition of the reconstruction matrices: 
+
+AL =Θ⊤M−1 
+
+> L
+
+, p ≤ r; ML = ΘΘ ⊤ (17) 
+
+AL =M−1 
+
+> L
+
+Θ⊤, p > r ; ML = Θ⊤Θ (18) 
+
+AR =M−1 
+
+> R
+
+Θ⊤, any p; MR = η2Σ′ 
+
+> r
+> −2
+
++ Θ⊤Θ, (19) from which it is clear that the matrix Θ⊤ appears iden-tically in all expressions and cannot affect the spectrum. We thus traced the spectrum of the reconstruction ma-trix A to the inversion of the matrix M, the eigenvalues of which we directly contrast against the risk curve in Fig. 5. The eigenvalues span several orders of magni-tude with the upper end of spectrum remaining nearly constant. Appearance of low-lying eigenvalues directly connects to the spikes in the risk curve: a small eigen-value of M is inverted and contributes a large singular value to A.
+
+a. Pseudoinverse reconstruction from optimized sen-sors In case of the 2-point sensor method (panels a,d), the lowest eigenvalue is around 10 −7 and only appears at p ≈ r, causing the relative RMSE to spike abruptly to around 10, i.e. the reconstruction error is 10 times larger than typical dataset variability. In the undersam-pled regime p < r , as the number of sensors increases, the number of eigenvalues of M increases in sync, with the lowest eigenvalue gradually moving down. In the over-sampled regime p > r , extra sensors contribute to the same number of eigenvalues r, and the lowest eigenvalue gradually increases. 
+
+b. Pseudoinverse reconstruction from random sen-sors In case of the random sensor placement (panels b,e), the first low-lying eigenvalue of about 10 −8 appears abruptly at p = 24, causing the relative RMSE to spike to 10. As the number of sensors grows further, a sec-ond distinct band of low-lying eigenvalues around 10 −6
+
+appears at p = 35. At p = r, an even lower eigenvalue of 10 −10 appears and the relative RMSE climbs to over 100, signifying a catastrophic reconstruction instability. In the oversampled regime p > r , the lowest eigenvalues rapidly increase, dropping the RMSE. 
+
+c. Regularized reconstruction from random sensors 
+
+We now take the same random sensor set and apply the optimal regularized reconstruction (panels c,f). The low-est eigenvalue starts at around 10 −5 but quickly increases as just a few sensors are added, reducing the relative RMSE under 0.5. Across the whole range of sensor num-bers, low-lying eigenvalues never appear, resulting in a slow monotonic RMSE decrease. Since the inverted ma-910 0
+
+> 10 1
+> 10 2
+> Reconst. Rel. RMSE
+
+a 
+
+> Pseudoinv. rec. sensors 2pt
+
+b 
+
+> Pseudoinv. rec. sensors random
+
+c          
+
+> Regular. rec. sensors random
+> analytic
+> test mean
+> 050 100 150 200
+> 10 10
+> 10 8
+> 10 6
+> 10 4
+> 10 2
+> Eigenvalues  λ
+
+d    
+
+> 050 100 150 200
+
+# sensors p
+
+e        
+
+> p≥24
+> p≥35
+> 050 100 150 200
+
+f
+
+FIG. 5. Reconstruction RMSE curves are tied to the spectrum of the reconstruction matrix. (a-c) RMSE curves for different regularization schemes and sensor selections with r = 100 modes, both empirical and DNA prediction. (d-f) Spectrum of the reconstruction inversion matrix M, with eigenvalues in ascending order by color. For the pseudoinverse reconstruction there are min( p, r ) eigenvalues, for the regularized reconstruction there are always r eigenvalues. Sharp spikes of RMSE curves precisely correspond to the emergence of low-lying reconstruction eigenvalues. For the 2-point method (d) the low-lying eigenvalues only appear at p ≈ r, whereas for the random method (e) isolated low-lying eigenvalues appear earlier as marked. 
+
+trix M is regularized by the prior covariance, it is always well-conditioned for inversion. In conclusion of this section, low-lying matrix M eigen-values result in large singular values of the linear recon-struction matrix A and thus create the “amplifier”. How-ever, how are those eigenvalues connected to the individ-ual sensors picked deliberately or randomly, and is the “amplifier” inevitable? 
+
+C. Sensor placement 
+
+Here we trace the spectral characterization of a set of sensors back to individual sensors (design factor 1). In the undersampled regime, the inversion matrix is 
+
+M = ΘΘ ⊤, yet Θ = CΨ r is itself a row selection from the singular vector matrix. The singular vector matrix 
+
+Ψr has orthogonal columns per the POD construction (Eqn. 1), but M consists of dot products of rows . Con-sider the singular vector matrix as a stacking of rows which we term sensing vectors gi ∈ Rr :
+
+Ψr =
+
+
+
+−g1−−g2−
+
+...
+
+−gn−
+
+. (20) A matrix of all possible dot products gi · gj would be the Gram matrix, yet we are interested in an ordered subset of sensing vectors returned by a particular sensor placement algorithm. As the sensor budget increases, 
+
+M : p × p is formed by an ever-larger leading principal submatrix of the Gram matrix. As established in the pre-vious section, reconstruction instability is directly tied to the emergence of small eigenvalues in the matrix M. We formulate two competing hypotheses for the emergence of small eigenvalues λ:1. 1-point failure hypothesis: Small λ’s are driven by individual sensors .2. Ensemble failure hypothesis: Small λ’s are driven by the collective sensor interactions .In order to test the hypotheses, we plot the matrices M
+
+in Fig. 6a-c following three sensor placement algorithms: the 2-point and random algorithms described above, and the 1-point algorithm of Ref. [15] which selects for non-repeating locations of maximal signal variance but ig-nores sensor crosstalk (all illustrated in Fig. 2b). The dashed lines in each panel delineate an ever-larger matrix 
+
+M : p×p with cuts at specific sensor counts p. The matrix for the 2-point method (panel a) is diagonally dominated but also shows a speckle of off-diagonal entries, both pos-itive and negative. The matrix for the random method (panel b) shows a somewhat interrupted main diagonal and very infrequent off-diagonal entrees. The matrix for 10 23|24 35 70 100                  
+
+> 1
+> 20
+> 40
+> 60
+> 80
+> 100
+> # sensors  p
+> Pseudoinv. rec. sensors 2pt
+> a23|24 35 70 100
+> Pseudoinv. rec. sensors random
+> b23|24 35 70 100
+> Pseudoinv. rec. sensors 1pt
+> c
+> 10 910 710 510 310 1
+
+Entries diag( M)               
+
+> 10 9
+> 10 7
+> 10 5
+> 10 3
+> 10 1
+> Eigenvalues  λ
+> 1pt failure ensemble failure
+> d
+> p=23
+> p=24
+> p=35
+> p=70
+> p=100
+> 10 910 710 510 310 1
+
+Entries diag( M)              
+
+> 1pt failure ensemble failure
+> p≥24
+> p≥35
+> e
+> 10 910 710 510 310 1
+
+Entries diag( M) 
+
+> 1pt failure ensemble failure
+> f
+> -4
+> -2
+> 0
+> 2
+> 4
+> gi · gj, 10  3
+
+FIG. 6. Sensor placement algorithms lead to either 1-point or ensemble failures of the sensor set. (a-c) Matrices M are formed by the leading principal submatrices of an ordered Gram matrix of sensing vectors; each entry is given by the dot product 
+
+gi · gj . Matrices follow the order of sensors placed by three different methods, and are limited by the dashed line border. The matrices for p = 23 and p = 24 are distinct, but the borders are right next to each other. (d-f) Ordered matrix eigenvalues plotted against the ordered diagonal entries. The 1-point failure is diagnosed by both eigenvalues and entries becoming low simultaneously, whereas the ensemble failure is diagnosed by only eigenvalues being low. 
+
+the 1-point method (panel c) shows rectangular regions of solid color, indicating a strong correlation between the sensors (both positive and negative). While these pat-terns are quite different, it is hard to intuitively relate them to the eigenvalue spectrum. Since the matrix M is formed by an outer product, it is symmetric, positive-definite and has all-positive eigenval-ues. The diagonal part of the matrix M is also positive-definite. Since the first two matrices are diagonally-dominated, we propose the following deliberately na¨ ıve approximation of the spectrum: 
+
+{λ(M)} ≈ { diag( M)}, (21) since for a diagonal matrix the eigenvalues are equal to its entries. If for a particular matrix this approximation happens to be good, then any emerging small eigenvalue is traced directly to an individual diagonal matrix en-try and thus to an individual sensor, supporting the 1-point failure hypothesis . On the contrary, if the ap-proximation breaks down and small eigenvalues emerge 
+
+without small diagonal entries, then the small eigenvalues are driven by sensor interactions through the off-diagonal entries, supporting the ensemble failure hypothesis .We test the hypothesis by plotting the two sides of Eqn. 21 against each other in Fig. 6d-f, where the 1-point failure region is in the bottom-left corner and 
+
+ensemble failure region is along the rest of the bottom edge. At each sensor budget, the number of eigenvalues equals to p. For the 2-point method (panel d), at small sensor budgets the eigenvalues and diagonal entries are both large and closely correlate, but as the budget gets larger, smaller eigenvalues emerge leading to an ensem-ble failure at p = 100. For the random method (panel e), the eigenvalues and diagonal entries closely correlate for all but the largest sensor budgets. At the same time, the spectrum no longer forms a single continuous band: an isolated eigenvalue near 10 −8 is absent at p = 23 but appears at p ≥ 24; another isolated eigenvalue appears at 
+
+p ≥ 35; finally, by p = 100 the main band of eigenvalues also moves down. The random method thus exhibits an 
+
+early 1-point failure as soon as a single bad sensor is placed, followed by a collective failure . For the 1-point method (panel f), all sensors are placed at locations of high signal variance, thus the diagonal entries are always large and eliminate the 1-point failure ; however, since the sensors are so correlated, the eigenvalue band spans the whole plotting range for any sensor budget p, and thus the collective failure also occurs immediately. 
+
+a. Inevitable orthogonality crisis Is the collective failure of sensors inevitable? Selecting a set of sensors is equivalent to picking out the sensing vectors gi ∈ Rr .By the definition of the Euclidean space Rr , there can 11 0 25 50 75 100 125 150 175 200     
+
+> # of sensors p
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> Rel.RMSE
+> r=100
+> Regular. rec. sensors 2pt
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> 10 2
+> Regularization scaling  Q
+
+FIG. 7. Effect of the regularization strength on the risk curves predicted by the DNA theory. Regularization scaling Q is measured with respect to the optimal strength: purple curves reflect under-regularizing, green curves over-regularizing. 
+
+be no more than r linearly independent vectors. At the same time, the sensing vectors are not arbitrary but are selected from n candidates. As each sensing vector typ-ically has nonzero entries in all of the modes, it is im-possible to select r orthogonal vectors for any practical dataset. A “smart” sensor placement method (such at 2-point or QR) balances sensor variance and correlation and thus delays running out of orthogonal combinations to the last possible moment p ≈ r; a “dumb” method (such as random) might stumble into low-variance indi-vidual sensing vectors or near-collinear sensing vectors early. 
+
+b. Oversampled regime While the orthogonality cri-sis is inevitable as p approaches r from below, the sit-uation changes for p > r . Per Eqn. 18, p sensing vec-tors contribute to a fixed number r of matrix eigenvalues. Each additional sensor adds a positive-definite contribu-tion gig⊤ 
+
+> i
+
+to the matrix ML, thus increasing the ma-trix values and driving up the whole eigenvalue spectrum [31, 47–50]. Oversampling thus serves as an effective reg-ularization of the reconstruction. 
+
+c. Sensor noise vs contamination The sensing vec-tors gi express only the contribution of a particular lo-cation to the leading r singular vectors of the data, yet the locations also affect the subleading spectral content as estimated in the contamination covariance Eqn. 15. In case of no measurement noise, low contamination of cer-tain sensor locations might not constitute a sufficiently large pathological signal to lead to a large error (e.g. Fig. 4n is smooth at p ≈ 24), but adding a constant location-independent noise drastically increases the error (e.g. Fig. 4j has a jump at p = 24). 
+
+D. Regularization 
+
+We now turn our attention to the effect of regular-ization. Qualitatively, regularization appears as adding a positive diagonal contribution to the matrix MR in Eqn. 19. Since in the previous section we directly traced the reconstruction instability to the appearance of low-lying eigenvalues in the M matrix, addition of of a posi-tive diagonal contribution raises the eigenvalues, evident in the spectrum in Fig. 5f. The regularization matrix 
+
+η2Σ′ 
+
+> r
+> −2
+
+is directly computed from the singular values of the training data and is thus not isotropic: the first few modes are regularized much less than the later ones. At the same time, the expected noise magnitude η2 also scales the expression. If the noise is large, the regular-ization becomes stronger, and thus the reconstruction ef-fectively “falls back” onto the prior; if the noise is small and sensors are precise, the regularization gets weaker and sensor readings are more important for reconstruc-tion. Since the ratio of expected noise and data variance seems to affect the optimal regularization strength, we ask a more general question: how does the risk curve shape change with regularization strength? Consider the following generalized reconstruction matrix: 
+
+AQ = ( Qη 2Σ′ 
+
+> r
+> −2
+
++ Θ⊤Θ)−1Θ⊤, (22) where Q is an auxiliary scaling factor. For Q = 1, 
+
+AQ = AR and the “optimal” linear estimator is repro-duced, but in general both higher and lower values can be considered. We present a sweep over the regularization scaling in Fig. 7 where all other reconstruction parame-ters are kept fixed. The Q = 1 curve (black) serves as an envelope for all other curves as it is the lowest. Under-regularizing Q < 1 (purple) results in a progressively steeper peak at p ≈ r as the reconstruction matrix ap-proaches the pseudoinverse AL. Over-regularizing Q > 1results in monotonic curves that gradually get higher. Getting the regularization strength of the correct magni-tude is thus important for reconstruction, but the exact value is less crucial. 
+
+V. CASE STUDY 2: EMPIRICAL INTERPOLATION FOR PDES 
+
+The second case study is the Discrete Empirical Inter-polation Method (DEIM) [6, 7], a data-driven method of constructing ROMs for PDEs. Similarly to sensor place-ment, DEIM relies on a tailored basis to reconstruct high-dimensional vectors from sparse measurements. How-ever, while for sensor placement computing the recon-struction is the end of story, for DEIM the reconstruc-tion is inserted into a time stepping algorithm to compute approximate numerical time-dependent solutions. In this section, we start with briefly reviewing the canonical DEIM construction and disambiguating several method parameters that are commonly considered identi-cal. We then introduce our case study, the breather solu-tions in the Nonlinear Schr¨ odinger Equation (NSE), and the required modifications of the sparse sensing method for the complex-valued quantities. We show how the 12 DNA theory applies to risk curves of static empirical in-terpolation (instantaneous state) and trace its effects on the spatiotemporal numerical solutions. Our construc-tion of DEIM and the specific case study follows Chapters 12-13 of Ref. [51].  
+
+> A. DEIM method
+
+Consider a prototypical nonlinear PDE: 
+
+∂tu = Lu + N(u), (23) where u is a spatiotemporal field, L is a linear operator (commonly containing spatial derivatives), and N(·) is a nonlinear operator (commonly acting locally). If the field is discretized onto a grid or mesh of size n, u ∈ Rn or 
+
+u ∈ Cn (depending on the PDE considered). The linear operator L is then an n×n matrix, and the nonlinear op-erator N(·) needs to be evaluated on n inputs. The goal of DEIM is to use the prior knowledge of high-fidelity solutions to construct a ROM. Since a DEIM approxi-mation needs to be evaluated in a time integration loop, the goal of its construction is to avoid any O(n) opera-tions performed repeatedly (but they can be precomputed once before time integration). Let X : n × N denote the training data obtained by full-order integration (stacking the u vectors) and 
+
+XN L = N(X) : n × N denote the nonlinear term eval-uated on each training snapshot. Model reduction in DEIM has the same two flavors of mode-sparsity and space-sparsity: the system state u and the nonlinear term 
+
+N(u) are approximated with two separate finite numbers of modes, and the evaluation of the local nonlinear term is confined to a few locations. While in conventional DEIM the three sparsity parameters are often taken to be the same, here we separate them explicitly: 
+
+• r is the number of modes used to approximate the system state u;
+
+• q is the number of modes used to approximate the nonlinear term N(u); 
+
+• p is the number of sensors (interpolation points) used for the nonlinear term. The problem of reconstructing q modes of the nonlin-ear term from p localized measurement reduces to sparse sensing covered in Case 1, but the need to perform time integration of r modes enriches the problem.  
+
+> 1. DEIM modes and reconstruction
+
+The tailored modes for the state itself and the nonlin-ear reconstruction are found by two separate PODs: 
+
+X =UΣV ⊤ ≈ Ur Σr V⊤ 
+
+> r
+
+(24) 
+
+XN L =ΞΣ N L VN L, ⊤ ≈ Ξq ΣN L q VN L, ⊤ 
+
+> q
+
+, (25) where the subscripts r, q denote truncation to the spec-ified number of modes. Since sparse sensing is only ap-plied to the nonlinear term, we only need to normalize the singular values Σ′
+
+> qN L
+
+, Σ′ 
+
+> cN L
+
+(leading and subleading modes, respectively). The system state is approximated with u ≈ Ur ar ,where ar are time-dependent mode coefficients. With this low-rank Galerkin approximation, the whole PDE of Eqn. 23 is reduced to a dynamical system of dimen-sion r ≪ n. In order to construct the ROM equations, we need to approximate the nonlinear term with sparse mea-surements. For a selection matrix C the nonlinear term 
+
+at sensed locations is evaluated by N(CU r ar ). From these sparse “measurements” of the nonlinearity, we es-timate the whole field of the nonlinear terms with sparse sensing methods. We construct the ROM equation by: (i) projecting the full Eqn. 23 onto Ur modes and (ii) replacing the full-field nonlinear term with a sparse sensing version. The resulting dynamical equation is as follows: 
+
+∂tar = U⊤ 
+
+> r
+
+LU r ar + U⊤ 
+
+> r
+
+Ξq AN (CU r ar ), (26) where the underlined expressions are matrix products that involve O(n) operations but can be precomputed be-fore time-stepping . In the first term, U⊤ 
+
+> r
+
+LU r accounts for the effects of the linear operator (such as spatial derivatives) on the field modes. In the second term, 
+
+U⊤ 
+
+> r
+
+Ξq A computes a reconstruction of nonlinear mode co-efficients from sparse measurements with one of the pre-viously introduced estimators A (pseudoinverse or regu-larized), then reconstructs full-resolution nonlinear term and projects it onto the state modes. Inside the bracket, 
+
+CU r approximates the state values at the sensing lo-cations. Note that due to a finite number of modes r,the approximated state is slightly different from the true state, and thus leads to an error in the sparsely sensed nonlinear term; this serves as an effective measurement “noise”, the covariance of which is hard to characterize in practice.  
+
+> 2. Complex-valued corrections
+
+Additional care in DEIM construction needs to be taken to account for complex-valued fields used in some PDEs. If the state u is complex valued, so are usually the state and nonlinearity data matrices X, XN L . POD can still be straightforwardly computed for a complex-valued matrix. The resulting singular values are real, as the complex phase can be moved to the singular vectors .If the true state u and some approximation or esti-mation ˆ u are available, the difference between them can still be quantified by relative RMSE defined in Eqn. 4, where the vector norm operation maps complex vectors to real non-negative norm values. The reference scale of the data matrices σscale , σ N L scale can be estimated as the (real) standard deviation of the corresponding matrices. 13      
+
+> FIG. 8. Training dataset and sensor placement for the Nonlinear Schr¨ odinger Equation case study. (a) Spatiotemporal pattern of the absolute value of the complex field |ψ|with π/ 2 periodicity in time. (b) Spatiotemporal pattern of the absolute values of only the nonlinear term |ψ|3. (c) Singular value decay for both datasets. (d) Sensor placement at different nonlinear mode numbers q, color coded by placement order.
+
+Similarly, the DNA prediction of RMSE is computed fol-lowing Eqn. 14 using the absolute values of squares of the 
+
+B matrix elements. The pseudoinverse reconstruction matrix AL = Θ† is still well-defined for complex Θ. The regularized recon-struction is updated by replacing the matrix transpose with the conjugate transpose Θ⊤ → Θ∗ to yield the re-construction matrix: 
+
+AR = ( η2 
+
+> reg
+
+Σ′ 
+
+> q
+> −2
+
++ Θ∗Θ)−1Θ∗, (27) where the inverted matrix in the bracket is Hermitian by construction and thus has all real eigenvalues. The regularization parameter ηreg needs to be selected in anticipation of the expected mismatch between the sampled and true values of the nonlinear term. Given that there is no true measurement noise in a simulation, the main contribution would come from the contamina-tion by residual modes. We thus assign the regularization parameter for a q-mode approximation as follows: 
+
+η2 
+
+> reg
+
+= 1
+
+nN 
+
+> max
+
+X
+
+> i=q+1
+
+σ2 
+
+> i
+
+, (28) where the sum is taken over all subleading nonzero sin-gular values.  
+
+> B. Nonlinear Schr¨ odinger equation
+
+In order to illustrate the range of DEIM behaviors, we consider a specific example of the Nonlinear Schr¨ odinger Equation (NSE): 
+
+∂tψ = i
+
+2 ∂xx ψ + iψ |ψ|2, (29) where ψ(x, t ) is a complex-valued wavefunction defined on dimensionless 1D space x and time t. The first term expresses the linear part of dynamics, the second term the nonlinear part. We specifically consider the initial condition ψ(x, 0) = 2 / cosh x, which is known to result in a breather solution, a nonlinear spatiotemporal oscil-lation with a time period of π/ 2. We use a numerical solution of the NSE to generate training data for DEIM. We define the spatial domain 
+
+x ∈ [−20 , 20] discretized into n = 256 equally spaced points. The equation is solved in spatial Fourier domain: 
+
+∂t ˜ψ = −i 12 k2 ˜ψ + iF(ψ|ψ|2), (30) where ˜ψ(k, t ) = F(ψ(x, t )) is the frequency parameter-ized wavefunction, F and F−1 are forward and inverse Fourier transforms, and k are the Fourier wavenumbers. Wavenumber multiplication replaces spatial differentia-tion in Fourier space. The resulting equation is treated as a system of 256 coupled ODEs for each spatial Fourier mode and integrated numerically with the 4th order Runge-Kutta method on the time domain t ∈ [0 , 3π] (six oscillation periods) with 180 time steps (∆ t ≈ 0.052). It is crucial to collect data for an integer number of os-cillation periods so that all phases of the oscillation are equally represented and the first few modes follow the spatial symmetries and contain most of data variance. 14 0 20 40 
+
+# modes q  
+
+> 10 6
+> 10 3
+> 10 0
+> 10 3
+> 10 6
+> 10 9
+> 10 12
+> Rel. RMSE at  p = q
+
+DNA prediction at p = q
+
+Sensors 2pt 
+
+g p-inv. noisy   
+
+> p-inv. noiseless
+> reg. noisy
+> reg. noiseless
+> 020 40
+
+# modes q
+
+Sensors random 
+
+h p-inv. noisy   
+
+> p-inv. noiseless
+> reg. noisy
+> reg. noiseless
+> 10 4
+> 10 2
+> 10 0
+> 10 2
+> Rel. RMSE
+
+Sensors 2pt 
+
+Static nonlinearity reconstruction 
+
+q=3 
+
+a P-inv. emp. 
+
+> Reg. emp.
+> P-inv. DNA
+> Reg. DNA
+
+Sensors random 
+
+q=3 
+
+ηreg ≈ 2e-02 σNL scale 
+
+d  
+
+> 10 4
+> 10 2
+> 10 0
+> 10 2
+> Rel. RMSE
+
+q=6 
+
+b P-inv. noisy 
+
+> Reg. noisy
+
+q=6 
+
+ηreg ≈ 2e-04 σNL scale 
+
+e  
+
+> 020 40
+
+# sensors p  
+
+> 10 4
+> 10 2
+> 10 0
+> 10 2
+> Rel. RMSE
+
+q=9 
+
+c  
+
+> 020 40
+
+# sensors p
+
+q=9 
+
+ηreg ≈ 2e-05 σNL scale 
+
+f
+
+FIG. 9. Statistics of static reconstruction of the nonlinear term. (a-f) Risk curves for pseudoinverse (“p-inv.”) and regularized (“reg.”) reconstructions across the empirical snapshots (shaded region of 1 std) and DNA prediction (dashed lines). Dotted lines show the DNA risk curve under addition of observation noise of magnitude 10 −3. Rows correspond to different mode numbers 
+
+q, columns to 2pt and random sensor placement. Regularization strength ηreg is adaptive for each q level as shown in (d-f). (g-h) DNA prediction for the worst-case risk scenario p = q across sensor placement (columns), pseudouinverse and regularized reconstruction (purple and orange), and noiseless and noisy measurements (circles and triangles, all noisy measurement markers are shifter to the right by ∆ q = 0 .5 for visual clarity). For random sensors (h) the error bar shows the mean and standard deviation log-averaged over 50 random sensor set replicas. 
+
+The resulting time series is inverse Fourier transformed, and the snapshots are stacked into the training data ma-trix X (Fig. 8a). The nonlinear term data matrix is ob-tained by computing iX|X|2 elementwise (Fig. 8b). The data matrices clearly demonstrate the periodic spatiotemporal oscillations confined mostly to the small region near x = 0. The wide spatial domain is impor-tant to resolve high spatial frequencies with the univer-sal Fourier basis and achieve a numerically stable solu-tion, even though the majority of space has virtually no dynamics. Both the field itself and the nonlinear term demonstrate a sharp decay of singular values (Fig. 8c), motivating constructing a ROM in a tailored basis. We use the same 2-point sensor placement algorithm to place up to 40 sensors. Since the algorithm is sensitive to the number of modes q, we show representative sensor place-ments color-coded by order in Fig. 8d, where all sensors are confined to the central region x ∈ [−5, 5] and only differ slightly in order depending on q. In contrast, the random sensor placement will mostly place sensors out-side of this central region in locations of very low signal. 
+
+C. Reconstructing the nonlinear term 
+
+We now proceed with constructing DEIM models at different levels of approximation. We start with analyz-ing a static reconstruction of the nonlinear term from sparse observations. Specifically, for p local observations of the nonlinear term and q reconstruction modes, what is the level of error as measured by relative RMSE? Re-construction error here does not depend on the number of modes r as there is no time integration. In addition, since the ground truth data is periodic (up to the integra-tion error of the full-order model), we do not separate the data into train and test sets as they would be identical. We consider both the noiseless case (the nonlinear term is observed exactly but sparsely, both empirically and in the DNA theory) and the case of uncorrelated noise of relative magnitude ηnoise /σ N L scale = 10 −3 to emulate the time integration error (only in the DNA theory). RMSE patterns for the nonlinear term of NSE broadly resemble those from Case study 1 (Fig. 9). For 2-point sensors (a-c), the regularized reconstruction pro-duces a risk curve that monotonically decreases until a q-dependent saturation level. The pseudoinverse re-construction shows a slightly different risk curve: at 
+
+p = q = 3 it matches the regularized curve; at p = q = 6 a peak appears since the inversion matrix is large enough to have low eigenvalues but the contamination magni-tude ηreg ≈ 2 · 10 −4σN L scale is still appreciable; at q = 9 the whole curve separates from the regularized one and decays much slower until p ≈ 15. For random sensors (d-f) the risk curve is qualitatively different: the regular-15 10 4                                                                
+
+> 10 2
+> 10 0
+> q=3
+> r=3
+> Regular. rec.
+> a
+> q=6 q=9
+> sensors 2pt q=3
+> Pseudoinv. rec. q=6 q=9
+> sensors 2pt
+> 10 4
+> 10 2
+> 10 0
+> r=5
+> 10 4
+> 10 2
+> 10 0
+> r=7
+> Rel. RMSE
+> 0π2π3π
+> time t
+> 10 4
+> 10 2
+> 10 0
+> r=9
+> 0π2π3π
+> time t0π2π3π
+> time t0π2π3π
+> time t0π2π3π
+> time t0π2π3π
+> time t
+> 0315
+> # sensors p
+> 10 4
+> 10 2
+> 10 0
+> Rel. RMSE
+> (tmax )b
+> 0615
+> # sensors p0915
+> # sensors p0315
+> # sensors p0615
+> # sensors p0915
+> # sensors p
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> 8
+> 9
+> 10
+> 11
+> 12
+> 13
+> 14
+> 15 # sensors  p
+> 3
+> 5
+> 7
+> 9# modes  r
+
+FIG. 10. Empirical error curves of time-integrated DEIM. (a) Time-dependent error curves across different numbers of r modes (rows), q modes (columns), sensor numbers (curve colors), and reconstruction methods (left and right halves). Wavy curve patterns correspond to the ground truth time period of π/ 2. Time integration is set to terminate at ∥ar ∥ > 10 3 to avoid numerical divergence. (b) Empirical error at the final time point tmax = 3 π across sensor numbers and r modes (colors). q
+
+modes and reconstruction methods same as (a). 
+
+ized curve remains nearly flat at Rel.RMSE ≈ 10 0 and the pseudoinverse reconstruction is systematically worse with a pronounced peak at p = q. Across all of those cases, the DNA theory closely follows the empirical curve. The ad-dition of noise (dotted curves) for the 2-point sensor case merely emphasizes the p = q peak; for the random case the pseudoinverse curve increases by orders of magnitude and mostly moves above the axes range. The regularized curve depends on the adaptive regularization strength 
+
+ηreg : for q = 3 the regularization is stronger than noise level and thus the noisy reconstruction curve matches the noiseless one; for q = 6 , 9 the regularization is weaker than noise and thus at p > q the noisy curve lies above the noiseless one by an order of magnitude or more. The shape of the risk curves suggests that the worst case scenario is choosing p = q (peak of the risk curve), so we explore the height of that peak further with the DNA theory (Fig. 9g-h). For 2-point sensors, all reconstruction regimes overlap for q ≤ 4 but show a drastic difference at q > 4. The regularized reconstruction errors decay nearly monotonically, reaching different asymptotic lev-els for the noiseless and noisy cases. The pseudoinverse reconstruction shows a different pattern: the noiseless error briefly spikes to 10 1 at q = 5 and then follows an irregular decay, while the noisy error jumps up by orders of magnitude to around 10 6 and stays there. Fig. 9h di-rectly proves that random sensors have no chance of gen-erating accurate DEIM predictions: an approximation of a differential equation with a relative error of the right hand side consistently higher than 10 0 cannot possibly result in a correct trajectory. In the following section on time integration results, we restrict consideration to only 2-point sensors (though other placement methods such as QR pivoting [4, 7] can also select much-better-than-random sensor sets). 
+
+D. Time integration 
+
+We proceed with analyzing the error of time-integrated DEIM (Eqn. 26) using 2-point sensors. The broad ques-tion is whether approximating the differential equation with small r, q, p leads to a good approximation of the trajectory. The initial condition ψ(x, 0) is projected onto the r modes used for each set of parameters. We again use the 4th order Runge-Kutta method with 180 time steps over t ∈ [0 , 3π] so that the original time series and the DEIM approximation have the same domain and are directly comparable. The time dynamics are reduced to an r-dimensional dynamical system, the qualitative prop-erties of which (stability, oscillations, boundedness) are hard to quantify a priori . Empirically, the error grows over time with some fluctuations owing to the periodic nature of the ground truth dynamics (Fig. 10a). The case of r = q = p = 3 from Ref. [51] is contained in the 16 Optimal      
+
+> regularization
+> Contamination
+> or
+> noise
+> Random choice
+> or
+> p≈r
+> Instability
+> No instability
+> 1
+> 2
+> 34
+> FIG. 11. Flowchart of sufficient reasons for reconstruction instability to emerge out of design choices. When available, an optimal regularization scheme (2) entirely suppresses the instability. Otherwise, presence of high-mode contamination (3) or measurement noise (4) creates a pathological signal fed into the “amplifier”. If the sensor choice is either random or has run out of viable orthogonal options (1), the “amplifier” acts on the pathological signal and creates an instability.
+
+top-left panel as a special case. The general observation across the panels is that as the number of sensors p increases, the error curve ap-proaches an asymptotic form for given r, q . The asymp-totic error drops almost an order of magnitude from r = 3 to r = 5 but remains consistent afterwards, suggesting that a sufficient part of dynamics has been resolved by 
+
+r ≥ 5 modes. The number of sensors required to reach the asymptote can be gauged by the color of the curve (lowest p value), with distinctly fewer sensors required with regularized reconstruction. Another distinct feature is runaway dynamics with RMSE diverging off beyond the plotting range, only observed for many modes r > 3and close to the reconstruction instability point p ≈ q.The runaway behavior occurs much earlier in time for the pseudoinverse reconstruction at q = 6. In order to summarize the error patterns and identify the double descent signature, Fig. 10b plots only the final value of the error at tmax = 3 π across the sensor number. For q = 3 , 6 one or several data points are missing at or near p = q, owing to the divergence of numerical inte-gration. At q = 3 the error curve shows a slow unsteady decay, whereas for q = 6 , 9 there are distinct plateaus at a high number of sensors, with the regularized recon-struction arriving at the plateau with smaller p.  
+
+> VI. DISCUSSION A. Origins of double descent
+
+In this paper we investigated the origins of the dou-ble descent phenomenon, or an abrupt spike in re-construction error, in context of static and dynamic ROMs. In this context, the reconstruction instability directly results from the inherent tension between mode-sparsity and space-sparsity, as opposed to the training set size in studies of double descent in supervised learn-ing [21, 22, 39]. Quantitatively, we proposed the Data-Noise Averaging theory to create a computationally cheap yet accurate ap-proximation of the reconstruction error covariance matrix for any linear reconstruction setup and any sensor set .The DNA theory approach of preserving system-specific quantities (singular vectors and values) while averaging out realization-specific ones (test states and noise) is sim-ilar to the exposure theory for learning complex network structure (preserved) with random walks (averaged-out) [52, 53]. The key DNA Eqn. 10 shows that the covariance error includes four terms of which only the noise-driven one was accounted for in our prior work [15]; these terms have direct parallels to the GAD theory [31] yet are used here as exact quantities rather than merely upper bounds in GAD. As a result, the DNA theory accurately pre-dicts the risk curves across a variety of empirically-tested sparse sensing scenarios throughout the paper and can be used to test alternative, counterfactual ROM setups. Beyond the numerical values, qualitatively the covari-ance expression allows answering the questions of what causes double descent and how to prevent or at least mitigate it. We summarize the answer to these questions in the flowchart of Fig. 11. Optimal regularization of the reconstruction, if available, guides the reconstructed state to lie within a prior learned from the data, and thus entirely suppresses the reconstruction instability. If the regularization is unavailable, the reconstruction can be thought of as a “pathological signal” entering an “am-plifier”: the instability arises if both are present. The pathological signal is anything not contained in the lead-ing r modes, including any combination of measurement noise and contamination from subleading modes. The amplifier originates from low-lying eigenvalues in unreg-ularized matrix inversion which originate either from un-fortunate random sensor choice or from the orthogonality crisis in sensing vectors in Rr . 
+
+> B. Reconstruction design
+
+Sparse sensing, like many other linear reduced-order models, has been based on the POD of the dataset (Eqn. 1). POD decomposes the data into three matri-ces and previous sparse sensing approaches only used the 
+
+first matrix of singular vectors to construct a data-driven basis [4, 6, 7]. The regularized reconstruction introduced independently in Refs. [8, 15] also uses the second ma-trix of singular values to parametrize the Bayesian prior for a regularized reconstruction. The more knowledge is available about the reconstruction setup, the more it can be exploited to control the error. The strength of regularization is given by the ratio of noise and prior covariances: if sensors are precise, their readings are given more weight; if sensors are noisy, re-construction falls back onto the prior. The reconstruction 
+
+AR used in this paper assumes that noise dominates over the contamination , as would be common in experimental measurements. On the contrary, in a high-fidelity nu-merical simulation the value of a given pixel can be read off exactly, so contamination would dominate and ne-17 cessitate a different estimation of regularization strength akin to our Eqn. 28. At the same time, in a low-fidelity numerical simulation, as seen in our DEIM model, errors compound throughout the time integration and lead to an effective “noise” in evaluating the right hand side of the equation. The regularized reconstruction is in general desirable and sufficient to avoid instability, but it is not always available. Non-POD methods might provide a good re-construction basis but no expectation of variance in each mode and thus no way to construct a prior. The pseu-doinverse reconstruction AL remains available in that case, but as we argue in this paper it suffers from a generic instability at p ≈ r for good placement methods or even earlier for bad ones. In other words, the p = r
+
+convention motivated by sufficient linear algebra rank for matrix inversion was adopted uncritically in early gappy POD and DEIM work [6, 7, 12], but might be the worst possible choice from the statistical point of view. Prior work suggested mitigating the error with over-sampling [54], but our analysis of risk curves suggests that under-sampling can also be a viable strategy. For the pseudoinverse reconstruction of the SST dataset with 
+
+r = 100 modes, p ≈ 80 sensors yield a local minimum in error, and might be preferable if sensor budget is limited. More generally, the DNA framework can predict quanti-tatively the risk curves specific to a given dataset and help guide reconstruction design. While in this paper we limited the reconstruction to linear methods, more complex nonlinear methods can be used, such as shallow recurrent decoders [55, 56] and other neural networks. Machine Learning literature has demonstrated that double (or more generally multiple) descent is not unique to linear models and can easily arise in nonlinear models without proper regularization [30, 31].  
+
+> C. DEIM and time integration
+
+Our analysis of the DEIM algorithm revealed three parameters r, q, p that do not need to be rigidly linked but can be selected independently. The central goal of constructing a ROM is to get a low error with minimal resources such as modes and sensors. Separation of re-source accounting splits the question of “how faithful are the ROM dynamics to the high-fidelity model?” from “how faithful is the sparse sensed nonlinear term to the fully sensed one?”. First, design of a good DEIM model needs to select an appropriate r to represent the quali-tative dynamics, such as the breather oscillation in the NSE system. Second, design needs to select q such that the nonlinear term reconstruction projects well onto the dynamics of r state modes. Third, in order to reconstruct the nonlinear term reliably, the double descent instability needs to be avoided by either a tuned regularization or oversampling p > r . Unlike the static sparse sensing case, undersampling p < r is not going to work since it has a higher local error and thus the state error compounds faster. Understanding the error compounding in ROMs is an important avenue for further work. In classical analy-sis of Initial Value Problems for ODEs, for a Lipshitz-continuous right hand side, the Lipshitz constant bounds how fast the solutions starting from nearby initial con-ditions can diverge from each other. By analogy, if the right hand side of a ROM has an upper-bounded error, how fast does it compound for the ROM to diverge from the high-fidelity model?  
+
+> D. Sensor set design
+
+For linear reconstructions as considered here, the re-construction matrix A can be easily updated for any sen-sor set, and thus can be turned into a convenient Optimal Experimental Design objective to optimize a sensor set [4, 57–60]. In this paper we introduced two testable com-peting hypotheses of which parts of the sensor set are to “blame” for instability. Depending on how sensors are placed, both 1-point and collective failures can be ob-served. Just like the placement landscape can in princi-ple be decomposed into 1-sensor, 2-sensor, 3-sensor, and higher order interactions [15], the collective failure hy-pothesis can be subdivided and investigated further. Per-haps a sensor placement algorithm that penalizes higher-order interactions would be able to avoid the collective failure for longer, yet no algorithm would be able to select more than r orthogonal vectors in the Rr space. While in a lot of prior work on sparse sensing and em-pirical interpolation [4, 6, 7, 13, 14] sensor placement was posed as the central problem addressed by a variety of algorithms, our work suggests that reconstruction design through regularization is a more significant factor for con-trolling the error. In other words, a critical task is not to find the best sensor set, but merely one that is good enough : for example, the 2-point method used here and the QR pivoting method [4, 7] approximately optimize nearly the same objective and thus result in similar error metrics [15]. Relaxing the need to optimize the sensor set allows for much easier incorporation of non-data-driven objectives, such as sensor costs and constraints [61], or deliberate redundancy to provide backups in case of sen-sor failure.  
+
+> E. Uncertainty quantification
+
+The Bayesian nature of the reconstruction implies not only a regularization on the inference of the mean (Max-imum A Posteriori [8]), but a full probability distribu-tion around the most likely state. This probability dis-tribution promises a statistical guarantee of error distri-bution demanded by safety-critical engineering applica-tions. Our earlier work provided a measure of uncertainty quantification through uncertainty heatmaps given by the 18 diagonal part of the error covariance, but found the er-ror to be significantly under-estimated [15]. While that work only considered the error driven by noise (our B3
+
+term), here we extended the calculation to four terms of Eqn. 10, which can be straightforwardly converted into an updated pixel-wise heatmap. Since the covari-ance terms are positive-definite, the elements of a more comprehensive uncertainty heatmap are definitely larger. It remains to be seen in future work if the updated uncer-tainty is appropriately calibrated and applicable to the range of reconstruction scenarios. 
+
+ACKNOWLEDGMENTS 
+
+The authors would like to thank J. Bechhoefer, Y. Bhangale, L. Fujioka, N. Karnik, J. Kent-Dobias, and S. E. Otto for helpful discussions and L. D. Lederer for administrative support. This work uses Scientific Color Maps for visualization [62] and the Signac framework for computational data management [63]. Generative Ar-tificial Intelligence was not used for the preparation of text, code, or figures. The authors acknowledge support from the National Science Foundation AI Institute in Dy-namic Systems (grant number 2112085) and MATH DT program (grant numbers 2529361/2529362). 
+
+[1] D. J. Lucia, P. S. Beran, and W. A. Silva, Reduced-order modeling: new approaches for computational physics, Progress in aerospace sciences 40 , 51 (2004). [2] J. Yu, C. Yan, and M. Guo, Non-intrusive reduced-order modeling for fluid problems: A brief review, Proceedings of the Institution of Mechanical Engineers, Part G: Jour-nal of Aerospace Engineering 233 , 5896 (2019). [3] J. N. Kutz, Machine learning methods for reduced order modeling, in Model Order Reduction and Applications: Cetraro, Italy 2021 (Springer, 2023) pp. 201–228. [4] K. Manohar, B. W. Brunton, J. N. Kutz, and S. L. Brun-ton, Data-driven sparse sensor placement for reconstruc-tion: Demonstrating the benefits of exploiting known patterns, IEEE Control Systems Magazine 38 , 63 (2018). [5] M. Barrault, Y. Maday, N. C. Nguyen, and A. T. Pat-era, An ‘empirical interpolation’method: application to efficient reduced-basis discretization of partial differen-tial equations, Comptes Rendus Mathematique 339 , 667 (2004). [6] S. Chaturantabut and D. C. Sorensen, Discrete empirical interpolation for nonlinear model reduction, in Proceed-ings of the 48h IEEE Conference on Decision and Con-trol (CDC) held jointly with 2009 28th Chinese Control Conference (IEEE, 2009) pp. 4316–4321. [7] Z. Drmac and S. Gugercin, A new selection operator for the discrete empirical interpolation method—improved a priori error bound and extensions, SIAM Journal on Scientific Computing 38 , A631 (2016). [8] L. Kakasenko, A. Alexanderian, M. Farazmand, and A. K. Saibaba, Bridging the gap between deterministic and probabilistic approaches to state estimation, Physica D: Nonlinear Phenomena (2026). [9] N. Karnik, C. Wang, P. K. Bhowmik, J. J. Cogliati, S. A. Balderrama Prieto, C. Xing, A. A. Klishin, R. Skifton, M. Moussaoui, C. P. Folsom, J. J. Palmer, P. Sabharwall, K. Manohar, and M. G. Abdo, Leveraging optimal sparse sensor placement to aggregate a network of digital twins for nuclear subsystems, Energies 17 , 10.3390/en17133355 (2024). [10] M. Farazmand, Sparse discrete empirical interpolation method: State estimation from few sensors, SIAM Jour-nal on Scientific Computing 46 , A3658 (2024). [11] M. Farazmand, State estimation using sparse deim and recurrent neural networks, Proceedings of the Royal Soci-ety A: Mathematical, Physical and Engineering Sciences 
+
+482 (2026). [12] R. Everson and L. Sirovich, Karhunen–loeve procedure for gappy data, JOSA A 12 , 1657 (1995). [13] B. Yildirim, C. Chryssostomidis, and G. Karniadakis, Efficient sensor placement for ocean measurements us-ing low-dimensional concepts, Ocean Modelling 27 , 160 (2009). [14] K. Willcox, Unsteady flow sensing and estimation via the gappy proper orthogonal decomposition, Computers & fluids 35 , 208 (2006). [15] A. A. Klishin, J. N. Kutz, and K. Manohar, Data-induced interactions of sparse sensors using statistical physics, arXiv preprint arXiv:2307.11838 (2023). [16] M. Loog, T. Viering, and A. Mey, Minimizers of the em-pirical risk and risk monotonicity, Advances in Neural Information Processing Systems 32 (2019). [17] T. Viering and M. Loog, The shape of learning curves: a review, IEEE Transactions on Pattern Analysis and Machine Intelligence 45 , 7799 (2022). [18] E. Clark, S. L. Brunton, and J. N. Kutz, Multi-fidelity sensor selection: Greedy algorithms to place cheap and expensive sensors with cost constraints, IEEE Sensors Journal 21 , 600 (2020). [19] B. M. de Silva, K. Manohar, E. Clark, B. W. Brunton, S. L. Brunton, and J. N. Kutz, Pysensors: A python package for sparse sensor placement, arXiv preprint arXiv:2102.13476 (2021). [20] B. de Silva, K. Manohar, and E. Clark, Py-Sensors Examples / Basis comparison, https: //python-sensors.readthedocs.io/en/latest/ examples/basis_comparison.html (2020), accessed: 2026-07-21. [21] M. Belkin, D. Hsu, S. Ma, and S. Mandal, Reconciling modern machine-learning practice and the classical bias– variance trade-off, Proceedings of the National Academy of Sciences 116 , 15849 (2019). [22] P. Nakkiran, G. Kaplun, Y. Bansal, T. Yang, B. Barak, and I. Sutskever, Deep double descent: Where bigger models and more data hurt, Journal of Statistical Me-chanics: Theory and Experiment 2021 , 124003 (2021). [23] L. Breiman and D. Freedman, How many variables should be entered in a regression equation?, Journal of the Amer-ican Statistical Association 78 , 131 (1983). [24] F. Vallet, J.-G. Cailton, and P. Refregier, Linear and non-linear extension of the pseudo-inverse solution for learn-19 
+
+ing boolean functions, EPL (Europhysics Letters) 9, 315 (1989). [25] M. Opper, W. Kinzel, J. Kleinz, and R. Nehl, On the ability of the optimal perceptron to generalise, Journal of Physics A: Mathematical and General 23 , L581 (1990). [26] T. L. Watkin, A. Rau, and M. Biehl, The statistical me-chanics of learning a rule, Reviews of Modern Physics 65 ,499 (1993). [27] S. Raudys and R. P. Duin, Expected classification error of the fisher linear classifier with pseudo-inverse covariance matrix, Pattern recognition letters 19 , 385 (1998). [28] R. P. Duin, Classifiers in almost empty spaces, in Pro-ceedings 15th International Conference on Pattern Recog-nition. ICPR-2000 , Vol. 2 (IEEE, 2000) pp. 1–7. [29] M. Loog, T. Viering, A. Mey, J. H. Krijthe, and D. M. Tax, A brief prehistory of double descent, Proceedings of the National Academy of Sciences 117 , 10625 (2020). [30] S. d’Ascoli, L. Sagun, and G. Biroli, Triple descent and the two kinds of overfitting: Where & why do they ap-pear?, Advances in neural information processing sys-tems 33 , 3058 (2020). [31] M. K. Transtrum, G. L. Hart, T. J. Jarvis, and J. P. Whitehead, Generalized aliasing explains double descent and informs model design, Physical Review Research 7,043268 (2025). [32] P. Nakkiran, P. Venkat, S. M. Kakade, and T. Ma, Opti-mal regularization can mitigate double descent, in Inter-national Conference on Learning Representations (2021). [33] J. H. Krijthe and M. Loog, The peaking phenomenon in semi-supervised learning, in Joint IAPR International Workshops on Statistical Techniques in Pattern Recogni-tion (SPR) and Structural and Syntactic Pattern Recog-nition (SSPR) (Springer, 2016) pp. 299–309. [34] S. d’Ascoli, M. Refinetti, G. Biroli, and F. Krzakala, Dou-ble trouble in double descent: Bias and variance(s) in the lazy regime, in International Conference on Machine Learning (PMLR, 2020) pp. 2280–2290. [35] M. Belkin, D. Hsu, and J. Xu, Two models of double descent for weak features, SIAM Journal on Mathematics of Data Science 2, 1167 (2020). [36] T. Hastie, A. Montanari, S. Rosset, and R. J. Tibshirani, Surprises in high-dimensional ridgeless least squares in-terpolation, Annals of statistics 50 , 949 (2022). [37] S. Mei and A. Montanari, The generalization error of random features regression: Precise asymptotics and the double descent curve, Communications on Pure and Ap-plied Mathematics 75 , 667 (2022). [38] S. Spigler, M. Geiger, S. d’Ascoli, L. Sagun, G. Biroli, and M. Wyart, A jamming transition from under-to over-parametrization affects generalization in deep learning, Journal of Physics A: Mathematical and Theoretical 52 ,474001 (2019). [39] J. W. Rocks and P. Mehta, Memorizing without overfit-ting: Bias, variance, and interpolation in overparameter-ized models, Physical review research 4, 013201 (2022). [40] K. Rahimi, Y. Refael, T. Tirer, and O. Lindenbaum, Un-veiling multiple descents in unsupervised autoencoders, arXiv preprint arXiv:2406.11703 (2024). [41] D. Gedon, A. H. Ribeiro, and T. B. Sch¨ on, No dou-ble descent in principal component regression: A high-dimensional analysis, in Proceedings of the 41st In-ternational Conference on Machine Learning , Proceed-ings of Machine Learning Research, Vol. 235, edited by R. Salakhutdinov, Z. Kolter, K. Heller, A. Weller, N. Oliver, J. Scarlett, and F. Berkenkamp (PMLR, 2024) pp. 15271–15293. [42] M. Gavish and D. L. Donoho, The optimal hard thresh-old for singular values is 4 /√3, IEEE Transactions on Information Theory 60 , 5040 (2014). [43] M. Udell and A. Townsend, Why are big data matrices approximately low rank?, SIAM Journal on Mathematics of Data Science 1, 144 (2019). [44] K. N. Quinn, M. C. Abbott, M. K. Transtrum, B. B. Machta, and J. P. Sethna, Information geometry for mul-tiparameter models: New perspectives on the origin of simplicity, Reports on Progress in Physics (2022). [45] N. Karnik, Y. Bhangale, M. G. Abdo, A. A. Klishin, J. J. Cogliati, B. W. Brunton, J. N. Kutz, S. L. Brunton, and K. Manohar, Pysensors 2.0: A python package for sparse sensor placement, arXiv preprint arXiv:2509.08017 (2025). [46] B. Huang, C. Liu, V. Banzon, E. Freeman, G. Graham, B. Hankins, T. Smith, and H.-M. Zhang, Improvements of the daily optimum interpolation sea surface tempera-ture (DOISST) version 2.1, Journal of Climate 34 , 2923 (2021). [47] J. R. Bunch and C. P. Nielsen, Updating the singular value decomposition, Numerische Mathematik 31 , 111 (1978). [48] J. H. Wilkinson, The algebraic eigenvalue problem , Vol. 662 (Clarendon, Oxford, 1965). [49] R. C. Thompson, The behavior of eigenvalues and singu-lar values under perturbations of restricted rank, Linear Algebra and its Applications 13 , 69 (1976). [50] F. R. Gantmacher and M. G. Krein, Oscillation matri-ces and kernels and small vibrations of mechanical sys-tems: revised edition (AMS Chelsea Publishing, Provi-dence, RI, 2002). [51] S. L. Brunton and J. N. Kutz, Data-driven science and engineering: Machine learning, dynamical systems, and control , 2nd ed. (Cambridge University Press, 2022). [52] A. A. Klishin and D. S. Bassett, Exposure theory for learning complex networks with random walks, Journal of Complex Networks 10 , cnac029 (2022). [53] A. A. Klishin, N. H. Christianson, C. S. Siew, and D. S. Bassett, Learning dynamic graphs, too slow, arXiv preprint arXiv:2207.02177 (2022). [54] B. Peherstorfer, Z. Drmac, and S. Gugercin, Stability of discrete empirical interpolation and gappy proper orthog-onal decomposition with randomized and deterministic sampling points, SIAM Journal on Scientific Computing 
+
+42 , A2837 (2020). [55] J. P. Williams, O. Zahn, and J. N. Kutz, Sensing with shallow recurrent decoder networks, Proceedings of the Royal Society A: Mathematical, Physical and Engineer-ing Sciences 480 (2024). [56] M. Tomasetto, J. P. Williams, F. Braghin, A. Manzoni, and J. N. Kutz, Reduced order modeling with shallow recurrent decoder networks, Nature Communications 16 ,10260 (2025). [57] K. Chaloner and I. Verdinelli, Bayesian experimental de-sign: A review, Statistical science , 273 (1995). [58] E. G. Ryan, C. C. Drovandi, J. M. McGree, and A. N. Pettitt, A review of modern computational algorithms for Bayesian optimal design, International Statistical Review 
+
+84 , 128 (2016). [59] A. Alexanderian, Optimal experimental design for infinite-dimensional Bayesian inverse problems governed 20 
+
+by pdes: A review, Inverse Problems 37 , 043001 (2021). [60] T. Rainforth, A. Foster, D. R. Ivanova, and F. Bick-ford Smith, Modern Bayesian experimental design, Sta-tistical Science 39 , 100 (2024). [61] N. Karnik, M. G. Abdo, C. E. Estrada-Perez, J. S. Yoo, J. J. Cogliati, R. S. Skifton, P. Calderoni, S. L. Brun-ton, and K. Manohar, Constrained optimization of sensor placement for nuclear digital twins, IEEE Sensors Jour-nal , 1 (2024). [62] F. Crameri, Scientific colour maps (2023). [63] C. S. Adorf, P. M. Dodd, V. Ramasubramani, and S. C. Glotzer, Simple data and workflow management with the signac framework, Computational Materials Science 146 ,220 (2018).
